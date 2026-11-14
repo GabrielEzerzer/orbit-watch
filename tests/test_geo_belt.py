@@ -108,10 +108,11 @@ def test_zip_bundle_with_names_bad_lines_and_restated_epochs(tmp_path, sample):
 
 def test_tle_pairs_counts_orphans():
     count = LineCount()
-    lines = ["0 NAME ONLY", "2 " + "x" * 67, "1 " + "a" * 67, "1 " + "b" * 67, "2 " + "c" * 67, "tail"]
+    lines = ["0 NAME ONLY", "2 " + "x" * 67, "1 " + "a" * 67, "1 " + "b" * 67, "2 " + "c" * 67,
+             "2 " + "d" * 66, "1 " + "e" * 67, "2 " + "f" * 67, "tail"]  # a 68-character line 2, not a name
     pairs = list(tle_pairs(lines, count))
-    assert pairs == [(None, "1 " + "b" * 67, "2 " + "c" * 67)]
-    assert (count.lines, count.pairs, count.rejected_lines) == (6, 1, 4)
+    assert pairs == [(None, "1 " + "b" * 67, "2 " + "c" * 67), (None, "1 " + "e" * 67, "2 " + "f" * 67)]
+    assert (count.lines, count.pairs, count.rejected_lines) == (9, 2, 5)
 
 
 def test_output_to_directory_or_zip(tmp_path, sample):

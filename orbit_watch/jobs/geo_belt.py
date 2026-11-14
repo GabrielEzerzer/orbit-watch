@@ -99,8 +99,10 @@ class LineCount:
 def tle_pairs(lines: Iterable[str], count: LineCount) -> Iterator[tuple[str | None, str, str]]:
     """(name or None, line 1, line 2) for each pair laid out as in ``parse_tle``; counts the rest.
 
-    A line 1 and line 2 are 69 characters starting ``1 `` and ``2 ``. Any other line directly
-    before a line 1 is its name (a leading ``0 `` removed). Every other non-blank line is rejected.
+    A line 1 and line 2 are 69 characters starting ``1 `` and ``2 ``. A line directly before a
+    line 1 that does not start with ``1 `` or ``2 `` is its name (a leading ``0 `` removed). Every
+    other non-blank line is rejected, such as the 68-character analyst-object lines (catalog
+    numbers 8xxxx) in the Kaggle mirror's 2025 file.
     """
     name: str | None = None  # a candidate name line, not yet followed by a line 1
     line1: str | None = None
@@ -121,7 +123,7 @@ def tle_pairs(lines: Iterable[str], count: LineCount) -> Iterator[tuple[str | No
             name, line1 = None, None
         if is_line1:
             line1 = line
-        elif is_line2:
+        elif line.startswith(("1 ", "2 ")):  # a stray or malformed element line is never a name
             count.rejected_lines += 1 + (name is not None)
             name = None
         else:
