@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Orbital-element history parsing and SGP4 propagation for manoeuvre detection."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["sgp4>=2.23", "numpy>=1.26"]
+dependencies = ["sgp4>=2.23", "numpy>=1.26", "matplotlib>=3.8"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

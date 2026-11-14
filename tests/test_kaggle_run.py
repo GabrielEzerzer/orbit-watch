@@ -41,3 +41,19 @@ def test_kernel_embeds_the_archive_commit_and_command():
 def test_bad_inputs_are_rejected(sha, command, slug):
     with pytest.raises(ValueError):
         kaggle_run.build_kernel(b"x", sha, command, slug)
+
+
+def test_attached_files_are_written_with_their_sha256(tmp_path):
+
+    data = b"1 25544U ...\n"
+    script, _ = kaggle_run.build_kernel(b"x", SHA, ["pytest"], "ow-suite", {"data/archive/25544.tle": data})
+    ns = {"__name__": "not_main"}
+    exec(compile(script, "kernel.py", "exec"), ns)
+    assert {k: base64.b64decode(v) for k, v in ns["ATTACH_B64"].items()} == {"data/archive/25544.tle": data}
+    assert "hashlib.sha256(data).hexdigest()" in script
+
+
+@pytest.mark.parametrize("rel", ["../secret", "/etc/passwd", "C:/x", "a//b", "a\b"])
+def test_attach_paths_must_stay_inside_the_repo(rel):
+    with pytest.raises(ValueError):
+        kaggle_run.build_kernel(b"x", SHA, ["pytest"], "ow-suite", {rel: b"x"})
