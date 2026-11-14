@@ -78,8 +78,7 @@ def main():
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             with open(dest, "wb") as g:
                 g.write(data)
-            f.write(f"{{hashlib.sha256(data).hexdigest()}}  {{rel}}
-")
+            f.write(f"{{hashlib.sha256(data).hexdigest()}}  {{rel}}\\n")
     # The command's python and pytest are the interpreter pip installs into.
     argv = list(COMMAND)
     if argv[0] in ("python", "python3"):
