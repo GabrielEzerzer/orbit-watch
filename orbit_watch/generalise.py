@@ -14,6 +14,15 @@ For each satellite, from its Space-Track gp_history and its operator manoeuvre l
    on the earlier part (ties go to the stricter setting, as in calibrate.py); the later part is
    scored once with that setting.
 
+**The test part is not a blind holdout.** The late tolerance, the epoch collapse, burn merging
+and the |z| grid beyond 30 (all below) were added after a first scoring of the test part had been
+seen, and the lag figures that justify the late tolerance include test-part burns. Measured at
+review: with the 0.5-day tolerance instead of 2 days, the tuned test part drops from P 162/260,
+R 162/199 to P 138/260, R 138/196 at LEO, and from P 70/92, R 70/93 to P 60/88, R 60/90 at GEO
+(the tune re-picks |z|>=7). Without merging, LEO is P 167/266, R 167/211 and GEO precision falls
+to 74/110, so merging does not inflate the numbers. ``TEST_PART_NOT_BLIND`` carries this into the
+report.
+
 Matching follows calibrate.py: an event's window (start to end of the logged burn) must overlap
 the detection's interval widened by ``TOLERANCE_DAYS``, one-to-one, closest centres first.
 Changes, and why:
@@ -21,7 +30,7 @@ Changes, and why:
 * Late tolerance. A detection may start up to ``LATE_DAYS`` after the burn ends (calibrate.py
   allows 0.5 day either side; 0.5 day before is kept). Space-Track element sets keep showing the
   old orbit for a while after a burn: the epoch before the largest step comes a median 0.9-1.1
-  days after the logged burn for SPOT-5 and 0.2 days for QZS-3, with 90th percentiles of 1.2-2.3
+  days after the logged burn for SPOT-5 and 0.2 days for QZS-3, with 90th percentiles of 1.2-2.8
   days (``lag_days`` in the report). The ISS archive did not show this lag.
 * Input. Element sets less than ``MIN_EPOCH_GAP_S`` apart are collapsed to the later one before
   scoring. Space-Track history restates element sets at almost the same epoch (562 pairs under
@@ -441,6 +450,16 @@ def plot(regime: str, sats: list[Satellite], tuned: Setting, path: Path) -> None
     plt.close(fig)
 
 
+TEST_PART_NOT_BLIND = (
+    "Four method changes were made after a first scoring of the test part: the 2-day late "
+    "tolerance, the <60 s epoch collapse, merging burns under 12 h apart, and the |z| grid beyond "
+    "30. The lag figures behind the late tolerance include test-part burns. With a 0.5-day "
+    "tolerance the tuned test part is LEO P 138/260, R 138/196 and GEO P 60/88, R 60/90 (tune "
+    "re-picks |z|>=7); without merging, LEO P 167/266, R 167/211 and GEO precision 74/110. The "
+    "GEO tune sits at the bottom of the |z| grid (3), so its 1000 m step floor does all the work."
+)
+
+
 def run(truth_dir: Path, tle_dir: Path, out: Path) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     sats = [Satellite(n, norad, reg, truth_dir / f, tle_dir) for n, norad, reg, f in SATELLITES]
@@ -452,6 +471,7 @@ def run(truth_dir: Path, tle_dir: Path, out: Path) -> dict:
         "merge_hours": MERGE_HOURS,
         "split_rule": f"per satellite: first day of the month holding its {SPLIT_QUANTILE:.0%} "
                       "quantile logged event; tune before, test from it",
+        "test_part_not_blind": TEST_PART_NOT_BLIND,
         "regimes": {}, "satellites": {},
     }
     for regime in ("LEO", "GEO"):

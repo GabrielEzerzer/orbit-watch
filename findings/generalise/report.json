@@ -14,6 +14,7 @@
   },
   "merge_hours": 12.0,
   "split_rule": "per satellite: first day of the month holding its 60% quantile logged event; tune before, test from it",
+  "test_part_not_blind": "Four method changes were made after a first scoring of the test part: the 2-day late tolerance, the <60 s epoch collapse, merging burns under 12 h apart, and the |z| grid beyond 30. The lag figures behind the late tolerance include test-part burns. With a 0.5-day tolerance the tuned test part is LEO P 138/260, R 138/196 and GEO P 60/88, R 60/90 (tune re-picks |z|>=7); without merging, LEO P 167/266, R 167/211 and GEO precision 74/110. The GEO tune sits at the bottom of the |z| grid (3), so its 1000 m step floor does all the work.",
   "regimes": {
     "LEO": {
       "satellites": [

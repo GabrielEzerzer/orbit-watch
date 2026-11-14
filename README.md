@@ -152,6 +152,37 @@ can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 2
 since unannounced burns count). A clean step leaves out the transitional TLEs a real burn produces,
 so these recalls are upper bounds for real burns of the same size.
 
+### Beyond the ISS: IDS (LEO) and QZSS (GEO) manoeuvre logs
+
+`orbit_watch.generalise` scores the detector against real operator logs
+(`groundtruth/ids_manoeuvres.csv`, `groundtruth/qzss_manoeuvres.csv`; sources and credits in
+`groundtruth/README.md`) on Space-Track TLE history for CryoSat-2, Jason-3, SWOT and SPOT-5 (LEO)
+and QZS-3 and QZS-6 (GEO). Each score sits next to a chance baseline: the same scoring with the
+logged events shifted by 7, 13 and 19 days.
+
+```
+hush run -- python tools/fetch_generalise_tles.py   # one Space-Track request per object, cached
+python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetrack --out findings/generalise
+```
+
+| Regime | Frozen ISS setting, whole history | Per-regime tune, later part (not blind, see below) |
+|---|---|---|
+| GEO (QZS-3, QZS-6) | P 179/253 = 0.71, R 179/232 = 0.77 (chance recall about 0.10) | P 70/92, R 70/93 (k=4, z>=3, step>=1000 m) |
+| LEO (4 satellites) | P 36/42 = 0.86, R 36/445 = 0.08 | P 162/260, R 162/199 (k=6, z>=40, step>=0) |
+
+- **GEO:** the ISS setting carries over. QZS-3's east-west burns (median about 3 km in a) are
+  found 135 times out of 144 in the 2-5 km bin.
+- **LEO:** the ISS setting finds nearly every burn above 200 m and none of the routine ones,
+  which are mostly 10-50 m. LEO TLE scatter is about 0.1 m, so a tune with no step floor finds
+  most of them.
+- **Not a blind holdout.** Four method changes (a 2-day late tolerance for element sets that lag
+  a burn, collapsing element sets under 60 s apart, merging burns under 12 h apart, and a wider
+  |z| grid) came after the test part had been scored once. With the original 0.5-day tolerance
+  the tuned test part is LEO P 138/260, R 138/196 and GEO P 60/88, R 60/90. `report.json`
+  (`test_part_not_blind`) and the module docstring carry the details.
+- **Unmatched detections:** 60 on QZS-3 and 14 on QZS-6 at the frozen setting, listed in
+  `findings/generalise/*_detections.csv`. They have not been checked against anything else.
+
 ## First GEO hunt (Luch / Olymp-K)
 
 `orbit_watch.geo` gives the sub-satellite longitude of an element set at its epoch (SGP4 to TEME,
