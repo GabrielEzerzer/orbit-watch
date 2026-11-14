@@ -72,7 +72,9 @@ Result of the command above on Kaggle at commit `7df96a6` (the detector and cali
 unchanged since then), with the TLE file at sha256 `e102dc92…7c51` (5,076 TLEs). 45 ground-truth
 rows fall inside the TLE history:
 
-| | 2021-2022 (tuning) | 2023 (holdout, the honest number) |
+**Caveat on 2023:** the thresholds below were chosen on 2021-2022 only, but an earlier version of the method was scored on 2023 once before the method was changed (last note below). A clean holdout needs TLE history after 2023-12-28, which the public archive does not have; the ground truth already runs to 2025-12.
+
+| | 2021-2022 (tuning) | 2023 (thresholds unseen; method partly seen, see below) |
 |---|---|---|
 | Precision | 24/27 = 0.89 | 16/21 = 0.76 |
 | Recall | 24/25 = 0.96 | 16/17 = 0.94 |
