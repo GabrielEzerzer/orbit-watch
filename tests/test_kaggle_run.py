@@ -35,6 +35,7 @@ def test_kernel_embeds_the_archive_commit_and_command():
         (SHA, ["pytest"], "ow"),
         ("abc123", ["pytest"], "ow-suite"),
         (SHA, [], "ow-suite"),
+        (SHA, ["python", "job.py", "--out", "C:/Program Files/Git/kaggle/working/out"], "ow-suite"),
     ],
 )
 def test_bad_inputs_are_rejected(sha, command, slug):

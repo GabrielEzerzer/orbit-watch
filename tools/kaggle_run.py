@@ -97,6 +97,12 @@ def build_kernel(archive: bytes, sha: str, command: list[str], slug: str) -> tup
         raise ValueError(f"not a full commit SHA: {sha!r}")
     if not command:
         raise ValueError("empty command")
+    # Git Bash turns a '/kaggle/working/out' argument into 'C:/Program Files/Git/kaggle/...'.
+    converted = [a for a in command if re.match(r"[A-Za-z]:[/\\]", a)]
+    if converted:
+        raise ValueError(
+            f"Windows path in the Kaggle command: {converted}; from Git Bash, set MSYS_NO_PATHCONV=1"
+        )
     script = KERNEL_TEMPLATE.format(
         sha=sha,
         command=list(command),
@@ -165,7 +171,11 @@ def main() -> int:
 
     ref = metadata["id"]
     print(f"pushing {sha[:12]} to {ref}: {' '.join(command)}")
-    print(kaggle("kernels", "push", "-p", str(push)).strip())
+    pushed = kaggle("kernels", "push", "-p", str(push)).strip()
+    print(pushed)
+    # The CLI exits 0 on some refusals, e.g. "Kernel push error: Maximum batch CPU session count".
+    if "successfully pushed" not in pushed:
+        sys.exit("kaggle kernels push did not report a successful push; nothing was run")
     print(f"https://www.kaggle.com/code/{ref}")
 
     # Right after a push the status can still be the previous version's; only a terminal status
