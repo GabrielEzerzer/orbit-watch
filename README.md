@@ -26,3 +26,25 @@ python -m venv .venv
 ```
 
 Test fixtures live in `mock/`; `mock/README.md` says where each one came from.
+
+## Running on Kaggle CPU
+
+When the laptop is busy, `tools/kaggle_run.py` runs a command on a private Kaggle CPU kernel
+against the exact commit at HEAD (it refuses a working tree with uncommitted or untracked changes):
+
+```
+python tools/kaggle_run.py --slug ow-suite -- pytest -q
+```
+
+It needs the `kaggle` CLI installed and authenticated. It embeds `git archive HEAD` and the commit
+SHA in a generated script kernel (written to `data/kaggle/<slug>/push/`), pushes it with
+`kaggle kernels push`, checks `kaggle kernels status` every 30 seconds, and downloads the outputs
+to `data/kaggle/<slug>/out/`: `COMMIT.txt`, `run.log` (stdout and stderr together),
+`exit_code.txt` and anything the command wrote under `/kaggle/working/out`. It checks that
+`COMMIT.txt` matches the pushed commit, prints the end of `run.log` and exits with the command's
+exit code. The default command is `pytest -q`. The kernel has internet access because it runs
+`pip install -e .[dev]`; each push makes a new version of the kernel named by `--slug`.
+
+On the owner's Windows machine `kaggle datasets create` fails from Git Bash (forward slashes end up
+in the upload's temporary file name); run it from PowerShell if a dataset is ever needed.
+`kaggle kernels push` works from either shell.

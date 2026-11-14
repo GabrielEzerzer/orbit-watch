@@ -178,13 +178,16 @@ def _parse_tle_pair(line1: str, line2: str, name: str | None) -> ElementSet:
     # shortcut: numeric catalog numbers only; decode Alpha-5 (e.g. 'A0001') once objects pass 99999.
     if not line1[2:7].strip().isdigit() or line1[2:7] != line2[2:7]:
         raise ValueError(f"TLE catalog numbers missing or differ: {line1[2:7]!r} vs {line2[2:7]!r}")
+    # Eccentricity is seven digits with an implied leading decimal point; a blank field is not 0.
+    if not line2[26:33].isdigit():
+        raise ValueError(f"TLE eccentricity field is not seven digits: {line2[26:33]!r}")
     try:
         return _build(
             norad_id=int(line1[2:7]),
             name=name,
             epoch=_tle_epoch(line1[18:32]),
             mean_motion=float(line2[52:63]),
-            ecc=float("0." + line2[26:33].strip()),
+            ecc=float("0." + line2[26:33]),
             inc=float(line2[8:16]),
             raan=float(line2[17:25]),
             argp=float(line2[34:42]),
@@ -295,6 +298,9 @@ def parse_omm_json(text: str) -> list[ElementSet]:
 def parse_omm_csv(text: str) -> list[ElementSet]:
     """Parse CelesTrak / Space-Track GP CSV with a header row of OMM field names."""
     reader = csv.DictReader(io.StringIO(text))
-    if reader.fieldnames is None or "NORAD_CAT_ID" not in reader.fieldnames:
-        raise ValueError("GP CSV has no NORAD_CAT_ID header")
-    return [_from_omm_fields(row) for row in reader]
+    try:
+        if reader.fieldnames is None or "NORAD_CAT_ID" not in reader.fieldnames:
+            raise ValueError("GP CSV has no NORAD_CAT_ID header")
+        return [_from_omm_fields(row) for row in reader]
+    except csv.Error as exc:
+        raise ValueError(f"GP CSV unreadable at line {reader.line_num}: {exc}") from exc

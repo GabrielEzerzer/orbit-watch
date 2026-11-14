@@ -21,6 +21,15 @@ def test_directory_source_names_the_bad_file(tmp_path):
         DirectorySource(tmp_path).load([25544])
 
 
+def test_directory_source_turns_a_csv_error_into_value_error(tmp_path):
+    # A field over the csv module's size limit raises csv.Error inside the reader.
+    (tmp_path / "huge.csv").write_text("NORAD_CAT_ID,OBJECT_NAME
+25544," + "x" * 200_000 + "
+")
+    with pytest.raises(ValueError, match="huge.csv"):
+        DirectorySource(tmp_path).load([25544])
+
+
 def test_directory_source_requires_a_directory(tmp_path):
     with pytest.raises(NotADirectoryError):
         DirectorySource(tmp_path / "missing")

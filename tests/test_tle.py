@@ -37,6 +37,19 @@ def test_checksum_mismatch_is_rejected():
         parse_tle(f"{ISS_L1}\n{bad}\n")
 
 
+def _with_checksum(line: str) -> str:
+    total = sum(int(c) if c.isdigit() else c == "-" for c in line[:68])
+    return line[:68] + str(total % 10)
+
+
+def test_blank_eccentricity_is_rejected_not_read_as_zero():
+    blank = _with_checksum(ISS_L2[:26] + " " * 7 + ISS_L2[33:])
+    with pytest.raises(ValueError, match="eccentricity"):
+        parse_tle(f"{ISS_L1}
+{blank}
+")
+
+
 def test_catalog_number_mismatch_is_rejected():
     # Line 2 of a different object, with a valid checksum.
     other = "2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667"
