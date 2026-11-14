@@ -3,7 +3,8 @@ import pytest
 
 from orbit_watch.calibrate import Event
 from orbit_watch.detect import Detection
-from orbit_watch.holdout import dedupe_gp_rows, loyo_folds, period_masks
+from orbit_watch.holdout import Scored, dedupe_gp_rows, loyo_folds, period_masks
+from orbit_watch.series import ElementSeries
 
 
 def row(epoch, gp_id, mm="15.5"):
@@ -41,3 +42,28 @@ def test_period_masks_follow_event_date_and_detection_start():
     dets = [Detection(t, t + np.timedelta64(2, "h"), 500.0, 20.0)]  # starts 2023, ends 2024
     assert period_masks(events, dets, (2024,)) == ([False, True], [False])
     assert period_masks(events, dets, (2023,)) == ([True, False], [True])
+
+
+def test_fold_tuning_never_matches_across_years():
+    # Synthetic ISS-like series at one element set every 4.8 h with two +1 km steps, both in 2021:
+    # one at a 2021 reboost, one at 22:00 on 2021-12-31, three hours before a 2022 reboost. Tuning
+    # on 2021 alone must not let the 2022 label make the second detection a true positive.
+    t0 = np.datetime64("2021-12-01T00:00", "us")
+    n = 250
+    epochs = t0 + np.arange(n) * np.timedelta64(288, "m")
+    days = (epochs - t0).astype("int64") / 86_400e6
+    a_m = 6_790_000.0 - 80.0 * days + np.random.default_rng(5).normal(0, 3.0, n)
+    s1, s2 = np.datetime64("2021-12-15T10:00", "us"), np.datetime64("2021-12-31T22:00", "us")
+    a_m[epochs > s1] += 1000.0
+    a_m[epochs > s2] += 1000.0
+    z = np.zeros(n)
+    series = ElementSeries(25544, epochs, a_m / 1000.0, z, z, z, z, z)
+    held_out = np.datetime64("2022-01-01T01:00", "us")
+    events = [Event("2021-12-15", "10:00", "reboost", "", s1, s1),
+              Event("2022-01-01", "01:00", "reboost", "", held_out, held_out)]
+    st = Scored(series, events)
+    _, d = st.score({"k": 4, "z_min": 12, "step_min_m": 200}, (2021,))
+    assert [x.start.astype("datetime64[D]") for x in d["dets"]] == [np.datetime64("2021-12-15"),
+                                                                     np.datetime64("2021-12-31")]
+    # Two 2021 detections, one 2021 event: precision 1/2 and recall 1/1 at best, so F1 2/3.
+    assert st.choose((2021,))["f1"] == round(2 / 3, 4)

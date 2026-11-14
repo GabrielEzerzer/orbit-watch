@@ -23,7 +23,8 @@ whole 2021-2025 Space-Track series; it uses no labels.
 Space-Track restates element sets. Records whose epochs lie within ``SAME_EPOCH_S`` of each other
 are one element set, and the latest issued (highest ``GP_ID``) is kept. Exact repeats of an epoch
 and reissues whose epoch differs by a few milliseconds both occur; the closest distinct epochs are
-over 10 s apart.
+over 10 s apart. ``to_series`` then collapses epochs under 60 s apart to the later one, as for
+every source.
 """
 
 from __future__ import annotations
@@ -89,7 +90,7 @@ def load_gp_history(path: Path):
         raise ValueError(f"{path}: gp_history JSON must be a list of records")
     kept, stats = dedupe_gp_rows(rows)
     series = to_series(parse_omm_json(json.dumps(kept)))[ISS]
-    assert len(series) == len(kept)
+    stats["under_60s_apart_collapsed_by_to_series"] = len(kept) - len(series)
     return series, stats
 
 
@@ -204,7 +205,8 @@ def run(gp: Path, archive: Path, truth: list[Path], out: Path) -> dict:
         return name, row
 
     source_check = dict([
-        source(ar, "archive", archive, {"duplicates": "no exact repeats; one pair within 1 s (2023-12-23 17:57:06), left as is"}),
+        source(ar, "archive", archive, {"duplicates": "no exact repeats; one pair within 1 s (2023-12-23 17:57:06), "
+                                         "collapsed to the later by to_series"}),
         source(st, "spacetrack", gp, {"duplicates": dedupe}),
     ])
 

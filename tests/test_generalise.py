@@ -2,9 +2,7 @@ import numpy as np
 
 from orbit_watch import calibrate
 from orbit_watch.detect import Detection, GapScores
-from orbit_watch.generalise import (LogEvent, covered, drop_near_duplicates, load_log_events,
-                                    match_near, split_date)
-from orbit_watch.series import ElementSeries
+from orbit_watch.generalise import LogEvent, covered, load_log_events, match_near, split_date
 
 
 def ev(lo, hi, sign=0, da=500.0, eid="e"):
@@ -106,13 +104,3 @@ def test_ids_along_track_sign_follows_delta_v(tmp_path):
         "C-2,C,2,2010-06-03T17:55:00Z,2010-06-03T18:35:00Z,1,a,0,0.001,0.02,cross-track,1.9,f,r,u\n",
         encoding="utf-8")
     assert [x.expected_sign for x in load_log_events(p, 2)] == [-1, 0]
-
-
-def test_near_duplicate_epochs_keep_the_later_set():
-    t = np.array(["2024-01-01T00:00:00", "2024-01-01T00:00:00.4", "2024-01-01T08:00:00",
-                  "2024-01-01T08:00:59", "2024-01-01T16:00:00"], dtype="datetime64[us]")
-    a = np.array([7000.0, 7000.1, 7000.2, 7000.3, 7000.4])
-    s = ElementSeries(1, t, a, a, a, a, a, a)
-    out = drop_near_duplicates(s)
-    assert list(out.semi_major_axis_km) == [7000.1, 7000.3, 7000.4]
-    assert len(out.epochs) == len(out.bstar) == 3

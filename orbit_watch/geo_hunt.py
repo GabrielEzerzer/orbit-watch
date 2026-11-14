@@ -31,7 +31,7 @@ import numpy as np
 from orbit_watch.detect import _days, pick, score_gaps
 from orbit_watch.elements import parse_tle
 from orbit_watch.geo import drift_rate, longitudes
-from orbit_watch.series import to_series
+from orbit_watch.series import distinct_epochs, to_series
 
 K = 4  # epochs each side of a gap; GEO TLEs come about twice a day
 MAX_SPAN_DAYS = 4.0
@@ -42,10 +42,8 @@ STEP_SIGMAS = 10.0
 
 
 def hunt(path: Path) -> dict:
-    records = parse_tle(path.read_text(encoding="utf-8"))
-    by_epoch = {r.epoch: r for r in records}  # same de-duplication as to_series: later wins
-    recs = [by_epoch[e] for e in sorted(by_epoch)]
-    (series,) = to_series(recs).values()
+    (recs,) = distinct_epochs(parse_tle(path.read_text(encoding="utf-8"))).values()
+    (series,) = to_series(recs).values()  # the same records, so lon lines up with series
     lon = longitudes(recs)
     t = _days(series.epochs)
     scores = score_gaps(series, k=K, max_span_days=MAX_SPAN_DAYS, max_gap_days=MAX_GAP_DAYS)

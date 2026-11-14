@@ -207,15 +207,21 @@ def _iso(t: np.datetime64) -> str:
 def choose_setting(events, scores_by_k, ev_in, det_in):
     """Sweep the grid scored on one period; ``det_in(dets)`` gives that period's detection mask.
 
+    Only the period's events and detections are matched, so a detection outside the period can
+    never take an event inside it, nor an event outside it (a label the choice must not see)
+    a detection inside it.
+
     Returns the setting with the highest F1 (ties to the stricter setting) and the whole sweep.
     """
+    events = [e for e, keep in zip(events, ev_in) if keep]
     sweep = []
     for k, sc in scores_by_k.items():
         cover = covered(events, sc)
         for z in Z_GRID:
             for s in STEP_GRID_M:
                 dets = pick(sc, z, s)
-                res, _, _ = evaluate(events, cover, dets, ev_in, det_in(dets))
+                dets = [d for d, keep in zip(dets, det_in(dets)) if keep]
+                res, _, _ = evaluate(events, cover, dets, [True] * len(events), [True] * len(dets))
                 sweep.append({"k": k, "z_min": z, "step_min_m": s, "f1": round(_f1(res), 4),
                               "precision": res["precision"], "recall": res["recall"]})
     best = max(sweep, key=lambda r: (r["f1"], r["z_min"], r["step_min_m"], -r["k"]))
