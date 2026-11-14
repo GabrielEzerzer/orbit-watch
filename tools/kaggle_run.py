@@ -4,7 +4,7 @@
                                [-- <command...>]
                                                                     (default: pytest -q)
 
-The committed tree (``git archive HEAD``) is embedded in a private Kaggle script kernel with its
+The committed tree (``git archive HEAD``, without ``findings/``) is embedded in a private Kaggle script kernel with its
 commit SHA. On Kaggle the kernel unpacks it, runs ``pip install -e .[dev]`` and the command, and
 writes COMMIT.txt, run.log (stdout and stderr together), exit_code.txt and anything the command
 put under /kaggle/working/out. This script waits for the kernel, downloads those files to
@@ -40,6 +40,8 @@ POLL_SECONDS = 30
 # it an argument if a job ever needs a different one.
 COMMAND_TIMEOUT_SECONDS = 11 * 3600
 WAIT_LIMIT_SECONDS = 13 * 3600
+# findings/ holds result plots and tables, not code; leaving it out keeps the kernel under Kaggle's ~1 MB limit.
+ARCHIVE_PATHSPEC = (".", ":(exclude)findings")
 ACTIVE = {"queued", "running"}
 TERMINAL = {"complete", "error", "cancelacknowledged"}
 
@@ -206,7 +208,8 @@ def main() -> int:
         path = (REPO / p).resolve()
         attach[path.relative_to(REPO).as_posix()] = path.read_bytes()
     script, metadata = build_kernel(
-        git("archive", "--format=tar.gz", "HEAD"), sha, command, args.slug, attach, args.dataset
+        git("archive", "--format=tar.gz", "HEAD", "--", *ARCHIVE_PATHSPEC), sha, command, args.slug, attach,
+        args.dataset,
     )
 
     base = REPO / "data" / "kaggle" / args.slug
