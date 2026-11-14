@@ -45,9 +45,7 @@ def _with_checksum(line: str) -> str:
 def test_blank_eccentricity_is_rejected_not_read_as_zero():
     blank = _with_checksum(ISS_L2[:26] + " " * 7 + ISS_L2[33:])
     with pytest.raises(ValueError, match="eccentricity"):
-        parse_tle(f"{ISS_L1}
-{blank}
-")
+        parse_tle(f"{ISS_L1}\n{blank}\n")
 
 
 def test_catalog_number_mismatch_is_rejected():
