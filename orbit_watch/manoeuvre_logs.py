@@ -31,16 +31,20 @@ Delta-v. The repository does not say where the lines come from, and the time zon
 the lines say ``CST`` (China Standard Time is UTC+8), while the repository's README calls its
 processed timestamps UTC and its YAML files keep the same clock times. Neither reading is
 assumed: ``start_utc`` is the start read as UTC+8 and ``end_utc`` the end read as UTC, a window
-that holds the manoeuvre under either reading. The clock times are kept verbatim in
+of the logged duration plus 8 h that holds the manoeuvre under either reading. The clock times are kept verbatim in
 ``source_start`` and ``source_end``. ``delta_a_est_m`` is empty.
 
 ``delta_a_est_m`` is an estimate, not a source value: the Gauss relation for a circular orbit,
-2 * Delta-v_along / n, with n from the satellite's nominal semi-major axis in ``SOURCES``. For
-QZSS it assumes DVX is the along-track component, which the source does not confirm.
+2 * Delta-v_along / n, with n from the satellite's nominal semi-major axis in ``SOURCES``
+(the median of ``ElementSet.semi_major_axis_km``, SGP4's Brouwer mean semi-major axis, over the
+log span; not Space-Track's ``SEMIMAJOR_AXIS`` field, which is (mu / n_Kozai^2)^(1/3) and sits
+1.5-3 km higher in LEO). For QZSS it assumes DVX is the along-track component, which the
+source does not confirm.
 """
 
-# shortcut: nominal semi-major axes are medians of each object's Space-Track TLEs over its log
-# span (2021-2025 only for the objects added with splits.json; one constant per satellite); SWOT
+# shortcut: nominal semi-major axes are medians of ElementSet.semi_major_axis_km (SGP4 Brouwer
+# mean a, from each Space-Track TLE's mean motion) over the object's log span (2021-2025 only
+# for the objects added with splits.json; one constant per satellite); SWOT
 # changed orbit by ~35 km in 2023, a 2% error in its early estimates, and the IGSO orbits are
 # eccentric (e ~ 0.075). Use the TLE nearest each burn if estimates are ever compared tightly.
 
@@ -68,7 +72,7 @@ class Source:
     satellite: str
     norad_id: int
     revision: date  # IDS: file date in the listing; QZSS: date on the index page; Fengyun: commit
-    nominal_a_km: float  # median Space-Track TLE semi-major axis over the log span (0: no Delta-v)
+    nominal_a_km: float  # median ElementSet.semi_major_axis_km over the log span (0: no Delta-v)
     cospar_id: str = ""  # Fengyun only: the international designator the source lines carry
 
     @property

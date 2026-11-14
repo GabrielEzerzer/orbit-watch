@@ -68,12 +68,16 @@ QZS1R = """#+SATELLITE/MANEUVER
 #-SATELLITE/MANEUVER
 """
 
-# Lines copied verbatim from manFY4A.txt.fy (dpshorten/TLE_observation_benchmark_dataset), out of
-# time order as in the file.
-FY4A = """GEO-EW-STATION-KEEPING 2016-077A "2021-03-11T17:16:00 CST" "2021-03-11T17:44:00 CST"
-GEO-NS-STATION-KEEPING 2016-077A "2021-03-18T18:00:00 CST" "2021-03-18T23:00:00 CST"
+# Lines 13-15 of manFY4A.txt.fy (dpshorten/TLE_observation_benchmark_dataset), verbatim and in
+# file order, which is newest first.
+FY4A = """GEO-NS-STATION-KEEPING 2016-077A "2021-03-18T18:00:00 CST" "2021-03-18T23:00:00 CST"
+GEO-EW-STATION-KEEPING 2016-077A "2021-03-11T17:16:00 CST" "2021-03-11T17:44:00 CST"
 GEO-EW-STATION-KEEPING 2016-077A "2021-02-09T17:16:00 CST" "2021-02-09T17:44:00 CST"
-GEO-EW-STATION-KEEPING 2016-077A "2021-02-09T17:16:00 CST" "2021-02-09T17:44:00 CST"
+"""
+
+# Lines 32-33 of manFY2F.txt.fy, verbatim: the one line the source repeats.
+FY2F_REPEATED = """GEO-EW-STATION-KEEPING 2012-002A "2017-09-05T16:30:00 CST" "2017-09-05T17:30:00 CST"
+GEO-EW-STATION-KEEPING 2012-002A "2017-09-05T16:30:00 CST" "2017-09-05T17:30:00 CST"
 """
 
 FY4A_SRC = Source("manFY4A.txt.fy", "Fengyun-4A", 41882, date(2022, 11, 22), 0.0, "2016-077A")
@@ -90,7 +94,7 @@ def test_qzss_igso_layout_has_no_ns_ew():
 
 def test_fengyun_window_covers_both_time_zone_readings_and_sorts():
     rows, dropped = parse_fengyun(FY4A, FY4A_SRC)
-    assert dropped == {"duplicate_rows": 1, "kept": 3, "source_rows": 4}
+    assert dropped == {"duplicate_rows": 0, "kept": 3, "source_rows": 3}
     assert [r["kind"] for r in rows] == ["EW", "EW", "NS"]
     first = rows[0]
     assert first["event_id"] == "Fengyun-4A-001"
@@ -99,6 +103,13 @@ def test_fengyun_window_covers_both_time_zone_readings_and_sorts():
     assert first["source_start"] == "2021-02-09T17:16:00 CST"
     assert first["delta_a_est_m"] == ""
     assert FY4A_SRC.url.endswith("/raw_data/manoeuvres/manFY4A.txt.fy")
+
+
+def test_fengyun_repeated_line_is_kept_once():
+    src = Source("manFY2F.txt.fy", "Fengyun-2F", 38049, date(2022, 11, 22), 0.0, "2012-002A")
+    rows, dropped = parse_fengyun(FY2F_REPEATED, src)
+    assert dropped == {"duplicate_rows": 1, "kept": 1, "source_rows": 2}
+    assert rows[0]["start_utc"] == "2017-09-05T08:30:00Z"
 
 
 def test_fengyun_rejects_a_line_for_another_satellite():
