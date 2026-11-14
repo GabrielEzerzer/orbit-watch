@@ -201,18 +201,26 @@ def _sha256(path: Path) -> str:
 
 
 def build(
-    source: str, paths: list[Path], start: datetime = START, end: datetime = END
+    source: str, paths: list[Path], start: datetime = START, end: datetime = END, also: Iterable[int] = ()
 ) -> dict[str, str]:
-    """Output file name -> contents: ``<norad>.tle`` per selected object and ``manifest.json``."""
-    selected, counts = select(paths, start, end)
+    """Output file name -> contents: ``<norad>.tle`` per selected object and ``manifest.json``.
+
+    ``also`` adds objects outside the rule (e.g. LEO calibration satellites); each object's
+    ``by_rule`` says whether the rule selected it.
+    """
+    by_rule, counts = select(paths, start, end)
+    selected = by_rule | set(also)
     histories = collect(paths, selected, start, end)
     files: dict[str, str] = {}
     objects = {}
     for norad in sorted(histories):
         history = histories[norad]
+        if not history.lines:
+            continue
         epochs = sorted(history.lines)
         files[f"{norad}.tle"] = "".join(f"{a}\n{b}\n" for a, b in (history.lines[e] for e in epochs))
         objects[str(norad)] = {
+            "by_rule": norad in by_rule,
             "names": history.names,
             "tle_count": len(epochs),
             "in_region_count": len(history.in_region),
@@ -227,6 +235,7 @@ def build(
         "source": source,
         "period": {"start": _iso(start), "end_exclusive": _iso(end)},
         "rule": RULE,
+        "also": sorted(set(also)),
         "bundles": [
             {
                 "name": path.name,
@@ -279,6 +288,7 @@ def main(argv: list[str] | None = None) -> int:
     build_cmd.add_argument("--source", required=True, help="where the bundles came from (a URL), for the manifest")
     build_cmd.add_argument("--bundle", required=True, action="append", help="a bundle file or recursive glob (repeatable)")
     build_cmd.add_argument("--out", required=True, type=Path, help="output directory, or a .zip file")
+    build_cmd.add_argument("--also", type=int, action="append", default=[], help="NORAD id to add outside the rule (repeatable)")
     satcat_cmd = commands.add_parser("satcat", help="add SATCAT entries to an output directory's manifest")
     satcat_cmd.add_argument("--out", required=True, type=Path, help="the output directory of build")
     args = parser.parse_args(argv)
@@ -287,7 +297,7 @@ def main(argv: list[str] | None = None) -> int:
         paths = bundle_paths(args.bundle)
         for path in paths:
             print(f"bundle {path} ({path.stat().st_size} bytes)", flush=True)
-        files = build(args.source, paths)
+        files = build(args.source, paths, also=args.also)
         write(files, args.out)
         manifest = json.loads(files["manifest.json"])
         print(json.dumps({k: v for k, v in manifest.items() if k != "objects"}, indent=2))

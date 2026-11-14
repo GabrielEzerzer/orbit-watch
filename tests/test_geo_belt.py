@@ -80,6 +80,15 @@ def test_real_bundle_selects_geo_objects_and_drops_the_iss(tmp_path, sample):
     assert files["37951.tle"] == "".join(sample.read_text().splitlines(keepends=True)[:4])
 
 
+def test_also_adds_objects_outside_the_rule_and_skips_absent_ones(sample):
+    files = build("mock", [sample], also=[25544, 99999])
+    manifest = json.loads(files["manifest.json"])
+    assert set(manifest["objects"]) == {"25544", "37951", "40258", "55841"}
+    assert manifest["objects"]["25544"]["by_rule"] is False
+    assert manifest["objects"]["37951"]["by_rule"] is True
+    assert manifest["also"] == [25544, 99999] and "99999.tle" not in files
+
+
 def test_period_end_is_exclusive(tmp_path, sample):
     end = datetime(2023, 3, 13, 17, 43, 56, 444736, tzinfo=timezone.utc)  # 55841's only epoch
     manifest = json.loads(build("mock", [sample], end=end)["manifest.json"])
