@@ -170,9 +170,9 @@ python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetra
 | GEO (QZS-3, QZS-6) | P 179/253 = 0.71, R 179/232 = 0.77 (chance recall about 0.10) | P 70/92, R 70/93 (k=4, z>=3, step>=1000 m) |
 | LEO (4 satellites) | P 36/42 = 0.86, R 36/445 = 0.08 | P 162/260, R 162/199 (k=6, z>=40, step>=0) |
 
-- **GEO:** the ISS setting carries over. QZS-3's east-west burns (median about 3 km in a) are
-  found 135 times out of 144 in the 2-5 km bin.
-- **LEO:** the ISS setting finds nearly every burn above 200 m and none of the routine ones,
+- **GEO:** the ISS setting carries over. QZS-3 events in the 2-5 km bin (nearly all east-west burns, median about 3 km in a) are
+  found 135 times out of 144.
+- **LEO:** the ISS setting finds about 80% of burns above 200 m (35 of 44 covered) and none of the routine ones,
   which are mostly 10-50 m. LEO TLE scatter is about 0.1 m, so a tune with no step floor finds
   most of them.
 - **Not a blind holdout.** Four method changes (a 2-day late tolerance for element sets that lag
