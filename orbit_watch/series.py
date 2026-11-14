@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from orbit_watch.elements import ElementSet
+from orbit_watch.truth import require_not_holdout
 
 
 @dataclass(frozen=True)
@@ -30,15 +31,20 @@ class ElementSeries:
         return len(self.epochs)
 
 
-def to_series(records: Iterable[ElementSet]) -> dict[int, ElementSeries]:
+def to_series(records: Iterable[ElementSet], *, final: bool = False) -> dict[int, ElementSeries]:
     """Group records by NORAD id, sort by epoch and drop duplicate epochs.
 
     When two records for one object share an epoch, the one that comes later in
     ``records`` wins, so a later source can restate an earlier one.
+
+    Raises ``truth.HoldoutError`` if any object is in the holdout of
+    ``groundtruth/splits.json``, unless ``final``; objects the file does not list pass.
     """
     by_object: dict[int, dict] = {}
     for rec in records:
         by_object.setdefault(rec.norad_id, {})[rec.epoch] = rec
+    for norad_id in by_object:
+        require_not_holdout(norad_id, final=final)
     out = {}
     for norad_id, by_epoch in by_object.items():
         recs = [by_epoch[e] for e in sorted(by_epoch)]
