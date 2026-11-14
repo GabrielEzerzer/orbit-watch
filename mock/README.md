@@ -55,3 +55,12 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
   Space-Track adds that the TLE cannot supply (`GP_ID`, `CREATION_DATE`, `FILE` and the like)
   are left out rather than invented. The field names follow CelesTrak's GP format, which uses the
   same OMM keyword names; Space-Track's own field list sits behind its login and was not checked.
+
+## `geo/`
+
+- `bundle-sample.txt`: five real TLEs laid out like a full-catalogue yearly bundle (2-line, no
+  names), copied byte for byte from `data/archive/` (the OndroNR/tle-archive extract of CelesTrak's
+  `active.txt`): the first two Luch 5A (37951) sets, the first ISS (25544), Luch-5X / Olymp-K 2
+  (55841) and Luch / Olymp-K 1 (40258) sets of 2021 (2023 for 55841). The rule's edge cases (GTO,
+  a 24-hour orbit with e > 0.2, an object that arrives) are synthetic TLE pairs built inside
+  `tests/test_geo_belt.py`, not files here.

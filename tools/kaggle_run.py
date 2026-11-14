@@ -1,6 +1,7 @@
 """Run a command on Kaggle CPU against the exact commit at HEAD, and fetch what it wrote.
 
-    python tools/kaggle_run.py [--slug ow-suite] [--attach PATH ...] [-- <command...>]
+    python tools/kaggle_run.py [--slug ow-suite] [--attach PATH ...] [--dataset OWNER/SLUG ...]
+                               [-- <command...>]
                                                                     (default: pytest -q)
 
 The committed tree (``git archive HEAD``) is embedded in a private Kaggle script kernel with its
@@ -13,6 +14,9 @@ exits with the command's exit code.
 ``--attach PATH`` (repeatable) embeds a local file that is not committed, such as git-ignored data,
 at the same relative path next to the source. The kernel writes ATTACHED.txt with the sha256 of
 each attached file as it unpacked it, and this script checks those hashes against the local files.
+
+``--dataset OWNER/SLUG`` (repeatable) mounts a Kaggle dataset read-only under /kaggle/input, so a
+job can read data too big to attach.
 """
 
 from __future__ import annotations
@@ -105,13 +109,23 @@ if __name__ == "__main__":
 
 
 def build_kernel(
-    archive: bytes, sha: str, command: list[str], slug: str, attach: dict[str, bytes] | None = None
+    archive: bytes,
+    sha: str,
+    command: list[str],
+    slug: str,
+    attach: dict[str, bytes] | None = None,
+    datasets: list[str] | None = None,
 ) -> tuple[str, dict]:
     """The kernel script and its kernel-metadata.json for a gzipped tar of the tree at ``sha``.
 
-    ``attach`` maps repo-relative POSIX paths to the contents of extra files to place there.
+    ``attach`` maps repo-relative POSIX paths to the contents of extra files to place there;
+    ``datasets`` are Kaggle ``owner/slug`` datasets to mount under /kaggle/input.
     """
     attach = attach or {}
+    datasets = datasets or []
+    for ref in datasets:
+        if not re.fullmatch(r"[A-Za-z0-9_-]+/[a-z0-9][a-z0-9-]*", ref):
+            raise ValueError(f"dataset must be OWNER/SLUG: {ref!r}")
     for rel in attach:
         parts = rel.split("/")
         if rel.startswith("/") or "\\" in rel or ":" in rel or ".." in parts or "" in parts:
@@ -145,7 +159,7 @@ def build_kernel(
         "enable_gpu": False,
         "enable_tpu": False,
         "enable_internet": True,  # pip install needs PyPI
-        "dataset_sources": [],
+        "dataset_sources": list(datasets),
         "competition_sources": [],
         "kernel_sources": [],
         "model_sources": [],
@@ -178,6 +192,8 @@ def main() -> int:
     parser.add_argument("--slug", default="ow-suite")
     parser.add_argument("--attach", action="append", default=[], metavar="PATH",
                         help="an uncommitted file to place at the same relative path (repeatable)")
+    parser.add_argument("--dataset", action="append", default=[], metavar="OWNER/SLUG",
+                        help="a Kaggle dataset to mount under /kaggle/input (repeatable)")
     parser.add_argument("command", nargs="*", help="the command to run on Kaggle (after --)")
     args = parser.parse_args()
     command = args.command or ["pytest", "-q"]
@@ -190,7 +206,7 @@ def main() -> int:
         path = (REPO / p).resolve()
         attach[path.relative_to(REPO).as_posix()] = path.read_bytes()
     script, metadata = build_kernel(
-        git("archive", "--format=tar.gz", "HEAD"), sha, command, args.slug, attach
+        git("archive", "--format=tar.gz", "HEAD"), sha, command, args.slug, attach, args.dataset
     )
 
     base = REPO / "data" / "kaggle" / args.slug
