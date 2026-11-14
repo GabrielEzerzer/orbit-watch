@@ -171,7 +171,11 @@ def main() -> int:
 
     ref = metadata["id"]
     print(f"pushing {sha[:12]} to {ref}: {' '.join(command)}")
-    print(kaggle("kernels", "push", "-p", str(push)).strip())
+    pushed = kaggle("kernels", "push", "-p", str(push)).strip()
+    print(pushed)
+    # The CLI exits 0 on some refusals, e.g. "Kernel push error: Maximum batch CPU session count".
+    if "successfully pushed" not in pushed:
+        sys.exit("kaggle kernels push did not report a successful push; nothing was run")
     print(f"https://www.kaggle.com/code/{ref}")
 
     # Right after a push the status can still be the previous version's; only a terminal status
