@@ -181,6 +181,53 @@ def _iso(t: np.datetime64) -> str:
     return str(t.astype("datetime64[s]")) + "Z"
 
 
+def choose_setting(events, scores_by_k, ev_in, det_in):
+    """Sweep the grid scored on one period; ``det_in(dets)`` gives that period's detection mask.
+
+    Returns the setting with the highest F1 (ties to the stricter setting) and the whole sweep.
+    """
+    sweep = []
+    for k, sc in scores_by_k.items():
+        cover = covered(events, sc)
+        for z in Z_GRID:
+            for s in STEP_GRID_M:
+                dets = pick(sc, z, s)
+                res, _, _ = evaluate(events, cover, dets, ev_in, det_in(dets))
+                sweep.append({"k": k, "z_min": z, "step_min_m": s, "f1": round(_f1(res), 4),
+                              "precision": res["precision"], "recall": res["recall"]})
+    best = max(sweep, key=lambda r: (r["f1"], r["z_min"], r["step_min_m"], -r["k"]))
+    return best, sweep
+
+
+DETECTION_HEADER = ["start_utc", "end_utc", "period", "step_m", "z", "sign", "matched_event_date",
+                    "matched_event_type"]
+EVENT_HEADER = ["date_utc", "time_utc", "type", "category", "delta_v_m_s", "period", "covered",
+                "matched", "det_start_utc", "det_end_utc", "det_step_m", "det_z"]
+
+
+def detection_rows(events, dets, det_period, m_main, m_unpl):
+    det_event = {d: events[e] for e, d in {**m_main, **m_unpl}.items()}
+    for i, d in enumerate(dets):
+        ev = det_event.get(i)
+        yield [_iso(d.start), _iso(d.end), det_period[i], round(d.step_m, 1), round(d.z, 2), d.sign,
+               ev.date_utc if ev else "", ev.type if ev else ""]
+
+
+def event_rows(events, ev_period, cover, dets, m_main, m_unpl):
+    for i, e in enumerate(events):
+        d = dets[m_main.get(i, m_unpl.get(i))] if (i in m_main or i in m_unpl) else None
+        yield [e.date_utc, e.time_utc, e.type, e.category, e.delta_v_m_s, ev_period[i], cover[i],
+               d is not None, _iso(d.start) if d else "", _iso(d.end) if d else "",
+               round(d.step_m, 1) if d else "", round(d.z, 2) if d else ""]
+
+
+def write_csv(path: Path, header, rows) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        w.writerows(rows)
+
+
 def run(tle: Path, truth: Path, out: Path) -> dict:
     series = to_series(parse_tle(tle.read_text(encoding="utf-8")))[ISS]
     first, last = series.epochs[0], series.epochs[-1]
@@ -193,17 +240,8 @@ def run(tle: Path, truth: Path, out: Path) -> dict:
 
     # Tuning: 2021-2022 only.
     scores_by_k = {k: score_gaps(series, k=k) for k in K_GRID}
-    sweep = []
-    for k, sc in scores_by_k.items():
-        cover = covered(events, sc)
-        for z in Z_GRID:
-            for s in STEP_GRID_M:
-                dets = pick(sc, z, s)
-                h = det_hold(dets)
-                res, _, _ = evaluate(events, cover, dets, [not x for x in ev_hold], [not x for x in h])
-                sweep.append({"k": k, "z_min": z, "step_min_m": s, "f1": round(_f1(res), 4),
-                              "precision": res["precision"], "recall": res["recall"]})
-    best = max(sweep, key=lambda r: (r["f1"], r["z_min"], r["step_min_m"], -r["k"]))
+    best, sweep = choose_setting(events, scores_by_k, [not x for x in ev_hold],
+                                 lambda dets: [not x for x in det_hold(dets)])
     k, z_min, step_min = best["k"], best["z_min"], best["step_min_m"]
 
     # Frozen setting on both periods.
@@ -215,24 +253,10 @@ def run(tle: Path, truth: Path, out: Path) -> dict:
     hold, _, _ = evaluate(events, cover, dets, ev_hold, h)
 
     out.mkdir(parents=True, exist_ok=True)
-    det_event = {d: events[e] for e, d in {**m_main, **m_unpl}.items()}
-    with open(out / "detections.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["start_utc", "end_utc", "period", "step_m", "z", "sign", "matched_event_date", "matched_event_type"])
-        for i, d in enumerate(dets):
-            ev = det_event.get(i)
-            w.writerow([_iso(d.start), _iso(d.end), "2023" if h[i] else "2021-2022", round(d.step_m, 1),
-                        round(d.z, 2), d.sign, ev.date_utc if ev else "", ev.type if ev else ""])
-    with open(out / "events_scored.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["date_utc", "time_utc", "type", "category", "delta_v_m_s", "period", "covered",
-                    "matched", "det_start_utc", "det_end_utc", "det_step_m", "det_z"])
-        for i, e in enumerate(events):
-            d = dets[m_main.get(i, m_unpl.get(i))] if (i in m_main or i in m_unpl) else None
-            w.writerow([e.date_utc, e.time_utc, e.type, e.category, e.delta_v_m_s,
-                        "2023" if ev_hold[i] else "2021-2022", cover[i], d is not None,
-                        _iso(d.start) if d else "", _iso(d.end) if d else "",
-                        round(d.step_m, 1) if d else "", round(d.z, 2) if d else ""])
+    write_csv(out / "detections.csv", DETECTION_HEADER,
+              detection_rows(events, dets, ["2023" if x else "2021-2022" for x in h], m_main, m_unpl))
+    write_csv(out / "events_scored.csv", EVENT_HEADER,
+              event_rows(events, ["2023" if x else "2021-2022" for x in ev_hold], cover, dets, m_main, m_unpl))
 
     matched = set(m_main.values()) | set(m_unpl.values())
     report = {
@@ -264,7 +288,7 @@ def run(tle: Path, truth: Path, out: Path) -> dict:
     return report
 
 
-def plot(series, events, cover, m_main, m_unpl, dets, path: Path) -> None:
+def plot(series, events, cover, m_main, m_unpl, dets, path: Path, years=(2021, 2022, 2023)) -> None:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -273,8 +297,8 @@ def plot(series, events, cover, m_main, m_unpl, dets, path: Path) -> None:
     t = series.epochs.astype("datetime64[s]").astype(datetime)
     a = series.semi_major_axis_km
     matched = set(m_main.values()) | set(m_unpl.values())
-    fig, axes = plt.subplots(3, 1, figsize=(18, 13))
-    for ax, yr in zip(axes, (2021, 2022, 2023)):
+    fig, axes = plt.subplots(len(years), 1, figsize=(18, 13 * len(years) / 3))
+    for ax, yr in zip(axes, years):
         sel = np.array([x.year == yr for x in t])
         ax.plot(np.array(t)[sel], a[sel], ".", ms=2, color="0.3", label="TLE mean semi-major axis")
         for i, e in enumerate(events):

@@ -1,0 +1,833 @@
+{
+  "what": "Synthetic injection-recovery test of the ISS step detector. Every step counted under recall was injected in memory; none is a real event.",
+  "input": {
+    "file": "gp_history-25544-2021-01-01--2026-01-01.json",
+    "element_sets": 9855,
+    "distinct_epochs": 9152,
+    "first_epoch": "2021-01-01T05:19:37Z",
+    "last_epoch": "2025-12-31T18:12:28Z"
+  },
+  "frozen_setting": {
+    "k": 4,
+    "z_min": 12.0,
+    "step_min_m": 200.0,
+    "nms_days": 1.0
+  },
+  "looser_settings": [
+    "|z|>=6, |step|>=0 m",
+    "|z|>=6, |step|>=50 m",
+    "|z|>=6, |step|>=100 m",
+    "|z|>=8, |step|>=0 m",
+    "|z|>=8, |step|>=50 m",
+    "|z|>=8, |step|>=100 m"
+  ],
+  "frozen_detections_on_full_series": 90,
+  "groundtruth_events": 73,
+  "injected_step_sizes_m": [
+    25,
+    50,
+    100,
+    150,
+    200,
+    300,
+    500,
+    1000,
+    2000
+  ],
+  "trials_per_size_and_sign": 300,
+  "seed": 20261114,
+  "recovery_tolerance_days": 0.5,
+  "cadences": {
+    "native": {
+      "realisations": 47,
+      "distinct_injection_gaps": 3317,
+      "epochs_mean": 9152.0,
+      "scored_gaps_mean": 9121.0,
+      "quiet_scored_gaps_mean": 5709.0,
+      "quiet_margin_days": 3.0,
+      "spacing_days": 10.0,
+      "guards": {
+        "max_span_days": 3.0,
+        "max_gap_days": 2.0
+      },
+      "noise_sigma_m_median": 3.35
+    },
+    "about 1 per day": {
+      "realisations": 53,
+      "distinct_injection_gaps": 2907,
+      "epochs_mean": 1820.0,
+      "scored_gaps_mean": 1761.6,
+      "quiet_scored_gaps_mean": 919.8,
+      "quiet_margin_days": 3.5,
+      "spacing_days": 10.0,
+      "guards": {
+        "max_span_days": 3.5,
+        "max_gap_days": 2.0
+      },
+      "noise_sigma_m_median": 10.95
+    },
+    "about 1 per 2 days": {
+      "realisations": 161,
+      "distinct_injection_gaps": 1457,
+      "epochs_mean": 912.8,
+      "scored_gaps_mean": 903.3,
+      "quiet_scored_gaps_mean": 169.3,
+      "quiet_margin_days": 7.0,
+      "spacing_days": 18.0,
+      "guards": {
+        "max_span_days": 7.0,
+        "max_gap_days": 4.0
+      },
+      "noise_sigma_m_median": 28.7
+    }
+  },
+  "false_alarms_native": {
+    "truth_quiet": {
+      "exposure_years": 3.413,
+      "by_setting": {
+        "|z|>=12, |step|>=200 m (frozen)": {
+          "detections": 18,
+          "per_year": 5.27
+        },
+        "|z|>=6, |step|>=0 m": {
+          "detections": 354,
+          "per_year": 103.72
+        },
+        "|z|>=6, |step|>=50 m": {
+          "detections": 86,
+          "per_year": 25.2
+        },
+        "|z|>=6, |step|>=100 m": {
+          "detections": 41,
+          "per_year": 12.01
+        },
+        "|z|>=8, |step|>=0 m": {
+          "detections": 245,
+          "per_year": 71.78
+        },
+        "|z|>=8, |step|>=50 m": {
+          "detections": 73,
+          "per_year": 21.39
+        },
+        "|z|>=8, |step|>=100 m": {
+          "detections": 37,
+          "per_year": 10.84
+        }
+      }
+    },
+    "fully_quiet": {
+      "exposure_years": 3.096,
+      "by_setting": {
+        "|z|>=12, |step|>=200 m (frozen)": {
+          "detections": 0,
+          "per_year": 0.0,
+          "chance_recovery": 0.0
+        },
+        "|z|>=6, |step|>=0 m": {
+          "detections": 306,
+          "per_year": 98.85,
+          "chance_recovery": 0.1936
+        },
+        "|z|>=6, |step|>=50 m": {
+          "detections": 58,
+          "per_year": 18.74,
+          "chance_recovery": 0.0394
+        },
+        "|z|>=6, |step|>=100 m": {
+          "detections": 18,
+          "per_year": 5.81,
+          "chance_recovery": 0.0116
+        },
+        "|z|>=8, |step|>=0 m": {
+          "detections": 204,
+          "per_year": 65.9,
+          "chance_recovery": 0.1316
+        },
+        "|z|>=8, |step|>=50 m": {
+          "detections": 46,
+          "per_year": 14.86,
+          "chance_recovery": 0.0319
+        },
+        "|z|>=8, |step|>=100 m": {
+          "detections": 15,
+          "per_year": 4.85,
+          "chance_recovery": 0.0095
+        }
+      }
+    }
+  },
+  "recall_both_signs": {
+    "native / |z|>=12, |step|>=200 m (frozen)": {
+      "25": {
+        "recall": 0.0,
+        "wilson95": [
+          0.0,
+          0.0064
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.0,
+        "wilson95": [
+          0.0,
+          0.0064
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.0017,
+        "wilson95": [
+          0.0003,
+          0.0094
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.0067,
+        "wilson95": [
+          0.0026,
+          0.017
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.5383,
+        "wilson95": [
+          0.4983,
+          0.5779
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.9733,
+        "wilson95": [
+          0.9571,
+          0.9835
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9983,
+        "wilson95": [
+          0.9906,
+          0.9997
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "native / |z|>=6, |step|>=0 m": {
+      "25": {
+        "recall": 0.74,
+        "wilson95": [
+          0.7035,
+          0.7735
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.8433,
+        "wilson95": [
+          0.8121,
+          0.8702
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.9433,
+        "wilson95": [
+          0.9219,
+          0.9592
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.9617,
+        "wilson95": [
+          0.9431,
+          0.9743
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.9783,
+        "wilson95": [
+          0.9633,
+          0.9873
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.9917,
+        "wilson95": [
+          0.9806,
+          0.9964
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9983,
+        "wilson95": [
+          0.9906,
+          0.9997
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "native / |z|>=6, |step|>=50 m": {
+      "25": {
+        "recall": 0.0617,
+        "wilson95": [
+          0.0451,
+          0.0838
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.5283,
+        "wilson95": [
+          0.4883,
+          0.568
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.9517,
+        "wilson95": [
+          0.9314,
+          0.9661
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.9667,
+        "wilson95": [
+          0.9491,
+          0.9783
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.9817,
+        "wilson95": [
+          0.9675,
+          0.9897
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.9917,
+        "wilson95": [
+          0.9806,
+          0.9964
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9983,
+        "wilson95": [
+          0.9906,
+          0.9997
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "native / |z|>=6, |step|>=100 m": {
+      "25": {
+        "recall": 0.015,
+        "wilson95": [
+          0.0079,
+          0.0283
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.02,
+        "wilson95": [
+          0.0115,
+          0.0346
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.495,
+        "wilson95": [
+          0.4552,
+          0.5349
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.9633,
+        "wilson95": [
+          0.9451,
+          0.9757
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.9833,
+        "wilson95": [
+          0.9696,
+          0.9909
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.9933,
+        "wilson95": [
+          0.983,
+          0.9974
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9983,
+        "wilson95": [
+          0.9906,
+          0.9997
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "native / |z|>=8, |step|>=0 m": {
+      "25": {
+        "recall": 0.6717,
+        "wilson95": [
+          0.6331,
+          0.708
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.8133,
+        "wilson95": [
+          0.7802,
+          0.8425
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.93,
+        "wilson95": [
+          0.9067,
+          0.9478
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.9483,
+        "wilson95": [
+          0.9276,
+          0.9634
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.9717,
+        "wilson95": [
+          0.9551,
+          0.9822
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.9917,
+        "wilson95": [
+          0.9806,
+          0.9964
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9967,
+        "wilson95": [
+          0.9879,
+          0.9991
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "native / |z|>=8, |step|>=50 m": {
+      "25": {
+        "recall": 0.05,
+        "wilson95": [
+          0.0352,
+          0.0705
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.4967,
+        "wilson95": [
+          0.4568,
+          0.5366
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.9283,
+        "wilson95": [
+          0.9049,
+          0.9464
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.9517,
+        "wilson95": [
+          0.9314,
+          0.9661
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.9733,
+        "wilson95": [
+          0.9571,
+          0.9835
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.9917,
+        "wilson95": [
+          0.9806,
+          0.9964
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9967,
+        "wilson95": [
+          0.9879,
+          0.9991
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "native / |z|>=8, |step|>=100 m": {
+      "25": {
+        "recall": 0.0083,
+        "wilson95": [
+          0.0036,
+          0.0194
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.0167,
+        "wilson95": [
+          0.0091,
+          0.0304
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.485,
+        "wilson95": [
+          0.4452,
+          0.525
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.9433,
+        "wilson95": [
+          0.9219,
+          0.9592
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.9767,
+        "wilson95": [
+          0.9612,
+          0.9861
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.9933,
+        "wilson95": [
+          0.983,
+          0.9974
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9967,
+        "wilson95": [
+          0.9879,
+          0.9991
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "about 1 per day / |z|>=12, |step|>=200 m (frozen)": {
+      "25": {
+        "recall": 0.0033,
+        "wilson95": [
+          0.0009,
+          0.0121
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.0,
+        "wilson95": [
+          0.0,
+          0.0064
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.0033,
+        "wilson95": [
+          0.0009,
+          0.0121
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.045,
+        "wilson95": [
+          0.0311,
+          0.0647
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.44,
+        "wilson95": [
+          0.4008,
+          0.48
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.93,
+        "wilson95": [
+          0.9067,
+          0.9478
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.98,
+        "wilson95": [
+          0.9654,
+          0.9885
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    },
+    "about 1 per 2 days / |z|>=12, |step|>=200 m (frozen)": {
+      "25": {
+        "recall": 0.0,
+        "wilson95": [
+          0.0,
+          0.0064
+        ],
+        "trials": 600
+      },
+      "50": {
+        "recall": 0.0067,
+        "wilson95": [
+          0.0026,
+          0.017
+        ],
+        "trials": 600
+      },
+      "100": {
+        "recall": 0.0167,
+        "wilson95": [
+          0.0091,
+          0.0304
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.0733,
+        "wilson95": [
+          0.0551,
+          0.097
+        ],
+        "trials": 600
+      },
+      "200": {
+        "recall": 0.3383,
+        "wilson95": [
+          0.3016,
+          0.3771
+        ],
+        "trials": 600
+      },
+      "300": {
+        "recall": 0.7233,
+        "wilson95": [
+          0.6862,
+          0.7576
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.8933,
+        "wilson95": [
+          0.8661,
+          0.9156
+        ],
+        "trials": 600
+      },
+      "1000": {
+        "recall": 0.9817,
+        "wilson95": [
+          0.9675,
+          0.9897
+        ],
+        "trials": 600
+      },
+      "2000": {
+        "recall": 1.0,
+        "wilson95": [
+          0.9936,
+          1.0
+        ],
+        "trials": 600
+      }
+    }
+  },
+  "limits": [
+    "A synthetic injection is a clean step; a real burn's transitional TLEs are not modelled, so recall is an upper bound for a real burn of the same size.",
+    "Thinned series keep the ISS's per-TLE scatter, so thinned recall is optimistic for objects that are tracked less often and fitted from fewer observations.",
+    "False-alarm rates are upper bounds: unannounced real burns count as detections.",
+    "Wilson intervals treat trials as independent. Trials of different sizes can share a gap (distinct_injection_gaps per cadence), so intervals are somewhat optimistic where that count is small next to the trial count."
+  ]
+}
