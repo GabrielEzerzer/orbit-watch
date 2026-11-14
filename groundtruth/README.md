@@ -11,6 +11,25 @@ How to read it:
 
 Sources: NASA's Space Station blog (nasa.gov/blogs/spacestation) and the ISS Daily Summary Reports (nasa.gov/blogs/stationreport), found through the nasa.gov WordPress API and a full-text scan of the 2021-2023 posts.
 
+## Roscosmos-reported ISS manoeuvres (`iss_roscosmos_manoeuvres.csv`)
+
+`iss_roscosmos_manoeuvres.csv` lists 14 ISS orbit corrections from 2021 to 2025 that Roscosmos reported as executed and that are not in `iss_manoeuvres.csv`: one deboost (2021-12-24), one debris avoidance (2023-03-14) and 12 reboosts. Every row has a clock time and a verbatim quote, in Russian with an English gloss in brackets. The file has the same columns as `iss_manoeuvres.csv` plus `source_time_zone`, and the scoring tools take both files together (`--truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv`). They refuse an event that appears in both, and none does: the closest pair across the two files is five days apart.
+
+How it was built:
+- The list was compiled without looking at any detector output or detection dates. Rows were chosen only by reading the sources and comparing them with `iss_manoeuvres.csv`.
+- The Roscosmos Telegram channel (`t.me/roscosmos_gk`) was read post by post through its public web archive, every post from December 2020 to the end of 2025. RIA Novosti articles found through the site's search, quarter by quarter, were used to cross-check posts and to add details. Where a row has two sources, `source_url` separates them with ` ; ` and `quote` separates their quotes with ` || `, as in `iss_manoeuvres.csv`.
+- Every quote fragment was checked by script against the fetched page text. Two quotes were also checked by hand against the live Telegram posts and match.
+- Source times are Moscow time (MSK = UTC+3; Russia has had no daylight-saving time since 2014), so `time_utc` is the MSK time minus 3 hours. A post that says "today" is dated by the post's own timestamp in MSK. The 2021-12-24 time comes from the RIA article, because the Telegram post gives none.
+- `vehicle` uses Roscosmos names (Progress MS-NN), and NASA numbers the same ships differently (Progress 79 = 79P). Rows therefore match NASA rows and detections on date and time, not on vehicle.
+- `type` is `deboost`, `debris_avoidance` or `reboost`. `deboost` must step down and the other two may step either way under calibrate.py's sign rule, the same as NASA's `debris avoidance`.
+
+Coverage confidence, from the research notes, which check the list against Roscosmos's own running counts of corrections:
+- **High, November 2021 to August 2024.** The counts match the combined list from November 2021 to December 2023 and from February to August 2024. One total in mid-2022 is one higher than the list, most likely because Roscosmos counted a Cygnus test burn that is already in the NASA file; the Progress-only count for the same months matches exactly.
+- **Medium elsewhere:** January to October 2021, September to December 2024, and 2025. No running count covers these months, so the list rests on Telegram and RIA alone.
+- **Thinnest, September to December 2025.** Only one Russian burn was found (2025-11-19, already in the NASA file). A burn reported only by TASS or roscosmos.ru could not be ruled out, because neither site could be fetched.
+
+The list is still a lower bound: TASS and roscosmos.ru were not readable, and Cygnus and Dragon burns reported outside NASA were not searched.
+
 ## IDS and QZSS manoeuvre logs (`ids_manoeuvres.csv`, `qzss_manoeuvres.csv`)
 
 Both files are built by `python -m orbit_watch.manoeuvre_logs --ids-dir <dir> --qzss-dir <dir> --out groundtruth` from the operators' published logs. The raw logs are not committed; each row names its source file, the file's revision date and its URL, so the CSVs can be rebuilt after downloading those files. The module docstring explains the parsing.

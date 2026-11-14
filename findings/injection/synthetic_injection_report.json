@@ -22,7 +22,11 @@
     "|z|>=8, |step|>=100 m"
   ],
   "frozen_detections_on_full_series": 90,
-  "groundtruth_events": 73,
+  "groundtruth_files": [
+    "groundtruth\\iss_manoeuvres.csv",
+    "groundtruth\\iss_roscosmos_manoeuvres.csv"
+  ],
+  "groundtruth_events": 87,
   "injected_step_sizes_m": [
     25,
     50,
@@ -39,11 +43,11 @@
   "recovery_tolerance_days": 0.5,
   "cadences": {
     "native": {
-      "realisations": 47,
-      "distinct_injection_gaps": 3317,
+      "realisations": 46,
+      "distinct_injection_gaps": 3278,
       "epochs_mean": 9152.0,
       "scored_gaps_mean": 9121.0,
-      "quiet_scored_gaps_mean": 5709.0,
+      "quiet_scored_gaps_mean": 5707.0,
       "quiet_margin_days": 3.0,
       "spacing_days": 10.0,
       "guards": {
@@ -54,10 +58,10 @@
     },
     "about 1 per day": {
       "realisations": 53,
-      "distinct_injection_gaps": 2907,
+      "distinct_injection_gaps": 2916,
       "epochs_mean": 1820.0,
       "scored_gaps_mean": 1761.6,
-      "quiet_scored_gaps_mean": 919.8,
+      "quiet_scored_gaps_mean": 919.7,
       "quiet_margin_days": 3.5,
       "spacing_days": 10.0,
       "guards": {
@@ -83,40 +87,40 @@
   },
   "false_alarms_native": {
     "truth_quiet": {
-      "exposure_years": 3.413,
+      "exposure_years": 3.178,
       "by_setting": {
         "|z|>=12, |step|>=200 m (frozen)": {
-          "detections": 18,
-          "per_year": 5.27
+          "detections": 3,
+          "per_year": 0.94
         },
         "|z|>=6, |step|>=0 m": {
-          "detections": 354,
-          "per_year": 103.72
+          "detections": 317,
+          "per_year": 99.74
         },
         "|z|>=6, |step|>=50 m": {
-          "detections": 86,
-          "per_year": 25.2
+          "detections": 65,
+          "per_year": 20.45
         },
         "|z|>=6, |step|>=100 m": {
-          "detections": 41,
-          "per_year": 12.01
+          "detections": 23,
+          "per_year": 7.24
         },
         "|z|>=8, |step|>=0 m": {
-          "detections": 245,
-          "per_year": 71.78
+          "detections": 213,
+          "per_year": 67.02
         },
         "|z|>=8, |step|>=50 m": {
-          "detections": 73,
-          "per_year": 21.39
+          "detections": 52,
+          "per_year": 16.36
         },
         "|z|>=8, |step|>=100 m": {
-          "detections": 37,
-          "per_year": 10.84
+          "detections": 19,
+          "per_year": 5.98
         }
       }
     },
     "fully_quiet": {
-      "exposure_years": 3.096,
+      "exposure_years": 3.093,
       "by_setting": {
         "|z|>=12, |step|>=200 m (frozen)": {
           "detections": 0,
@@ -125,27 +129,27 @@
         },
         "|z|>=6, |step|>=0 m": {
           "detections": 306,
-          "per_year": 98.85,
-          "chance_recovery": 0.1936
+          "per_year": 98.92,
+          "chance_recovery": 0.1937
         },
         "|z|>=6, |step|>=50 m": {
           "detections": 58,
-          "per_year": 18.74,
+          "per_year": 18.75,
           "chance_recovery": 0.0394
         },
         "|z|>=6, |step|>=100 m": {
           "detections": 18,
-          "per_year": 5.81,
+          "per_year": 5.82,
           "chance_recovery": 0.0116
         },
         "|z|>=8, |step|>=0 m": {
           "detections": 204,
-          "per_year": 65.9,
-          "chance_recovery": 0.1316
+          "per_year": 65.95,
+          "chance_recovery": 0.1317
         },
         "|z|>=8, |step|>=50 m": {
           "detections": 46,
-          "per_year": 14.86,
+          "per_year": 14.87,
           "chance_recovery": 0.0319
         },
         "|z|>=8, |step|>=100 m": {
@@ -175,42 +179,42 @@
         "trials": 600
       },
       "100": {
-        "recall": 0.0017,
+        "recall": 0.0033,
         "wilson95": [
-          0.0003,
-          0.0094
+          0.0009,
+          0.0121
         ],
         "trials": 600
       },
       "150": {
-        "recall": 0.0067,
+        "recall": 0.025,
         "wilson95": [
-          0.0026,
-          0.017
+          0.0152,
+          0.0408
         ],
         "trials": 600
       },
       "200": {
-        "recall": 0.5383,
+        "recall": 0.505,
         "wilson95": [
-          0.4983,
-          0.5779
+          0.4651,
+          0.5448
         ],
         "trials": 600
       },
       "300": {
-        "recall": 0.9733,
+        "recall": 0.9817,
         "wilson95": [
-          0.9571,
-          0.9835
+          0.9675,
+          0.9897
         ],
         "trials": 600
       },
       "500": {
-        "recall": 0.9983,
+        "recall": 1.0,
         "wilson95": [
-          0.9906,
-          0.9997
+          0.9936,
+          1.0
         ],
         "trials": 600
       },
@@ -233,58 +237,58 @@
     },
     "native / |z|>=6, |step|>=0 m": {
       "25": {
-        "recall": 0.74,
+        "recall": 0.7417,
         "wilson95": [
-          0.7035,
-          0.7735
+          0.7052,
+          0.7751
         ],
         "trials": 600
       },
       "50": {
-        "recall": 0.8433,
+        "recall": 0.8717,
         "wilson95": [
-          0.8121,
-          0.8702
+          0.8425,
+          0.8961
         ],
         "trials": 600
       },
       "100": {
-        "recall": 0.9433,
+        "recall": 0.9567,
         "wilson95": [
-          0.9219,
-          0.9592
+          0.9373,
+          0.9703
         ],
         "trials": 600
       },
       "150": {
-        "recall": 0.9617,
+        "recall": 0.975,
         "wilson95": [
-          0.9431,
-          0.9743
+          0.9592,
+          0.9848
         ],
         "trials": 600
       },
       "200": {
-        "recall": 0.9783,
+        "recall": 0.9817,
         "wilson95": [
-          0.9633,
-          0.9873
+          0.9675,
+          0.9897
         ],
         "trials": 600
       },
       "300": {
-        "recall": 0.9917,
-        "wilson95": [
-          0.9806,
-          0.9964
-        ],
-        "trials": 600
-      },
-      "500": {
         "recall": 0.9983,
         "wilson95": [
           0.9906,
           0.9997
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9967,
+        "wilson95": [
+          0.9879,
+          0.9991
         ],
         "trials": 600
       },
@@ -307,34 +311,34 @@
     },
     "native / |z|>=6, |step|>=50 m": {
       "25": {
-        "recall": 0.0617,
+        "recall": 0.0567,
         "wilson95": [
-          0.0451,
-          0.0838
+          0.0408,
+          0.0781
         ],
         "trials": 600
       },
       "50": {
-        "recall": 0.5283,
+        "recall": 0.5067,
         "wilson95": [
-          0.4883,
-          0.568
+          0.4667,
+          0.5465
         ],
         "trials": 600
       },
       "100": {
-        "recall": 0.9517,
+        "recall": 0.965,
         "wilson95": [
-          0.9314,
-          0.9661
+          0.9471,
+          0.977
         ],
         "trials": 600
       },
       "150": {
-        "recall": 0.9667,
+        "recall": 0.9733,
         "wilson95": [
-          0.9491,
-          0.9783
+          0.9571,
+          0.9835
         ],
         "trials": 600
       },
@@ -347,18 +351,18 @@
         "trials": 600
       },
       "300": {
-        "recall": 0.9917,
-        "wilson95": [
-          0.9806,
-          0.9964
-        ],
-        "trials": 600
-      },
-      "500": {
         "recall": 0.9983,
         "wilson95": [
           0.9906,
           0.9997
+        ],
+        "trials": 600
+      },
+      "500": {
+        "recall": 0.9967,
+        "wilson95": [
+          0.9879,
+          0.9991
         ],
         "trials": 600
       },
@@ -381,34 +385,34 @@
     },
     "native / |z|>=6, |step|>=100 m": {
       "25": {
-        "recall": 0.015,
+        "recall": 0.0033,
         "wilson95": [
-          0.0079,
-          0.0283
+          0.0009,
+          0.0121
         ],
         "trials": 600
       },
       "50": {
-        "recall": 0.02,
+        "recall": 0.0217,
         "wilson95": [
-          0.0115,
-          0.0346
+          0.0127,
+          0.0367
         ],
         "trials": 600
       },
       "100": {
-        "recall": 0.495,
+        "recall": 0.555,
         "wilson95": [
-          0.4552,
-          0.5349
+          0.515,
+          0.5943
         ],
         "trials": 600
       },
       "150": {
-        "recall": 0.9633,
+        "recall": 0.965,
         "wilson95": [
-          0.9451,
-          0.9757
+          0.9471,
+          0.977
         ],
         "trials": 600
       },
@@ -421,18 +425,18 @@
         "trials": 600
       },
       "300": {
-        "recall": 0.9933,
+        "recall": 1.0,
         "wilson95": [
-          0.983,
-          0.9974
+          0.9936,
+          1.0
         ],
         "trials": 600
       },
       "500": {
-        "recall": 0.9983,
+        "recall": 0.9967,
         "wilson95": [
-          0.9906,
-          0.9997
+          0.9879,
+          0.9991
         ],
         "trials": 600
       },
@@ -455,18 +459,18 @@
     },
     "native / |z|>=8, |step|>=0 m": {
       "25": {
-        "recall": 0.6717,
+        "recall": 0.6833,
         "wilson95": [
-          0.6331,
-          0.708
+          0.645,
+          0.7193
         ],
         "trials": 600
       },
       "50": {
-        "recall": 0.8133,
+        "recall": 0.8383,
         "wilson95": [
-          0.7802,
-          0.8425
+          0.8067,
+          0.8656
         ],
         "trials": 600
       },
@@ -479,26 +483,26 @@
         "trials": 600
       },
       "150": {
-        "recall": 0.9483,
+        "recall": 0.97,
         "wilson95": [
-          0.9276,
-          0.9634
+          0.9531,
+          0.9809
         ],
         "trials": 600
       },
       "200": {
-        "recall": 0.9717,
+        "recall": 0.9733,
         "wilson95": [
-          0.9551,
-          0.9822
+          0.9571,
+          0.9835
         ],
         "trials": 600
       },
       "300": {
-        "recall": 0.9917,
+        "recall": 0.9967,
         "wilson95": [
-          0.9806,
-          0.9964
+          0.9879,
+          0.9991
         ],
         "trials": 600
       },
@@ -529,50 +533,50 @@
     },
     "native / |z|>=8, |step|>=50 m": {
       "25": {
-        "recall": 0.05,
+        "recall": 0.045,
         "wilson95": [
-          0.0352,
-          0.0705
+          0.0311,
+          0.0647
         ],
         "trials": 600
       },
       "50": {
-        "recall": 0.4967,
+        "recall": 0.485,
         "wilson95": [
-          0.4568,
-          0.5366
+          0.4452,
+          0.525
         ],
         "trials": 600
       },
       "100": {
-        "recall": 0.9283,
+        "recall": 0.9333,
         "wilson95": [
-          0.9049,
-          0.9464
+          0.9105,
+          0.9507
         ],
         "trials": 600
       },
       "150": {
-        "recall": 0.9517,
+        "recall": 0.9683,
         "wilson95": [
-          0.9314,
-          0.9661
+          0.9511,
+          0.9796
         ],
         "trials": 600
       },
       "200": {
-        "recall": 0.9733,
+        "recall": 0.975,
         "wilson95": [
-          0.9571,
-          0.9835
+          0.9592,
+          0.9848
         ],
         "trials": 600
       },
       "300": {
-        "recall": 0.9917,
+        "recall": 0.9967,
         "wilson95": [
-          0.9806,
-          0.9964
+          0.9879,
+          0.9991
         ],
         "trials": 600
       },
@@ -603,50 +607,50 @@
     },
     "native / |z|>=8, |step|>=100 m": {
       "25": {
-        "recall": 0.0083,
+        "recall": 0.0017,
         "wilson95": [
-          0.0036,
-          0.0194
+          0.0003,
+          0.0094
         ],
         "trials": 600
       },
       "50": {
-        "recall": 0.0167,
+        "recall": 0.015,
         "wilson95": [
-          0.0091,
-          0.0304
+          0.0079,
+          0.0283
         ],
         "trials": 600
       },
       "100": {
-        "recall": 0.485,
+        "recall": 0.5333,
         "wilson95": [
-          0.4452,
-          0.525
+          0.4933,
+          0.5729
         ],
         "trials": 600
       },
       "150": {
-        "recall": 0.9433,
+        "recall": 0.9567,
         "wilson95": [
-          0.9219,
-          0.9592
+          0.9373,
+          0.9703
         ],
         "trials": 600
       },
       "200": {
-        "recall": 0.9767,
+        "recall": 0.975,
         "wilson95": [
-          0.9612,
-          0.9861
+          0.9592,
+          0.9848
         ],
         "trials": 600
       },
       "300": {
-        "recall": 0.9933,
+        "recall": 0.9983,
         "wilson95": [
-          0.983,
-          0.9974
+          0.9906,
+          0.9997
         ],
         "trials": 600
       },
@@ -677,14 +681,6 @@
     },
     "about 1 per day / |z|>=12, |step|>=200 m (frozen)": {
       "25": {
-        "recall": 0.0033,
-        "wilson95": [
-          0.0009,
-          0.0121
-        ],
-        "trials": 600
-      },
-      "50": {
         "recall": 0.0,
         "wilson95": [
           0.0,
@@ -692,7 +688,7 @@
         ],
         "trials": 600
       },
-      "100": {
+      "50": {
         "recall": 0.0033,
         "wilson95": [
           0.0009,
@@ -700,35 +696,43 @@
         ],
         "trials": 600
       },
-      "150": {
-        "recall": 0.045,
+      "100": {
+        "recall": 0.0017,
         "wilson95": [
-          0.0311,
-          0.0647
+          0.0003,
+          0.0094
+        ],
+        "trials": 600
+      },
+      "150": {
+        "recall": 0.0367,
+        "wilson95": [
+          0.0243,
+          0.0549
         ],
         "trials": 600
       },
       "200": {
-        "recall": 0.44,
+        "recall": 0.4617,
         "wilson95": [
-          0.4008,
-          0.48
+          0.4221,
+          0.5017
         ],
         "trials": 600
       },
       "300": {
-        "recall": 0.93,
+        "recall": 0.9067,
         "wilson95": [
-          0.9067,
-          0.9478
+          0.8807,
+          0.9274
         ],
         "trials": 600
       },
       "500": {
-        "recall": 0.98,
+        "recall": 0.9867,
         "wilson95": [
-          0.9654,
-          0.9885
+          0.9739,
+          0.9932
         ],
         "trials": 600
       },

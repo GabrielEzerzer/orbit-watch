@@ -4,6 +4,8 @@
         --gp data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json \\
         --archive data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out findings
 
+``--truth`` takes one or more event files (``calibrate.load_truth``).
+
 Three runs, all with calibrate.py's matching, coverage and precision rules (``match``,
 ``covered``, ``evaluate``) and its grid and choice rule (``choose_setting``):
 
@@ -36,6 +38,7 @@ import numpy as np
 from orbit_watch.calibrate import (
     DETECTION_HEADER,
     EVENT_HEADER,
+    FROZEN,
     ISS,
     K_GRID,
     STEP_GRID_M,
@@ -46,7 +49,7 @@ from orbit_watch.calibrate import (
     detection_rows,
     evaluate,
     event_rows,
-    load_events,
+    load_truth,
     plot,
     write_csv,
 )
@@ -54,7 +57,6 @@ from orbit_watch.detect import pick, score_gaps
 from orbit_watch.elements import _omm_epoch, parse_omm_json, parse_tle
 from orbit_watch.series import to_series
 
-FROZEN = {"k": 4, "z_min": 12, "step_min_m": 200}  # calibrate.py's choice on the archive, 2021-2022
 YEARS = (2021, 2022, 2023, 2024, 2025)
 HOLDOUT_YEARS = (2024, 2025)
 SAME_EPOCH_S = 1.0
@@ -165,8 +167,8 @@ def _label(years):
     return str(years[0]) if len(years) == 1 else f"{years[0]}-{years[-1]}"
 
 
-def run(gp: Path, archive: Path, truth: Path, out: Path) -> dict:
-    all_events = load_events(truth)
+def run(gp: Path, archive: Path, truth: list[Path], out: Path) -> dict:
+    all_events = load_truth(truth)
     st_series, dedupe = load_gp_history(gp)
     st = Scored(st_series, all_events)
     ar = Scored(to_series(parse_tle(archive.read_text(encoding="utf-8")))[ISS], all_events)
@@ -208,6 +210,7 @@ def run(gp: Path, archive: Path, truth: Path, out: Path) -> dict:
 
     holdout_report = {
         "source": {key: v for key, v in source_check["spacetrack"].items() if key not in ("2021-2022", "2023")},
+        "truth_files": [str(p) for p in truth],
         "truth_rows": len(all_events),
         "frozen_thresholds": {**FROZEN, "nms_days": 1.0,
                               "chosen_by": "calibrate.py: max F1 on archive 2021-2022, ties to the stricter setting"},
@@ -288,7 +291,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--gp", type=Path, required=True)
     p.add_argument("--archive", type=Path, required=True)
-    p.add_argument("--truth", type=Path, required=True)
+    p.add_argument("--truth", type=Path, nargs="+", required=True)
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
     r = run(args.gp, args.archive, args.truth, args.out)

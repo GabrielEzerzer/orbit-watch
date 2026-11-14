@@ -1,0 +1,161 @@
+{
+  "tle_file": "data\\archive\\25544.tle",
+  "tle_count": 5076,
+  "tle_first_epoch": "2021-01-01T17:23:06Z",
+  "tle_last_epoch": "2023-12-28T13:01:56Z",
+  "truth_files": [
+    "groundtruth\\iss_manoeuvres.csv",
+    "groundtruth\\iss_roscosmos_manoeuvres.csv"
+  ],
+  "truth_rows": 87,
+  "truth_rows_inside_tle_history": 51,
+  "tolerance_days": 0.5,
+  "grid": {
+    "k": [
+      4,
+      6,
+      8
+    ],
+    "z_min": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      12,
+      15,
+      20,
+      25,
+      30
+    ],
+    "step_min_m": [
+      0,
+      50,
+      100,
+      150,
+      200,
+      300,
+      400
+    ]
+  },
+  "frozen_thresholds": {
+    "k": 4,
+    "z_min": 12,
+    "step_min_m": 200,
+    "nms_days": 1.0,
+    "chosen_by": "frozen (--frozen): not re-chosen"
+  },
+  "noise_sigma_m_median": 2.4,
+  "tuning_2021_2022": {
+    "detections": 27,
+    "detections_matching_unplanned_events": 0,
+    "true_positives": 26,
+    "false_positives": 1,
+    "precision": 0.963,
+    "by_type": {
+      "debris/collision avoidance": {
+        "events": 4,
+        "covered": 3,
+        "matched": 3,
+        "recall": 1.0
+      },
+      "other burn": {
+        "events": 2,
+        "covered": 2,
+        "matched": 2,
+        "recall": 1.0
+      },
+      "reboost": {
+        "events": 21,
+        "covered": 21,
+        "matched": 21,
+        "recall": 1.0
+      },
+      "test/aborted burn": {
+        "events": 1,
+        "covered": 1,
+        "matched": 0,
+        "recall": 0.0
+      }
+    },
+    "events": 28,
+    "covered": 27,
+    "matched": 26,
+    "recall": 0.963,
+    "unplanned_attitude_events": [
+      {
+        "date_utc": "2021-07-29",
+        "covered": true,
+        "matched": false
+      },
+      {
+        "date_utc": "2021-10-15",
+        "covered": true,
+        "matched": false
+      }
+    ]
+  },
+  "holdout_2023": {
+    "detections": 21,
+    "detections_matching_unplanned_events": 0,
+    "true_positives": 20,
+    "false_positives": 1,
+    "precision": 0.952,
+    "by_type": {
+      "debris/collision avoidance": {
+        "events": 5,
+        "covered": 5,
+        "matched": 5,
+        "recall": 1.0
+      },
+      "other burn": {
+        "events": 0,
+        "covered": 0,
+        "matched": 0,
+        "recall": null
+      },
+      "reboost": {
+        "events": 16,
+        "covered": 16,
+        "matched": 15,
+        "recall": 0.938
+      },
+      "test/aborted burn": {
+        "events": 0,
+        "covered": 0,
+        "matched": 0,
+        "recall": null
+      }
+    },
+    "events": 21,
+    "covered": 21,
+    "matched": 20,
+    "recall": 0.952,
+    "unplanned_attitude_events": []
+  },
+  "excluded_for_coverage": [
+    {
+      "date_utc": "2022-06-16",
+      "type": "debris avoidance"
+    }
+  ],
+  "unmatched_detections": [
+    {
+      "start_utc": "2021-09-12T00:22:44Z",
+      "end_utc": "2021-09-12T01:57:53Z",
+      "step_m": 965.8,
+      "z": 52.51,
+      "period": "2021-2022"
+    },
+    {
+      "start_utc": "2023-05-04T16:43:50Z",
+      "end_utc": "2023-05-05T04:38:59Z",
+      "step_m": 312.5,
+      "z": 12.38,
+      "period": "2023"
+    }
+  ],
+  "sweep_top10": []
+}

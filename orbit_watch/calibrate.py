@@ -1,7 +1,10 @@
 """Calibrate the step detector against announced ISS manoeuvres.
 
     python -m orbit_watch.calibrate --tle data/archive/25544.tle \\
-        --truth groundtruth/iss_manoeuvres.csv --out out
+        --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out out
+
+``--truth`` takes one or more event files; ``load_truth`` joins them and refuses an event that
+appears in two of them. ``--frozen`` skips the choice below and scores ``FROZEN`` as it stands.
 
 Holdout discipline: the window ``k``, the ``|z|`` threshold and the minimum
 ``|step|`` are chosen by F1 on 2021-2022 events only (ties go to the stricter
@@ -18,8 +21,8 @@ retrograde, either for the rest. Matching is one-to-one, closest centres first.
 Recall counts events the detector could score: at least one scored gap overlaps
 the event's window. Other events are listed as excluded for coverage. Precision
 counts every detection in the period; a detection that matches no listed event
-is a false positive, even though the list is a lower bound (Roscosmos burns are
-missing). The two unplanned attitude events are scored apart: a detection
+is a false positive, even though the list is a lower bound (announcements that were not
+found are missing). The two unplanned attitude events are scored apart: a detection
 matching one is reported with them and left out of the main precision.
 """
 
@@ -45,6 +48,7 @@ K_GRID = (4, 6, 8)
 Z_GRID = (3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30)
 STEP_GRID_M = (0, 50, 100, 150, 200, 300, 400)
 UNPLANNED = "unplanned"
+FROZEN = {"k": 4, "z_min": 12, "step_min_m": 200}  # run's choice on the archive, 2021-2022, NASA truth
 
 
 @dataclass(frozen=True)
@@ -92,6 +96,25 @@ def load_events(path: Path) -> list[Event]:
             events.append(Event(row["date_utc"], row["time_utc"], row["type"], row["delta_v_m_s"],
                                 np.datetime64(lo, "us"), np.datetime64(hi, "us")))
     return events
+
+
+def load_truth(paths: list[Path]) -> list[Event]:
+    """Events from one or more truth files. Raises when files list the same event twice.
+
+    Two events from different files are the same event when their windows overlap within
+    ``TOLERANCE_DAYS``: a timed row's point, or a date-only row's date plus or minus one day.
+    shortcut: two genuinely different burns within that window in different files would be
+    refused too; add an explicit allow-list if that ever happens.
+    """
+    per_file = [load_events(p) for p in paths]
+    for i in range(len(per_file)):
+        for j in range(i + 1, len(per_file)):
+            for a in per_file[i]:
+                for b in per_file[j]:
+                    if _overlaps(a, b.lo, b.hi, TOLERANCE_DAYS):
+                        raise ValueError(f"same event in {paths[i]} and {paths[j]}: "
+                                         f"{a.date_utc} {a.time_utc} {a.type!r} / {b.date_utc} {b.time_utc} {b.type!r}")
+    return [e for evs in per_file for e in evs]
 
 
 def _sign_ok(ev, d: Detection) -> bool:
@@ -228,20 +251,23 @@ def write_csv(path: Path, header, rows) -> None:
         w.writerows(rows)
 
 
-def run(tle: Path, truth: Path, out: Path) -> dict:
+def run(tle: Path, truth: list[Path], out: Path, frozen: bool = False) -> dict:
     series = to_series(parse_tle(tle.read_text(encoding="utf-8")))[ISS]
     first, last = series.epochs[0], series.epochs[-1]
-    all_events = load_events(truth)
+    all_events = load_truth(truth)
     events = [e for e in all_events if e.hi >= first and e.lo <= last]
     ev_hold = [e.date_utc >= "2023-01-01" for e in events]
 
     def det_hold(dets):
         return [d.start >= HOLDOUT_START for d in dets]
 
-    # Tuning: 2021-2022 only.
+    # Tuning: 2021-2022 only, unless the frozen setting is scored as it stands.
     scores_by_k = {k: score_gaps(series, k=k) for k in K_GRID}
-    best, sweep = choose_setting(events, scores_by_k, [not x for x in ev_hold],
-                                 lambda dets: [not x for x in det_hold(dets)])
+    if frozen:
+        best, sweep = FROZEN, []
+    else:
+        best, sweep = choose_setting(events, scores_by_k, [not x for x in ev_hold],
+                                     lambda dets: [not x for x in det_hold(dets)])
     k, z_min, step_min = best["k"], best["z_min"], best["step_min_m"]
 
     # Frozen setting on both periods.
@@ -264,12 +290,14 @@ def run(tle: Path, truth: Path, out: Path) -> dict:
         "tle_count": len(series),
         "tle_first_epoch": _iso(first),
         "tle_last_epoch": _iso(last),
+        "truth_files": [str(p) for p in truth],
         "truth_rows": len(all_events),
         "truth_rows_inside_tle_history": len(events),
         "tolerance_days": TOLERANCE_DAYS,
         "grid": {"k": K_GRID, "z_min": Z_GRID, "step_min_m": STEP_GRID_M},
         "frozen_thresholds": {"k": k, "z_min": z_min, "step_min_m": step_min, "nms_days": 1.0,
-                              "chosen_by": "max F1 on 2021-2022, ties to the stricter setting"},
+                              "chosen_by": "frozen (--frozen): not re-chosen" if frozen
+                              else "max F1 on 2021-2022, ties to the stricter setting"},
         "noise_sigma_m_median": round(float(np.nanmedian(sc.sigma_m)), 1),
         "tuning_2021_2022": tune,
         "holdout_2023": hold,
@@ -330,10 +358,11 @@ def plot(series, events, cover, m_main, m_unpl, dets, path: Path, years=(2021, 2
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--tle", type=Path, required=True)
-    p.add_argument("--truth", type=Path, required=True)
+    p.add_argument("--truth", type=Path, nargs="+", required=True)
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--frozen", action="store_true", help="score FROZEN instead of choosing on 2021-2022")
     args = p.parse_args()
-    r = run(args.tle, args.truth, args.out)
+    r = run(args.tle, args.truth, args.out, args.frozen)
     summary = {key: r[key] for key in ("frozen_thresholds", "tuning_2021_2022", "holdout_2023",
                                          "excluded_for_coverage", "unmatched_detections")}
     print(json.dumps(summary, indent=2))
