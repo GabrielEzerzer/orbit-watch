@@ -69,6 +69,15 @@ class Event:
             return "debris/collision avoidance"
         return "other burn"
 
+    @property
+    def expected_sign(self) -> int:
+        """+1 if the step must go up, -1 if down, 0 if either."""
+        if "retrograde" in self.type or "deboost" in self.type:
+            return -1
+        if self.type.startswith("reboost"):
+            return 1
+        return 0
+
 
 def load_events(path: Path) -> list[Event]:
     events = []
@@ -85,12 +94,9 @@ def load_events(path: Path) -> list[Event]:
     return events
 
 
-def _sign_ok(ev: Event, d: Detection) -> bool:
-    if "retrograde" in ev.type or "deboost" in ev.type:
-        return d.step_m < 0
-    if ev.type.startswith("reboost"):
-        return d.step_m > 0
-    return True
+def _sign_ok(ev, d: Detection) -> bool:
+    """``ev`` is any event with ``expected_sign`` (+1, -1, or 0 for either)."""
+    return ev.expected_sign == 0 or ev.expected_sign * d.step_m > 0
 
 
 def _overlaps(ev: Event, start: np.datetime64, end: np.datetime64, tol_days: float) -> bool:

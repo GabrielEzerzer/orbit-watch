@@ -111,4 +111,5 @@ A second element source (Space-Track gp_history) showing the same steps, and ope
 
 ## Not yet done
 
-The Starlink shell hunt has not run.
+- The Starlink shell hunt has not run.
+- The unmatched QZS-3 and QZS-6 detections (README, "Beyond the ISS") have not been checked against momentum-unloading windows or any other source.
