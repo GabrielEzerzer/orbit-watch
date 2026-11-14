@@ -72,7 +72,7 @@ Result of the command above on Kaggle at commit `7df96a6` (the detector and cali
 unchanged since then), with the TLE file at sha256 `e102dc92…7c51` (5,076 TLEs). 45 ground-truth
 rows fall inside the TLE history:
 
-**Caveat on 2023:** the thresholds below were chosen on 2021-2022 only, but an earlier version of the method was scored on 2023 once before the method was changed (last note below). A clean holdout needs TLE history after 2023-12-28, which the public archive does not have; the ground truth already runs to 2025-12.
+**Caveat on 2023:** the thresholds below were chosen on 2021-2022 only, but an earlier version of the method was scored on 2023 once before the method was changed (last note below). The clean holdout is 2024-2025 on Space-Track data; see the next section.
 
 | | 2021-2022 (tuning) | 2023 (thresholds unseen; method partly seen, see below) |
 |---|---|---|
@@ -100,6 +100,57 @@ Notes on these numbers:
   transitional TLEs after burns, some of them matched to reboosts with the wrong sign. The median
   detector and the sign rule replaced it, and the thresholds were re-chosen on 2021-2022 alone. Even
   so, 2023 is no longer a never-seen holdout for the method, only for the thresholds.
+
+### Clean holdout: Space-Track 2024-2025
+
+`orbit_watch.holdout` scores the frozen setting once on Space-Track `gp_history` for the ISS
+(2021-01-01 to 2025-12-31; 9,855 rows, 9,080 element sets once rows within 1 s are merged and the
+latest-issued one kept), using calibrate.py's matching, coverage and precision rules unchanged.
+Neither the method nor the thresholds had seen 2024-2025.
+
+```
+python -m orbit_watch.holdout --gp data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json \
+    --archive data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out findings
+```
+
+| Period | Precision | Recall |
+|---|---|---|
+| **2024-2025 (clean holdout)** | **27/42 = 0.64** | **27/27 = 1.00** |
+| 2024 | 16/22 | 16/16 |
+| 2025 | 11/20 | 11/11 |
+
+One event (2025-04-30 debris avoidance) falls in a data gap and is excluded for coverage. The 15
+unmatched detections are listed in `FINDINGS.md`; most are large steps up with very high `z`, so
+the precision is a lower bound until a fuller event list (Roscosmos burns) exists.
+
+Source check, same frozen setting: Space-Track gives 23/26 precision and 23/25 recall for 2021-2022
+(archive 24/27, 24/25) and 16/22 and 16/17 for 2023 (archive 16/21, 16/17). The one lost event is
+the 2021-12-03 retrograde debris avoidance: two transitional element sets that the archive lacks
+pull the measured step from −461 m to about −210 m, and `z` below 12.
+
+Leave-one-year-out cross-validation over 2021-2025 on Space-Track (tune on four years with the same
+grid and rule, score the fifth): pooled **64/86 = 0.74 precision, 64/69 = 0.93 recall**. Every fold
+chose `k = 4`, `|z| >= 15`; four of five kept `|step| >= 200 m` (the fold leaving out 2021 chose
+300 m). Outputs: `findings/holdout_2024_2025/` and `findings/cv_2021_2025/`.
+
+### Sensitivity: synthetic injection-recovery
+
+`orbit_watch.inject` adds known steps in memory to quiet stretches of the real Space-Track series
+and counts how many the detector recovers. All of it is synthetic and labelled so; nothing goes into
+`groundtruth/`. 600 trials per size, both signs pooled; outputs in `findings/injection/`.
+
+| Recall at step size | 100 m | 150 m | 200 m | 300 m | 500 m | 1 km |
+|---|---|---|---|---|---|---|
+| native cadence (about 5.6 TLEs a day), frozen | 0.00 | 0.01 | 0.54 | 0.97 | 1.00 | 1.00 |
+| native, `|z| >= 6`, `|step| >= 50 m` | 0.95 | 0.97 | 0.98 | 0.99 | 1.00 | 1.00 |
+| thinned to about 1 a day, frozen | 0.00 | 0.05 | 0.44 | 0.93 | 0.98 | 1.00 |
+| thinned to about 1 every 2 days, frozen | 0.02 | 0.07 | 0.34 | 0.72 | 0.89 | 0.98 |
+
+The median TLE scatter is 3.4 m, so the 200 m step floor, not `z`, sets what the frozen detector
+can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 25 a year at
+`|z| >= 6`, `|step| >= 50 m`, against at most 5.3 a year for the frozen setting (an upper bound,
+since unannounced burns count). A clean step leaves out the transitional TLEs a real burn produces,
+so these recalls are upper bounds for real burns of the same size.
 
 ## First GEO hunt (Luch / Olymp-K)
 
