@@ -202,7 +202,7 @@ def run(gp: Path, archive: Path, truth: Path, out: Path) -> dict:
         return name, row
 
     source_check = dict([
-        source(ar, "archive", archive, {"duplicates": "none: no two records share an epoch"}),
+        source(ar, "archive", archive, {"duplicates": "no exact repeats; one pair within 1 s (2023-12-23 17:57:06), left as is"}),
         source(st, "spacetrack", gp, {"duplicates": dedupe}),
     ])
 

@@ -248,7 +248,7 @@
     "archive": {
       "file": "data\\archive\\25544.tle",
       "sha256": "e102dc920c99dbea3ce8a2a8d67de6c419104f2b9b4c91753298428761e47c51",
-      "duplicates": "none: no two records share an epoch",
+      "duplicates": "no exact repeats; one pair within 1 s (2023-12-23 17:57:06), left as is",
       "element_sets_used": 5076,
       "first_epoch": "2021-01-01T17:23:06Z",
       "last_epoch": "2023-12-28T13:01:56Z",
