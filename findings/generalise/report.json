@@ -1,0 +1,3291 @@
+{
+  "frozen_iss_setting": {
+    "k": 4,
+    "z_min": 12,
+    "step_min_m": 200,
+    "nms_days": 1.0,
+    "max_span_days": 3.0,
+    "max_gap_days": 2.0,
+    "source": "FINDINGS.md: calibration run at 508838a"
+  },
+  "tolerance_days": {
+    "before_burn": 0.5,
+    "after_burn": 2.0
+  },
+  "merge_hours": 12.0,
+  "split_rule": "per satellite: first day of the month holding its 60% quantile logged event; tune before, test from it",
+  "regimes": {
+    "LEO": {
+      "satellites": [
+        "CryoSat-2",
+        "Jason-3",
+        "SWOT",
+        "SPOT-5"
+      ],
+      "grid": {
+        "k": [
+          4,
+          6,
+          8
+        ],
+        "z_min": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          12,
+          15,
+          20,
+          25,
+          30,
+          40,
+          60,
+          80,
+          100,
+          150,
+          200,
+          300
+        ],
+        "step_min_m": [
+          0,
+          10,
+          20,
+          30,
+          50,
+          100,
+          150,
+          200,
+          300,
+          400
+        ]
+      },
+      "tuned_setting": {
+        "k": 6,
+        "z_min": 40,
+        "step_min_m": 0,
+        "nms_days": 1.0,
+        "chosen_by": "max F1 pooled over the regime on the tune part, ties to the stricter setting"
+      },
+      "pooled": {
+        "frozen_iss_all": {
+          "detections": 42,
+          "true_positives": 36,
+          "false_positives": 6,
+          "events": 512,
+          "covered": 445,
+          "matched": 36,
+          "precision": 0.857,
+          "recall": 0.081,
+          "f1": 0.148
+        },
+        "frozen_iss_test": {
+          "detections": 26,
+          "true_positives": 23,
+          "false_positives": 3,
+          "events": 208,
+          "covered": 203,
+          "matched": 23,
+          "precision": 0.885,
+          "recall": 0.113,
+          "f1": 0.2004
+        },
+        "tuned_tune": {
+          "detections": 176,
+          "true_positives": 113,
+          "false_positives": 63,
+          "events": 304,
+          "covered": 197,
+          "matched": 113,
+          "precision": 0.642,
+          "recall": 0.574,
+          "f1": 0.6061
+        },
+        "tuned_test": {
+          "detections": 260,
+          "true_positives": 162,
+          "false_positives": 98,
+          "events": 208,
+          "covered": 199,
+          "matched": 162,
+          "precision": 0.623,
+          "recall": 0.814,
+          "f1": 0.7058
+        }
+      },
+      "sweep_top10": [
+        {
+          "k": 6,
+          "z_min": 40,
+          "step_min_m": 0,
+          "detections": 176,
+          "true_positives": 113,
+          "false_positives": 63,
+          "events": 304,
+          "covered": 197,
+          "matched": 113,
+          "precision": 0.642,
+          "recall": 0.574,
+          "f1": 0.6061
+        },
+        {
+          "k": 6,
+          "z_min": 30,
+          "step_min_m": 0,
+          "detections": 190,
+          "true_positives": 117,
+          "false_positives": 73,
+          "events": 304,
+          "covered": 197,
+          "matched": 117,
+          "precision": 0.616,
+          "recall": 0.594,
+          "f1": 0.6048
+        },
+        {
+          "k": 6,
+          "z_min": 25,
+          "step_min_m": 0,
+          "detections": 214,
+          "true_positives": 122,
+          "false_positives": 92,
+          "events": 304,
+          "covered": 197,
+          "matched": 122,
+          "precision": 0.57,
+          "recall": 0.619,
+          "f1": 0.5935
+        },
+        {
+          "k": 4,
+          "z_min": 60,
+          "step_min_m": 0,
+          "detections": 134,
+          "true_positives": 111,
+          "false_positives": 23,
+          "events": 304,
+          "covered": 242,
+          "matched": 111,
+          "precision": 0.828,
+          "recall": 0.459,
+          "f1": 0.5906
+        },
+        {
+          "k": 4,
+          "z_min": 40,
+          "step_min_m": 0,
+          "detections": 156,
+          "true_positives": 117,
+          "false_positives": 39,
+          "events": 304,
+          "covered": 242,
+          "matched": 117,
+          "precision": 0.75,
+          "recall": 0.483,
+          "f1": 0.5876
+        },
+        {
+          "k": 4,
+          "z_min": 6,
+          "step_min_m": 10,
+          "detections": 173,
+          "true_positives": 121,
+          "false_positives": 52,
+          "events": 304,
+          "covered": 242,
+          "matched": 121,
+          "precision": 0.699,
+          "recall": 0.5,
+          "f1": 0.583
+        },
+        {
+          "k": 8,
+          "z_min": 40,
+          "step_min_m": 0,
+          "detections": 138,
+          "true_positives": 81,
+          "false_positives": 57,
+          "events": 304,
+          "covered": 140,
+          "matched": 81,
+          "precision": 0.587,
+          "recall": 0.579,
+          "f1": 0.583
+        },
+        {
+          "k": 6,
+          "z_min": 20,
+          "step_min_m": 10,
+          "detections": 167,
+          "true_positives": 106,
+          "false_positives": 61,
+          "events": 304,
+          "covered": 197,
+          "matched": 106,
+          "precision": 0.635,
+          "recall": 0.538,
+          "f1": 0.5825
+        },
+        {
+          "k": 4,
+          "z_min": 5,
+          "step_min_m": 10,
+          "detections": 181,
+          "true_positives": 123,
+          "false_positives": 58,
+          "events": 304,
+          "covered": 242,
+          "matched": 123,
+          "precision": 0.68,
+          "recall": 0.508,
+          "f1": 0.5815
+        },
+        {
+          "k": 6,
+          "z_min": 60,
+          "step_min_m": 0,
+          "detections": 151,
+          "true_positives": 101,
+          "false_positives": 50,
+          "events": 304,
+          "covered": 197,
+          "matched": 101,
+          "precision": 0.669,
+          "recall": 0.513,
+          "f1": 0.5807
+        }
+      ]
+    },
+    "GEO": {
+      "satellites": [
+        "QZS-3",
+        "QZS-6"
+      ],
+      "grid": {
+        "k": [
+          4,
+          6,
+          8
+        ],
+        "z_min": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          10,
+          12,
+          15,
+          20,
+          25,
+          30,
+          40,
+          60,
+          80,
+          100,
+          150,
+          200,
+          300
+        ],
+        "step_min_m": [
+          0,
+          50,
+          100,
+          200,
+          300,
+          500,
+          1000,
+          1500,
+          2000,
+          3000
+        ]
+      },
+      "tuned_setting": {
+        "k": 4,
+        "z_min": 3,
+        "step_min_m": 1000,
+        "nms_days": 1.0,
+        "chosen_by": "max F1 pooled over the regime on the tune part, ties to the stricter setting"
+      },
+      "pooled": {
+        "frozen_iss_all": {
+          "detections": 253,
+          "true_positives": 179,
+          "false_positives": 74,
+          "events": 248,
+          "covered": 232,
+          "matched": 179,
+          "precision": 0.708,
+          "recall": 0.772,
+          "f1": 0.7386
+        },
+        "frozen_iss_test": {
+          "detections": 99,
+          "true_positives": 70,
+          "false_positives": 29,
+          "events": 103,
+          "covered": 93,
+          "matched": 70,
+          "precision": 0.707,
+          "recall": 0.753,
+          "f1": 0.7293
+        },
+        "tuned_tune": {
+          "detections": 133,
+          "true_positives": 109,
+          "false_positives": 24,
+          "events": 145,
+          "covered": 139,
+          "matched": 109,
+          "precision": 0.82,
+          "recall": 0.784,
+          "f1": 0.8016
+        },
+        "tuned_test": {
+          "detections": 92,
+          "true_positives": 70,
+          "false_positives": 22,
+          "events": 103,
+          "covered": 93,
+          "matched": 70,
+          "precision": 0.761,
+          "recall": 0.753,
+          "f1": 0.757
+        }
+      },
+      "sweep_top10": [
+        {
+          "k": 4,
+          "z_min": 3,
+          "step_min_m": 1000,
+          "detections": 133,
+          "true_positives": 109,
+          "false_positives": 24,
+          "events": 145,
+          "covered": 139,
+          "matched": 109,
+          "precision": 0.82,
+          "recall": 0.784,
+          "f1": 0.8016
+        },
+        {
+          "k": 4,
+          "z_min": 4,
+          "step_min_m": 1000,
+          "detections": 132,
+          "true_positives": 108,
+          "false_positives": 24,
+          "events": 145,
+          "covered": 139,
+          "matched": 108,
+          "precision": 0.818,
+          "recall": 0.777,
+          "f1": 0.797
+        },
+        {
+          "k": 4,
+          "z_min": 5,
+          "step_min_m": 1000,
+          "detections": 132,
+          "true_positives": 108,
+          "false_positives": 24,
+          "events": 145,
+          "covered": 139,
+          "matched": 108,
+          "precision": 0.818,
+          "recall": 0.777,
+          "f1": 0.797
+        },
+        {
+          "k": 4,
+          "z_min": 6,
+          "step_min_m": 1000,
+          "detections": 132,
+          "true_positives": 108,
+          "false_positives": 24,
+          "events": 145,
+          "covered": 139,
+          "matched": 108,
+          "precision": 0.818,
+          "recall": 0.777,
+          "f1": 0.797
+        },
+        {
+          "k": 4,
+          "z_min": 7,
+          "step_min_m": 1000,
+          "detections": 132,
+          "true_positives": 108,
+          "false_positives": 24,
+          "events": 145,
+          "covered": 139,
+          "matched": 108,
+          "precision": 0.818,
+          "recall": 0.777,
+          "f1": 0.797
+        },
+        {
+          "k": 6,
+          "z_min": 4,
+          "step_min_m": 1000,
+          "detections": 117,
+          "true_positives": 82,
+          "false_positives": 35,
+          "events": 145,
+          "covered": 88,
+          "matched": 81,
+          "precision": 0.701,
+          "recall": 0.92,
+          "f1": 0.7957
+        },
+        {
+          "k": 6,
+          "z_min": 5,
+          "step_min_m": 1000,
+          "detections": 117,
+          "true_positives": 82,
+          "false_positives": 35,
+          "events": 145,
+          "covered": 88,
+          "matched": 81,
+          "precision": 0.701,
+          "recall": 0.92,
+          "f1": 0.7957
+        },
+        {
+          "k": 4,
+          "z_min": 8,
+          "step_min_m": 1000,
+          "detections": 131,
+          "true_positives": 107,
+          "false_positives": 24,
+          "events": 145,
+          "covered": 139,
+          "matched": 107,
+          "precision": 0.817,
+          "recall": 0.77,
+          "f1": 0.7928
+        },
+        {
+          "k": 6,
+          "z_min": 3,
+          "step_min_m": 1000,
+          "detections": 118,
+          "true_positives": 82,
+          "false_positives": 36,
+          "events": 145,
+          "covered": 88,
+          "matched": 81,
+          "precision": 0.695,
+          "recall": 0.92,
+          "f1": 0.7918
+        },
+        {
+          "k": 4,
+          "z_min": 10,
+          "step_min_m": 1000,
+          "detections": 129,
+          "true_positives": 106,
+          "false_positives": 23,
+          "events": 145,
+          "covered": 139,
+          "matched": 106,
+          "precision": 0.822,
+          "recall": 0.763,
+          "f1": 0.7914
+        }
+      ]
+    }
+  },
+  "satellites": {
+    "CryoSat-2": {
+      "norad_id": 36508,
+      "regime": "LEO",
+      "tle": {
+        "tle_file": "gp_history-36508-2010-04-05--2026-11-09.json",
+        "tle_count": 12133,
+        "near_duplicates_dropped": 25,
+        "first_epoch": "2010-04-08T15:02:25Z",
+        "last_epoch": "2026-11-08T22:50:07Z",
+        "per_day": 2.0,
+        "median_gap_hours": 8.3,
+        "p90_gap_hours": 24.8,
+        "gaps_over_2_days": 31
+      },
+      "log_rows": 245,
+      "log_events_after_merging": 238,
+      "log_events_inside_tle_history": 238,
+      "split_date": "2021-12-01",
+      "noise_sigma_m_median": {
+        "frozen_iss": 0.1,
+        "tuned_leo": 0.1
+      },
+      "lag_days": {
+        "tune": {
+          "events": 18,
+          "epoch_before_step_minus_burn_end": {
+            "median": -0.24,
+            "p10": -1.69,
+            "p90": 2.82
+          }
+        },
+        "test": {
+          "events": 28,
+          "epoch_before_step_minus_burn_end": {
+            "median": -0.03,
+            "p10": -0.42,
+            "p90": 0.17
+          }
+        }
+      },
+      "frozen_iss": {
+        "all": {
+          "detections": 11,
+          "true_positives": 10,
+          "false_positives": 1,
+          "precision": 0.909,
+          "events": 238,
+          "covered": 190,
+          "matched": 10,
+          "recall": 0.053,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 189,
+              "covered": 143,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 30,
+              "covered": 28,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "100-200 m": {
+              "events": 7,
+              "covered": 7,
+              "matched": 1,
+              "recall": 0.143
+            },
+            "200-500 m": {
+              "events": 12,
+              "covered": 12,
+              "matched": 9,
+              "recall": 0.75
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 238,
+              "covered": 190,
+              "matched": 10,
+              "recall": 0.053
+            }
+          }
+        },
+        "tune": {
+          "detections": 7,
+          "true_positives": 7,
+          "false_positives": 0,
+          "precision": 1.0,
+          "events": 142,
+          "covered": 97,
+          "matched": 7,
+          "recall": 0.072,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 121,
+              "covered": 78,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 7,
+              "covered": 5,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "100-200 m": {
+              "events": 5,
+              "covered": 5,
+              "matched": 1,
+              "recall": 0.2
+            },
+            "200-500 m": {
+              "events": 9,
+              "covered": 9,
+              "matched": 6,
+              "recall": 0.667
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 142,
+              "covered": 97,
+              "matched": 7,
+              "recall": 0.072
+            }
+          }
+        },
+        "test": {
+          "detections": 4,
+          "true_positives": 3,
+          "false_positives": 1,
+          "precision": 0.75,
+          "events": 96,
+          "covered": 93,
+          "matched": 3,
+          "recall": 0.032,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 68,
+              "covered": 65,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 23,
+              "covered": 23,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "100-200 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 3,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 96,
+              "covered": 93,
+              "matched": 3,
+              "recall": 0.032
+            }
+          }
+        },
+        "chance_all": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.005,
+          "precision_mean": 0.091
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.002,
+          "precision_mean": 0.042
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 10,
+          "same_sign": 10,
+          "median_step_over_estimate": 1.0
+        }
+      },
+      "tuned": {
+        "tune": {
+          "detections": 76,
+          "true_positives": 50,
+          "false_positives": 26,
+          "precision": 0.658,
+          "events": 142,
+          "covered": 69,
+          "matched": 50,
+          "recall": 0.725,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 121,
+              "covered": 61,
+              "matched": 43,
+              "recall": 0.705
+            },
+            "50-100 m": {
+              "events": 7,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            },
+            "100-200 m": {
+              "events": 5,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            "200-500 m": {
+              "events": 9,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 142,
+              "covered": 69,
+              "matched": 50,
+              "recall": 0.725
+            }
+          }
+        },
+        "test": {
+          "detections": 153,
+          "true_positives": 90,
+          "false_positives": 63,
+          "precision": 0.588,
+          "events": 96,
+          "covered": 92,
+          "matched": 90,
+          "recall": 0.978,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 68,
+              "covered": 64,
+              "matched": 63,
+              "recall": 0.984
+            },
+            "50-100 m": {
+              "events": 23,
+              "covered": 23,
+              "matched": 22,
+              "recall": 0.957
+            },
+            "100-200 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            },
+            "200-500 m": {
+              "events": 3,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 96,
+              "covered": 92,
+              "matched": 90,
+              "recall": 0.978
+            }
+          }
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.147,
+          "precision_mean": 0.087
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 9,
+          "same_sign": 9,
+          "median_step_over_estimate": 1.0
+        }
+      },
+      "frozen_iss_unmatched_detections": [
+        {
+          "start_utc": "2025-06-18T12:40:01Z",
+          "end_utc": "2025-06-18T14:19:16Z",
+          "step_m": 306.5,
+          "z": 4185.83,
+          "period": "test"
+        }
+      ]
+    },
+    "Jason-3": {
+      "norad_id": 41240,
+      "regime": "LEO",
+      "tle": {
+        "tle_file": "gp_history-41240-2016-01-09--2026-11-01.json",
+        "tle_count": 9783,
+        "near_duplicates_dropped": 45,
+        "first_epoch": "2016-01-17T20:22:02Z",
+        "last_epoch": "2026-10-31T22:26:03Z",
+        "per_day": 2.48,
+        "median_gap_hours": 7.5,
+        "p90_gap_hours": 16.9,
+        "gaps_over_2_days": 15
+      },
+      "log_rows": 87,
+      "log_events_after_merging": 87,
+      "log_events_inside_tle_history": 87,
+      "split_date": "2024-01-01",
+      "noise_sigma_m_median": {
+        "frozen_iss": 0.0,
+        "tuned_leo": 0.1
+      },
+      "lag_days": {
+        "tune": {
+          "events": 5,
+          "epoch_before_step_minus_burn_end": {
+            "median": 0.88,
+            "p10": -0.99,
+            "p90": 2.29
+          }
+        },
+        "test": {
+          "events": 12,
+          "epoch_before_step_minus_burn_end": {
+            "median": 0.04,
+            "p10": -0.2,
+            "p90": 2.03
+          }
+        }
+      },
+      "frozen_iss": {
+        "all": {
+          "detections": 14,
+          "true_positives": 14,
+          "false_positives": 0,
+          "precision": 1.0,
+          "events": 87,
+          "covered": 75,
+          "matched": 14,
+          "recall": 0.187,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 60,
+              "covered": 58,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 4,
+              "covered": 4,
+              "matched": 4,
+              "recall": 1.0
+            },
+            "500 m-1 km": {
+              "events": 2,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            "1-2 km": {
+              "events": 3,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            ">5 km": {
+              "events": 15,
+              "covered": 6,
+              "matched": 5,
+              "recall": 0.833
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 85,
+              "covered": 73,
+              "matched": 14,
+              "recall": 0.192
+            },
+            "cross-track": {
+              "events": 2,
+              "covered": 2,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "tune": {
+          "detections": 4,
+          "true_positives": 4,
+          "false_positives": 0,
+          "precision": 1.0,
+          "events": 51,
+          "covered": 41,
+          "matched": 4,
+          "recall": 0.098,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 38,
+              "covered": 36,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "500 m-1 km": {
+              "events": 2,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            "1-2 km": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            ">5 km": {
+              "events": 9,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 49,
+              "covered": 39,
+              "matched": 4,
+              "recall": 0.103
+            },
+            "cross-track": {
+              "events": 2,
+              "covered": 2,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "test": {
+          "detections": 10,
+          "true_positives": 10,
+          "false_positives": 0,
+          "precision": 1.0,
+          "events": 36,
+          "covered": 34,
+          "matched": 10,
+          "recall": 0.294,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 22,
+              "covered": 22,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 4,
+              "covered": 4,
+              "matched": 4,
+              "recall": 1.0
+            },
+            "1-2 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            ">5 km": {
+              "events": 6,
+              "covered": 4,
+              "matched": 3,
+              "recall": 0.75
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 36,
+              "covered": 34,
+              "matched": 10,
+              "recall": 0.294
+            }
+          }
+        },
+        "chance_all": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.025,
+          "precision_mean": 0.143
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.047,
+          "precision_mean": 0.167
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 14,
+          "same_sign": 14,
+          "median_step_over_estimate": 0.98
+        }
+      },
+      "tuned": {
+        "tune": {
+          "detections": 33,
+          "true_positives": 24,
+          "false_positives": 9,
+          "precision": 0.727,
+          "events": 51,
+          "covered": 33,
+          "matched": 24,
+          "recall": 0.727,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 38,
+              "covered": 30,
+              "matched": 21,
+              "recall": 0.7
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "500 m-1 km": {
+              "events": 2,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "1-2 km": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            ">5 km": {
+              "events": 9,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 49,
+              "covered": 33,
+              "matched": 24,
+              "recall": 0.727
+            },
+            "cross-track": {
+              "events": 2,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            }
+          }
+        },
+        "test": {
+          "detections": 38,
+          "true_positives": 23,
+          "false_positives": 15,
+          "precision": 0.605,
+          "events": 36,
+          "covered": 31,
+          "matched": 23,
+          "recall": 0.742,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 22,
+              "covered": 21,
+              "matched": 18,
+              "recall": 0.857
+            },
+            "200-500 m": {
+              "events": 4,
+              "covered": 4,
+              "matched": 3,
+              "recall": 0.75
+            },
+            "1-2 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 2,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            ">5 km": {
+              "events": 6,
+              "covered": 3,
+              "matched": 0,
+              "recall": 0.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 36,
+              "covered": 31,
+              "matched": 23,
+              "recall": 0.742
+            }
+          }
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.087,
+          "precision_mean": 0.079
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 8,
+          "same_sign": 8,
+          "median_step_over_estimate": 0.98
+        }
+      },
+      "frozen_iss_unmatched_detections": []
+    },
+    "SWOT": {
+      "norad_id": 54754,
+      "regime": "LEO",
+      "tle": {
+        "tle_file": "gp_history-54754-2023-01-01--2026-11-14.json",
+        "tle_count": 3948,
+        "near_duplicates_dropped": 30,
+        "first_epoch": "2023-01-01T00:21:41Z",
+        "last_epoch": "2026-11-13T21:34:53Z",
+        "per_day": 2.79,
+        "median_gap_hours": 6.9,
+        "p90_gap_hours": 15.4,
+        "gaps_over_2_days": 9
+      },
+      "log_rows": 92,
+      "log_events_after_merging": 71,
+      "log_events_inside_tle_history": 71,
+      "split_date": "2024-10-01",
+      "noise_sigma_m_median": {
+        "frozen_iss": 0.1,
+        "tuned_leo": 0.1
+      },
+      "lag_days": {
+        "tune": {
+          "events": 2,
+          "epoch_before_step_minus_burn_end": {
+            "median": -0.05,
+            "p10": -0.83,
+            "p90": 0.73
+          }
+        },
+        "test": {
+          "events": 0
+        }
+      },
+      "frozen_iss": {
+        "all": {
+          "detections": 3,
+          "true_positives": 0,
+          "false_positives": 3,
+          "precision": 0.0,
+          "events": 71,
+          "covered": 64,
+          "matched": 0,
+          "recall": 0.0,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 64,
+              "covered": 62,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "100-200 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "200-500 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "1-2 km": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "2-5 km": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            ">5 km": {
+              "events": 2,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 71,
+              "covered": 64,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "tune": {
+          "detections": 3,
+          "true_positives": 0,
+          "false_positives": 3,
+          "precision": 0.0,
+          "events": 42,
+          "covered": 35,
+          "matched": 0,
+          "recall": 0.0,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 35,
+              "covered": 33,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "100-200 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "200-500 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "1-2 km": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "2-5 km": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            ">5 km": {
+              "events": 2,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 42,
+              "covered": 35,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "test": {
+          "detections": 0,
+          "true_positives": 0,
+          "false_positives": 0,
+          "precision": null,
+          "events": 29,
+          "covered": 29,
+          "matched": 0,
+          "recall": 0.0,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 29,
+              "covered": 29,
+              "matched": 0,
+              "recall": 0.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 29,
+              "covered": 29,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "chance_all": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.018,
+          "precision_mean": 0.389
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.0,
+          "precision_mean": 0.0
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 0,
+          "same_sign": 0,
+          "median_step_over_estimate": null
+        }
+      },
+      "tuned": {
+        "tune": {
+          "detections": 40,
+          "true_positives": 22,
+          "false_positives": 18,
+          "precision": 0.55,
+          "events": 42,
+          "covered": 26,
+          "matched": 22,
+          "recall": 0.846,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 35,
+              "covered": 26,
+              "matched": 22,
+              "recall": 0.846
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "100-200 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "200-500 m": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "1-2 km": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            "2-5 km": {
+              "events": 1,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            },
+            ">5 km": {
+              "events": 2,
+              "covered": 0,
+              "matched": 0,
+              "recall": null
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 42,
+              "covered": 26,
+              "matched": 22,
+              "recall": 0.846
+            }
+          }
+        },
+        "test": {
+          "detections": 43,
+          "true_positives": 25,
+          "false_positives": 18,
+          "precision": 0.581,
+          "events": 29,
+          "covered": 29,
+          "matched": 25,
+          "recall": 0.862,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 29,
+              "covered": 29,
+              "matched": 25,
+              "recall": 0.862
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 29,
+              "covered": 29,
+              "matched": 25,
+              "recall": 0.862
+            }
+          }
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.077,
+          "precision_mean": 0.05
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 0,
+          "same_sign": 0,
+          "median_step_over_estimate": null
+        }
+      },
+      "frozen_iss_unmatched_detections": [
+        {
+          "start_utc": "2023-01-02T20:17:09Z",
+          "end_utc": "2023-01-03T03:35:34Z",
+          "step_m": 4595.1,
+          "z": 19.22,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2023-02-06T01:19:03Z",
+          "end_utc": "2023-02-06T16:38:39Z",
+          "step_m": 297.1,
+          "z": 15.36,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2023-03-02T14:35:58Z",
+          "end_utc": "2023-03-02T21:56:27Z",
+          "step_m": 318.3,
+          "z": 16.72,
+          "period": "tune"
+        }
+      ]
+    },
+    "SPOT-5": {
+      "norad_id": 27421,
+      "regime": "LEO",
+      "tle": {
+        "tle_file": "gp_history-27421-2002-04-27--2015-12-19.json",
+        "tle_count": 16337,
+        "near_duplicates_dropped": 34,
+        "first_epoch": "2002-05-04T11:45:15Z",
+        "last_epoch": "2015-12-18T19:38:24Z",
+        "per_day": 3.28,
+        "median_gap_hours": 7.1,
+        "p90_gap_hours": 10.1,
+        "gaps_over_2_days": 4
+      },
+      "log_rows": 116,
+      "log_events_after_merging": 116,
+      "log_events_inside_tle_history": 116,
+      "split_date": "2012-03-01",
+      "noise_sigma_m_median": {
+        "frozen_iss": 0.3,
+        "tuned_leo": 0.5
+      },
+      "lag_days": {
+        "tune": {
+          "events": 20,
+          "epoch_before_step_minus_burn_end": {
+            "median": 1.04,
+            "p10": -0.01,
+            "p90": 1.97
+          }
+        },
+        "test": {
+          "events": 37,
+          "epoch_before_step_minus_burn_end": {
+            "median": 0.89,
+            "p10": -1.08,
+            "p90": 1.9
+          }
+        }
+      },
+      "frozen_iss": {
+        "all": {
+          "detections": 14,
+          "true_positives": 12,
+          "false_positives": 2,
+          "precision": 0.857,
+          "events": 116,
+          "covered": 116,
+          "matched": 12,
+          "recall": 0.103,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 47,
+              "covered": 47,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 45,
+              "covered": 45,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "100-200 m": {
+              "events": 10,
+              "covered": 10,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 5,
+              "covered": 5,
+              "matched": 4,
+              "recall": 0.8
+            },
+            "2-5 km": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            ">5 km": {
+              "events": 8,
+              "covered": 8,
+              "matched": 7,
+              "recall": 0.875
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 109,
+              "covered": 109,
+              "matched": 12,
+              "recall": 0.11
+            },
+            "cross-track": {
+              "events": 7,
+              "covered": 7,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "tune": {
+          "detections": 2,
+          "true_positives": 2,
+          "false_positives": 0,
+          "precision": 1.0,
+          "events": 69,
+          "covered": 69,
+          "matched": 2,
+          "recall": 0.029,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 41,
+              "covered": 41,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 23,
+              "covered": 23,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "100-200 m": {
+              "events": 3,
+              "covered": 3,
+              "matched": 0,
+              "recall": 0.0
+            },
+            ">5 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 62,
+              "covered": 62,
+              "matched": 2,
+              "recall": 0.032
+            },
+            "cross-track": {
+              "events": 7,
+              "covered": 7,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "test": {
+          "detections": 12,
+          "true_positives": 10,
+          "false_positives": 2,
+          "precision": 0.833,
+          "events": 47,
+          "covered": 47,
+          "matched": 10,
+          "recall": 0.213,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 6,
+              "covered": 6,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 22,
+              "covered": 22,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "100-200 m": {
+              "events": 7,
+              "covered": 7,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 5,
+              "covered": 5,
+              "matched": 4,
+              "recall": 0.8
+            },
+            "2-5 km": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            ">5 km": {
+              "events": 6,
+              "covered": 6,
+              "matched": 5,
+              "recall": 0.833
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 47,
+              "covered": 47,
+              "matched": 10,
+              "recall": 0.213
+            }
+          }
+        },
+        "chance_all": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.009,
+          "precision_mean": 0.071
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.018,
+          "precision_mean": 0.07
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 12,
+          "same_sign": 12,
+          "median_step_over_estimate": 1.0
+        }
+      },
+      "tuned": {
+        "tune": {
+          "detections": 27,
+          "true_positives": 17,
+          "false_positives": 10,
+          "precision": 0.63,
+          "events": 69,
+          "covered": 69,
+          "matched": 17,
+          "recall": 0.246,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 41,
+              "covered": 41,
+              "matched": 5,
+              "recall": 0.122
+            },
+            "50-100 m": {
+              "events": 23,
+              "covered": 23,
+              "matched": 8,
+              "recall": 0.348
+            },
+            "100-200 m": {
+              "events": 3,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            },
+            ">5 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 62,
+              "covered": 62,
+              "matched": 17,
+              "recall": 0.274
+            },
+            "cross-track": {
+              "events": 7,
+              "covered": 7,
+              "matched": 0,
+              "recall": 0.0
+            }
+          }
+        },
+        "test": {
+          "detections": 26,
+          "true_positives": 24,
+          "false_positives": 2,
+          "precision": 0.923,
+          "events": 47,
+          "covered": 47,
+          "matched": 24,
+          "recall": 0.511,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 6,
+              "covered": 6,
+              "matched": 4,
+              "recall": 0.667
+            },
+            "50-100 m": {
+              "events": 22,
+              "covered": 22,
+              "matched": 11,
+              "recall": 0.5
+            },
+            "100-200 m": {
+              "events": 7,
+              "covered": 7,
+              "matched": 2,
+              "recall": 0.286
+            },
+            "200-500 m": {
+              "events": 5,
+              "covered": 5,
+              "matched": 2,
+              "recall": 0.4
+            },
+            "2-5 km": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            ">5 km": {
+              "events": 6,
+              "covered": 6,
+              "matched": 4,
+              "recall": 0.667
+            }
+          },
+          "by_kind": {
+            "along-track": {
+              "events": 47,
+              "covered": 47,
+              "matched": 24,
+              "recall": 0.511
+            }
+          }
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.014,
+          "precision_mean": 0.025
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 13,
+          "same_sign": 13,
+          "median_step_over_estimate": 1.0
+        }
+      },
+      "frozen_iss_unmatched_detections": [
+        {
+          "start_utc": "2013-12-19T09:55:33Z",
+          "end_utc": "2013-12-19T15:02:45Z",
+          "step_m": -229.5,
+          "z": -32.66,
+          "period": "test"
+        },
+        {
+          "start_utc": "2015-12-11T22:32:51Z",
+          "end_utc": "2015-12-12T01:56:06Z",
+          "step_m": -8938.1,
+          "z": -1108.02,
+          "period": "test"
+        }
+      ]
+    },
+    "QZS-3": {
+      "norad_id": 42917,
+      "regime": "GEO",
+      "tle": {
+        "tle_file": "gp_history-42917-2017-10-06--2026-11-02.json",
+        "tle_count": 7334,
+        "near_duplicates_dropped": 570,
+        "first_epoch": "2017-10-06T14:29:57Z",
+        "last_epoch": "2026-11-01T23:54:37Z",
+        "per_day": 2.21,
+        "median_gap_hours": 8.6,
+        "p90_gap_hours": 23.6,
+        "gaps_over_2_days": 21
+      },
+      "log_rows": 260,
+      "log_events_after_merging": 217,
+      "log_events_inside_tle_history": 217,
+      "split_date": "2023-01-01",
+      "noise_sigma_m_median": {
+        "frozen_iss": 2.3,
+        "tuned_geo": 2.3
+      },
+      "lag_days": {
+        "tune": {
+          "events": 99,
+          "epoch_before_step_minus_burn_end": {
+            "median": 0.2,
+            "p10": -0.55,
+            "p90": 1.18
+          }
+        },
+        "test": {
+          "events": 64,
+          "epoch_before_step_minus_burn_end": {
+            "median": 0.24,
+            "p10": -0.34,
+            "p90": 1.21
+          }
+        }
+      },
+      "frozen_iss": {
+        "all": {
+          "detections": 219,
+          "true_positives": 159,
+          "false_positives": 60,
+          "precision": 0.726,
+          "events": 217,
+          "covered": 205,
+          "matched": 159,
+          "recall": 0.776,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 7,
+              "covered": 7,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 3,
+              "covered": 3,
+              "matched": 2,
+              "recall": 0.667
+            },
+            "100-200 m": {
+              "events": 13,
+              "covered": 13,
+              "matched": 6,
+              "recall": 0.462
+            },
+            "200-500 m": {
+              "events": 20,
+              "covered": 19,
+              "matched": 7,
+              "recall": 0.368
+            },
+            "500 m-1 km": {
+              "events": 17,
+              "covered": 15,
+              "matched": 6,
+              "recall": 0.4
+            },
+            "1-2 km": {
+              "events": 4,
+              "covered": 4,
+              "matched": 3,
+              "recall": 0.75
+            },
+            "2-5 km": {
+              "events": 153,
+              "covered": 144,
+              "matched": 135,
+              "recall": 0.938
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 141,
+              "covered": 135,
+              "matched": 125,
+              "recall": 0.926
+            },
+            "EW+NS": {
+              "events": 16,
+              "covered": 13,
+              "matched": 13,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 60,
+              "covered": 57,
+              "matched": 21,
+              "recall": 0.368
+            }
+          }
+        },
+        "tune": {
+          "detections": 136,
+          "true_positives": 98,
+          "false_positives": 38,
+          "precision": 0.721,
+          "events": 128,
+          "covered": 125,
+          "matched": 98,
+          "recall": 0.784,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 5,
+              "covered": 5,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            "100-200 m": {
+              "events": 7,
+              "covered": 7,
+              "matched": 3,
+              "recall": 0.429
+            },
+            "200-500 m": {
+              "events": 13,
+              "covered": 13,
+              "matched": 5,
+              "recall": 0.385
+            },
+            "500 m-1 km": {
+              "events": 10,
+              "covered": 9,
+              "matched": 5,
+              "recall": 0.556
+            },
+            "1-2 km": {
+              "events": 4,
+              "covered": 4,
+              "matched": 3,
+              "recall": 0.75
+            },
+            "2-5 km": {
+              "events": 88,
+              "covered": 86,
+              "matched": 81,
+              "recall": 0.942
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 84,
+              "covered": 83,
+              "matched": 77,
+              "recall": 0.928
+            },
+            "EW+NS": {
+              "events": 8,
+              "covered": 7,
+              "matched": 7,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 36,
+              "covered": 35,
+              "matched": 14,
+              "recall": 0.4
+            }
+          }
+        },
+        "test": {
+          "detections": 83,
+          "true_positives": 61,
+          "false_positives": 22,
+          "precision": 0.735,
+          "events": 89,
+          "covered": 80,
+          "matched": 61,
+          "recall": 0.762,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "50-100 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            "100-200 m": {
+              "events": 6,
+              "covered": 6,
+              "matched": 3,
+              "recall": 0.5
+            },
+            "200-500 m": {
+              "events": 7,
+              "covered": 6,
+              "matched": 2,
+              "recall": 0.333
+            },
+            "500 m-1 km": {
+              "events": 7,
+              "covered": 6,
+              "matched": 1,
+              "recall": 0.167
+            },
+            "2-5 km": {
+              "events": 65,
+              "covered": 58,
+              "matched": 54,
+              "recall": 0.931
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 57,
+              "covered": 52,
+              "matched": 48,
+              "recall": 0.923
+            },
+            "EW+NS": {
+              "events": 8,
+              "covered": 6,
+              "matched": 6,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 24,
+              "covered": 22,
+              "matched": 7,
+              "recall": 0.318
+            }
+          }
+        },
+        "chance_all": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.101,
+          "precision_mean": 0.096
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.086,
+          "precision_mean": 0.086
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 157,
+          "same_sign": 151,
+          "median_step_over_estimate": 1.01
+        }
+      },
+      "tuned": {
+        "tune": {
+          "detections": 120,
+          "true_positives": 97,
+          "false_positives": 23,
+          "precision": 0.808,
+          "events": 128,
+          "covered": 125,
+          "matched": 97,
+          "recall": 0.776,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 5,
+              "covered": 5,
+              "matched": 1,
+              "recall": 0.2
+            },
+            "50-100 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            "100-200 m": {
+              "events": 7,
+              "covered": 7,
+              "matched": 3,
+              "recall": 0.429
+            },
+            "200-500 m": {
+              "events": 13,
+              "covered": 13,
+              "matched": 3,
+              "recall": 0.231
+            },
+            "500 m-1 km": {
+              "events": 10,
+              "covered": 9,
+              "matched": 4,
+              "recall": 0.444
+            },
+            "1-2 km": {
+              "events": 4,
+              "covered": 4,
+              "matched": 2,
+              "recall": 0.5
+            },
+            "2-5 km": {
+              "events": 88,
+              "covered": 86,
+              "matched": 83,
+              "recall": 0.965
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 84,
+              "covered": 83,
+              "matched": 77,
+              "recall": 0.928
+            },
+            "EW+NS": {
+              "events": 8,
+              "covered": 7,
+              "matched": 7,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 36,
+              "covered": 35,
+              "matched": 13,
+              "recall": 0.371
+            }
+          }
+        },
+        "test": {
+          "detections": 79,
+          "true_positives": 60,
+          "false_positives": 19,
+          "precision": 0.759,
+          "events": 89,
+          "covered": 80,
+          "matched": 60,
+          "recall": 0.75,
+          "by_delta_a_bin": {
+            "<50 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            "50-100 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            "100-200 m": {
+              "events": 6,
+              "covered": 6,
+              "matched": 2,
+              "recall": 0.333
+            },
+            "200-500 m": {
+              "events": 7,
+              "covered": 6,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "500 m-1 km": {
+              "events": 7,
+              "covered": 6,
+              "matched": 1,
+              "recall": 0.167
+            },
+            "2-5 km": {
+              "events": 65,
+              "covered": 58,
+              "matched": 55,
+              "recall": 0.948
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 57,
+              "covered": 52,
+              "matched": 49,
+              "recall": 0.942
+            },
+            "EW+NS": {
+              "events": 8,
+              "covered": 6,
+              "matched": 6,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 24,
+              "covered": 22,
+              "matched": 5,
+              "recall": 0.227
+            }
+          }
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.082,
+          "precision_mean": 0.087
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 153,
+          "same_sign": 146,
+          "median_step_over_estimate": 1.01
+        }
+      },
+      "frozen_iss_unmatched_detections": [
+        {
+          "start_utc": "2017-12-01T10:49:58Z",
+          "end_utc": "2017-12-01T18:02:55Z",
+          "step_m": -2512.9,
+          "z": -66.55,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-01-12T08:05:05Z",
+          "end_utc": "2018-01-13T08:01:02Z",
+          "step_m": -761.0,
+          "z": -89.35,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-01-17T07:45:21Z",
+          "end_utc": "2018-01-18T07:41:27Z",
+          "step_m": -485.9,
+          "z": -19.82,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-01-19T07:37:32Z",
+          "end_utc": "2018-01-20T07:33:39Z",
+          "step_m": -611.4,
+          "z": -237.33,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-01-26T07:10:31Z",
+          "end_utc": "2018-01-27T07:05:50Z",
+          "step_m": -2768.7,
+          "z": -172.74,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-03-26T03:18:02Z",
+          "end_utc": "2018-03-27T03:14:01Z",
+          "step_m": -3024.1,
+          "z": -153.44,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-04-19T01:43:39Z",
+          "end_utc": "2018-04-20T01:39:39Z",
+          "step_m": -3304.9,
+          "z": -142.97,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-05-12T00:13:17Z",
+          "end_utc": "2018-05-13T00:09:16Z",
+          "step_m": -3382.7,
+          "z": -161.57,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-05-31T22:54:26Z",
+          "end_utc": "2018-06-01T22:50:31Z",
+          "step_m": 673.0,
+          "z": 57.88,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-06-04T22:38:48Z",
+          "end_utc": "2018-06-05T22:34:52Z",
+          "step_m": -641.1,
+          "z": -12.89,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-06-10T22:15:25Z",
+          "end_utc": "2018-06-11T22:11:25Z",
+          "step_m": -3307.7,
+          "z": -663.1,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-06-20T21:35:37Z",
+          "end_utc": "2018-06-21T21:31:43Z",
+          "step_m": 627.1,
+          "z": 75.71,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-07-02T20:48:50Z",
+          "end_utc": "2018-07-03T20:44:57Z",
+          "step_m": -3969.2,
+          "z": -228.15,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-11-16T11:50:06Z",
+          "end_utc": "2018-11-17T11:46:06Z",
+          "step_m": -3314.7,
+          "z": -240.09,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-12-20T09:36:02Z",
+          "end_utc": "2018-12-21T09:32:08Z",
+          "step_m": 300.8,
+          "z": 29.58,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2018-12-29T09:01:02Z",
+          "end_utc": "2018-12-30T08:57:02Z",
+          "step_m": -3123.1,
+          "z": -23.82,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-04-16T21:00:17Z",
+          "end_utc": "2019-04-17T21:50:47Z",
+          "step_m": -3029.8,
+          "z": -308.36,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-05-09T16:31:11Z",
+          "end_utc": "2019-05-10T20:17:26Z",
+          "step_m": -3365.7,
+          "z": -382.63,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-06-14T19:40:24Z",
+          "end_utc": "2019-06-15T16:35:46Z",
+          "step_m": 645.3,
+          "z": 108.24,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-06-19T23:43:17Z",
+          "end_utc": "2019-06-20T15:13:37Z",
+          "step_m": -904.8,
+          "z": -181.51,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-09-20T21:32:42Z",
+          "end_utc": "2019-09-21T20:43:10Z",
+          "step_m": -3012.5,
+          "z": -16.8,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-11-06T17:26:42Z",
+          "end_utc": "2019-11-07T14:46:14Z",
+          "step_m": -3185.1,
+          "z": -461.02,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-12-01T20:36:21Z",
+          "end_utc": "2019-12-02T21:50:42Z",
+          "step_m": -3155.1,
+          "z": -21.2,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-12-19T11:14:54Z",
+          "end_utc": "2019-12-19T18:08:19Z",
+          "step_m": 638.7,
+          "z": 51.02,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2019-12-25T11:58:01Z",
+          "end_utc": "2019-12-25T20:46:42Z",
+          "step_m": -707.8,
+          "z": -140.78,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2020-03-28T18:56:42Z",
+          "end_utc": "2020-03-29T11:43:42Z",
+          "step_m": -3514.3,
+          "z": -1441.04,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2020-12-07T17:26:42Z",
+          "end_utc": "2020-12-07T23:27:42Z",
+          "step_m": -2440.4,
+          "z": -12.15,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2020-12-24T21:00:00Z",
+          "end_utc": "2020-12-25T11:21:49Z",
+          "step_m": 839.5,
+          "z": 353.37,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2021-05-15T11:53:02Z",
+          "end_utc": "2021-05-15T20:29:53Z",
+          "step_m": -3478.9,
+          "z": -1188.26,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2021-06-07T10:17:42Z",
+          "end_utc": "2021-06-07T21:28:13Z",
+          "step_m": -2904.5,
+          "z": -272.87,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2021-06-20T07:29:33Z",
+          "end_utc": "2021-06-21T12:46:40Z",
+          "step_m": 563.3,
+          "z": 42.79,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2021-06-25T13:14:26Z",
+          "end_utc": "2021-06-25T14:57:52Z",
+          "step_m": -659.6,
+          "z": -124.06,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2021-10-17T23:05:42Z",
+          "end_utc": "2021-10-18T11:09:08Z",
+          "step_m": -2502.4,
+          "z": -14.48,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2021-12-15T10:58:04Z",
+          "end_utc": "2021-12-15T15:29:50Z",
+          "step_m": 736.1,
+          "z": 714.39,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2021-12-21T01:19:09Z",
+          "end_utc": "2021-12-21T14:38:42Z",
+          "step_m": -695.1,
+          "z": -40.57,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2022-06-09T09:38:42Z",
+          "end_utc": "2022-06-09T20:28:26Z",
+          "step_m": -3031.6,
+          "z": -1118.99,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2022-07-18T17:49:26Z",
+          "end_utc": "2022-07-19T11:08:27Z",
+          "step_m": -2884.1,
+          "z": -1110.86,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2022-12-13T09:17:07Z",
+          "end_utc": "2022-12-13T14:24:42Z",
+          "step_m": -3261.6,
+          "z": -803.79,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2023-03-25T11:13:42Z",
+          "end_utc": "2023-03-26T22:42:15Z",
+          "step_m": -3032.5,
+          "z": -748.25,
+          "period": "test"
+        },
+        {
+          "start_utc": "2023-03-26T22:42:15Z",
+          "end_utc": "2023-03-27T14:45:42Z",
+          "step_m": -3022.1,
+          "z": -871.65,
+          "period": "test"
+        },
+        {
+          "start_utc": "2023-04-18T23:02:52Z",
+          "end_utc": "2023-04-19T14:08:01Z",
+          "step_m": -3238.0,
+          "z": -3142.64,
+          "period": "test"
+        },
+        {
+          "start_utc": "2023-09-16T23:29:52Z",
+          "end_utc": "2023-09-17T13:15:27Z",
+          "step_m": -3132.2,
+          "z": -1664.14,
+          "period": "test"
+        },
+        {
+          "start_utc": "2023-10-07T21:39:10Z",
+          "end_utc": "2023-10-07T22:40:45Z",
+          "step_m": -3202.2,
+          "z": -326.26,
+          "period": "test"
+        },
+        {
+          "start_utc": "2024-01-08T07:27:36Z",
+          "end_utc": "2024-01-08T12:37:00Z",
+          "step_m": -2934.9,
+          "z": -328.81,
+          "period": "test"
+        },
+        {
+          "start_utc": "2024-06-08T05:38:11Z",
+          "end_utc": "2024-06-08T13:38:54Z",
+          "step_m": -3192.3,
+          "z": -1409.34,
+          "period": "test"
+        },
+        {
+          "start_utc": "2024-07-01T20:41:45Z",
+          "end_utc": "2024-07-02T14:58:26Z",
+          "step_m": -3794.6,
+          "z": -455.38,
+          "period": "test"
+        },
+        {
+          "start_utc": "2024-07-24T04:10:42Z",
+          "end_utc": "2024-07-24T13:15:13Z",
+          "step_m": -3313.5,
+          "z": -1396.83,
+          "period": "test"
+        },
+        {
+          "start_utc": "2024-08-15T21:19:07Z",
+          "end_utc": "2024-08-16T13:57:26Z",
+          "step_m": -3574.0,
+          "z": -14.04,
+          "period": "test"
+        },
+        {
+          "start_utc": "2024-10-20T18:28:44Z",
+          "end_utc": "2024-10-20T19:34:42Z",
+          "step_m": -3078.6,
+          "z": -1252.36,
+          "period": "test"
+        },
+        {
+          "start_utc": "2025-02-05T04:35:38Z",
+          "end_utc": "2025-02-06T14:06:38Z",
+          "step_m": -2444.5,
+          "z": -52.03,
+          "period": "test"
+        },
+        {
+          "start_utc": "2025-02-26T12:56:38Z",
+          "end_utc": "2025-02-27T20:29:12Z",
+          "step_m": -3183.3,
+          "z": -168.69,
+          "period": "test"
+        },
+        {
+          "start_utc": "2025-02-27T20:29:12Z",
+          "end_utc": "2025-02-28T14:03:38Z",
+          "step_m": -3042.6,
+          "z": -224.27,
+          "period": "test"
+        },
+        {
+          "start_utc": "2025-08-15T22:04:03Z",
+          "end_utc": "2025-08-16T08:20:48Z",
+          "step_m": -3198.9,
+          "z": -534.92,
+          "period": "test"
+        },
+        {
+          "start_utc": "2025-12-15T20:50:23Z",
+          "end_utc": "2025-12-16T07:06:43Z",
+          "step_m": 680.3,
+          "z": 660.28,
+          "period": "test"
+        },
+        {
+          "start_utc": "2025-12-21T12:37:21Z",
+          "end_utc": "2025-12-21T13:48:06Z",
+          "step_m": -705.4,
+          "z": -365.42,
+          "period": "test"
+        },
+        {
+          "start_utc": "2025-12-27T01:00:38Z",
+          "end_utc": "2025-12-27T06:45:26Z",
+          "step_m": -3396.2,
+          "z": -830.14,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-04-13T21:34:16Z",
+          "end_utc": "2026-04-15T18:03:43Z",
+          "step_m": -3200.5,
+          "z": -2992.76,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-06-11T00:09:41Z",
+          "end_utc": "2026-06-11T13:50:58Z",
+          "step_m": 505.7,
+          "z": 58.75,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-07-29T04:44:29Z",
+          "end_utc": "2026-07-29T23:19:07Z",
+          "step_m": -3152.8,
+          "z": -3059.97,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-10-24T07:13:27Z",
+          "end_utc": "2026-10-25T17:26:07Z",
+          "step_m": -3245.6,
+          "z": -1450.75,
+          "period": "test"
+        }
+      ]
+    },
+    "QZS-6": {
+      "norad_id": 62876,
+      "regime": "GEO",
+      "tle": {
+        "tle_file": "gp_history-62876-2025-07-23--2026-11-09.json",
+        "tle_count": 1299,
+        "near_duplicates_dropped": 63,
+        "first_epoch": "2025-07-23T15:17:34Z",
+        "last_epoch": "2026-11-08T23:21:57Z",
+        "per_day": 2.74,
+        "median_gap_hours": 6.9,
+        "p90_gap_hours": 17.5,
+        "gaps_over_2_days": 8
+      },
+      "log_rows": 39,
+      "log_events_after_merging": 31,
+      "log_events_inside_tle_history": 31,
+      "split_date": "2026-04-01",
+      "noise_sigma_m_median": {
+        "frozen_iss": 1.8,
+        "tuned_geo": 1.8
+      },
+      "lag_days": {
+        "tune": {
+          "events": 10,
+          "epoch_before_step_minus_burn_end": {
+            "median": 0.27,
+            "p10": -0.03,
+            "p90": 1.36
+          }
+        },
+        "test": {
+          "events": 10,
+          "epoch_before_step_minus_burn_end": {
+            "median": 0.24,
+            "p10": -0.46,
+            "p90": 0.45
+          }
+        }
+      },
+      "frozen_iss": {
+        "all": {
+          "detections": 34,
+          "true_positives": 20,
+          "false_positives": 14,
+          "precision": 0.588,
+          "events": 31,
+          "covered": 27,
+          "matched": 20,
+          "recall": 0.741,
+          "by_delta_a_bin": {
+            "50-100 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "100-200 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 5,
+              "covered": 4,
+              "matched": 2,
+              "recall": 0.5
+            },
+            "500 m-1 km": {
+              "events": 6,
+              "covered": 5,
+              "matched": 4,
+              "recall": 0.8
+            },
+            "1-2 km": {
+              "events": 8,
+              "covered": 7,
+              "matched": 7,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 9,
+              "covered": 8,
+              "matched": 7,
+              "recall": 0.875
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 20,
+              "covered": 18,
+              "matched": 15,
+              "recall": 0.833
+            },
+            "EW+NS": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 10,
+              "covered": 8,
+              "matched": 4,
+              "recall": 0.5
+            }
+          }
+        },
+        "tune": {
+          "detections": 18,
+          "true_positives": 11,
+          "false_positives": 7,
+          "precision": 0.611,
+          "events": 17,
+          "covered": 14,
+          "matched": 11,
+          "recall": 0.786,
+          "by_delta_a_bin": {
+            "100-200 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 3,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            "500 m-1 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            },
+            "1-2 km": {
+              "events": 4,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 6,
+              "covered": 5,
+              "matched": 5,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 11,
+              "covered": 9,
+              "matched": 9,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 6,
+              "covered": 5,
+              "matched": 2,
+              "recall": 0.4
+            }
+          }
+        },
+        "test": {
+          "detections": 16,
+          "true_positives": 9,
+          "false_positives": 7,
+          "precision": 0.562,
+          "events": 14,
+          "covered": 13,
+          "matched": 9,
+          "recall": 0.692,
+          "by_delta_a_bin": {
+            "50-100 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            "500 m-1 km": {
+              "events": 4,
+              "covered": 3,
+              "matched": 2,
+              "recall": 0.667
+            },
+            "1-2 km": {
+              "events": 4,
+              "covered": 4,
+              "matched": 4,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 3,
+              "covered": 3,
+              "matched": 2,
+              "recall": 0.667
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 9,
+              "covered": 9,
+              "matched": 6,
+              "recall": 0.667
+            },
+            "EW+NS": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 4,
+              "covered": 3,
+              "matched": 2,
+              "recall": 0.667
+            }
+          }
+        },
+        "chance_all": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.113,
+          "precision_mean": 0.098
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.146,
+          "precision_mean": 0.125
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 20,
+          "same_sign": 19,
+          "median_step_over_estimate": 1.02
+        }
+      },
+      "tuned": {
+        "tune": {
+          "detections": 13,
+          "true_positives": 12,
+          "false_positives": 1,
+          "precision": 0.923,
+          "events": 17,
+          "covered": 14,
+          "matched": 12,
+          "recall": 0.857,
+          "by_delta_a_bin": {
+            "100-200 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 3,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            },
+            "500 m-1 km": {
+              "events": 2,
+              "covered": 2,
+              "matched": 2,
+              "recall": 1.0
+            },
+            "1-2 km": {
+              "events": 4,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 6,
+              "covered": 5,
+              "matched": 5,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 11,
+              "covered": 9,
+              "matched": 9,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 6,
+              "covered": 5,
+              "matched": 3,
+              "recall": 0.6
+            }
+          }
+        },
+        "test": {
+          "detections": 13,
+          "true_positives": 10,
+          "false_positives": 3,
+          "precision": 0.769,
+          "events": 14,
+          "covered": 13,
+          "matched": 10,
+          "recall": 0.769,
+          "by_delta_a_bin": {
+            "50-100 m": {
+              "events": 1,
+              "covered": 1,
+              "matched": 0,
+              "recall": 0.0
+            },
+            "200-500 m": {
+              "events": 2,
+              "covered": 2,
+              "matched": 1,
+              "recall": 0.5
+            },
+            "500 m-1 km": {
+              "events": 4,
+              "covered": 3,
+              "matched": 2,
+              "recall": 0.667
+            },
+            "1-2 km": {
+              "events": 4,
+              "covered": 4,
+              "matched": 4,
+              "recall": 1.0
+            },
+            "2-5 km": {
+              "events": 3,
+              "covered": 3,
+              "matched": 3,
+              "recall": 1.0
+            }
+          },
+          "by_kind": {
+            "EW": {
+              "events": 9,
+              "covered": 9,
+              "matched": 7,
+              "recall": 0.778
+            },
+            "EW+NS": {
+              "events": 1,
+              "covered": 1,
+              "matched": 1,
+              "recall": 1.0
+            },
+            "NS": {
+              "events": 4,
+              "covered": 3,
+              "matched": 2,
+              "recall": 0.667
+            }
+          }
+        },
+        "chance_test": {
+          "shifts_days": [
+            -19,
+            -13,
+            -7,
+            7,
+            13,
+            19
+          ],
+          "recall_mean": 0.136,
+          "precision_mean": 0.128
+        },
+        "sign_and_size": {
+          "matched_events_with_estimate_ge_100m": 22,
+          "same_sign": 21,
+          "median_step_over_estimate": 1.02
+        }
+      },
+      "frozen_iss_unmatched_detections": [
+        {
+          "start_utc": "2025-09-02T21:24:24Z",
+          "end_utc": "2025-09-03T03:02:09Z",
+          "step_m": 726.3,
+          "z": 116.96,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2025-09-10T07:42:26Z",
+          "end_utc": "2025-09-10T16:16:28Z",
+          "step_m": -467.4,
+          "z": -25.88,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2025-09-22T00:36:55Z",
+          "end_utc": "2025-09-22T12:36:19Z",
+          "step_m": -778.9,
+          "z": -304.47,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2025-09-22T19:44:06Z",
+          "end_utc": "2025-09-23T20:47:26Z",
+          "step_m": -771.0,
+          "z": -57.47,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2025-12-11T03:00:38Z",
+          "end_utc": "2025-12-11T13:56:27Z",
+          "step_m": -1925.2,
+          "z": -1601.84,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2026-03-07T14:32:57Z",
+          "end_utc": "2026-03-07T17:29:38Z",
+          "step_m": 671.7,
+          "z": 838.18,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2026-03-14T22:37:54Z",
+          "end_utc": "2026-03-15T02:03:12Z",
+          "step_m": -850.4,
+          "z": -211.91,
+          "period": "tune"
+        },
+        {
+          "start_utc": "2026-04-25T23:09:52Z",
+          "end_utc": "2026-04-26T12:17:09Z",
+          "step_m": 716.7,
+          "z": 894.27,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-05-02T03:54:21Z",
+          "end_utc": "2026-05-02T10:15:39Z",
+          "step_m": -648.3,
+          "z": -808.97,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-07-16T18:36:20Z",
+          "end_utc": "2026-07-17T03:26:16Z",
+          "step_m": -2297.1,
+          "z": -539.96,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-08-10T20:25:52Z",
+          "end_utc": "2026-08-11T00:31:23Z",
+          "step_m": 530.8,
+          "z": 81.17,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-08-16T20:37:39Z",
+          "end_utc": "2026-08-17T00:08:51Z",
+          "step_m": -686.2,
+          "z": -69.07,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-08-31T11:30:32Z",
+          "end_utc": "2026-08-31T13:13:07Z",
+          "step_m": -569.0,
+          "z": -114.17,
+          "period": "test"
+        },
+        {
+          "start_utc": "2026-10-09T20:32:21Z",
+          "end_utc": "2026-10-09T23:07:37Z",
+          "step_m": -1958.0,
+          "z": -1178.33,
+          "period": "test"
+        }
+      ]
+    }
+  }
+}
