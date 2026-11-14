@@ -124,8 +124,9 @@ def _git(repo: Path, *args: str) -> str:
     ).stdout
 
 
-def _resolve_names(repo: Path, pattern: re.Pattern[str]) -> dict[int, str]:
-    """Names from the first version of the file in each month and the last version."""
+def _all_names(repo: Path) -> dict[int, list[str]]:
+    """Each object's distinct names, oldest first, in the first version of the file in each month
+    and in the last version."""
     # shortcut: monthly samples can miss an object that was in active.txt for under a month;
     # scan every version if a short-lived object ever matters.
     log = _git(repo, "log", "--first-parent", "--reverse", "--format=%H %cI", "--", PATH)
@@ -133,9 +134,11 @@ def _resolve_names(repo: Path, pattern: re.Pattern[str]) -> dict[int, str]:
     commits = [row.split() for row in log.splitlines() if row.strip()]
     for sha, date in commits:
         samples.setdefault(date[:7], sha)
-    found: dict[int, str] = {}
+    found: dict[int, list[str]] = {}
     for sha in [*samples.values(), commits[-1][0]]:
-        found.update(names_matching(_git(repo, "show", f"{sha}:{PATH}"), pattern))
+        for norad, name in names_matching(_git(repo, "show", f"{sha}:{PATH}"), re.compile("")).items():
+            if name not in found.setdefault(norad, []):
+                found[norad].append(name)
     return found
 
 
@@ -159,8 +162,11 @@ def main(argv: list[str] | None = None) -> int:
         subprocess.run(["git", "clone", "--bare", "--single-branch", "-q", REPO_URL, str(repo)], check=True)
         head = _git(repo, "rev-parse", "HEAD").strip()
 
-        names = _resolve_names(repo, args.name_regex) if args.name_regex else {}
-        wanted = set(args.norad) | set(names)
+        names = _all_names(repo)
+        pattern = args.name_regex
+        wanted = set(args.norad) | {
+            n for n, seen in names.items() if pattern and any(pattern.search(name) for name in seen)
+        }
         print(f"walking {PATH} for {len(wanted)} objects", flush=True)
         proc = subprocess.Popen(
             ["git", "-C", str(repo), "log", "--first-parent", "--reverse", "-p", "-U0", "--no-renames",
@@ -179,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
             "".join(f"{a}\n{b}\n" for a, b in (history.lines[e] for e in epochs)), encoding="ascii"
         )
         objects[str(norad)] = {
-            "name": names.get(norad),
+            "names": names.get(norad, []),
             "tle_count": len(epochs),
             "first_epoch": _iso(epochs[0]) if epochs else None,
             "last_epoch": _iso(epochs[-1]) if epochs else None,

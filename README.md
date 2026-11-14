@@ -67,13 +67,13 @@ MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-archive --     python -m
 ```
 
 The job makes a bare clone, streams `git log -p -U0` of `TLEs/active.txt` oldest first, and keeps
-the added line 1 and line 2 of the wanted catalog numbers. `--name-regex` adds every object whose
-name line matches, taken from the first version of the file in each month and the last version.
+the added line 1 and line 2 of the wanted catalog numbers. `--name-regex` adds every object with a
+matching name in the first version of the file in each month or in the last version.
 Each line pair is checked with `parse_tle` and de-duplicated by epoch; when one epoch appears
 with different lines, the first is kept and the manifest counts it under `epoch_conflicts`. It
 writes `<norad>.tle` per object (2-line TLEs in epoch order) and `manifest.json` (repo URL, the
-archive's head commit, the last commit that touched the file, commits walked, and per object its
-name, TLE count, epoch range, rejected pairs, epoch conflicts and gaps longer than 3 days). The
+archive's head commit, the last commit that touched the file, commits walked, and per object the
+names it had, its TLE count, epoch range, rejected pairs, epoch conflicts and gaps longer than 3 days). The
 files arrive in `data/kaggle/ow-archive/out/out/`. A run takes about 5 minutes on Kaggle.
 
 ## Running the tests
