@@ -19,7 +19,33 @@ The detector found these steps in semi-major axis, and none of them matches an e
 | 2023-05-04 16:43 to 05-05 04:38 | +313 m | 12.4 | no clear step; likely a detector false positive | none |
 | 2023-12-22 19:10 to 12-23 15:09 | +3,262 m | 254.5 | clear step up | none found |
 
-The next check for each lead is a Roscosmos or TASS announcement on that date, or a second element source (Space-Track's gp_history, once credentials exist) showing the same step.
+The next check for each lead is a Roscosmos or TASS announcement on that date. Space-Track's gp_history is now available as a second element source; the source check (README) gives the same frozen-setting counts for 2023 and one fewer matched event for 2021-2022, but no lead-by-lead comparison has been written up yet.
+
+## ISS steps with no announced manoeuvre (2024-01 to 2025-12, clean holdout)
+
+Source: `python -m orbit_watch.holdout` on Space-Track gp_history for the ISS (9,080 element sets after merging rows within 1 s), frozen setting `k = 4`, `|z| >= 12`, `|step| >= 200 m`. Full table: `findings/holdout_2024_2025/detections.csv`; plot: `findings/holdout_2024_2025/iss_sma_2024_2025.png`.
+
+The detector matched all 27 covered NASA-listed events in this period and made 15 detections that match none. The NASA list has no Roscosmos announcements, so these are leads, not findings. Most are steps up of 1.7 to 4.9 km with `z` in the hundreds, the size of a typical reboost.
+
+| Interval (UTC) | Step in a | z |
+|---|---|---|
+| 2024-06-14 11:46 to 19:30 | +3,465 m | 188.5 |
+| 2024-09-09 01:02 to 05:39 | −257 m | −27.4 |
+| 2024-09-29 04:02 to 09:41 | +231 m | 60.4 |
+| 2024-10-04 12:26 to 20:09 | +2,826 m | 74.0 |
+| 2024-11-13 22:09 to 11-14 07:16 | +4,913 m | 1,050.1 |
+| 2024-12-21 20:20 to 12-22 11:31 | +2,204 m | 295.3 |
+| 2025-01-11 18:40 to 01-12 09:54 | +3,137 m | 626.0 |
+| 2025-02-01 03:54 to 17:34 | +3,321 m | 596.6 |
+| 2025-04-02 09:22 to 19:42 | +3,621 m | 717.6 |
+| 2025-04-28 16:46 to 04-29 04:34 | +462 m | 12.0 (at the threshold; the likeliest false positive) |
+| 2025-06-18 19:26 to 20:01 | +521 m | 345.7 |
+| 2025-08-13 19:51 to 08-14 19:04 | +1,730 m | 1,022.4 |
+| 2025-09-04 02:26 to 21:00 | +945 m | 220.2 |
+| 2025-10-15 07:11 to 19:34 | +2,394 m | 652.7 |
+| 2025-11-20 05:19 to 13:04 | +2,730 m | 1,042.2 |
+
+No outside source has been checked for these dates yet.
 
 ## Luch / Olymp-K objects at GEO (2021-01 to 2023-12): uncalibrated leads
 
