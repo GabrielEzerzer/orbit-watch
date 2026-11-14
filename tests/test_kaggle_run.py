@@ -53,7 +53,7 @@ def test_attached_files_are_written_with_their_sha256(tmp_path):
     assert "hashlib.sha256(data).hexdigest()" in script
 
 
-@pytest.mark.parametrize("rel", ["../secret", "/etc/passwd", "C:/x", "a//b", "a\b"])
+@pytest.mark.parametrize("rel", ["../secret", "/etc/passwd", "C:/x", "a//b", "a\\b"])
 def test_attach_paths_must_stay_inside_the_repo(rel):
     with pytest.raises(ValueError):
         kaggle_run.build_kernel(b"x", SHA, ["pytest"], "ow-suite", {rel: b"x"})
