@@ -2,25 +2,37 @@
 
 Method. A manoeuvre shows up in mean semi-major axis ``a`` as a step on top of
 a slow, smooth drag decay (tens to ~100+ m/day for the ISS, changing with solar
-activity). For every gap between consecutive epochs the detector
+activity). For every gap between consecutive epochs the detector takes the
+``k`` epochs before the gap and the ``k`` after it and
 
-1. fits a straight line to the ``k`` epochs before the gap and another to the
-   ``k`` epochs after it (local, so the decay rate may differ on each side),
-2. extrapolates both lines to the middle of the gap; the difference is the step,
-3. scores the step against the TLE scatter: ``z = step / se``, where ``se``
-   comes from the ordinary least-squares prediction variance of each line at
-   the gap and a robust residual scatter ``sigma`` (1.4826 x MAD of the
-   residuals of both fits, pooled).
+1. estimates the local decay rate as the median slope over every pair of
+   epochs on the same side of the gap (Theil-Sen, pooled over both sides; no
+   pair straddles the gap, so the step does not enter the slope),
+2. removes that slope, measured from the middle of the gap,
+3. takes the step as the median of the detrended values after the gap minus the
+   median before it,
+4. scores it against the TLE scatter: ``z = step / se`` with
+   ``se = sigma * sqrt(pi / 2) * sqrt(2 / k)`` (the standard error of a
+   difference of two medians), where ``sigma`` is 1.4826 x the median absolute
+   deviation of the detrended values about their side's median, pooled.
 
-``sigma`` is estimated from the data at every gap, not hard-coded. To stop a
-run of nearly identical TLEs from inflating ``z``, it is floored at half the
-median ``sigma`` over the whole series. Each side's fit is made once more after
-dropping points more than 4 ``sigma`` from the first fit, so a transitional TLE
-(one fitted across the burn) or a neighbouring step does not drag the line.
+Medians, not least-squares lines, because a burn is usually followed by one or
+two transitional TLEs (fitted across the burn) that sit off both trends; a
+least-squares line through them leans, and its extrapolation produces ghost
+steps of either sign near the real one. A median ignores up to ``k/2 - 1`` such
+points.
+
+``sigma`` is estimated from the data at every gap, not hard-coded. It is
+floored at half the median ``sigma`` over the series so that a run of nearly
+identical TLEs does not inflate ``z``. Consecutive ISS TLEs come from
+overlapping orbit-determination arcs, so their scatter is small and correlated:
+``z`` ranks steps but is not a calibrated probability, and the minimum ``|step|``
+does most of the work.
 
 A step appears at several neighbouring gaps as the windows slide past it, so
-flagged gaps (``z`` and ``|step|`` over thresholds) are thinned by non-maximum
-suppression: within ``nms_days`` only the highest ``|z|`` survives.
+flagged gaps (``|z|`` and ``|step|`` over thresholds) are thinned by non-maximum
+suppression: within ``nms_days`` only the highest ``|z|`` survives (the gap
+whose two sides are both clean scatters least, so it scores highest).
 
 A gap is not scored when either side's ``k`` epochs span more than
 ``max_span_days`` or the gap itself is longer than ``max_gap_days``, so there
@@ -43,7 +55,6 @@ from orbit_watch.series import ElementSeries
 
 _DAY_US = 86_400e6
 _MAD_TO_SIGMA = 1.4826
-_REJECT_SIGMA = 4.0
 
 
 @dataclass(frozen=True)
@@ -77,36 +88,8 @@ def _days(epochs: np.ndarray) -> np.ndarray:
     return (epochs - epochs[0]).astype("int64") / _DAY_US
 
 
-def _fit(t: np.ndarray, y: np.ndarray):
-    """OLS line; returns value at t=0, prediction-variance factor at 0, residuals."""
-    tbar = t.mean()
-    sxx = ((t - tbar) ** 2).sum()
-    if sxx <= 0:
-        return None
-    slope = ((t - tbar) * (y - y.mean())).sum() / sxx
-    at0 = y.mean() - slope * tbar
-    resid = y - (at0 + slope * t)
-    return at0, 1.0 / len(t) + tbar**2 / sxx, resid
-
-
-def _mad_sigma(r: np.ndarray) -> float:
-    return _MAD_TO_SIGMA * float(np.median(np.abs(r - np.median(r))))
-
-
-def _score_one(tb, yb, ta, ya, floor):
-    fb, fa = _fit(tb, yb), _fit(ta, ya)
-    if fb is None or fa is None:
-        return np.nan, np.nan, np.nan
-    sigma = max(_mad_sigma(np.concatenate([fb[2], fa[2]])), floor)
-    if floor > 0:  # second, robust pass
-        kb, ka = np.abs(fb[2]) <= _REJECT_SIGMA * sigma, np.abs(fa[2]) <= _REJECT_SIGMA * sigma
-        if kb.sum() >= 3 and ka.sum() >= 3:
-            fb2, fa2 = _fit(tb[kb], yb[kb]), _fit(ta[ka], ya[ka])
-            if fb2 is not None and fa2 is not None:
-                fb, fa = fb2, fa2
-                sigma = max(_mad_sigma(np.concatenate([fb[2], fa[2]])), floor)
-    step = fa[0] - fb[0]
-    return step, step / (sigma * np.sqrt(fb[1] + fa[1])), sigma
+def _mad(r: np.ndarray) -> np.ndarray:
+    return np.median(np.abs(r - np.median(r, axis=-1, keepdims=True)), axis=-1)
 
 
 def score_gaps(
@@ -120,17 +103,25 @@ def score_gaps(
            and t[i] - t[i - k + 1] <= max_span_days
            and t[i + k] - t[i + 1] <= max_span_days]
 
-    def run(floor):
-        out = np.full((3, n - 1), np.nan)
-        for i in idx:
-            mid = 0.5 * (t[i] + t[i + 1])
-            b, a = slice(i - k + 1, i + 1), slice(i + 1, i + k + 1)
-            out[:, i] = _score_one(t[b] - mid, y[b] - y[i], t[a] - mid, y[a] - y[i], floor)
-        return out
-
-    raw = run(0.0)
-    floor = 0.5 * float(np.nanmedian(raw[2])) if idx else 0.0
-    step, z, sigma = run(floor)
+    step = np.full(n - 1, np.nan)
+    sigma = np.full(n - 1, np.nan)
+    if idx:
+        ii = np.array(idx)
+        off = np.arange(-k + 1, k + 1)  # k epochs before the gap, k after
+        tw, yw = t[ii[:, None] + off], y[ii[:, None] + off]
+        mid = 0.5 * (t[ii] + t[ii + 1])[:, None]
+        p, q = np.triu_indices(k, 1)  # every pair of epochs on one side of the gap
+        p, q = np.concatenate([p, p + k]), np.concatenate([q, q + k])
+        slopes = (yw[:, q] - yw[:, p]) / (tw[:, q] - tw[:, p])
+        r = yw - np.median(slopes, axis=1)[:, None] * (tw - mid)
+        before, after = r[:, :k], r[:, k:]
+        step[ii] = np.median(after, axis=1) - np.median(before, axis=1)
+        sigma[ii] = _MAD_TO_SIGMA * _mad(np.concatenate(
+            [before - np.median(before, axis=1, keepdims=True),
+             after - np.median(after, axis=1, keepdims=True)], axis=1))
+    floor = 0.5 * float(np.nanmedian(sigma)) if idx else 0.0
+    sigma = np.maximum(sigma, floor)
+    z = step / (sigma * np.sqrt(np.pi / 2) * np.sqrt(2.0 / k))
     return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma)
 
 

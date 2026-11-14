@@ -41,3 +41,13 @@ def test_date_only_events_get_one_day_each_side(tmp_path):
     assert e[0].hi == np.datetime64("2022-01-14T00:00", "us")
     assert e[1].lo == e[1].hi == np.datetime64("2022-04-23T13:25", "us")
     assert [x.category for x in e] == ["reboost", "reboost", "unplanned", "test/aborted burn"]
+
+
+def test_step_sign_must_fit_the_burn():
+    t = ("2022-01-10T12:00", "2022-01-10T12:00")
+    down = [det("2022-01-10T10:00", "2022-01-10T14:00", step=-500.0)]
+    up = [det("2022-01-10T10:00", "2022-01-10T14:00", step=500.0)]
+    assert match([ev(*t, "reboost")], down) == {}
+    assert match([ev(*t, "reboost")], up) == {0: 0}
+    assert match([ev(*t, "debris avoidance (retrograde)")], up) == {}
+    assert match([ev(*t, "debris avoidance")], down) == {0: 0}

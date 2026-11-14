@@ -11,7 +11,9 @@ setting). The chosen setting is then frozen and 2023 is scored once with it;
 An event matches a detection when the event's time (a point when ``time_utc``
 is given, otherwise its date widened by one day either side) overlaps the
 detection's interval (epoch before to epoch after the step) widened by
-``TOLERANCE_DAYS``. Matching is one-to-one, closest centres first.
+``TOLERANCE_DAYS``, and the step has the sign the burn implies: up for a
+reboost (test burns included), down for a deboost or a burn the source calls
+retrograde, either for the rest. Matching is one-to-one, closest centres first.
 
 Recall counts events the detector could score: at least one scored gap overlaps
 the event's window. Other events are listed as excluded for coverage. Precision
@@ -83,6 +85,14 @@ def load_events(path: Path) -> list[Event]:
     return events
 
 
+def _sign_ok(ev: Event, d: Detection) -> bool:
+    if "retrograde" in ev.type or "deboost" in ev.type:
+        return d.step_m < 0
+    if ev.type.startswith("reboost"):
+        return d.step_m > 0
+    return True
+
+
 def _overlaps(ev: Event, start: np.datetime64, end: np.datetime64, tol_days: float) -> bool:
     tol = np.timedelta64(int(tol_days * 86_400e6), "us")
     return ev.lo <= end + tol and ev.hi >= start - tol
@@ -94,7 +104,7 @@ def match(events: list[Event], detections: list[Detection], tol_days: float = TO
     for ei, ev in enumerate(events):
         ec = ev.lo + (ev.hi - ev.lo) / 2
         for di, d in enumerate(detections):
-            if _overlaps(ev, d.start, d.end, tol_days):
+            if _overlaps(ev, d.start, d.end, tol_days) and _sign_ok(ev, d):
                 dc = d.start + (d.end - d.start) / 2
                 pairs.append((abs((ec - dc).astype("int64")), ei, di))
     out: dict[int, int] = {}
