@@ -63,17 +63,15 @@ from pathlib import Path
 
 import numpy as np
 
-from orbit_watch.calibrate import TOLERANCE_DAYS, _iso, _overlaps, load_truth
+from orbit_watch.calibrate import FROZEN as CALIBRATED, TOLERANCE_DAYS, _iso, _overlaps, load_truth
 from orbit_watch.detect import Detection, pick, score_gaps
 from orbit_watch.elements import parse_omm_json
 from orbit_watch.series import ElementSeries, to_series
 
 ISS = 25544
-# Frozen setting: calibrate.run chooses k=4, |z|>=12, |step|>=200 m, NMS 1 day on the 2021-2022
-# archive TLEs (a rerun with groundtruth/iss_manoeuvres.csv gives the same). It is not stored in code, so
-# it is restated here.
-K = 4
-FROZEN = (12.0, 200.0)
+# Frozen setting from calibrate.FROZEN (k=4, |z|>=12, |step|>=200 m), NMS 1 day.
+K = CALIBRATED["k"]
+FROZEN = (float(CALIBRATED["z_min"]), float(CALIBRATED["step_min_m"]))
 NMS_DAYS = 1.0
 LOOSER = tuple((z, s) for z in (6.0, 8.0) for s in (0.0, 50.0, 100.0))
 SIZES_M = (25, 50, 100, 150, 200, 300, 500, 1000, 2000)

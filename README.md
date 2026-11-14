@@ -193,8 +193,8 @@ upper bounds for real burns of the same size.
 These figures come from the run with both truth lists (NASA and Roscosmos). With the NASA list
 alone the frozen setting had 18 such detections, 5.3 a year. The Roscosmos events also remove a few
 gaps (two at the native cadence) from the quiet stretches the injections are drawn from, which reshuffles the random draw, so
-single recall figures moved by up to 0.06 from the NASA-only run; every new 95% interval overlaps
-the old one.
+the pooled recall figures in the table moved by up to 0.06 from the NASA-only run, and each new
+95% interval overlaps the old one. Single-sign cells in the CSV moved by up to 0.09.
 
 ### Beyond the ISS: IDS (LEO) and QZSS (GEO) manoeuvre logs
 
