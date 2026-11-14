@@ -97,6 +97,12 @@ def build_kernel(archive: bytes, sha: str, command: list[str], slug: str) -> tup
         raise ValueError(f"not a full commit SHA: {sha!r}")
     if not command:
         raise ValueError("empty command")
+    # Git Bash turns a '/kaggle/working/out' argument into 'C:/Program Files/Git/kaggle/...'.
+    converted = [a for a in command if re.match(r"[A-Za-z]:[/\\]", a)]
+    if converted:
+        raise ValueError(
+            f"Windows path in the Kaggle command: {converted}; from Git Bash, set MSYS_NO_PATHCONV=1"
+        )
     script = KERNEL_TEMPLATE.format(
         sha=sha,
         command=list(command),
