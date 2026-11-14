@@ -1,9 +1,12 @@
+import json
+from pathlib import Path
+
 import numpy as np
 
 from orbit_watch import calibrate
-from orbit_watch.detect import Detection, GapScores
-from orbit_watch.generalise import (LogEvent, covered, drop_near_duplicates, load_log_events,
-                                    match_near, split_date)
+from orbit_watch.detect import Detection, GapScores, pick
+from orbit_watch.generalise import (FROZEN, LogEvent, Satellite, covered, drop_near_duplicates,
+                                    evaluate, load_log_events, log_coverage, match_near, split_date)
 from orbit_watch.series import ElementSeries
 
 
@@ -116,3 +119,88 @@ def test_near_duplicate_epochs_keep_the_later_set():
     out = drop_near_duplicates(s)
     assert list(out.semi_major_axis_km) == [7000.1, 7000.3, 7000.4]
     assert len(out.epochs) == len(out.bstar) == 3
+
+
+# --- Fengyun labels: no Delta-v, attitude rows, coverage ------------------------------------
+
+GROUNDTRUTH = Path(__file__).resolve().parents[1] / "groundtruth"
+FY2H = 43491  # train in splits.json
+FY_HEADER = ("event_id,satellite,norad_id,cospar_id,start_utc,end_utc,source_start,source_end,"
+             "source_time_zone,source_type,kind,delta_a_est_m,source_file,source_revision,source_url\n")
+
+
+def _fy_row(eid, start, end, kind):
+    return f"{eid},Fengyun-2H,{FY2H},2018-050A,{start},{end},s,e,CST,T,{kind},,f,2022-11-22,u\n"
+
+
+def test_committed_fengyun_log_loads_with_no_estimates():
+    events = load_log_events(GROUNDTRUTH / "fengyun_manoeuvres.csv", FY2H)
+    assert events and all(e.delta_a_est_m is None and e.bin is None for e in events)
+    assert all(e.expected_sign == 0 for e in events)
+    assert sum(e.kind == "attitude" for e in events) == 1  # one GEO-ATTITUDE-CONTROL line
+    assert all("attitude" not in e.kind or e.kind == "attitude" for e in events)
+
+
+def test_events_without_estimate_are_left_out_of_size_bins():
+    e = [ev("2024-03-01T00:00", "2024-03-01T09:00", da=None)]
+    d = [det("2024-03-01T04:00", "2024-03-01T12:00", 900.0)]
+    m = match_near(e, d)
+    res = evaluate(e, [True], d, m, [True], [True])
+    assert (res["matched"], res["true_positives"]) == (1, 1)
+    assert res["by_delta_a_bin"] == {}
+
+
+def test_attitude_rows_do_not_merge_into_orbit_events(tmp_path):
+    p = tmp_path / "fy.csv"
+    p.write_text(FY_HEADER
+                 + _fy_row("A", "2021-03-01T00:00:00Z", "2021-03-01T09:00:00Z", "EW")
+                 + _fy_row("B", "2021-03-01T12:00:00Z", "2021-03-01T21:00:00Z", "attitude"),
+                 encoding="utf-8")
+    assert [(e.event_id, e.kind) for e in load_log_events(p, FY2H)] == [("A", "EW"), ("B", "attitude")]
+
+
+def test_log_coverage_ends_at_ids_revision_or_last_row(tmp_path):
+    lo, hi = log_coverage(GROUNDTRUTH / "fengyun_manoeuvres.csv", FY2H)
+    assert (lo, hi) == (np.datetime64("2019-01-18T01:00", "us"), np.datetime64("2022-01-18T10:00", "us"))
+    p = tmp_path / "ids.csv"
+    p.write_text(
+        "event_id,satellite,norad_id,start_utc,end_utc,n_burns,burn_times_utc,dv_radial_m_s,"
+        "dv_along_m_s,dv_cross_m_s,kind,delta_a_est_m,source_file,source_revision,source_url\n"
+        "C-1,C,36508,2024-05-03T17:55:00Z,2024-05-04T00:35:00Z,1,a,0,-0.03,0,along-track,-75.1,f,2026-11-06,u\n",
+        encoding="utf-8")
+    assert log_coverage(p, 36508) == (np.datetime64("2024-05-03T17:55", "us"),
+                                      np.datetime64("2026-11-06", "us"))
+
+
+def _geo_omm(t0, days, steps, seed=3):
+    """GP records every 8 h for ``days`` days, a near-GEO orbit with 20 m scatter in a and a
+    ``+km`` step after each day in ``steps``."""
+    rng = np.random.default_rng(seed)
+    mu, out = 398600.4418, []
+    for i in range(days * 3):
+        day = i / 3
+        a = 42164.0 + sum(km for d, km in steps.items() if day > d) + rng.normal(0, 0.02)
+        rev_day = np.sqrt(mu / a**3) * 86400 / (2 * np.pi)
+        out.append({"NORAD_CAT_ID": FY2H, "EPOCH": str(t0 + np.timedelta64(8 * i, "h")),
+                    "MEAN_MOTION": f"{rev_day:.10f}", "ECCENTRICITY": "0.0001", "INCLINATION": "1.0",
+                    "RA_OF_ASC_NODE": "80.0", "ARG_OF_PERICENTER": "10.0", "MEAN_ANOMALY": str(i * 7 % 360),
+                    "BSTAR": "0", "MEAN_MOTION_DOT": "0", "MEAN_MOTION_DDOT": "0"})
+    return out
+
+
+def test_satellite_drops_attitude_matches_and_detections_outside_coverage(tmp_path):
+    t0 = np.datetime64("2021-03-01T00:00", "s")
+    # Steps on day 10 (the logged EW burn), 20 (the attitude line) and 50 (after the log ends).
+    records = _geo_omm(t0, 70, {10.1: 3.0, 20.1: 3.0, 50.1: 3.0})
+    (tmp_path / f"gp_history-{FY2H}-x.json").write_text(json.dumps(records), encoding="utf-8")
+    log = tmp_path / "fy.csv"
+    log.write_text(FY_HEADER
+                   + _fy_row("EW", "2021-03-11T01:00:00Z", "2021-03-11T03:00:00Z", "EW")
+                   + _fy_row("ATT", "2021-03-21T01:00:00Z", "2021-03-21T03:00:00Z", "attitude"),
+                   encoding="utf-8")
+    sat = Satellite("Fengyun-2H", FY2H, "GEO", log, tmp_path)
+    assert [e.event_id for e in sat.events] == ["EW"] and [e.event_id for e in sat.attitude] == ["ATT"]
+    raw = pick(sat.scores(FROZEN.k)[0], FROZEN.z_min, FROZEN.step_min_m, FROZEN.nms_days)
+    assert len(raw) == 3  # the detector sees all three steps
+    res = sat.period(FROZEN, "all")
+    assert (res["detections"], res["true_positives"], res["false_positives"]) == (1, 1, 0)

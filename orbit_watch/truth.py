@@ -12,15 +12,24 @@ The rule, fixed before any detector output for the new objects existed:
   by NORAD id and shuffled with ``random.Random(SEED)``; the first ``ceil(n / 3)`` LEO objects
   and the first ``ceil(2 n / 3)`` GEO and IGSO objects are ``holdout``, the rest ``train``.
 
-Scoring code calls ``require_allowed`` before it reads an object's labels or element sets
-(``generalise.load_log_events`` and ``generalise.Satellite`` do). It raises ``HoldoutError`` for
-a holdout object unless called with ``final=True`` (``generalise --final``), and refuses objects
-that ``splits.json`` does not list, so a new object has to be assigned before it can be scored.
+Two guards keep the holdout out of tuning:
+
+* Labels. ``read_label_rows`` is the only code in the package that opens a ground-truth CSV
+  (a test scans the package for others). It calls ``require_allowed``, which raises
+  ``HoldoutError`` for a holdout object unless ``final=True``, and also refuses objects that
+  ``splits.json`` does not list, so a new object has to be assigned before it can be scored.
+* Element sets. ``series.to_series``, which every detector entry point uses to build its input,
+  calls ``require_not_holdout``: a holdout object's series is refused unless ``final=True``;
+  objects ``splits.json`` does not list pass, because belt-wide hunts are unlabelled.
+
+These are code-path guards, not a wall: the labels are in committed CSVs that anyone can read.
+They stop the package's own tuning and detector code from touching the holdout by accident.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import random
@@ -81,7 +90,7 @@ def make_splits(objects=OBJECTS) -> dict:
         split.update({norad: "holdout" if k < n_holdout else "train" for k, norad in enumerate(new)})
     return {
         "rule": "The rule, " + " ".join(
-            __doc__.split("The rule, ")[1].split("\n\nScoring code")[0].split()),
+            __doc__.split("The rule, ")[1].split("\n\nTwo guards")[0].split()),
         "seed": SEED,
         "objects": [
             {"norad_id": o.norad_id, "name": o.name, "regime": o.regime,
@@ -98,18 +107,35 @@ def load_splits(path: Path = SPLITS_PATH) -> dict[int, dict]:
     return {int(o["norad_id"]): o for o in data["objects"]}
 
 
-def require_allowed(norad_id: int, *, final: bool = False, splits: dict[int, dict] | None = None) -> dict:
-    """The object's split entry; raises ``HoldoutError`` for holdout or unlisted objects unless ``final``."""
+def require_not_holdout(norad_id: int, *, final: bool = False,
+                        splits: dict[int, dict] | None = None) -> dict | None:
+    """The object's split entry, or None if unlisted; raises ``HoldoutError`` for a holdout
+    object unless ``final``. The element-set guard: unlisted objects pass."""
     splits = load_splits() if splits is None else splits
     entry = splits.get(int(norad_id))
-    if entry is None:
-        raise HoldoutError(f"NORAD {norad_id} is not in splits.json; assign it before scoring")
-    if entry["split"] == "holdout" and not final:
+    if entry is not None and entry["split"] == "holdout" and not final:
         raise HoldoutError(
             f"NORAD {norad_id} ({entry['name']}) is in the holdout; only a final scoring run "
-            "(final=True, --final) may read it"
+            "(final=True) may read its labels or element sets"
         )
     return entry
+
+
+def require_allowed(norad_id: int, *, final: bool = False, splits: dict[int, dict] | None = None) -> dict:
+    """The object's split entry; raises ``HoldoutError`` for holdout or unlisted objects unless ``final``."""
+    entry = require_not_holdout(norad_id, final=final, splits=splits)
+    if entry is None:
+        raise HoldoutError(f"NORAD {norad_id} is not in splits.json; assign it before scoring")
+    return entry
+
+
+def read_label_rows(path: Path, norad_id: int, *, final: bool = False) -> list[dict]:
+    """One object's rows of a ground-truth CSV, after ``require_allowed``. Files without a
+    ``norad_id`` column (the ISS lists) hold one object, so all their rows are returned."""
+    require_allowed(norad_id, final=final)
+    with open(path, encoding="utf-8", newline="") as f:
+        return [r for r in csv.DictReader(f)
+                if "norad_id" not in r or int(r["norad_id"]) == int(norad_id)]
 
 
 def main(argv: list[str] | None = None) -> int:
