@@ -14,7 +14,7 @@ dependencies = ["sgp4>=2.23", "numpy>=1.26"]
 dev = ["pytest>=8"]
 
 [tool.setuptools]
-packages = ["orbit_watch"]
+packages = ["orbit_watch", "orbit_watch.jobs"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
