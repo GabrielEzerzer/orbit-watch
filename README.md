@@ -31,6 +31,76 @@ each other, and dead objects that move. Built out of interest.
 - `orbit_watch.jobs.extract_tle_archive`: pulls per-object TLE history out of the
   [OndroNR/tle-archive](https://github.com/OndroNR/tle-archive) git history (below).
 
+## Manoeuvre detection on the ISS (stage 3)
+
+`orbit_watch.detect` looks for steps in the mean semi-major axis `a` of a TLE series. For every
+gap between consecutive epochs it takes the `k` epochs on each side, removes the local drag decay
+(a Theil-Sen slope from pairs on the same side, so no pair straddles the gap) and takes the step as
+the median after the gap minus the median before it. Medians ignore the one or two transitional
+TLEs that follow a burn, which made a least-squares version report ghost steps.
+
+The noise model is estimated from the data. At every gap the TLE scatter `sigma` is 1.4826 times
+the median absolute deviation of the detrended values about each side's median, floored at half
+the series' median `sigma`. The step's `z` is the step divided by the standard error of a
+difference of two medians. A gap is flagged when `|z|` and `|step|`
+both pass their thresholds, and within one day only the highest `|z|` is kept. Gaps whose
+windows span more than 3 days, or that are longer than 2 days themselves, are not scored, so no
+detection crosses an outage such as 2022-06-15..19. Only `a` is used; eccentricity and
+inclination are not used yet.
+
+`orbit_watch.calibrate` scores the detector against `groundtruth/iss_manoeuvres.csv`:
+
+- `k`, the `|z|` threshold and the minimum `|step|` are picked by F1 on the 2021-2022 events only,
+  then frozen, and 2023 is scored once with them. **2023 is the honest number.**
+- An event matches a detection when its time (its date plus or minus one day when `time_utc` is
+  empty) overlaps the detection's interval widened by 0.5 day, one-to-one, closest first.
+- Recall counts only events with a scored gap overlapping them; the others are listed as excluded
+  for coverage. Precision counts every detection in the period, and a detection that matches no
+  listed event is a false positive. The list is a lower bound (Roscosmos burns are missing), so
+  unmatched detections are leads to check, not findings.
+- The two unplanned attitude events are scored apart from the main numbers.
+
+It writes `calibration.json`, `detections.csv`, `events_scored.csv` and `iss_sma.png` (`a` per
+year with events and detections marked). The TLE file is git-ignored, so the Kaggle run attaches
+it and records its sha256 in `ATTACHED.txt`:
+
+```
+MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-calibrate --attach data/archive/25544.tle --     python -m orbit_watch.calibrate --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out /kaggle/working/out
+```
+
+Result of the command above on Kaggle at commit `7df96a6` (the detector and calibration code are
+unchanged since then), with the TLE file at sha256 `e102dc92…7c51` (5,076 TLEs). 45 ground-truth
+rows fall inside the TLE history:
+
+**Caveat on 2023:** the thresholds below were chosen on 2021-2022 only, but an earlier version of the method was scored on 2023 once before the method was changed (last note below). A clean holdout needs TLE history after 2023-12-28, which the public archive does not have; the ground truth already runs to 2025-12.
+
+| | 2021-2022 (tuning) | 2023 (thresholds unseen; method partly seen, see below) |
+|---|---|---|
+| Precision | 24/27 = 0.89 | 16/21 = 0.76 |
+| Recall | 24/25 = 0.96 | 16/17 = 0.94 |
+| Reboosts | 20/20 | 12/13 |
+| Debris/collision avoidance | 3/3 | 4/4 |
+| Deboost | 1/1 | none |
+| Test burn (aborted after 5 s) | 0/1 | none |
+
+Frozen setting: `k = 4`, `|z| >= 12`, `|step| >= 200 m`, non-maximum suppression over 1 day. The
+median TLE scatter is about 2.4 m, so `z` mostly ranks; the 200 m step threshold carries most of the
+decision. Smaller burns (a 0.21 m/s reboost is about 370 m) are near that limit.
+
+Notes on these numbers:
+- Excluded for coverage: the 2022-06-16 debris avoidance, which falls in the 2022-06-15..19 outage.
+- Neither unplanned attitude event (2021-07-29, 2021-10-15) produced a detection.
+- 2023-11-09 (reboost) and 2023-11-10 (debris avoidance) are a day apart and gave one detection,
+  which the matcher gave to the debris avoidance. One of the pair counts as missed either way.
+- Unmatched detections count as false positives. Most sit on steps that are visible in the plot, so
+  they may be burns missing from the list (it has no Roscosmos announcements), but they are leads,
+  not findings.
+- An earlier version with least-squares lines and sign-blind matching was run once before this one,
+  and its 2023 score was seen (precision 16/23, recall 16/17). Its plot showed ghost steps from the
+  transitional TLEs after burns, some of them matched to reboosts with the wrong sign. The median
+  detector and the sign rule replaced it, and the thresholds were re-chosen on 2021-2022 alone. Even
+  so, 2023 is no longer a never-seen holdout for the method, only for the thresholds.
+
 ## Downloads, caching and politeness
 
 Tests never touch the network: every loader takes the fetch function or HTTP session as an
@@ -102,7 +172,9 @@ to `data/kaggle/<slug>/out/`: `COMMIT.txt`, `run.log` (stdout and stderr togethe
 `exit_code.txt`, Kaggle's own `<slug>.log`, and `out/` with anything the command wrote under
 `/kaggle/working/out`. It checks that
 `COMMIT.txt` matches the pushed commit, prints the end of `run.log` and exits with the command's
-exit code. The default command is `pytest -q`. The kernel has internet access because it runs
+exit code. The default command is `pytest -q`. `--attach PATH` (repeatable) embeds an uncommitted file, such as
+git-ignored data, at the same relative path next to the source; the kernel writes the sha256 of
+each attached file to `ATTACHED.txt`, and the script checks it against the local file. The kernel has internet access because it runs
 `pip install -e .[dev]`; each push makes a new version of the kernel named by `--slug`.
 
 On the owner's Windows machine `kaggle datasets create` fails from Git Bash (forward slashes end up
