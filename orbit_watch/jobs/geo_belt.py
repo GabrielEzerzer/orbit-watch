@@ -102,12 +102,14 @@ def tle_pairs(lines: Iterable[str], count: LineCount) -> Iterator[tuple[str | No
     A line 1 and line 2 are 69 characters starting ``1 `` and ``2 ``. A line directly before a
     line 1 that does not start with ``1 `` or ``2 `` is its name (a leading ``0 `` removed). Every
     other non-blank line is rejected, such as the 68-character analyst-object lines (catalog
-    numbers 8xxxx) in the Kaggle mirror's 2025 file.
+    numbers 8xxxx) in the Kaggle mirror's 2025 file. One trailing backslash on a line 1 is dropped.
     """
     name: str | None = None  # a candidate name line, not yet followed by a line 1
     line1: str | None = None
     for raw in lines:
         line = raw.rstrip()
+        if len(line) == 70 and line.startswith("1 ") and line.endswith("\\"):
+            line = line[:-1]  # the mirror's 2020-2022 and 2024 files end every line 1 with a backslash
         if not line:
             continue
         count.lines += 1

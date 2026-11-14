@@ -188,3 +188,19 @@ def test_empty_satcat_answer_is_refused_and_not_cached(tmp_path):
     with pytest.raises(ValueError):
         st.satcat(("NORAD_CAT_ID", *geo_belt.SATCAT_FIELDS))
     assert not list(tmp_path.glob("satcat-*.json"))
+
+
+def test_trailing_backslash_on_line_1_is_dropped(tmp_path):
+    # The first lines of the mirror's tle2021.txt for object 2218, verbatim (each line 1 ends in a backslash).
+    text = (
+        "1  2218U 66053E   20360.63311586 -.00000105  00000-0  00000+0 0  7609\\\n"
+        "2  2218   4.8386  58.2594 0038863 147.8057 212.2786  1.07585582213888\n"
+    )
+    bundle = tmp_path / "tle2021.txt"
+    bundle.write_text(text)
+    start = datetime(2020, 12, 1, tzinfo=timezone.utc)
+    files = build("mock", [bundle], start=start)
+    manifest = json.loads(files["manifest.json"])
+    assert manifest["objects"]["2218"]["tle_count"] == 1
+    assert manifest["bundles"][0]["rejected_lines"] == 0
+    assert files["2218.tle"].splitlines()[0].endswith("7609")
