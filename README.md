@@ -31,6 +31,45 @@ each other, and dead objects that move. Built out of interest.
 - `orbit_watch.jobs.extract_tle_archive`: pulls per-object TLE history out of the
   [OndroNR/tle-archive](https://github.com/OndroNR/tle-archive) git history (below).
 
+## Manoeuvre detection on the ISS (stage 3)
+
+`orbit_watch.detect` looks for steps in the mean semi-major axis `a` of a TLE series. For every
+gap between consecutive epochs it fits one straight line to the `k` epochs before the gap and
+another to the `k` epochs after it, extrapolates both to the middle of the gap and takes the
+difference as the step. The lines are local, so the drag decay may differ on each side.
+
+The noise model is estimated from the data. At every gap the TLE scatter `sigma` is 1.4826 times
+the median absolute deviation of both fits' residuals, floored at half the series' median
+`sigma`. Each fit is redone once without points more than 4 `sigma` off, so a transitional TLE
+does not drag the line. The step's `z` is the step divided by its standard error, which comes from
+`sigma` and each line's prediction variance at the gap. A gap is flagged when `|z|` and `|step|`
+both pass their thresholds, and within one day only the highest `|z|` is kept. Gaps whose
+windows span more than 3 days, or that are longer than 2 days themselves, are not scored, so no
+detection crosses an outage such as 2022-06-15..19. Only `a` is used; eccentricity and
+inclination are not used yet.
+
+`orbit_watch.calibrate` scores the detector against `groundtruth/iss_manoeuvres.csv`:
+
+- `k`, the `|z|` threshold and the minimum `|step|` are picked by F1 on the 2021-2022 events only,
+  then frozen, and 2023 is scored once with them. **2023 is the honest number.**
+- An event matches a detection when its time (its date plus or minus one day when `time_utc` is
+  empty) overlaps the detection's interval widened by 0.5 day, one-to-one, closest first.
+- Recall counts only events with a scored gap overlapping them; the others are listed as excluded
+  for coverage. Precision counts every detection in the period, and a detection that matches no
+  listed event is a false positive. The list is a lower bound (Roscosmos burns are missing), so
+  unmatched detections are leads to check, not findings.
+- The two unplanned attitude events are scored apart from the main numbers.
+
+It writes `calibration.json`, `detections.csv`, `events_scored.csv` and `iss_sma.png` (`a` per
+year with events and detections marked). The TLE file is git-ignored, so the Kaggle run attaches
+it and records its sha256 in `ATTACHED.txt`:
+
+```
+MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-calibrate --attach data/archive/25544.tle --     python -m orbit_watch.calibrate --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out /kaggle/working/out
+```
+
+RESULTS_PLACEHOLDER
+
 ## Downloads, caching and politeness
 
 Tests never touch the network: every loader takes the fetch function or HTTP session as an
@@ -102,7 +141,9 @@ to `data/kaggle/<slug>/out/`: `COMMIT.txt`, `run.log` (stdout and stderr togethe
 `exit_code.txt`, Kaggle's own `<slug>.log`, and `out/` with anything the command wrote under
 `/kaggle/working/out`. It checks that
 `COMMIT.txt` matches the pushed commit, prints the end of `run.log` and exits with the command's
-exit code. The default command is `pytest -q`. The kernel has internet access because it runs
+exit code. The default command is `pytest -q`. `--attach PATH` (repeatable) embeds an uncommitted file, such as
+git-ignored data, at the same relative path next to the source; the kernel writes the sha256 of
+each attached file to `ATTACHED.txt`, and the script checks it against the local file. The kernel has internet access because it runs
 `pip install -e .[dev]`; each push makes a new version of the kernel named by `--slug`.
 
 On the owner's Windows machine `kaggle datasets create` fails from Git Bash (forward slashes end up
