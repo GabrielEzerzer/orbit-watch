@@ -330,6 +330,15 @@ name lines (if the bundle has any), TLE count, how many of those meet the rule, 
 pairs the parser rejected and epoch conflicts. On Kaggle it writes one `geo.zip`, not thousands
 of files.
 
+A run on the 2025 file alone (commit 6062535) took about 4 minutes on Kaggle. It read 41,559,202
+lines (20,743,825 pairs) and selected 1,777 objects with 1,078,917 TLEs. That came to a 40 MB
+`geo.zip` holding 152 MB of TLE text. 28 objects have sets outside the region, such as 65588,
+which moves from a 5 rev/day transfer orbit to GEO. 71,552 lines were rejected; the ones looked
+at are 68-character lines of analyst objects (8xxxx), which `parse_tle` refuses. 157,047 pairs
+restated an epoch already held with different lines; what differs between them was not checked.
+All five years should take roughly 20 minutes and give about 5 million TLEs (about 750 MB of
+text).
+
 `satcat` adds each object's SATCAT entry (`OBJECT_NAME`, `OBJECT_TYPE`, `INTLDES`, `COUNTRY`,
 `LAUNCH`, `DECAY`) to `data/geo/manifest.json`, or `null` for an object the catalogue lacks. It is
 one Space-Track query for the whole catalogue (Space-Track allows SATCAT once a day and asks for
