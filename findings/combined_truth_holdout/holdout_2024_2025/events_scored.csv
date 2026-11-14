@@ -11,7 +11,7 @@ date_utc,time_utc,type,category,delta_v_m_s,period,covered,matched,det_start_utc
 2021-10-15,09:02,other (unplanned attitude/thruster event),unplanned,,2021-2022,True,False,,,,
 2021-11-10,,reboost (planned as PDAM),reboost,,2021-2022,True,True,2021-11-11T02:09:54Z,2021-11-11T03:46:11Z,1449.3,35.68
 2021-12-03,07:58,debris avoidance (retrograde),debris/collision avoidance,0.3,2021-2022,True,False,,,,
-2022-01-12,,reboost,reboost,0.73,2021-2022,True,True,2022-01-12T13:04:14Z,2022-01-13T04:19:37Z,1390.0,62.07
+2022-01-12,,reboost,reboost,0.73,2021-2022,True,True,2022-01-13T04:20:35Z,2022-01-13T07:48:56Z,1261.5,289.68
 2022-02-08,,reboost,reboost,,2021-2022,True,True,2022-02-08T07:28:33Z,2022-02-08T13:20:00Z,720.3,43.56
 2022-02-25,,reboost,reboost,,2021-2022,True,True,2022-02-26T01:04:21Z,2022-02-26T05:18:44Z,1439.2,434.93
 2022-04-23,13:25,reboost (planned as PDAM),reboost,1.0,2021-2022,True,True,2022-04-23T09:06:56Z,2022-04-23T12:35:50Z,1727.2,517.29
@@ -26,7 +26,7 @@ date_utc,time_utc,type,category,delta_v_m_s,period,covered,matched,det_start_utc
 2022-10-17,,reboost,reboost,1.0,2021-2022,True,True,2022-10-17T12:07:01Z,2022-10-17T18:26:20Z,1590.5,41.24
 2022-10-25,00:25,debris avoidance,debris/collision avoidance,0.5,2021-2022,True,True,2022-10-25T04:05:01Z,2022-10-25T07:19:26Z,836.1,55.02
 2022-11-30,,reboost,reboost,1.20,2021-2022,True,True,2022-11-30T11:45:30Z,2022-11-30T17:32:37Z,2065.2,174.58
-2022-12-21,13:42,debris avoidance,debris/collision avoidance,1.0,2021-2022,True,True,2022-12-21T13:33:11Z,2022-12-21T16:39:31Z,1738.7,1152.57
+2022-12-21,13:42,debris avoidance,debris/collision avoidance,1.0,2021-2022,True,True,2022-12-21T13:33:11Z,2022-12-21T16:39:31Z,1738.7,1152.56
 2023-02-03,,reboost,reboost,1.37,2023,True,True,2023-02-03T15:46:00Z,2023-02-03T15:57:07Z,2264.6,167.96
 2023-02-19,,reboost,reboost,1.8,2023,True,True,2023-02-19T21:49:11Z,2023-02-20T08:45:31Z,3275.8,138.52
 2023-03-06,,"other (collision avoidance, satellite)",debris/collision avoidance,,2023,True,True,2023-03-06T13:29:06Z,2023-03-06T20:28:59Z,1419.5,230.97
@@ -64,14 +64,14 @@ date_utc,time_utc,type,category,delta_v_m_s,period,covered,matched,det_start_utc
 2025-03-17,,reboost,reboost,,2025,True,True,2025-03-17T08:54:04Z,2025-03-17T21:24:12Z,1815.6,88.5
 2025-04-23,,reboost,reboost,,2025,True,True,2025-04-23T18:31:59Z,2025-04-23T18:59:57Z,2097.7,474.26
 2025-04-30,22:10,debris avoidance,debris/collision avoidance,,2025,False,False,,,,
-2025-07-16,,reboost,reboost,,2025,True,True,2025-07-16T17:34:25Z,2025-07-17T05:41:13Z,1930.0,1279.35
+2025-07-16,,reboost,reboost,,2025,True,True,2025-07-16T17:34:25Z,2025-07-17T05:41:13Z,1930.0,1279.34
 2025-09-03,,reboost (test burn),test/aborted burn,,2025,True,True,2025-09-03T04:47:05Z,2025-09-03T12:31:10Z,941.0,623.77
 2025-09-25,,reboost (aborted after ~3 min 45 s),test/aborted burn,,2025,True,True,2025-09-24T22:08:26Z,2025-09-25T04:19:38Z,969.1,72.35
 2025-09-26,,reboost,reboost,,2025,True,True,2025-09-26T22:05:44Z,2025-09-27T19:46:00Z,2842.2,177.23
 2025-10-14,,reboost,reboost,,2025,True,True,2025-10-14T03:19:30Z,2025-10-14T17:15:07Z,2399.2,848.08
 2025-11-07,,reboost,reboost,,2025,True,True,2025-11-07T04:40:57Z,2025-11-07T10:52:22Z,1139.4,408.48
 2025-11-19,13:04,reboost,reboost,,2025,True,True,2025-11-19T04:33:42Z,2025-11-19T07:39:24Z,2709.5,1652.43
-2025-12-29,,reboost,reboost,,2025,True,True,2025-12-29T12:01:02Z,2025-12-30T03:29:51Z,3042.0,2016.46
+2025-12-29,,reboost,reboost,,2025,True,True,2025-12-29T12:01:02Z,2025-12-30T03:29:51Z,3042.0,2016.45
 2021-12-24,01:18,deboost,other burn,,2021-2022,True,True,2021-12-24T04:27:39Z,2021-12-24T10:55:59Z,-1755.1,-24.52
 2022-03-11,19:35,reboost,reboost,0.52,2021-2022,True,True,2022-03-12T03:37:02Z,2022-03-12T05:13:48Z,804.4,47.58
 2023-01-18,14:57,reboost,reboost,0.95,2023,True,True,2023-01-18T15:44:22Z,2023-01-18T22:08:07Z,1630.1,381.75

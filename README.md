@@ -11,7 +11,9 @@ each other, and dead objects that move. Built out of interest.
   `ElementSet`, with a UTC epoch, the mean elements, B* and a semi-major axis
   derived the way SGP4 derives it (see the `ElementSet` docstring).
 - `orbit_watch.series`: `to_series` turns element sets into an epoch-sorted,
-  de-duplicated `ElementSeries` of numpy arrays per object.
+  de-duplicated `ElementSeries` of numpy arrays per object. Epochs under 60 s apart collapse to
+  the later one, because their near-zero time spacing gives the detector's slope pairs a near-zero
+  time base and fake steps (issue #11); every caller gets this.
 - `orbit_watch.propagate`: TEME position and velocity at given UTC times through
   the `sgp4` package, raising `PropagationError` on SGP4 error codes.
 - `orbit_watch.sources`: the `ElementSource` protocol and `DirectorySource`,
@@ -105,7 +107,7 @@ Notes on these numbers:
 ### Clean holdout: Space-Track 2024-2025
 
 `orbit_watch.holdout` scores the frozen setting once on Space-Track `gp_history` for the ISS
-(2021-01-01 to 2025-12-31; 9,855 rows, 9,080 element sets once rows within 1 s are merged and the
+(2021-01-01 to 2025-12-31; 9,855 rows, 9,080 element sets once rows within 1 s are merged (9,077 once epochs under 60 s apart also collapse) and the
 latest-issued one kept), using calibrate.py's matching, coverage and precision rules unchanged.
 Neither the method nor the thresholds had seen 2024-2025.
 
@@ -132,7 +134,9 @@ pull the measured step from −461 m to about −210 m, and `z` below 12.
 Leave-one-year-out cross-validation over 2021-2025 on Space-Track (tune on four years with the same
 grid and rule, score the fifth): pooled **64/86 = 0.74 precision, 64/69 = 0.93 recall**. Every fold
 chose `k = 4`, `|z| >= 15`; four of five kept `|step| >= 200 m` (the fold leaving out 2021 chose
-300 m). Outputs: `findings/holdout_2024_2025/` and `findings/cv_2021_2025/`.
+300 m). Outputs: `findings/holdout_2024_2025/` and `findings/cv_2021_2025/`. Tuning matches only the
+training years' events and detections, so a held-out label cannot enter a fold's tuning score
+(issue #10); the fix changed no fold's setting or score on this data.
 
 ### With Roscosmos burns
 

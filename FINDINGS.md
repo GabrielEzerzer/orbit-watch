@@ -53,7 +53,7 @@ Seven remain unexplained. Four of them lie about a day from a burn in the NASA l
 
 ## Luch / Olymp-K objects at GEO (2021-01 to 2023-12): uncalibrated leads
 
-Source: `python -m orbit_watch.geo_hunt` at commit 02dfab5 on Kaggle, one kernel per object (`ow-geo-37951`, `ow-geo-38977`, `ow-geo-39727`, `ow-geo-hunt-c` for 40258, `ow-geo-55841`), on TLEs from the public OndroNR/tle-archive. The inputs as unpacked on Kaggle (sha256):
+Source: `python -m orbit_watch.geo_hunt` at commit 02dfab5 on Kaggle, one kernel per object (`ow-geo-37951`, `ow-geo-38977`, `ow-geo-39727`, `ow-geo-hunt-c` for 40258, `ow-geo-55841`), on TLEs from the public OndroNR/tle-archive. The step table and plots were regenerated locally at commit 8d80171, after element sets under 60 s apart began to be collapsed for every caller (issue #11); main's code run the same way reproduces the original table exactly. The inputs as unpacked on Kaggle (sha256):
 
 | NORAD | Archive names | TLEs used | sha256 |
 |---|---|---|---|
@@ -65,7 +65,9 @@ Source: `python -m orbit_watch.geo_hunt` at commit 02dfab5 on Kaggle, one kernel
 
 **These are not calibrated detections.** There is no GEO ground truth in this repo. The detector is the ISS one (`orbit_watch/detect.py`, `k = 4`), and each object's thresholds come from its own scatter: `|z| >= 8` and `|step| >= 10 x` the median per-gap scatter of its semi-major axis, which gives step thresholds of 31 m for 37951, 38 m for 38977, 24 m for 39727, 1,597 m for 40258 and 815 m for 55841. Gaps of more than 3 days are not scored. Many flagged steps on the station-keeping objects are probably not burns (see each object). The longitude is the sub-satellite longitude at each TLE epoch (SGP4 to TEME, rotated by GMST; `orbit_watch/geo.py`). It carries a daily wobble of up to about ±0.2° from inclination and eccentricity, because the epochs fall at different times of day, so the drift rates in the table (a least-squares fit over 4 epochs) mean something only during a relocation, where they reach 1 to 4°/day.
 
-The full step table, 283 rows, is `findings/geo_steps.csv` (columns: object, interval, step in a, z, longitude before and after, drift rate before and after). The plots are `findings/geo_<norad>.png`: longitude on top, mean semi-major axis below, a vertical line at every flagged step.
+The full step table, 284 rows (283 before the collapse), is `findings/geo_steps.csv` (columns: object, interval, step in a, z, longitude before and after, drift rate before and after). The plots are `findings/geo_<norad>.png`: longitude on top, mean semi-major axis below, a vertical line at every flagged step.
+
+What the collapse changed: the 37951 step of −57 m (z −20.6) at 2022-02-09 15:38 to 21:01, a day after a pair of element sets under 60 s apart (2022-02-08 15:33), does not survive; its `z` had been inflated by the near-zero time base, and it is now −26.8 m at z −7.0, under the threshold. The neighbouring gap, 2022-02-08 20:54 to 02-09 15:38, is listed instead at −35 m (z −8.8); it scored −33 m (z −9.6) before and was suppressed by the inflated step next to it. One step is new: 55841, +34.4 km on 2023-03-21 13:37 to 17:50, during the arrival drift. Other rows changed `z` in the first decimal, and none of the counts quoted below changed.
 
 ### 40258, Luch (Olymp-K 1): six relocations, then stationary at about 18.1°W
 
