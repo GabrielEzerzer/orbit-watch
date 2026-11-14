@@ -72,11 +72,11 @@ def test_burn_and_counter_burn_merge_into_one_event(tmp_path):
     p.write_text(
         "event_id,satellite,norad_id,start_utc,end_utc,n_burns,burn_times_utc,dv_radial_m_s,"
         "dv_along_m_s,dv_cross_m_s,kind,delta_a_est_m,source_file,source_revision,source_url\n"
-        "S-1,S,3,2025-06-20T11:57:00Z,2025-06-20T11:58:00Z,1,a,0,0.1,0,along-track,364.1,f,r,u\n"
-        "S-2,S,3,2025-06-20T16:14:00Z,2025-06-20T16:15:00Z,1,a,0,-0.1,0,along-track,-346.2,f,r,u\n"
-        "S-3,S,3,2025-06-21T16:14:00Z,2025-06-21T16:15:00Z,1,a,0,0.01,0,along-track,30.0,f,r,u\n",
+        "S-1,S,54754,2025-06-20T11:57:00Z,2025-06-20T11:58:00Z,1,a,0,0.1,0,along-track,364.1,f,r,u\n"
+        "S-2,S,54754,2025-06-20T16:14:00Z,2025-06-20T16:15:00Z,1,a,0,-0.1,0,along-track,-346.2,f,r,u\n"
+        "S-3,S,54754,2025-06-21T16:14:00Z,2025-06-21T16:15:00Z,1,a,0,0.01,0,along-track,30.0,f,r,u\n",
         encoding="utf-8")
-    e = load_log_events(p, 3)
+    e = load_log_events(p, 54754)
     assert [(x.event_id, x.n_rows, x.delta_a_est_m, x.expected_sign) for x in e] == [
         ("S-1+S-2", 2, 17.9, 0), ("S-3", 1, 30.0, 1)]
 
@@ -86,11 +86,11 @@ def test_qzss_ns_pair_is_one_event_with_either_sign(tmp_path):
     p.write_text(
         "event_id,event_group,satellite,norad_id,start_utc,end_utc,duration,ns_ew,dvx_m_s,dvy_m_s,"
         "dvz_m_s,kind,delta_a_est_m,source_file,source_revision,source_url\n"
-        "Q-1,Q-1,Q,1,2025-11-17T06:28:44Z,2025-11-17T06:32:09Z,00:03:25,NS-1,0.005,-3.413,0.077,NS,137.1,f,r,u\n"
-        "Q-2,Q-1,Q,1,2025-11-17T07:36:08Z,2025-11-17T07:39:33Z,00:03:25,NS-2,0.001,-3.413,0.081,NS,27.4,f,r,u\n"
-        "Q-3,Q-3,Q,1,2025-11-18T11:59:49Z,2025-11-18T12:00:10Z,00:00:21,EW,-0.082,0.0,0.002,EW,-2248.6,f,r,u\n",
+        "Q-1,Q-1,Q,62876,2025-11-17T06:28:44Z,2025-11-17T06:32:09Z,00:03:25,NS-1,0.005,-3.413,0.077,NS,137.1,f,r,u\n"
+        "Q-2,Q-1,Q,62876,2025-11-17T07:36:08Z,2025-11-17T07:39:33Z,00:03:25,NS-2,0.001,-3.413,0.081,NS,27.4,f,r,u\n"
+        "Q-3,Q-3,Q,62876,2025-11-18T11:59:49Z,2025-11-18T12:00:10Z,00:00:21,EW,-0.082,0.0,0.002,EW,-2248.6,f,r,u\n",
         encoding="utf-8")
-    e = load_log_events(p, 1)
+    e = load_log_events(p, 62876)
     assert [(x.event_id, x.kind, x.delta_a_est_m, x.expected_sign) for x in e] == [
         ("Q-1+Q-2", "NS", 164.5, 0), ("Q-3", "EW", -2248.6, 0)]
     assert e[0].lo == np.datetime64("2025-11-17T06:28:44", "us")
@@ -102,10 +102,10 @@ def test_ids_along_track_sign_follows_delta_v(tmp_path):
     p.write_text(
         "event_id,satellite,norad_id,start_utc,end_utc,n_burns,burn_times_utc,dv_radial_m_s,"
         "dv_along_m_s,dv_cross_m_s,kind,delta_a_est_m,source_file,source_revision,source_url\n"
-        "C-1,C,2,2010-05-03T17:55:00Z,2010-05-04T00:35:00Z,2,a;b,0,-0.0396884,0,along-track,-75.1,f,r,u\n"
-        "C-2,C,2,2010-06-03T17:55:00Z,2010-06-03T18:35:00Z,1,a,0,0.001,0.02,cross-track,1.9,f,r,u\n",
+        "C-1,C,36508,2010-05-03T17:55:00Z,2010-05-04T00:35:00Z,2,a;b,0,-0.0396884,0,along-track,-75.1,f,r,u\n"
+        "C-2,C,36508,2010-06-03T17:55:00Z,2010-06-03T18:35:00Z,1,a,0,0.001,0.02,cross-track,1.9,f,r,u\n",
         encoding="utf-8")
-    assert [x.expected_sign for x in load_log_events(p, 2)] == [-1, 0]
+    assert [x.expected_sign for x in load_log_events(p, 36508)] == [-1, 0]
 
 
 def test_near_duplicate_epochs_keep_the_later_set():

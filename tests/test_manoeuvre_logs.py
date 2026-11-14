@@ -2,7 +2,8 @@ from datetime import date, datetime
 
 import pytest
 
-from orbit_watch.manoeuvre_logs import Source, delta_a_m, parse_ids, parse_ids_line, parse_qzss
+from orbit_watch.manoeuvre_logs import (Source, delta_a_m, parse_fengyun, parse_ids,
+                                        parse_ids_line, parse_qzss)
 
 # Rows copied verbatim from the IDS files (cs2man.txt, sp5man.txt, ja3man.txt).
 CS2_TWO_BURNS = "CRYO2 2010 123 17 55 2010 124 00 35     006 2 2010 123 17 56 05.000 01.2000000000000e+02 06.5371154400000e-09 -1.1612185775596e-02 02.7189757200000e-18 05.4475962000000e-05 -9.6768214796631e+01 02.2658131000000e-14 00.0000000000000e+00 00.0000000000000e+00 00.0000000000000e+00 2010 124 00 32 47.000 03.0000000000000e+02 01.6343265300000e-08 -2.8076256438533e-02 06.7339119000000e-18 05.4477551000000e-05 -9.3587521461777e+01 02.2446373000000e-14 00.0000000000000e+00 00.0000000000000e+00 00.0000000000000e+00"
@@ -57,6 +58,52 @@ def test_qzss_pairs_ns_burns_and_estimates_from_dvx():
     assert [r["kind"] for r in rows] == ["EW", "NS", "NS", "EW"]
     assert rows[0]["start_utc"] == "2025-10-27T14:59:53Z"
     assert rows[0]["delta_a_est_m"] == pytest.approx(delta_a_m(-0.056, 42165.9), abs=0.1)
+
+
+# Excerpt copied verbatim from ohi-qzs1r.txt (IGSO layout: no NS/EW column).
+QZS1R = """#+SATELLITE/MANEUVER
+#DATE TIME START(UTC),END(UTC),DURATION,DVX(m/s),DVY(m/s),DVZ(m/s)
+2022-02-08 12:56:36,2022-02-08 13:01:27,00:04:51,-4.666,-0.087,-0.028
+2022-02-08 20:26:52,2022-02-08 20:31:12,00:04:20,4.376,0.111,-0.03
+#-SATELLITE/MANEUVER
+"""
+
+# Lines copied verbatim from manFY4A.txt.fy (dpshorten/TLE_observation_benchmark_dataset), out of
+# time order as in the file.
+FY4A = """GEO-EW-STATION-KEEPING 2016-077A "2021-03-11T17:16:00 CST" "2021-03-11T17:44:00 CST"
+GEO-NS-STATION-KEEPING 2016-077A "2021-03-18T18:00:00 CST" "2021-03-18T23:00:00 CST"
+GEO-EW-STATION-KEEPING 2016-077A "2021-02-09T17:16:00 CST" "2021-02-09T17:44:00 CST"
+GEO-EW-STATION-KEEPING 2016-077A "2021-02-09T17:16:00 CST" "2021-02-09T17:44:00 CST"
+"""
+
+FY4A_SRC = Source("manFY4A.txt.fy", "Fengyun-4A", 41882, date(2022, 11, 22), 0.0, "2016-077A")
+
+
+def test_qzss_igso_layout_has_no_ns_ew():
+    src = Source("ohi-qzs1r.txt", "QZS-1R", 49336, date(2026, 11, 4), 42165.1)
+    rows, dropped = parse_qzss(QZS1R.replace("\n", "\r\n"), src)  # the files are CRLF
+    assert dropped["kept"] == 2
+    assert [(r["ns_ew"], r["kind"], r["event_group"]) for r in rows] == [
+        ("", "unspecified", "QZS-1R-001"), ("", "unspecified", "QZS-1R-002")]
+    assert rows[1]["dvx_m_s"] == "4.376" and rows[1]["end_utc"] == "2022-02-08T20:31:12Z"
+
+
+def test_fengyun_window_covers_both_time_zone_readings_and_sorts():
+    rows, dropped = parse_fengyun(FY4A, FY4A_SRC)
+    assert dropped == {"duplicate_rows": 1, "kept": 3, "source_rows": 4}
+    assert [r["kind"] for r in rows] == ["EW", "EW", "NS"]
+    first = rows[0]
+    assert first["event_id"] == "Fengyun-4A-001"
+    assert first["start_utc"] == "2021-02-09T09:16:00Z"  # 17:16 read as UTC+8
+    assert first["end_utc"] == "2021-02-09T17:44:00Z"  # 17:44 read as UTC
+    assert first["source_start"] == "2021-02-09T17:16:00 CST"
+    assert first["delta_a_est_m"] == ""
+    assert FY4A_SRC.url.endswith("/raw_data/manoeuvres/manFY4A.txt.fy")
+
+
+def test_fengyun_rejects_a_line_for_another_satellite():
+    with pytest.raises(ValueError):
+        parse_fengyun(FY4A.replace("2016-077A", "2018-050A", 1), FY4A_SRC)
 
 
 def test_delta_a_gauss_at_geo():

@@ -74,6 +74,7 @@ from orbit_watch.calibrate import TOLERANCE_DAYS, Z_GRID, _iso, _ratio
 from orbit_watch.detect import Detection, pick, score_gaps
 from orbit_watch.elements import parse_omm_json
 from orbit_watch.series import ElementSeries, to_series
+from orbit_watch.truth import require_allowed
 
 
 @dataclass(frozen=True)
@@ -133,8 +134,11 @@ def _t(s: str) -> np.datetime64:
     return np.datetime64(s.rstrip("Z"), "us")
 
 
-def load_log_events(path: Path, norad: int) -> list[LogEvent]:
-    """Events for one satellite: one per log row, then merged when under ``MERGE_HOURS`` apart."""
+def load_log_events(path: Path, norad: int, *, final: bool = False) -> list[LogEvent]:
+    """Events for one satellite: one per log row, then merged when under ``MERGE_HOURS`` apart.
+
+    Refuses holdout and unassigned objects unless ``final`` (``orbit_watch.truth``)."""
+    require_allowed(norad, final=final)
     with open(path, encoding="utf-8", newline="") as f:
         rows = [r for r in csv.DictReader(f) if int(r["norad_id"]) == norad]
     rows.sort(key=lambda r: r["start_utc"])
@@ -261,14 +265,16 @@ def _pool(results: list[dict]) -> dict:
 class Satellite:
     """One object's series, log events, split and cached per-k gap scores."""
 
-    def __init__(self, name: str, norad: int, regime: str, truth: Path, tle_dir: Path):
+    def __init__(self, name: str, norad: int, regime: str, truth: Path, tle_dir: Path,
+                 final: bool = False):
+        require_allowed(norad, final=final)  # before the element sets are read
         (path,) = sorted(tle_dir.glob(f"gp_history-{norad}-*.json"))
         self.name, self.norad, self.regime, self.tle_file = name, norad, regime, path.name
         raw = to_series(parse_omm_json(path.read_text(encoding="utf-8")))[norad]
         self.series: ElementSeries = drop_near_duplicates(raw)
         self.near_duplicates_dropped = len(raw) - len(self.series)
         first, last = self.series.epochs[0], self.series.epochs[-1]
-        self.all_events = load_log_events(truth, norad)
+        self.all_events = load_log_events(truth, norad, final=final)
         self.events = [e for e in self.all_events if e.hi >= first and e.lo <= last]
         self.split = split_date(self.events)
         self.ev_test = [e.lo >= self.split for e in self.events]
@@ -460,9 +466,10 @@ TEST_PART_NOT_BLIND = (
 )
 
 
-def run(truth_dir: Path, tle_dir: Path, out: Path) -> dict:
+def run(truth_dir: Path, tle_dir: Path, out: Path, final: bool = False) -> dict:
     out.mkdir(parents=True, exist_ok=True)
-    sats = [Satellite(n, norad, reg, truth_dir / f, tle_dir) for n, norad, reg, f in SATELLITES]
+    sats = [Satellite(n, norad, reg, truth_dir / f, tle_dir, final=final)
+            for n, norad, reg, f in SATELLITES]
     report = {
         "frozen_iss_setting": {**FROZEN.__dict__, "max_span_days": MAX_SPAN_DAYS,
                                "max_gap_days": MAX_GAP_DAYS,
@@ -528,8 +535,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--truth-dir", type=Path, required=True)
     p.add_argument("--tle-dir", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--final", action="store_true",
+                   help="allow holdout objects (groundtruth/splits.json); only for the final scoring")
     args = p.parse_args(argv)
-    r = run(args.truth_dir, args.tle_dir, args.out)
+    r = run(args.truth_dir, args.tle_dir, args.out, final=args.final)
     for regime, v in r["regimes"].items():
         print(regime, json.dumps(v["tuned_setting"]), json.dumps(v["pooled"]))
     return 0

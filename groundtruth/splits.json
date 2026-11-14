@@ -1,0 +1,217 @@
+{
+  "rule": "The rule, fixed before any detector output for the new objects existed: * Every object that had been scored before this split (the ISS, CryoSat-2, Jason-3, SWOT, SPOT-5, QZS-3, QZS-6) is ``train``: none of them is blind any more. * The objects added with the split are grouped by regime (LEO, GEO, IGSO). Each group is sorted by NORAD id and shuffled with ``random.Random(SEED)``; the first ``ceil(n / 3)`` LEO objects and the first ``ceil(2 n / 3)`` GEO and IGSO objects are ``holdout``, the rest ``train``.",
+  "seed": "orbit-watch truth-sets 2026-11-14",
+  "objects": [
+    {
+      "norad_id": 25544,
+      "name": "ISS",
+      "regime": "ISS",
+      "split": "train",
+      "previously_scored": true,
+      "truth_files": [
+        "iss_manoeuvres.csv",
+        "iss_roscosmos_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 36508,
+      "name": "CryoSat-2",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": true,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 41240,
+      "name": "Jason-3",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": true,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 54754,
+      "name": "SWOT",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": true,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 27421,
+      "name": "SPOT-5",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": true,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 42917,
+      "name": "QZS-3",
+      "regime": "GEO",
+      "split": "train",
+      "previously_scored": true,
+      "truth_files": [
+        "qzss_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 62876,
+      "name": "QZS-6",
+      "regime": "GEO",
+      "split": "train",
+      "previously_scored": true,
+      "truth_files": [
+        "qzss_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 41335,
+      "name": "Sentinel-3A",
+      "regime": "LEO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 43437,
+      "name": "Sentinel-3B",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": false,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 46984,
+      "name": "Sentinel-6A",
+      "regime": "LEO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 66514,
+      "name": "Sentinel-6B",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": false,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 39086,
+      "name": "SARAL",
+      "regime": "LEO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 46469,
+      "name": "HY-2C",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": false,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 48621,
+      "name": "HY-2D",
+      "regime": "LEO",
+      "split": "train",
+      "previously_scored": false,
+      "truth_files": [
+        "ids_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 37158,
+      "name": "QZS-1",
+      "regime": "IGSO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "qzss_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 49336,
+      "name": "QZS-1R",
+      "regime": "IGSO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "qzss_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 42738,
+      "name": "QZS-2",
+      "regime": "IGSO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "qzss_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 42965,
+      "name": "QZS-4",
+      "regime": "IGSO",
+      "split": "train",
+      "previously_scored": false,
+      "truth_files": [
+        "qzss_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 38049,
+      "name": "Fengyun-2F",
+      "regime": "GEO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "fengyun_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 43491,
+      "name": "Fengyun-2H",
+      "regime": "GEO",
+      "split": "train",
+      "previously_scored": false,
+      "truth_files": [
+        "fengyun_manoeuvres.csv"
+      ]
+    },
+    {
+      "norad_id": 41882,
+      "name": "Fengyun-4A",
+      "regime": "GEO",
+      "split": "holdout",
+      "previously_scored": false,
+      "truth_files": [
+        "fengyun_manoeuvres.csv"
+      ]
+    }
+  ]
+}
