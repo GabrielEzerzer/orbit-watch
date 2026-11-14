@@ -2,7 +2,8 @@
 
     python -m orbit_watch.inject \\
         --spacetrack data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json \\
-        --truth groundtruth/iss_manoeuvres.csv --out findings/injection
+        --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv \\
+        --out findings/injection
 
 Everything this module adds to the data is a synthetic injection: a step of known size added
 to the real ISS series in memory to see whether the detector finds it. Nothing injected is
@@ -42,8 +43,8 @@ widened by ``calibrate.TOLERANCE_DAYS`` (the same rule ``calibrate.match`` uses 
 
 False alarms (native cadence only; not measured on thinned series). The frozen detections define the quiet stretches, so the frozen setting has no
 detections there by construction. Two rates are reported: detections per year where only
-ground-truth events are excluded (an upper bound on false alarms, because unannounced burns,
-Roscosmos ones in particular, count), and detections per year in the fully quiet stretches, which
+ground-truth events are excluded (an upper bound on false alarms, because burns missing from the
+ground truth count), and detections per year in the fully quiet stretches, which
 is zero for the frozen setting and shows what each looser setting adds. Those extra detections
 may still include small real burns, so they too are an upper bound. ``chance_recovery`` is the
 share of quiet gaps that one of those detections would "recover" with nothing injected: the floor
@@ -62,17 +63,15 @@ from pathlib import Path
 
 import numpy as np
 
-from orbit_watch.calibrate import TOLERANCE_DAYS, _iso, _overlaps, load_events
+from orbit_watch.calibrate import FROZEN as CALIBRATED, TOLERANCE_DAYS, _iso, _overlaps, load_truth
 from orbit_watch.detect import Detection, pick, score_gaps
 from orbit_watch.elements import parse_omm_json
 from orbit_watch.series import ElementSeries, to_series
 
 ISS = 25544
-# Frozen setting: calibrate.run chooses k=4, |z|>=12, |step|>=200 m, NMS 1 day on the 2021-2022
-# archive TLEs (rerun with the current groundtruth/ gives the same). It is not stored in code, so
-# it is restated here.
-K = 4
-FROZEN = (12.0, 200.0)
+# Frozen setting from calibrate.FROZEN (k=4, |z|>=12, |step|>=200 m), NMS 1 day.
+K = CALIBRATED["k"]
+FROZEN = (float(CALIBRATED["z_min"]), float(CALIBRATED["step_min_m"]))
 NMS_DAYS = 1.0
 LOOSER = tuple((z, s) for z in (6.0, 8.0) for s in (0.0, 50.0, 100.0))
 SIZES_M = (25, 50, 100, 150, 200, 300, 500, 1000, 2000)
@@ -263,9 +262,9 @@ def _rows(cadence: str, st, counts) -> list[dict]:
     return rows
 
 
-def run(spacetrack: Path, truth: Path, out: Path) -> dict:
+def run(spacetrack: Path, truth: list[Path], out: Path) -> dict:
     series = load_series(spacetrack)
-    events = [Window(e.lo, e.hi) for e in load_events(truth)]
+    events = [Window(e.lo, e.hi) for e in load_truth(truth)]
     frozen_dets = pick(score_gaps(series, k=K), *FROZEN, NMS_DAYS)
     frozen = [Window(d.start, d.end) for d in frozen_dets]
     settings = [FROZEN, *LOOSER]
@@ -297,6 +296,7 @@ def run(spacetrack: Path, truth: Path, out: Path) -> dict:
         "frozen_setting": {"k": K, "z_min": FROZEN[0], "step_min_m": FROZEN[1], "nms_days": NMS_DAYS},
         "looser_settings": [_label(st) for st in LOOSER],
         "frozen_detections_on_full_series": len(frozen_dets),
+        "groundtruth_files": [str(p) for p in truth],
         "groundtruth_events": len(events),
         "injected_step_sizes_m": SIZES_M,
         "trials_per_size_and_sign": TRIALS_PER_CELL,
@@ -366,7 +366,7 @@ def plot(rows: list[dict], path: Path) -> None:
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--spacetrack", type=Path, required=True)
-    p.add_argument("--truth", type=Path, required=True)
+    p.add_argument("--truth", type=Path, nargs="+", required=True)
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
     r = run(args.spacetrack, args.truth, args.out)

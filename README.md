@@ -56,8 +56,9 @@ inclination are not used yet.
   empty) overlaps the detection's interval widened by 0.5 day, one-to-one, closest first.
 - Recall counts only events with a scored gap overlapping them; the others are listed as excluded
   for coverage. Precision counts every detection in the period, and a detection that matches no
-  listed event is a false positive. The list is a lower bound (Roscosmos burns are missing), so
-  unmatched detections are leads to check, not findings.
+  listed event is a false positive. The NASA list is a lower bound (it has no Roscosmos
+  announcements; see "With Roscosmos burns" below), so unmatched detections are leads to check,
+  not findings.
 - The two unplanned attitude events are scored apart from the main numbers.
 
 It writes `calibration.json`, `detections.csv`, `events_scored.csv` and `iss_sma.png` (`a` per
@@ -133,6 +134,42 @@ grid and rule, score the fifth): pooled **64/86 = 0.74 precision, 64/69 = 0.93 r
 chose `k = 4`, `|z| >= 15`; four of five kept `|step| >= 200 m` (the fold leaving out 2021 chose
 300 m). Outputs: `findings/holdout_2024_2025/` and `findings/cv_2021_2025/`.
 
+### With Roscosmos burns
+
+`groundtruth/iss_roscosmos_manoeuvres.csv` adds 14 ISS burns from 2021-2025 that Roscosmos reported
+and NASA's pages do not list. It was compiled from the Roscosmos Telegram channel and RIA Novosti
+without looking at detector output (`groundtruth/README.md`). Both scoring tools take more than
+one truth file and refuse an event listed in two of them. The same frozen setting, not re-chosen
+(`--frozen` stops calibrate.py's choice on 2021-2022), scores both lists together:
+
+```
+python -m orbit_watch.calibrate --frozen --tle data/archive/25544.tle \
+    --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/combined_truth
+python -m orbit_watch.holdout --gp data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json \
+    --archive data/archive/25544.tle \
+    --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/combined_truth_holdout
+```
+
+| Source, period | NASA only: precision | recall | NASA + Roscosmos: precision | recall |
+|---|---|---|---|---|
+| Archive 2021-2022 | 24/27 | 24/25 | 26/27 = 0.96 | 26/27 = 0.96 |
+| Archive 2023 | 16/21 | 16/17 | 20/21 = 0.95 | 20/21 = 0.95 |
+| Space-Track 2021-2022 | 23/26 | 23/25 | 25/26 = 0.96 | 25/27 = 0.93 |
+| Space-Track 2023 | 16/22 | 16/17 | 20/22 = 0.91 | 20/21 = 0.95 |
+| **Space-Track 2024-2025 (holdout)** | 27/42 | 27/27 | **35/42 = 0.83** | **35/35 = 1.00** |
+
+All 14 Roscosmos burns fall in scored data, and the frozen detector finds every one of them with
+the right sign: steps from +521 m (2025-06-19, 0.3 m/s) to +4,913 m (2024-11-13), and −1,755 m for
+the 2021-12-24 deboost. The detections are the same ones as before; only their labels change. The
+misses are the ones already listed above (the aborted test burn, the 2023-11-09 reboost next to
+the 2023-11-10 debris avoidance, and on Space-Track the 2021-12-03 retrograde avoidance).
+
+Seven of the 42 holdout detections still match nothing, and two archive detections in 2021-2023
+(three on Space-Track). `FINDINGS.md` lists them with the Roscosmos match for the rest. The
+Roscosmos list is thinnest for September to December 2025, so the precision is still a lower
+bound. The leave-one-year-out cross-validation was not rerun with the new list, because it
+re-chooses the setting.
+
 ### Sensitivity: synthetic injection-recovery
 
 `orbit_watch.inject` adds known steps in memory to quiet stretches of the real Space-Track series
@@ -141,16 +178,23 @@ and counts how many the detector recovers. All of it is synthetic and labelled s
 
 | Recall at step size | 100 m | 150 m | 200 m | 300 m | 500 m | 1 km |
 |---|---|---|---|---|---|---|
-| native cadence (about 5.6 TLEs a day), frozen | 0.00 | 0.01 | 0.54 | 0.97 | 1.00 | 1.00 |
-| native, `|z| >= 6`, `|step| >= 50 m` | 0.95 | 0.97 | 0.98 | 0.99 | 1.00 | 1.00 |
-| thinned to about 1 a day, frozen | 0.00 | 0.05 | 0.44 | 0.93 | 0.98 | 1.00 |
+| native cadence (about 5.6 TLEs a day), frozen | 0.00 | 0.03 | 0.51 | 0.98 | 1.00 | 1.00 |
+| native, `|z| >= 6`, `|step| >= 50 m` | 0.97 | 0.97 | 0.98 | 1.00 | 1.00 | 1.00 |
+| thinned to about 1 a day, frozen | 0.00 | 0.04 | 0.46 | 0.91 | 0.99 | 1.00 |
 | thinned to about 1 every 2 days, frozen | 0.02 | 0.07 | 0.34 | 0.72 | 0.89 | 0.98 |
 
 The median TLE scatter is 3.4 m, so the 200 m step floor, not `z`, sets what the frozen detector
-can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 25 a year at
-`|z| >= 6`, `|step| >= 50 m`, against at most 5.3 a year for the frozen setting (an upper bound,
-since unannounced burns count). A clean step leaves out the transitional TLEs a real burn produces,
-so these recalls are upper bounds for real burns of the same size.
+can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 20 a year at
+`|z| >= 6`, `|step| >= 50 m`, against at most 0.9 a year for the frozen setting (3 detections in
+3.2 years of stretches with no listed burn within 3 days; an upper bound, since unlisted burns
+count). A clean step leaves out the transitional TLEs a real burn produces, so these recalls are
+upper bounds for real burns of the same size.
+
+These figures come from the run with both truth lists (NASA and Roscosmos). With the NASA list
+alone the frozen setting had 18 such detections, 5.3 a year. The Roscosmos events also remove a few
+gaps (two at the native cadence) from the quiet stretches the injections are drawn from, which reshuffles the random draw, so
+the pooled recall figures in the table moved by up to 0.06 from the NASA-only run, and each new
+95% interval overlaps the old one. Single-sign cells in the CSV moved by up to 0.09.
 
 ### Beyond the ISS: IDS (LEO) and QZSS (GEO) manoeuvre logs
 
