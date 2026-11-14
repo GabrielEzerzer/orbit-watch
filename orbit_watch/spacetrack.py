@@ -179,8 +179,8 @@ class SpaceTrackSource:
         else:
             text = self._get(url, "satcat")
         rows = json.loads(text)
-        if not isinstance(rows, list) or not all(isinstance(r, dict) and "NORAD_CAT_ID" in r for r in rows):
-            raise ValueError("Space-Track satcat answer is not a list of records with NORAD_CAT_ID")
+        if not isinstance(rows, list) or not rows or not all(isinstance(r, dict) and "NORAD_CAT_ID" in r for r in rows):
+            raise ValueError("Space-Track satcat answer is not a non-empty list of records with NORAD_CAT_ID")
         if not path.is_file():
             self._store(path, text)
         return rows, url

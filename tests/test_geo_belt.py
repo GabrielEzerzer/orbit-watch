@@ -95,6 +95,12 @@ def test_period_end_is_exclusive(tmp_path, sample):
     assert "55841" not in manifest["objects"]
 
 
+def test_period_start_is_inclusive(sample):
+    start = datetime(2023, 3, 13, 17, 43, 56, 444736, tzinfo=timezone.utc)  # 55841's only epoch
+    manifest = json.loads(build("mock", [sample], start=start)["manifest.json"])
+    assert "55841" in manifest["objects"]
+
+
 def test_zip_bundle_with_names_bad_lines_and_restated_epochs(tmp_path, sample):
     real = sample.read_text().splitlines()
     luch1, luch2 = real[0], real[1]
@@ -174,3 +180,11 @@ def test_satcat_is_one_cached_query_merged_into_the_manifest(tmp_path, sample):
     assert manifest["objects"]["37951"]["satcat"]["OBJECT_TYPE"] == "PAYLOAD"
     assert manifest["objects"]["55841"]["satcat"] is None
     assert manifest["satcat"]["objects_missing"] == 1
+
+
+def test_empty_satcat_answer_is_refused_and_not_cached(tmp_path):
+    session = FakeSession(b"[]")
+    st = SpaceTrackSource("u", "p", geo_belt.START.date(), geo_belt.END.date(), session=session, cache_dir=tmp_path)
+    with pytest.raises(ValueError):
+        st.satcat(("NORAD_CAT_ID", *geo_belt.SATCAT_FIELDS))
+    assert not list(tmp_path.glob("satcat-*.json"))

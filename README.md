@@ -316,12 +316,16 @@ python -I -m zipfile -e data/kaggle/ow-geo-belt/out/out/geo.zip data/geo
 hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out data/geo
 ```
 
-`build` streams the bundles twice and never holds a whole bundle in memory. The first pass reads
+`build` streams the bundles twice and never holds a whole bundle in memory, but it holds the
+selected objects' element sets and the output text: about 3 GB at peak for five years (about 5
+million element sets), which a Kaggle CPU kernel handles. The first pass reads
 the mean motion, eccentricity and inclination columns of each pair and checks the rule; a pair
 that passes is checked with `parse_tle`, and its object is selected if the pair is valid and its
 epoch is in the period. The second pass parses every pair of the selected objects, keeps those
 with epochs in the period, and de-duplicates by epoch as `series.to_series` does: when an epoch
 appears again with different lines, the later one is kept and counted under `epoch_conflicts`.
+Selection runs before that de-duplication, so an object can be selected by a pair that a later
+pair at the same epoch replaces; such an object shows `by_rule: true` with `in_region_count: 0`.
 `--bundle` takes paths or recursive globs (the mirror nests some years one folder deeper). The
 output is `<norad>.tle` per object (2-line TLEs in epoch order) and `manifest.json`: the source,
 the period, the rule, each bundle's name, size, sha256, line and pair counts and rejected lines
