@@ -21,6 +21,68 @@ The detector found these steps in semi-major axis, and none of them matches an e
 
 The next check for each lead is a Roscosmos or TASS announcement on that date, or a second element source (Space-Track's gp_history, once credentials exist) showing the same step.
 
+## Luch / Olymp-K objects at GEO (2021-01 to 2023-12): uncalibrated leads
+
+Source: `python -m orbit_watch.geo_hunt` at commit 02dfab5 on Kaggle, one kernel per object (`ow-geo-37951`, `ow-geo-38977`, `ow-geo-39727`, `ow-geo-hunt-c` for 40258, `ow-geo-55841`), on TLEs from the public OndroNR/tle-archive. The inputs as unpacked on Kaggle (sha256):
+
+| NORAD | Archive names | TLEs used | sha256 |
+|---|---|---|---|
+| 37951 | LUCH 5A | 2,275 | `1defac97…5824` |
+| 38977 | LUCH 5B | 1,798 | `7bad758c…d4bc` |
+| 39727 | LUCH 5V | 2,499 | `dd00f4d1…5cb1` |
+| 40258 | LUCH (OLYMP-K 1) | 2,217 | `cdb3ef4e…1d71` |
+| 55841 | LUCH-5X (OLYMP-K 2), from 2023-03-13 | 513 | `d4f1cf06…21ab` |
+
+**These are not calibrated detections.** There is no GEO ground truth in this repo. The detector is the ISS one (`orbit_watch/detect.py`, `k = 4`), and each object's thresholds come from its own scatter: `|z| >= 8` and `|step| >= 10 x` the median per-gap scatter of its semi-major axis, which gives step thresholds of 31 m for 37951, 38 m for 38977, 24 m for 39727, 1,597 m for 40258 and 815 m for 55841. Gaps of more than 3 days are not scored. Many flagged steps on the station-keeping objects are probably not burns (see each object). The longitude is the sub-satellite longitude at each TLE epoch (SGP4 to TEME, rotated by GMST; `orbit_watch/geo.py`). It carries a daily wobble of up to about ±0.2° from inclination and eccentricity, because the epochs fall at different times of day, so the drift rates in the table (a least-squares fit over 4 epochs) mean something only during a relocation, where they reach 1 to 4°/day.
+
+The full step table, 283 rows, is `findings/geo_steps.csv` (columns: object, interval, step in a, z, longitude before and after, drift rate before and after). The plots are `findings/geo_<norad>.png`: longitude on top, mean semi-major axis below, a vertical line at every flagged step.
+
+### 40258, Luch (Olymp-K 1): six relocations, then stationary at about 18.1°W
+
+`findings/geo_40258.png`. The longitude plot shows a series of moves, each with semi-major axis away from its usual 42,166 km while the longitude drifts:
+
+| Interval (from the table and plot) | Longitude | What the plot and table show |
+|---|---|---|
+| 2021-02-09 | 3.0°W → about 8°W | step of +11.6 km in a (z 163), drift after −0.15°/day; a back to 42,166 km within days |
+| 2021-04 to 2021-05-19 | about 8°W → 45.2°E | a lowered to about 42,045 km; drift +1.5°/day on 2021-04-20; a back up by late May |
+| 2021-07-13 to 07-25 | 45.9°E → 56.9°E | drift up to 1.6°/day; step of +11.9 km on 2021-07-24/25 with drift after 0.006°/day |
+| 2021-09-27 to 10-04 | 56.9°E → 59.9°E | step of −47.9 km (z −155) starts a 0.65°/day drift; drift after 0.008°/day on 2021-10-04 |
+| 2022-01-17 to 01-24 | 59.95°E → 61.9°E | step of −11.4 km starts a 0.19°/day drift, later 0.50°/day |
+| 2022-07-14 to 08-29 | 61.9°E → 18.1°W | a raised to about 42,333 km; drift −0.37°/day on 2022-07-14, up to −2.16°/day; stops by 2022-08-29 |
+
+From 2022-09 to the end of 2023 the longitude stays within 18.03°W to 18.12°W. The 1,600-to-3,700 m steps flagged between moves are near the threshold and are not visible at the scale of the plot; they are candidates for station-keeping only.
+
+### 55841, Luch-5X (Olymp-K 2): arrival drift, then three relocations in 2023
+
+`findings/geo_55841.png`. The record starts on 2023-03-13 with the longitude at about 55°E, a at about 41,922 km and the longitude increasing. It peaks at 78.9°E in late March (a gap of TLEs falls on 2023-03-24 to 03-27), then decreases.
+
+| Interval | Longitude | What the plot and table show |
+|---|---|---|
+| 2023-04-01 to 04-09 (end of the arrival drift) | 62.2°E → 58.0°E | three steps down in a (−7.2, −17.6, −19.7 km); drift −1.96°/day falls to 0.0007°/day |
+| 2023-05-02 to 05-22 | 58.0°E → 8.9°E | a raised to about 42,512 km; drift up to −4.4°/day; step of −36.7 km on 2023-05-22 ends it |
+| 2023-09-26 to 10-04 | 8.5°E → 3.3°E | step of +67.4 km, drift −1.0°/day; step of −17.3 km on 2023-10-03/04 ends it |
+| 2023-12-03 to 12-06 | 3.16°E → 2.6°E | step of +17.0 km starts a −0.34°/day drift; step of −16.6 km ends it |
+
+Between moves the longitude holds near 58.0°E, 8.9°E, 3.2°E and 2.6°E. July and August 2023 have sparse TLEs and three gaps of 3 to 4 days.
+
+The size cuts used below to count likely station-keeping steps (500 m for 37951, 150 m for 38977, 1 km for 39727) were chosen after looking at the plots. They are not calibrated.
+
+### 37951, Luch 5A: station-keeping near 167.0°E, no relocation
+
+`findings/geo_37951.png`. The longitude stays between 166.64°E and 167.34°E and swings slowly by about ±0.25° with a period of two to three months. Semi-major axis shows a sawtooth: a jumps up by about 2 km and then falls over the next two to three months. 15 flagged steps are rises of 500 m or more (median +2,119 m), with a median spacing of 76 days (2 to 147). A further jump visible in late June 2023 falls in the data gap of 2023-06-28 to 07-01 and was not scored. The other 70 flagged steps lie on the falling parts, which the plot shows are not straight; with a 31 m threshold the linear detrend of the detector flags them, and they may be detector artefacts rather than burns.
+
+### 38977, Luch 5B: station-keeping near 16.4°W, no relocation
+
+`findings/geo_38977.png`. The longitude stays between 16.72°W and 15.94°W. Semi-major axis shows a sawtooth the other way round: a rises by about 0.5 to 0.8 km over a few weeks and then drops by a few hundred metres. 50 of the 89 flagged steps are drops of 150 m or more (median −359 m), with a median spacing of 21 days (2 to 58). The 24 flagged rises do not match visible jumps in the plot and are likely detector noise at a 38 m threshold.
+
+### 39727, Luch 5V: regular station-keeping near 94.7°E, no relocation
+
+`findings/geo_39727.png`. The longitude stays between 94.54°E and 94.84°E. Semi-major axis shows the most regular pattern of the five: a rises by about 2.5 km over three to four weeks, then drops back. 43 of the 46 flagged steps are drops of 1 km or more (median −2,570 m), with a median spacing of 25 days (2 to 62); those drops line up with most resets visible in the plot (two resets, around 2021-03 and 2021-09, carry step-up lines instead).
+
+### What would check these leads
+
+A second element source (Space-Track gp_history) showing the same steps, and operator or agency notices for the relocation dates of 40258 and 55841. No outside source was consulted for this section, so it says nothing about why any object moved or what it was near.
+
 ## Not yet done
 
-The planned first hunt over the Luch / Olymp-K objects at GEO, or a few Starlink shells, has not run. The Luch/Olymp TLE histories (NORAD 37951, 38977, 39727, 40258, 55841, 2021 to 2023) are already extracted by the archive job, but the detector's thresholds are tuned for the ISS in low orbit and would need a GEO noise model first.
+The Starlink shell hunt has not run.

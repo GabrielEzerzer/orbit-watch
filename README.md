@@ -101,6 +101,21 @@ Notes on these numbers:
   detector and the sign rule replaced it, and the thresholds were re-chosen on 2021-2022 alone. Even
   so, 2023 is no longer a never-seen holdout for the method, only for the thresholds.
 
+## First GEO hunt (Luch / Olymp-K)
+
+`orbit_watch.geo` gives the sub-satellite longitude of an element set at its epoch (SGP4 to TEME,
+rotated by IAU 1982 GMST, UTC standing in for UT1). `orbit_watch.geo_hunt` runs the ISS step
+detector on each object's semi-major axis with thresholds set from that object's own scatter
+(`|z| >= 8`, `|step| >= 10 x` median scatter; not calibrated, there is no GEO ground truth) and
+writes `steps.csv`, `summary.json` and one plot per object. Kaggle rejects a kernel script above
+about 1 MB, so attach one TLE file per run:
+
+```
+MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-geo-39727 --attach data/archive/39727.tle -- python -m orbit_watch.geo_hunt --tle-dir data/archive --norad 39727 --out /kaggle/working/out
+```
+
+The results are leads in `FINDINGS.md`.
+
 ## Downloads, caching and politeness
 
 Tests never touch the network: every loader takes the fetch function or HTTP session as an
