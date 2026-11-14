@@ -34,15 +34,15 @@ each other, and dead objects that move. Built out of interest.
 ## Manoeuvre detection on the ISS (stage 3)
 
 `orbit_watch.detect` looks for steps in the mean semi-major axis `a` of a TLE series. For every
-gap between consecutive epochs it fits one straight line to the `k` epochs before the gap and
-another to the `k` epochs after it, extrapolates both to the middle of the gap and takes the
-difference as the step. The lines are local, so the drag decay may differ on each side.
+gap between consecutive epochs it takes the `k` epochs on each side, removes the local drag decay
+(a Theil-Sen slope from pairs on the same side, so no pair straddles the gap) and takes the step as
+the median after the gap minus the median before it. Medians ignore the one or two transitional
+TLEs that follow a burn, which made a least-squares version report ghost steps.
 
 The noise model is estimated from the data. At every gap the TLE scatter `sigma` is 1.4826 times
-the median absolute deviation of both fits' residuals, floored at half the series' median
-`sigma`. Each fit is redone once without points more than 4 `sigma` off, so a transitional TLE
-does not drag the line. The step's `z` is the step divided by its standard error, which comes from
-`sigma` and each line's prediction variance at the gap. A gap is flagged when `|z|` and `|step|`
+the median absolute deviation of the detrended values about each side's median, floored at half
+the series' median `sigma`. The step's `z` is the step divided by the standard error of a
+difference of two medians. A gap is flagged when `|z|` and `|step|`
 both pass their thresholds, and within one day only the highest `|z|` is kept. Gaps whose
 windows span more than 3 days, or that are longer than 2 days themselves, are not scored, so no
 detection crosses an outage such as 2022-06-15..19. Only `a` is used; eccentricity and
@@ -68,7 +68,36 @@ it and records its sha256 in `ATTACHED.txt`:
 MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-calibrate --attach data/archive/25544.tle --     python -m orbit_watch.calibrate --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out /kaggle/working/out
 ```
 
-RESULTS_PLACEHOLDER
+Result of the command above on Kaggle at commit `7df96a6` (the detector and calibration code are
+unchanged since then), with the TLE file at sha256 `e102dc92…7c51` (5,076 TLEs). 45 ground-truth
+rows fall inside the TLE history:
+
+| | 2021-2022 (tuning) | 2023 (holdout, the honest number) |
+|---|---|---|
+| Precision | 24/27 = 0.89 | 16/21 = 0.76 |
+| Recall | 24/25 = 0.96 | 16/17 = 0.94 |
+| Reboosts | 20/20 | 12/13 |
+| Debris/collision avoidance | 3/3 | 4/4 |
+| Deboost | 1/1 | none |
+| Test burn (aborted after 5 s) | 0/1 | none |
+
+Frozen setting: `k = 4`, `|z| >= 12`, `|step| >= 200 m`, non-maximum suppression over 1 day. The
+median TLE scatter is about 2.4 m, so `z` mostly ranks; the 200 m step threshold carries most of the
+decision. Smaller burns (a 0.21 m/s reboost is about 370 m) are near that limit.
+
+Notes on these numbers:
+- Excluded for coverage: the 2022-06-16 debris avoidance, which falls in the 2022-06-15..19 outage.
+- Neither unplanned attitude event (2021-07-29, 2021-10-15) produced a detection.
+- 2023-11-09 (reboost) and 2023-11-10 (debris avoidance) are a day apart and gave one detection,
+  which the matcher gave to the debris avoidance. One of the pair counts as missed either way.
+- Unmatched detections count as false positives. Most sit on steps that are visible in the plot, so
+  they may be burns missing from the list (it has no Roscosmos announcements), but they are leads,
+  not findings.
+- An earlier version with least-squares lines and sign-blind matching was run once before this one,
+  and its 2023 score was seen (precision 16/23, recall 16/17). Its plot showed ghost steps from the
+  transitional TLEs after burns, some of them matched to reboosts with the wrong sign. The median
+  detector and the sign rule replaced it, and the thresholds were re-chosen on 2021-2022 alone. Even
+  so, 2023 is no longer a never-seen holdout for the method, only for the thresholds.
 
 ## Downloads, caching and politeness
 
