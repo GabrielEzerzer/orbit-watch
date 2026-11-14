@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from orbit_watch.inject import Window, inject, quiet_gaps, recovered, thin, wilson
+from orbit_watch.inject import Window, _guards, inject, quiet_gaps, recovered, thin, wilson
 from orbit_watch.detect import Detection, pick, score_gaps
 from tests.test_detect import synthetic_series
 
@@ -52,3 +52,10 @@ def test_wilson_interval():
     lo, hi = wilson(50, 100)
     assert abs(lo - 0.4038) < 1e-3 and abs(hi - 0.5962) < 1e-3
     assert wilson(0, 20)[0] == 0.0 and wilson(20, 20)[1] == 1.0
+
+
+def test_native_guards_match_detect_defaults():
+    series, _ = synthetic_series(n=60)
+    a, b = score_gaps(series, k=4, **_guards(None)), score_gaps(series, k=4)
+    assert np.array_equal(a.valid, b.valid)
+    assert np.allclose(a.step_m, b.step_m, equal_nan=True)

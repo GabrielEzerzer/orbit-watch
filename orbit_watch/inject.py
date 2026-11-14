@@ -30,16 +30,17 @@ here. The thinned series keep the ISS's per-TLE scatter; an object tracked less 
 noisier TLEs too, so the thinned recall is also optimistic.
 
 Quiet stretches. A gap is quiet when no ground-truth event window and no detection at the frozen
-setting (on the full series) lies within ``margin`` days of it; ``margin`` is the scoring window
+setting lies within ``margin`` days of it; ``margin`` is the scoring window
 ``max_span_days``: 3 days at the native cadence, wider on thinned series so a quiet gap's scoring
 window never reaches a real burn. Only gaps the detector scores are used. Injections in one
 realisation are at least ``SPACING_DAYS`` apart (wider on thinned series), so no scoring window
-holds two injected steps.
+holds two injected steps. On a thinned series the frozen detections of that thinned realisation
+are excluded too, since thinning can create detections the full series does not have.
 
 A trial is recovered when a detection with the injected step's sign overlaps the injected gap,
 widened by ``calibrate.TOLERANCE_DAYS`` (the same rule ``calibrate.match`` uses for real events).
 
-False alarms. The frozen detections define the quiet stretches, so the frozen setting has no
+False alarms (native cadence only; not measured on thinned series). The frozen detections define the quiet stretches, so the frozen setting has no
 detections there by construction. Two rates are reported: detections per year where only
 ground-truth events are excluded (an upper bound on false alarms, because unannounced burns,
 Roscosmos ones in particular, count), and detections per year in the fully quiet stretches, which
@@ -178,7 +179,10 @@ def recall_trials(full: ElementSeries, avoid: list[Window], every_days, settings
     while queue:
         series = full if every_days is None else thin(full, every_days, rng.uniform(0, every_days))
         base = score_gaps(series, k=K, **guards)
-        candidates = np.flatnonzero(base.valid & quiet_gaps(series, avoid, margin))
+        # A thinned series has frozen-setting detections of its own; exclude them as well, so the
+        # frozen setting has no detection in a quiet gap at any cadence.
+        own = [Window(d.start, d.end) for d in pick(base, *FROZEN, NMS_DAYS)] if every_days else []
+        candidates = np.flatnonzero(base.valid & quiet_gaps(series, avoid + own, margin))
         t = (series.epochs - series.epochs[0]).astype("int64") / _DAY_US
         gaps = _spread(candidates, 0.5 * (t[:-1] + t[1:]), spacing, rng)
         if not gaps:
@@ -299,7 +303,7 @@ def run(spacetrack: Path, truth: Path, out: Path) -> dict:
         "seed": SEED,
         "recovery_tolerance_days": TOLERANCE_DAYS,
         "cadences": cadence_info,
-        "false_alarms": false_alarms(series, events, frozen, settings),
+        "false_alarms_native": false_alarms(series, events, frozen, settings),
         "recall_both_signs": recall,
         "limits": [
             "A synthetic injection is a clean step; a real burn's transitional TLEs are not modelled, "
@@ -366,7 +370,7 @@ def main() -> None:
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
     r = run(args.spacetrack, args.truth, args.out)
-    print(json.dumps({k: r[k] for k in ("cadences", "false_alarms", "recall_both_signs")}, indent=2))
+    print(json.dumps({k: r[k] for k in ("cadences", "false_alarms_native", "recall_both_signs")}, indent=2))
 
 
 if __name__ == "__main__":
