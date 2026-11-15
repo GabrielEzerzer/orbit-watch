@@ -337,6 +337,8 @@ def test_longitude_wrap_then_unwrap_recovers_the_drift_rate(offset, rate, n, ste
 @given(tle_records())
 @example(tle_text(ElementSet(1, None, datetime(2021, 1, 1, tzinfo=timezone.utc), 1.0, 0.8442747, 90.0, 0.0,
                              180.0, 0.0, 0.0, 0.0, 0.0, 0.0)))
+@example(tle_text(ElementSet(1, None, datetime(2021, 1, 1, tzinfo=timezone.utc), 3.25, 0.0, 90.0, 0.0,
+                             90.0, 0.0, 0.0, 0.0, 0.0, 0.0)))
 def test_propagated_state_at_epoch_agrees_with_the_derived_semi_major_axis(record):
     (rec,) = parse_tle(record)
     (r,), (v,) = propagate(rec, [rec.epoch])
