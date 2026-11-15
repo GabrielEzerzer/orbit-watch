@@ -9,6 +9,7 @@ network again. Prints only counts and file sizes, never the environment.
 
 from __future__ import annotations
 
+import argparse
 import sys
 from datetime import date, timedelta
 
@@ -34,8 +35,10 @@ def span(norad: int) -> tuple[date, date]:
 
 
 def main(argv: list[str]) -> int:
+    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p.add_argument("norad", type=int, nargs="*", help="NORAD ids to fetch (default: every object in SPANS)")
+    wanted = p.parse_args(argv).norad or list(SPANS)
     limiter = RateLimiter()
-    wanted = [int(a) for a in argv] or list(SPANS)
     for norad in wanted:
         start, end = span(norad)
         source = SpaceTrackSource.from_env(start, end, limiter=limiter)

@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 dependencies = ["sgp4>=2.23", "numpy>=1.26", "matplotlib>=3.8"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "hypothesis>=6.100"]
 
 [tool.setuptools]
 packages = ["orbit_watch", "orbit_watch.jobs"]
