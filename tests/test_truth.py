@@ -44,7 +44,7 @@ def test_scoring_loaders_refuse_holdout(tmp_path):
     assert generalise.load_log_events(csv_path, SARAL, final=True) == []
     with pytest.raises(HoldoutError):  # refused before any element-set file is looked for
         generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path)
-    with pytest.raises(ValueError):  # with final=True it gets past the guard to the empty dir
+    with pytest.raises(FileNotFoundError):  # with final=True it gets past the guard to the empty dir
         generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path, final=True)
 
 
