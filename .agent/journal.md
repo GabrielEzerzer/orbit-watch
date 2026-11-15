@@ -322,3 +322,16 @@ and one QZS-6 detection on 2025-03-17 (+0.034 deg) lies before QZS-6's log cover
 2025-08-02, so it is not scored. The NS
 burns less than a day before an EW burn are still found only through duplicate a detections
 (round 1), as the hypothesis expected.
+
+### ISS holdout guardrail (`orbit_watch.holdout`, NASA + Roscosmos lists; already spent, not a target)
+
+| Code | Holdout 2024-25 precision | recall | Space-Track 2023 | Archive 2023 |
+|---|---|---|---|---|
+| committed findings (FROZEN pick) | 35/42 | 35/35 | 20/22, recall 20/21 | 20/21, recall 20/21 |
+| round 1, 3191d57 (reverted) | **35/38** | 35/35 | 20/21, recall 20/21 | 20/21, recall 20/21 |
+| round 2, 2347c87 (head) | 35/42 | 35/35 | identical to committed | identical |
+
+Round 1 removed four unmatched holdout detections, which is #13's prediction ("as high as 35/38"),
+and in 2023 it traded the 2023-11-10 debris avoidance for the 2023-11-09 reboost. Round 2 leaves
+every ISS number unchanged: the head report equals the committed one except for the input paths.
+These outputs went to a scratch folder; `findings/` is unchanged.
