@@ -168,6 +168,15 @@ measurement-rule questions came up. None was changed:
 4. **ISS guardrail on train** starts below 0.95 (0.938). Should it be judged on dev only, or
    "no worse than 45/48 on train and 35/35 on dev"?
 
+5. **Duplicate detections count toward GEO NS recall** (round 1). QZS-3's NS burns usually come
+   less than a day before an EW burn, QZSS events have no expected sign, and `match_near` lets a
+   second detection of the EW step match the NS burn. Five of the six train NS hits at FROZEN are
+   that. Peak-radius NMS (#13) removes the duplicates (dev GEO FA 3.58 -> 2.56/yr, ISS FA down on
+   both splits, no other recall change) but costs those five, so the keep rule reverted it. Should
+   the keep rule exempt NS hits that come from a duplicate of an EW step (for example, require an
+   NS match to be a detection no EW event also matches within its zone), or should #13 come back
+   once an NS channel exists that finds those burns on its own?
+
 Also disclosed: while checking whether any log row lacks `delta_a_est_m`, I read the label CSVs
 directly with a one-off script, outside `orbit_watch.truth`. It printed per-object, per-year row
 counts by kind for every object, holdout ones included. No detector output was involved and
@@ -218,3 +227,38 @@ spans the union of its gaps; step and z are the peak's. `GapScores` carries k. N
 Space-Track series; 15/17/19 in the `mock/` slice) must give two detections.
 
 **Target.** GEO FA/object-year down, ISS unmatched detections down, no recall lost.
+
+**Result at 3191d57 (FROZEN settings).** REVERTED: train GEO NS recall fell.
+
+| Split | Group | Subset | Baseline hit/cov (hit/ev) | Round 1 hit/cov (hit/ev) |
+|---|---|---|---|---|
+| dev | LEO | >=50 m | 11/40 (11/47) | 11/40 (11/47) |
+| dev | GEO | EW | 33/34 (33/37) | 33/34 (33/37) |
+| dev | GEO | NS | 5/14 (5/16) | 5/14 (5/16) |
+| dev | GEO | all | 41/51 | 41/51 |
+| dev | GEO | FA/obj-yr | 7 / 1.96 = 3.58 | 5 / 1.96 = 2.56 |
+| dev | LEO | FA/obj-yr | 0.00 | 0.00 |
+| dev | ISS | all | 35/35, FA 4 (2.33/yr), 42 detections | 35/35, FA 3 (1.75/yr), 38 detections |
+| train | LEO | >=50 m | 4/18 (4/26) | 4/18 (4/26) |
+| train | GEO | EW | 36/39 (36/43) | 36/39 (36/43) |
+| train | GEO | NS | 6/17 (6/18) | **1/17 (1/18)** |
+| train | GEO | all | 48/62 | **43/62** |
+| train | GEO | FA/obj-yr | 4 / 2.39 = 1.67 | 4 / 2.39 = 1.67 |
+| train | LEO | FA/obj-yr | 0.15 | 0.15 |
+| train | ISS | all | 45/48, FA 3 (1.16/yr) | 45/48, FA 2 (0.77/yr) |
+
+Covered counts are unchanged everywhere (same k). The duplicates went as intended: dev GEO FA
+7 -> 5 (QZS-3 2025-02-27 -3,043 m and QZS-6 2025-09-22 -771 m absorbed), ISS dev detections
+42 -> 38, ISS FA dev 4 -> 3 and train 3 -> 2 (#13's 2023-03-15 and 2025-11-20 among them). On
+train ISS, the 2023-11-09 reboost is now matched and the 2023-11-10 debris avoidance is not (net
+45/48 either way).
+
+Why train NS fell: each of the five lost QZS-3 NS burns (110+111, 120, 127, 140, 146) is followed
+within a day by an EW burn of about -3 km, and at baseline the NS burn was "matched" by a second
+detection of that same EW step, scored at a gap more than a day from the first (QZS-3 2021-11-26:
+gaps 840 and 842, steps -3,285 m and -3,361 m). QZSS events carry no expected sign, so any
+same-time detection matches them. Peak-radius NMS reports that step once, so it can match only
+one of the two events. Baseline NS recall on train therefore rests in part on duplicate
+detections, and any change that removes duplicates lowers it. Dev NS stayed 5/14 by chance (one
+lost, QZS-3-221+222; one gained, QZS-3-194+195). Under the keep rule this round is reverted;
+see DECISION FOR GABRIEL 5.
