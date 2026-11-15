@@ -94,7 +94,7 @@ from pathlib import Path
 import numpy as np
 
 from orbit_watch.calibrate import TOLERANCE_DAYS, Z_GRID, _iso, _ratio
-from orbit_watch.detect import Detection, Setting, pick, score_gaps
+from orbit_watch.detect import Detection, Setting, pick_setting, score_gaps
 from orbit_watch.elements import parse_omm_json, parse_tle
 from orbit_watch.series import ElementSeries, to_series
 from orbit_watch.truth import HoldoutError, read_label_rows, require_allowed
@@ -345,7 +345,7 @@ class Satellite:
         matching an attitude event removed, and their one-to-one match to the target events."""
         sc, cover = self.scores(s.k)
         lo, hi = self.coverage[0] - _tol(TOLERANCE_DAYS), self.coverage[1] + _tol(LATE_DAYS)
-        dets = [d for d in pick(sc, s.z_min, s.step_min_m, s.nms_days) if d.end >= lo and d.start <= hi]
+        dets = [d for d in pick_setting(sc, None, s) if d.end >= lo and d.start <= hi]
         m = match_near(self.events, dets, late_days=LATE_DAYS)
         if self.attitude:
             rest = [i for i in range(len(dets)) if i not in set(m.values())]
