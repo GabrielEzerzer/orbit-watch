@@ -57,3 +57,11 @@ def test_attached_files_are_written_with_their_sha256(tmp_path):
 def test_attach_paths_must_stay_inside_the_repo(rel):
     with pytest.raises(ValueError):
         kaggle_run.build_kernel(b"x", SHA, ["pytest"], "ow-suite", {rel: b"x"})
+
+
+def test_datasets_are_mounted_and_checked():
+    ref = "vaibhavpandey12382/historical-tle-datasets"
+    _, metadata = kaggle_run.build_kernel(b"x", SHA, ["pytest"], "ow-suite", datasets=[ref])
+    assert metadata["dataset_sources"] == [ref]
+    with pytest.raises(ValueError):
+        kaggle_run.build_kernel(b"x", SHA, ["pytest"], "ow-suite", datasets=["no-slash"])
