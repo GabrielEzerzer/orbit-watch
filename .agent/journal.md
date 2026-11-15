@@ -631,3 +631,24 @@ FA should return to baseline, and the round should fail on its target.
 cap. Factor 3, chosen on train: the largest whole factor under 38.4 / 12 = 3.2, the lower of the
 two lost burns' gaps. A constant in `detect.py`, not a setting. Test: a |z| 38.7 gap two gaps from
 a |z| 90 peak stays its own detection.
+
+**Result at 36a281d (`settings/inc-channel.json`, against bda5807).** REVERTED: the target did not
+move. GEO FA/obj-yr is unchanged on both splits, as predicted.
+
+| Split | Group | Metric | Baseline (bda5807) | Round 5 |
+|---|---|---|---|---|
+| train | GEO | NS; EW; EW+NS; all | 3/17; 36/39; 6/6; 45/62 | unchanged |
+| train | GEO | FA (FA/yr); dup; wch | 4 (1.67); 14; 4 | 4 (1.67); 12; 3 |
+| train | ISS | hit/cov; FA; dup | 45/48; 3; 0 | unchanged |
+| train | LEO; Fengyun | every row | as baseline | unchanged (Fengyun dup 1) |
+| dev | GEO | NS; EW; EW+NS; all | 1/14; 33/34; 3/3; 37/51 | unchanged |
+| dev | GEO | FA (FA/yr); dup; wch | 7 (3.58); 11; 5 | 7 (3.58); 9; 5 |
+| dev | ISS | hit/cov; FA (FA/yr); dup | 35/35; 4 (2.33); 3 | unchanged |
+| dev | LEO | >=50 m; FA; dup | 11/40; 0; 1 | unchanged |
+
+FROZEN on the same code: train GEO 0/17 NS, 36/39 EW, FA 4, dup 12, ISS 45/48; dev GEO FA 7, dup 9,
+ISS 35/35, FA 4, dup 3. Both lost burns are back (ISS 2023-03-14, QZS-3-128). The cap leaves only
+weak gaps to absorb (train QZS-3 2021-10-17 and 2022-08-08 a-steps, 2023-10-07 i-step; dev QZS-3
+2024-08-15 and 2025-02-04), so 2 duplicates go per split, and no false alarm. Peak-radius NMS is
+done as a lever on this eval: the duplicates it removes and the burns it loses have the same |z|,
+the same peak ratio and the same gap distance.

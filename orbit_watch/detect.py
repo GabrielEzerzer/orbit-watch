@@ -31,18 +31,12 @@ does most of the work.
 
 A step appears at several neighbouring gaps as the windows slide past it, so
 flagged gaps (``|z|`` and ``|step|`` over thresholds) are thinned by non-maximum
-suppression, highest ``|z|`` first (the gap whose two sides are both clean
-scatters least, so it scores highest). Each surviving gap is a peak: it absorbs
-the flagged gaps fewer than ``k`` gaps from it that no stronger peak has
-absorbed and whose own ``|z|`` is under ``ABSORB_Z_FACTOR`` x ``z_min``, and its
-detection spans the union of those gaps, with the peak's step and ``z``. A
-strong gap is left to the time rule, so a strong separate step stays separate. A flagged gap that is not absorbed is dropped when its centre lies
-within ``nms_days`` of a stronger peak's centre. Absorption is by distance from
-the peak, not chained from gap to gap: a weak gap between two burns, whose
-window mixes both, joins one of them without merging the two (the 2025-09-25
-and 09-26 ISS burns). ``peak_start``/``peak_end`` name the peak gap (the one its
-step and ``z`` come from) apart from the interval; the frozen evaluation
-(``harness/evals/detector.py``) matches and counts detections by the peak gap.
+suppression: within ``nms_days`` only the highest ``|z|`` survives (the gap
+whose two sides are both clean scatters least, so it scores highest). A
+detection's interval is its peak gap, and ``peak_start``/``peak_end`` name that
+gap (the one its step and ``z`` come from) separately, so a rule that widens the
+interval keeps the peak; the frozen evaluation (``harness/evals/detector.py``)
+matches and counts detections by the peak gap.
 
 A gap is not scored when either side's ``k`` epochs span more than
 ``max_span_days`` or the gap itself is longer than ``max_gap_days``, so there
@@ -51,8 +45,8 @@ is no detection across a data outage such as 2022-06-15..19.
 The same scoring runs on inclination (``channel="i"``, steps in degrees): a
 north-south burn turns the orbit plane and changes the semi-major axis little.
 ``merge_channels`` adds inclination detections to the semi-major-axis ones,
-dropping an inclination detection whose peak-gap centre lies within ``nms_days``
-of a semi-major-axis detection's peak-gap centre (the same non-maximum suppression, with the
+dropping an inclination detection whose centre lies within ``nms_days`` of a
+semi-major-axis detection's centre (the same non-maximum suppression, with the
 semi-major-axis channel first, since ``z`` is not comparable across channels).
 
 Duplicate epochs are already removed by ``to_series``.
@@ -70,7 +64,6 @@ from orbit_watch.series import ElementSeries
 
 _DAY_US = 86_400e6
 _MAD_TO_SIGMA = 1.4826
-ABSORB_Z_FACTOR = 3.0  # a peak absorbs only flagged gaps with |z| < this x z_min (journal, round 5)
 
 
 @dataclass(frozen=True)
@@ -83,7 +76,6 @@ class GapScores:
     z: np.ndarray  # step / standard error (NaN when not scored)
     sigma_m: np.ndarray  # residual scatter used, in step_m's unit
     channel: str = "a"  # "a" semi-major axis, "i" inclination
-    k: int = 0  # epochs per side; pick absorbs flagged gaps fewer than k gaps from a peak
 
     @property
     def valid(self) -> np.ndarray:
@@ -151,18 +143,11 @@ def score_gaps(
     floor = 0.5 * float(np.nanmedian(sigma)) if idx else 0.0
     sigma = np.maximum(sigma, floor)
     z = step / (sigma * np.sqrt(np.pi / 2) * np.sqrt(2.0 / k))
-    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma, channel, k)
+    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma, channel)
 
 
 def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1.0) -> list[Detection]:
-    """Gaps with ``|z| >= z_min`` and ``|step| >= step_min_m``, thinned by non-maximum suppression.
-
-    In decreasing ``|z|``: a flagged gap already absorbed is skipped; one whose centre is within
-    ``nms_days`` of a kept peak's centre is dropped; otherwise it is a peak and absorbs the
-    unabsorbed flagged gaps fewer than ``scores.k`` gaps from it whose ``|z|`` is under
-    ``ABSORB_Z_FACTOR * z_min``. A detection spans its peak's
-    absorbed gaps and carries the peak's step and ``z``; ``peak_start``/``peak_end`` are the peak gap.
-    """
+    """Gaps with ``|z| >= z_min`` and ``|step| >= step_min_m``, thinned by non-maximum suppression."""
     with np.errstate(invalid="ignore"):
         flagged = np.flatnonzero(
             scores.valid & (np.abs(scores.z) >= z_min) & (np.abs(scores.step_m) >= step_min_m)
@@ -170,31 +155,23 @@ def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1
     if not len(flagged):
         return []
     centre = _days(scores.start) + 0.5 * (scores.end - scores.start).astype("int64") / _DAY_US
-    owner: dict[int, int] = {}  # flagged gap -> the peak that absorbed it
-    peaks: list[int] = []
+    kept: list[int] = []
     for i in sorted(flagged, key=lambda j: -abs(scores.z[j])):
-        if i in owner or (peaks and np.min(np.abs(centre[peaks] - centre[i])) <= nms_days):
-            continue
-        peaks.append(i)
-        near = flagged[(np.abs(flagged - i) < max(scores.k, 1))
-                       & ((flagged == i) | (np.abs(scores.z[flagged]) < ABSORB_Z_FACTOR * z_min))]
-        for j in near:
-            owner.setdefault(int(j), i)
-    out = []
-    for p in sorted(peaks):
-        members = [j for j, o in owner.items() if o == p]
-        out.append(Detection(scores.start[min(members)], scores.end[max(members)], float(scores.step_m[p]),
-                             float(scores.z[p]), scores.channel, scores.start[p], scores.end[p]))
-    return out
+        if not kept or np.min(np.abs(centre[kept] - centre[i])) > nms_days:
+            kept.append(i)
+    return [
+        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]), scores.channel,
+                  scores.start[i], scores.end[i])
+        for i in sorted(kept)
+    ]
 
 
 def _centre(d: Detection) -> np.datetime64:
-    return d.peak_start + (d.peak_end - d.peak_start) / 2
+    return d.start + (d.end - d.start) / 2
 
 
 def merge_channels(a_dets: list[Detection], i_dets: list[Detection], nms_days: float = 1.0) -> list[Detection]:
-    """``a_dets`` plus each of ``i_dets`` whose peak-gap centre is more than ``nms_days`` from every
-    ``a_dets`` peak-gap centre."""
+    """``a_dets`` plus each of ``i_dets`` whose centre is more than ``nms_days`` from every ``a_dets`` centre."""
     tol = np.timedelta64(int(nms_days * _DAY_US), "us")
     ca = np.array([_centre(d) for d in a_dets], dtype="datetime64[us]")
     extra = [d for d in i_dets if not len(ca) or np.min(np.abs(ca - _centre(d))) > tol]
