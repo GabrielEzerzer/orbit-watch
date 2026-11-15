@@ -1,0 +1,114 @@
+id: package-imports-no-harness-tests-tools
+language: Python
+severity: error
+message: "orbit_watch/ must not import tests, harness or tools: the package is what they build on, never the other way round. Move the shared code into orbit_watch/ and import it from there."
+files:
+  - "orbit_watch/**"
+rule:
+  any:
+    - kind: import_from_statement
+      regex: '^from\s+(?:tests|harness|tools)\b'
+    - kind: import_statement
+      regex: '^import\s+(?:.*,\s*)?(?:tests|harness|tools)\b'
+---
+id: fetchers-imported-only-by-jobs
+language: Python
+severity: error
+message: "The network fetchers (orbit_watch.celestrak, spacetrack, spaceweather) are imported only by orbit_watch/jobs/, by each other, and from outside the package by tools/ and tests. Fetch in a job or a tool, write the result to disk, and pass parsed element sets or a DirectorySource to this module instead."
+files:
+  - "orbit_watch/**"
+ignores:
+  - "orbit_watch/jobs/**"
+  - "orbit_watch/celestrak.py"
+  - "orbit_watch/spacetrack.py"
+  - "orbit_watch/spaceweather.py"
+rule:
+  any:
+    - kind: import_from_statement
+      regex: '(?s)^from\s+(?:orbit_watch\.|\.+)(?:celestrak|spacetrack|spaceweather)\b|^from\s+(?:orbit_watch|\.+)\s+import\b.*\b(?:celestrak|spacetrack|spaceweather)\b'
+    - kind: import_statement
+      regex: '\borbit_watch\.(?:celestrak|spacetrack|spaceweather)\b'
+---
+id: jobs-imported-only-by-jobs
+language: Python
+severity: error
+message: "orbit_watch/jobs/ holds entry points run as python -m orbit_watch.jobs.<name>; the rest of the package never imports them. Move the shared code out of the job into an orbit_watch module and import it from both."
+files:
+  - "orbit_watch/**"
+ignores:
+  - "orbit_watch/jobs/**"
+rule:
+  any:
+    - kind: import_from_statement
+      regex: '(?s)^from\s+(?:orbit_watch\.jobs\b|\.+jobs\b)|^from\s+(?:orbit_watch|\.+)\s+import\b.*\bjobs\b'
+    - kind: import_statement
+      regex: '\borbit_watch\.jobs\b'
+---
+id: core-imports-only-core
+language: Python
+severity: error
+message: "The core modules (elements, propagate, geo, series, detect, modes, truth) import only each other from orbit_watch. Analyses (calibrate, generalise, holdout, inject, geo_hunt, manoeuvre_logs), sources, fetchers and jobs build on the core. Move what the core needs into a core module, or move this code out of the core."
+files:
+  - "orbit_watch/elements.py"
+  - "orbit_watch/propagate.py"
+  - "orbit_watch/geo.py"
+  - "orbit_watch/series.py"
+  - "orbit_watch/detect.py"
+  - "orbit_watch/modes.py"
+  - "orbit_watch/truth.py"
+rule:
+  any:
+    - kind: import_from_statement
+      regex: '^from\s+(?:orbit_watch\.|\.+)\w'
+      not:
+        regex: '^from\s+(?:orbit_watch\.|\.+)(?:elements|propagate|geo|series|detect|modes|truth)\s+import\b'
+    - kind: import_from_statement
+      regex: '(?s)^from\s+(?:orbit_watch|\.+)\s+import\b.*\b(?:calibrate|generalise|holdout|inject|geo_hunt|manoeuvre_logs|sources|celestrak|spacetrack|spaceweather|jobs)\b'
+    - kind: import_statement
+      regex: '\borbit_watch\.\w'
+      not:
+        regex: '^import\s+orbit_watch\.(?:elements|propagate|geo|series|detect|modes|truth)(?:\s+as\s+\w+)?$'
+---
+id: tests-read-fixtures-through-mock-dir
+language: Python
+severity: error
+message: "Tests read fixture files through the mock_dir fixture in tests/conftest.py, which points at mock/. Take mock_dir as a test argument and join the file onto it, and build scratch trees on tmp_path. A string starting mock/ or data/, or a bare \"mock\" or \"data\" joined onto anything but mock_dir or tmp_path, is flagged. Add a new fixture under mock/ with its source in mock/README.md. Tests never read data/, which is git-ignored and absent in CI."
+files:
+  - "tests/**"
+ignores:
+  - "tests/conftest.py"
+rule:
+  kind: string
+  any:
+    - regex: '^[rRbBuUfF]*["'']+(?:\.{1,2}[/\\])*(?:mock|data)[/\\]'
+    - regex: '^[rRbBuU]*["'']+(?:\.{1,2}[/\\])*(?:mock|data)["'']+$'
+      any:
+        - inside:
+            kind: binary_operator
+            field: right
+            all:
+              - has:
+                  field: operator
+                  regex: '^/$'
+              - not:
+                  has:
+                    field: left
+                    regex: '^\(*\s*(?:tmp_path|mock_dir)(?:\s*[/)]|$)'
+        - inside:
+            kind: argument_list
+            not:
+              regex: '^\(\s*(?:tmp_path|mock_dir)\s*[,)]'
+            inside:
+              kind: call
+              has:
+                field: function
+                any:
+                  - regex: '^(?:os\.path\.join|(?:pathlib\.)?(?:Path|PurePath|PosixPath|WindowsPath)|open)$'
+                  - kind: attribute
+                    has:
+                      field: attribute
+                      regex: '^joinpath$'
+                    not:
+                      has:
+                        field: object
+                        regex: '^\(*\s*(?:tmp_path|mock_dir)(?:\s*[/)]|$)'

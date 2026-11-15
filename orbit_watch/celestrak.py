@@ -1,11 +1,5 @@
-"""CelesTrak downloads: current GP element sets, and the polite fetch-and-cache they share.
-
-CelesTrak blocks clients that download the same data again and again
-(https://celestrak.org/usage-policy.php). So every download here goes through ``cached_fetch``:
-the body is kept under ``data/celestrak/<UTC date>/<query key>`` and a query already cached
-today is read from disk, never fetched again. Requests carry a generic User-Agent with no
-personal details, and any non-200 answer raises, which stops the caller at the first error.
-"""
+# CelesTrak downloads, current GP element sets and the fetch-and-cache they share.
+# Every body is cached per UTC day so a query reaches CelesTrak at most once a day (celestrak.org/usage-policy.php).
 
 from __future__ import annotations
 
@@ -19,15 +13,14 @@ from orbit_watch.elements import ElementSet, parse_omm_json
 USER_AGENT = "orbit-watch/0.1 (research prototype)"
 GP_URL = "https://celestrak.org/NORAD/elements/gp.php"
 CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "celestrak"
-NO_DATA = "No GP data found"  # CelesTrak's plain-text answer for a query that matches nothing
+NO_DATA = "No GP data found"
 
-Fetch = Callable[[str], bytes]  # URL -> response body
+Fetch = Callable[[str], bytes]
 
 
 def http_get(url: str) -> bytes:
-    """GET ``url`` with our User-Agent; raises on anything but HTTP 200."""
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=60) as response:  # raises HTTPError on 4xx/5xx
+    with urllib.request.urlopen(request, timeout=60) as response:
         if response.status != 200:
             raise RuntimeError(f"{url}: HTTP {response.status}")
         return response.read()
@@ -46,11 +39,6 @@ def cached_fetch(
     fetch: Fetch = http_get,
     today: Callable[[], date] = utc_today,
 ):
-    """``parse(body)`` for ``url``, downloading it at most once per UTC day.
-
-    The body is written to the cache only after ``parse`` accepts it, so a bad answer is never
-    served from disk later. Returns what ``parse`` returns.
-    """
     path = cache_dir / today().isoformat() / key
     if path.is_file():
         return parse(path.read_bytes())
@@ -71,12 +59,6 @@ def parse_gp_json(body: bytes) -> list[ElementSet]:
 
 
 class CelesTrakSource:
-    """Current GP element sets from CelesTrak ``gp.php`` (``FORMAT=json``), cached per UTC day.
-
-    ``load`` makes one ``CATNR`` query per object; ``group`` one ``GROUP`` query. Pass ``fetch``
-    to replace the network (tests do).
-    """
-
     def __init__(
         self,
         cache_dir: Path = CACHE_DIR,
@@ -107,5 +89,4 @@ class CelesTrakSource:
         return records
 
     def group(self, name: str) -> list[ElementSet]:
-        """Every object in a CelesTrak group, e.g. ``"stations"`` or ``"active"``."""
         return self._query("GROUP", name)

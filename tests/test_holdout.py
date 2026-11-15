@@ -16,11 +16,11 @@ def row(epoch, gp_id, mm="15.5"):
 
 def test_restated_epochs_keep_the_latest_issue():
     rows = [
-        row("2023-05-18T09:40:15.083904", 20, "a"),  # reissue a few ms off, issued later
+        row("2023-05-18T09:40:15.083904", 20, "a"),
         row("2023-05-18T09:40:15.080448", 10, "b"),
-        row("2023-05-18T12:00:00.000000", 31, "c"),  # exact repeat of one epoch
+        row("2023-05-18T12:00:00.000000", 31, "c"),
         row("2023-05-18T12:00:00.000000", 30, "d"),
-        row("2023-05-18T12:01:00.000000", 40, "e"),  # 60 s later: a distinct element set
+        row("2023-05-18T12:01:00.000000", 40, "e"),
     ]
     kept, stats = dedupe_gp_rows(rows)
     assert [r["MEAN_MOTION"] for r in kept] == ["a", "c", "e"]
@@ -29,7 +29,6 @@ def test_restated_epochs_keep_the_latest_issue():
 
 
 def test_latest_issue_wins_over_later_epoch_under_60_s(tmp_path):
-    # Two synthetic ISS GP rows 58 s apart; the earlier epoch was issued later (higher GP_ID).
     base = {"NORAD_CAT_ID": "25544", "ECCENTRICITY": "0.0003", "INCLINATION": "51.6",
             "RA_OF_ASC_NODE": "10", "ARG_OF_PERICENTER": "20", "MEAN_ANOMALY": "30", "BSTAR": "0.0001",
             "MEAN_MOTION_DOT": "0", "MEAN_MOTION_DDOT": "0", "OBJECT_NAME": "ISS"}
@@ -40,7 +39,7 @@ def test_latest_issue_wins_over_later_epoch_under_60_s(tmp_path):
     assert series.epochs.tolist() == [np.datetime64("2022-01-13T04:19:37", "us").item()]
     assert series.mean_motion.tolist() == [15.50]
     assert stats["near_epoch_reissues_dropped"] == 1
-    assert load_series(tmp_path / "gp.json").epochs.tolist() == series.epochs.tolist()  # inject agrees
+    assert load_series(tmp_path / "gp.json").epochs.tolist() == series.epochs.tolist()
 
 
 def test_rows_without_gp_id_are_refused():
@@ -57,15 +56,12 @@ def test_period_masks_follow_event_date_and_detection_start():
     t = np.datetime64("2023-12-31T23:00", "us")
     events = [Event("2023-12-31", "", "reboost", "", t, t + np.timedelta64(2, "D")),
               Event("2024-01-01", "", "reboost", "", t, t)]
-    dets = [Detection(t, t + np.timedelta64(2, "h"), 500.0, 20.0)]  # starts 2023, ends 2024
+    dets = [Detection(t, t + np.timedelta64(2, "h"), 500.0, 20.0)]
     assert period_masks(events, dets, (2024,)) == ([False, True], [False])
     assert period_masks(events, dets, (2023,)) == ([True, False], [True])
 
 
 def test_fold_tuning_never_matches_across_years():
-    # Synthetic ISS-like series at one element set every 4.8 h with two +1 km steps, both in 2021:
-    # one at a 2021 reboost, one at 22:00 on 2021-12-31, three hours before a 2022 reboost. Tuning
-    # on 2021 alone must not let the 2022 label make the second detection a true positive.
     t0 = np.datetime64("2021-12-01T00:00", "us")
     n = 250
     epochs = t0 + np.arange(n) * np.timedelta64(288, "m")
@@ -83,5 +79,4 @@ def test_fold_tuning_never_matches_across_years():
     _, d = st.score({"k": 4, "z_min": 12, "step_min_m": 200}, (2021,))
     assert [x.start.astype("datetime64[D]") for x in d["dets"]] == [np.datetime64("2021-12-15"),
                                                                      np.datetime64("2021-12-31")]
-    # Two 2021 detections, one 2021 event: precision 1/2 and recall 1/1 at best, so F1 2/3.
     assert st.choose((2021,))["f1"] == round(2 / 3, 4)

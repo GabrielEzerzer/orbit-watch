@@ -1,4 +1,4 @@
-"""Where element sets come from. Network sources join behind ``ElementSource`` later."""
+# Where element sets come from: the source protocol and a local directory source.
 
 from __future__ import annotations
 
@@ -19,16 +19,10 @@ _PARSERS = {
 
 class ElementSource(Protocol):
     def load(self, norad_ids: Iterable[int]) -> list[ElementSet]:
-        """Every element set the source holds for these objects."""
         ...
 
 
 class DirectorySource:
-    """Reads ``.tle``/``.3le``/``.txt`` (TLE), ``.json`` and ``.csv`` (GP/OMM) files in one directory.
-
-    Other files are ignored. A file that fails to parse raises, naming the file.
-    """
-
     def __init__(self, directory: str | Path) -> None:
         self.directory = Path(directory)
         if not self.directory.is_dir():

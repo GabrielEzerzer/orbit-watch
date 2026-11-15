@@ -1,57 +1,5 @@
-"""Synthetic injection-recovery test of the ISS step detector.
-
-    python -m orbit_watch.inject \\
-        --spacetrack data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json \\
-        --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv \\
-        --out findings/injection
-
-Everything this module adds to the data is a synthetic injection: a step of known size added
-to the real ISS series in memory to see whether the detector finds it. Nothing injected is
-written to ``groundtruth/`` or to any event list; real events come only from ``groundtruth/``.
-
-What it measures, all on Space-Track gp_history for the ISS:
-
-1. Recall against injected step size, at the frozen setting and at a few looser ones.
-2. Detections per year on quiet stretches with nothing injected, for the same settings.
-3. Recall at the frozen setting with the series thinned to about one TLE a day and about one
-   every two days.
-
-Where the step goes. ``detect.score_gaps`` reads one array, ``series.semi_major_axis_km`` (the
-mean semi-major axis ``to_series`` derives from each TLE's mean motion), and nothing else. A
-synthetic injection at gap ``i`` adds the step to that array for every epoch after gap ``i``.
-That is exactly what the detector consumes, so the test measures the detector and not the
-element parsing.
-
-What that leaves out. A real burn reaches the TLEs through orbit determination: the first one or
-two TLEs after a burn are often fitted across it and sit between the two levels, and scatter can
-stay high for a few TLEs. A synthetic injection is a clean, instantaneous step, so its recall is an
-upper bound for a real burn of the same size. The detector's medians ignore up to ``k/2 - 1 = 1``
-such transitional TLE per side at ``k = 4``, so the gap should be small, but it is not measured
-here. The thinned series keep the ISS's per-TLE scatter; an object tracked less often usually has
-noisier TLEs too, so the thinned recall is also optimistic.
-
-Quiet stretches. A gap is quiet when no ground-truth event window and no detection at the frozen
-setting lies within ``margin`` days of it; ``margin`` is the scoring window
-``max_span_days``: 3 days at the native cadence, wider on thinned series so a quiet gap's scoring
-window never reaches a real burn. Only gaps the detector scores are used. Injections in one
-realisation are at least ``SPACING_DAYS`` apart (wider on thinned series), so no scoring window
-holds two injected steps. On a thinned series the frozen detections of that thinned realisation
-are excluded too, since thinning can create detections the full series does not have.
-
-A trial is recovered when a detection with the injected step's sign overlaps the injected gap,
-widened by ``calibrate.TOLERANCE_DAYS`` (the same rule ``calibrate.match`` uses for real events).
-
-False alarms (native cadence only; not measured on thinned series). The frozen detections define the quiet stretches, so the frozen setting has no
-detections there by construction. Two rates are reported: detections per year where only
-ground-truth events are excluded (an upper bound on false alarms, because burns missing from the
-ground truth count), and detections per year in the fully quiet stretches, which
-is zero for the frozen setting and shows what each looser setting adds. Those extra detections
-may still include small real burns, so they too are an upper bound. ``chance_recovery`` is the
-share of quiet gaps that one of those detections would "recover" with nothing injected: the floor
-under the small-step recall at a loose setting.
-
-The looser settings are a measurement, not a tuning: none of them is chosen here.
-"""
+# Synthetic injection-recovery test of the ISS step detector. Injected steps live in memory only;
+# real events come only from groundtruth/.
 
 from __future__ import annotations
 
@@ -68,7 +16,6 @@ from orbit_watch.detect import Detection, pick, score_gaps
 from orbit_watch.holdout import load_gp_history
 from orbit_watch.series import ElementSeries
 
-# Frozen setting from calibrate.FROZEN (k=4, |z|>=12, |step|>=200 m), NMS 1 day.
 K = CALIBRATED["k"]
 FROZEN = (float(CALIBRATED["z_min"]), float(CALIBRATED["step_min_m"]))
 NMS_DAYS = 1.0
@@ -76,28 +23,23 @@ LOOSER = tuple((z, s) for z in (6.0, 8.0) for s in (0.0, 50.0, 100.0))
 SIZES_M = (25, 50, 100, 150, 200, 300, 500, 1000, 2000)
 QUIET_DAYS = 3.0
 SPACING_DAYS = 10.0
-TRIALS_PER_CELL = 300  # per size and sign; 600 per size with both signs pooled
+TRIALS_PER_CELL = 300
 SEED = 20261114
-# Thinning factor in days; None is the native series. Scoring guards scale with it (see _guards).
 CADENCES = {"native": None, "about 1 per day": 1.0, "about 1 per 2 days": 2.0}
 _DAY_US = 86_400e6
 
 
 @dataclass(frozen=True)
 class Window:
-    """A time interval, shaped like calibrate.Event for calibrate._overlaps."""
-
     lo: np.datetime64
     hi: np.datetime64
 
 
 def load_series(path: Path) -> ElementSeries:
-    """The ISS series, with Space-Track restatements resolved as in holdout.py (latest issued wins)."""
     return load_gp_history(path)[0]
 
 
 def inject(series: ElementSeries, gaps, steps_m) -> ElementSeries:
-    """A copy of ``series`` with each synthetic injection step added after its gap."""
     a_m = series.semi_major_axis_km * 1000.0
     for g, s in zip(gaps, steps_m):
         a_m[g + 1:] += s
@@ -105,7 +47,6 @@ def inject(series: ElementSeries, gaps, steps_m) -> ElementSeries:
 
 
 def thin(series: ElementSeries, every_days: float, phase_days: float = 0.0) -> ElementSeries:
-    """Keep the epoch nearest each point of a grid ``every_days`` apart, starting at ``phase_days``."""
     t = (series.epochs - series.epochs[0]).astype("int64") / _DAY_US
     grid = np.arange(phase_days, t[-1], every_days)
     j = np.clip(np.searchsorted(t, grid), 1, len(t) - 1)
@@ -115,18 +56,12 @@ def thin(series: ElementSeries, every_days: float, phase_days: float = 0.0) -> E
 
 
 def _guards(every_days: float | None) -> dict:
-    """score_gaps outage guards. Native keeps detect.py's defaults; a thinned series scales them.
-
-    shortcut: 3.5x and 2x the thinning step are chosen so k=4 epochs on a jittered grid still
-    fit; a per-object cadence model would be better if this is used beyond the ISS.
-    """
     if every_days is None:
         return {"max_span_days": 3.0, "max_gap_days": 2.0}
     return {"max_span_days": 3.5 * every_days, "max_gap_days": 2.0 * every_days}
 
 
 def quiet_gaps(series: ElementSeries, windows: list[Window], margin_days: float) -> np.ndarray:
-    """Per gap: True when no window lies within ``margin_days`` of it."""
     m = np.timedelta64(int(margin_days * _DAY_US), "us")
     start, end = series.epochs[:-1], series.epochs[1:]
     if not windows:
@@ -153,7 +88,6 @@ def recovered(dets: list[Detection], gap: Window, step_m: float) -> bool:
 
 
 def _spread(candidates: np.ndarray, centre: np.ndarray, spacing: float, rng) -> list[int]:
-    """Random candidate gaps, greedily kept when at least ``spacing`` days from every kept one."""
     kept: list[int] = []
     for g in rng.permutation(candidates):
         if all(abs(centre[g] - centre[h]) >= spacing for h in kept):
@@ -162,24 +96,17 @@ def _spread(candidates: np.ndarray, centre: np.ndarray, spacing: float, rng) -> 
 
 
 def recall_trials(full: ElementSeries, avoid: list[Window], every_days, settings, rng) -> dict:
-    """Synthetic injection trials. Returns per-setting counts and what the series looked like.
-
-    A thinned series is re-thinned with a random grid phase in every realisation, so its trials
-    are spread over many different thinned series rather than repeating one series' few quiet gaps.
-    """
     guards = _guards(every_days)
     margin = max(QUIET_DAYS, guards["max_span_days"])
     spacing = max(SPACING_DAYS, 2 * guards["max_span_days"] + guards["max_gap_days"])
     cells = [(s, sign) for s in SIZES_M for sign in (1, -1)]
     queue = [cells[i] for i in rng.permutation(np.repeat(np.arange(len(cells)), TRIALS_PER_CELL))]
-    counts = {st: {c: [0, 0] for c in cells} for st in settings}  # [recovered, trials]
+    counts = {st: {c: [0, 0] for c in cells} for st in settings}
     seen = {"epochs": [], "scored_gaps": [], "quiet_scored_gaps": [], "sigma": []}
     sites: set = set()
     while queue:
         series = full if every_days is None else thin(full, every_days, rng.uniform(0, every_days))
         base = score_gaps(series, k=K, **guards)
-        # A thinned series has frozen-setting detections of its own; exclude them as well, so the
-        # frozen setting has no detection in a quiet gap at any cadence.
         own = [Window(d.start, d.end) for d in pick(base, *FROZEN, NMS_DAYS)] if every_days else []
         candidates = np.flatnonzero(base.valid & quiet_gaps(series, avoid + own, margin))
         t = (series.epochs - series.epochs[0]).astype("int64") / _DAY_US
@@ -214,7 +141,6 @@ def recall_trials(full: ElementSeries, avoid: list[Window], every_days, settings
 
 
 def false_alarms(series: ElementSeries, events: list[Window], frozen: list[Window], settings) -> dict:
-    """Detections per year on quiet gaps of the native series, nothing injected."""
     sc = score_gaps(series, k=K)
     dur = (series.epochs[1:] - series.epochs[:-1]).astype("int64") / _DAY_US / 365.25
     out = {}
@@ -229,9 +155,6 @@ def false_alarms(series: ElementSeries, events: list[Window], frozen: list[Windo
             n = int(mask[gaps].sum()) if len(gaps) else 0
             rows[_label(st)] = {"detections": n, "per_year": round(n / years, 2)}
             if name == "fully_quiet":
-                # Chance recovery: the share of injection candidates (quiet scored gaps) that a
-                # detection already present without any injection would "recover", averaged over
-                # both signs. It is the floor under the small-step recall at each setting.
                 ds = np.array([d.start for d in dets], dtype="datetime64[us]")
                 de = np.array([d.end for d in dets], dtype="datetime64[us]")
                 sg = np.sign([d.step_m for d in dets])
@@ -321,7 +244,6 @@ def run(spacetrack: Path, truth: list[Path], out: Path) -> dict:
     return report
 
 
-# Categorical slots 1-8 of the dataviz reference palette, in fixed order.
 _COLOURS = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948")
 
 
@@ -364,7 +286,7 @@ def plot(rows: list[dict], path: Path) -> None:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Synthetic injection-recovery test of the ISS step detector.")
     p.add_argument("--spacetrack", type=Path, required=True)
     p.add_argument("--truth", type=Path, nargs="+", required=True)
     p.add_argument("--out", type=Path, required=True)

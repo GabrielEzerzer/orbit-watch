@@ -1,9 +1,6 @@
-"""Daily space-weather indices from CelesTrak's ``SW-All.csv``: Kp, Ap and F10.7.
-
-https://celestrak.org/SpaceData/SW-All.csv has one row per day from 1957-10-01, observed rows
-first, then daily and monthly predictions. It is downloaded through ``celestrak.cached_fetch``,
-so at most once per UTC day. Dst (Kyoto WDC) is not loaded here.
-"""
+# Daily space-weather indices (Kp, Ap, F10.7) from CelesTrak's SW-All.csv, fetched at most once per UTC day.
+# kp and ap: 8 three-hour columns from 00-03 UT; kp is NaN on prediction rows.
+# F10.7 is in solar flux units, the adjusted value scaled to 1 AU. Dst is not loaded.
 
 from __future__ import annotations
 
@@ -27,20 +24,13 @@ _REQUIRED = ["DATE", *_KP, *_AP, "AP_AVG", "F10.7_OBS", "F10.7_ADJ", "F10.7_DATA
 
 @dataclass(frozen=True)
 class SpaceWeather:
-    """One row per UTC day. Missing values (prediction rows have no Kp) are NaN.
-
-    ``kp`` is the planetary index in its usual units (CelesTrak prints it times ten), one column
-    per 3-hour interval starting 00-03 UT. ``data_type`` is CelesTrak's ``F10.7_DATA_TYPE``:
-    ``OBS`` for observed days, other codes for interpolated or predicted ones.
-    """
-
-    day: np.ndarray  # datetime64[D]
-    kp: np.ndarray  # (n, 8)
-    ap: np.ndarray  # (n, 8)
-    ap_daily: np.ndarray  # AP_AVG
-    f107_obs: np.ndarray  # solar flux units
-    f107_adj: np.ndarray  # adjusted to 1 AU
-    data_type: np.ndarray  # str
+    day: np.ndarray
+    kp: np.ndarray
+    ap: np.ndarray
+    ap_daily: np.ndarray
+    f107_obs: np.ndarray
+    f107_adj: np.ndarray
+    data_type: np.ndarray
 
 
 def _num(row: dict[str, str], key: str, low: float, high: float) -> float:
@@ -54,7 +44,6 @@ def _num(row: dict[str, str], key: str, low: float, high: float) -> float:
 
 
 def parse_sw_all(body: bytes) -> SpaceWeather:
-    """Parse ``SW-All.csv``; raises ``ValueError`` on a missing column or an out-of-range value."""
     reader = csv.DictReader(io.StringIO(body.decode("utf-8")))
     missing = [k for k in _REQUIRED if k not in (reader.fieldnames or [])]
     if missing:
@@ -91,5 +80,4 @@ def load_space_weather(
     fetch: Fetch = http_get,
     today: Callable[[], date] = utc_today,
 ) -> SpaceWeather:
-    """``SW-All.csv``, from today's cache if it is there, otherwise downloaded once."""
     return cached_fetch(SW_URL, "SW-All.csv", parse_sw_all, cache_dir=cache_dir, fetch=fetch, today=today)

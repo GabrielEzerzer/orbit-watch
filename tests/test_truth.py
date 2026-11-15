@@ -6,8 +6,8 @@ import pytest
 from orbit_watch import generalise, truth
 from orbit_watch.truth import SPLITS_PATH, HoldoutError, load_splits, make_splits, require_allowed
 
-SARAL = 39086  # holdout in the committed splits.json
-CRYOSAT2 = 36508  # train
+SARAL = 39086
+CRYOSAT2 = 36508
 
 
 def test_committed_splits_follow_the_rule():
@@ -42,9 +42,9 @@ def test_scoring_loaders_refuse_holdout(tmp_path):
     with pytest.raises(HoldoutError):
         generalise.load_log_events(csv_path, SARAL)
     assert generalise.load_log_events(csv_path, SARAL, final=True) == []
-    with pytest.raises(HoldoutError):  # refused before any element-set file is looked for
+    with pytest.raises(HoldoutError):
         generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path)
-    with pytest.raises(FileNotFoundError):  # with final=True it gets past the guard to the empty dir
+    with pytest.raises(FileNotFoundError):
         generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path, final=True)
 
 
@@ -63,7 +63,7 @@ def test_cli_final_flag_reaches_the_loaders(monkeypatch, tmp_path):
 
 def test_split_rule_does_not_depend_on_object_order():
     shuffled = tuple(reversed(truth.OBJECTS))
-    by_id = lambda d: {o["norad_id"]: o["split"] for o in d["objects"]}  # noqa: E731
+    by_id = lambda d: {o["norad_id"]: o["split"] for o in d["objects"]}
     assert by_id(make_splits(shuffled)) == by_id(make_splits())
 
 
@@ -71,9 +71,6 @@ def test_every_truth_file_named_in_splits_exists():
     for o in load_splits().values():
         for f in o["truth_files"]:
             assert (Path(truth.GROUNDTRUTH) / f).is_file(), f
-
-
-# --- finding 1: the tuning run never takes final=True ---------------------------------------
 
 
 def test_generalise_run_refuses_final_before_reading_anything(monkeypatch, tmp_path):
@@ -87,9 +84,6 @@ def test_generalise_run_refuses_final_before_reading_anything(monkeypatch, tmp_p
     assert not (tmp_path / "out").exists()
 
 
-# --- finding 2: the element-series guard and the single label reader ------------------------
-
-
 def test_series_guard_refuses_holdout_element_sets(mock_dir):
     from dataclasses import replace
 
@@ -99,10 +93,10 @@ def test_series_guard_refuses_holdout_element_sets(mock_dir):
     saral = [replace(r, norad_id=SARAL) for r in iss]
     with pytest.raises(HoldoutError, match="SARAL"):
         to_series(saral)
-    with pytest.raises(HoldoutError):  # one holdout object in a mixed batch is enough
+    with pytest.raises(HoldoutError):
         to_series(iss + saral)
     assert len(to_series(saral, final=True)[SARAL]) == 2
-    unlisted = [replace(r, norad_id=99999) for r in iss]  # belt-wide hunts are unlabelled
+    unlisted = [replace(r, norad_id=99999) for r in iss]
     assert set(to_series(iss + unlisted)) == {25544, 99999}
 
 
@@ -114,23 +108,18 @@ def test_require_not_holdout_lets_unlisted_objects_through():
 
 
 REPO = Path(truth.__file__).resolve().parents[1]
-SCANNED_DIRS = ("orbit_watch", "harness")  # the package and the evaluation code
+SCANNED_DIRS = ("orbit_watch", "harness")
 LABEL_READERS_ALLOWED = {"orbit_watch/truth.py", "orbit_watch/manoeuvre_logs.py"}
-# Streams multi-GB TLE bundles (element sets, never groundtruth/), so it needs open().
 BULK_READERS_ALLOWED = {"orbit_watch/jobs/geo_belt.py"}
 
 
 def _scanned_files():
-    """Every .py file under ``SCANNED_DIRS`` except the allowed readers, as repo-relative paths."""
     allowed = LABEL_READERS_ALLOWED | BULK_READERS_ALLOWED
     return [p.relative_to(REPO).as_posix() for d in SCANNED_DIRS for p in sorted((REPO / d).rglob("*.py"))
             if p.relative_to(REPO).as_posix() not in allowed]
 
 
 def _file_readers(tree):
-    """Calls in ``tree`` that open or parse a file other than to write it: ``open()`` without a
-    write mode, ``csv.reader``/``csv.DictReader`` on anything but ``io.StringIO``, and the
-    pandas/numpy CSV loaders."""
     import ast
 
     found = []
@@ -156,11 +145,6 @@ def _file_readers(tree):
 
 
 def test_only_truth_py_opens_ground_truth_files():
-    """Label CSVs are read through ``truth.read_label_rows`` (which runs the guard) and written
-    by ``manoeuvre_logs``. Any other module of the package or of ``harness/`` that opens a file for
-    reading or parses CSV from a file fails here. shortcut: a static scan; ``Path.read_text`` +
-    manual splitting would slip past it (every current ``read_text`` reads element sets, source
-    logs, or the eval's split and settings JSON)."""
     import ast
 
     files = _scanned_files()
@@ -190,8 +174,6 @@ def test_label_reader_refuses_holdout_and_filters_by_object(tmp_path):
 
 
 def test_geo_fallback_refuses_holdout_objects(tmp_path, mock_dir):
-    """``generalise.load_series`` reads ``data/geo/<norad>.tle`` when there is no gp_history file;
-    that path builds the series through ``to_series`` too, so a holdout object is refused."""
     from orbit_watch.elements import _tle_checksum
 
     def renumber(line):

@@ -1,11 +1,5 @@
-"""Fetch Space-Track gp_history for the satellites in the generalisation run, once each.
-
-    hush run -- .venv/Scripts/python tools/fetch_generalise_tles.py
-
-One request per object over the span of its manoeuvre log (plus ``PAD_DAYS`` either side),
-cached under ``data/spacetrack/`` by ``SpaceTrackSource``; a cached span never reaches the
-network again. Prints only counts and file sizes, never the environment.
-"""
+# Fetch Space-Track gp_history for the satellites in the generalisation run, once each, over their log spans.
+# Prints only counts and file sizes, never the environment.
 
 from __future__ import annotations
 
@@ -18,14 +12,13 @@ from orbit_watch.spacetrack import RateLimiter, SpaceTrackSource
 PAD_DAYS = 10
 TODAY = date(2026, 11, 14)
 
-# NORAD id -> (first, last) manoeuvre-log date, from groundtruth/{ids,qzss}_manoeuvres.csv.
 SPANS = {
-    54754: (date(2023, 1, 11), date(2026, 11, 5)),  # SWOT
-    41240: (date(2016, 1, 19), date(2026, 10, 22)),  # Jason-3
-    42917: (date(2017, 10, 16), date(2026, 10, 23)),  # QZS-3
-    62876: (date(2025, 8, 2), date(2026, 10, 30)),  # QZS-6
-    36508: (date(2010, 4, 15), date(2026, 10, 30)),  # CryoSat-2
-    27421: (date(2002, 5, 7), date(2015, 12, 9)),  # SPOT-5
+    54754: (date(2023, 1, 11), date(2026, 11, 5)),
+    41240: (date(2016, 1, 19), date(2026, 10, 22)),
+    42917: (date(2017, 10, 16), date(2026, 10, 23)),
+    62876: (date(2025, 8, 2), date(2026, 10, 30)),
+    36508: (date(2010, 4, 15), date(2026, 10, 30)),
+    27421: (date(2002, 5, 7), date(2015, 12, 9)),
 }
 
 
@@ -35,7 +28,7 @@ def span(norad: int) -> tuple[date, date]:
 
 
 def main(argv: list[str]) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Fetch Space-Track gp_history for the satellites in the generalisation run, once each, over their log spans.")
     p.add_argument("norad", type=int, nargs="*", help="NORAD ids to fetch (default: every object in SPANS)")
     wanted = p.parse_args(argv).norad or list(SPANS)
     limiter = RateLimiter()

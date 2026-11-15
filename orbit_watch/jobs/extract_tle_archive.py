@@ -1,15 +1,5 @@
-"""Pull per-object TLE history out of the OndroNR/tle-archive git history.
-
-    python -m orbit_watch.jobs.extract_tle_archive --out <dir> --norad 25544 [--norad ...]
-        [--name-regex 'LUCH|OLYMP']
-
-The archive is a GitHub repo whose hourly job committed CelesTrak's ``TLEs/active.txt`` (3LE)
-from 2021-01-01 until 2023-12-28: about 19k commits and 1.94 GB. This job makes a bare clone,
-streams ``git log -p -U0`` of that one file oldest first, and keeps only the added TLE lines of
-the wanted catalog numbers. Every line 1 / line 2 pair is checked with our own TLE parser and
-de-duplicated by epoch. It writes ``<norad>.tle`` (2-line TLEs, epoch order) per object and a
-``manifest.json``. Run it on Kaggle (see the README); the clone is too big for the laptop.
-"""
+# Pull per-object TLE history out of the OndroNR/tle-archive git history of CelesTrak's active.txt.
+# Run it on Kaggle: the bare clone is about 2 GB.
 
 from __future__ import annotations
 
@@ -28,15 +18,15 @@ from orbit_watch.elements import parse_tle
 
 REPO_URL = "https://github.com/OndroNR/tle-archive.git"
 PATH = "TLEs/active.txt"
-COMMIT_MARK = "\x1e"  # starts each commit header line in our `git log --format`
+COMMIT_MARK = "\x1e"
 GAP = timedelta(days=3)
 
 
 @dataclass
 class ObjectHistory:
-    lines: dict[datetime, tuple[str, str]] = field(default_factory=dict)  # epoch -> (line 1, line 2)
-    invalid: int = 0  # pairs our parser rejected
-    conflicts: int = 0  # pairs whose epoch was already held with different lines (first one kept)
+    lines: dict[datetime, tuple[str, str]] = field(default_factory=dict)
+    invalid: int = 0
+    conflicts: int = 0
 
 
 @dataclass
@@ -52,13 +42,6 @@ def _catnr(tle_line: str) -> int | None:
 
 
 def extract(diff_lines: Iterable[str], wanted: set[int]) -> Extract:
-    """Collect the wanted objects' element sets from ``git log -p -U0 --reverse`` output.
-
-    Commit headers are lines starting with ``COMMIT_MARK`` followed by the SHA. The current
-    line 1 and line 2 of each wanted object are carried from commit to commit, so a commit that
-    changes only one of the two lines still yields a whole pair. Pairs are validated after each
-    commit, once every hunk of that commit has been read.
-    """
     result = Extract(objects={n: ObjectHistory() for n in wanted})
     current: dict[int, list[str | None]] = {n: [None, None] for n in wanted}
     touched: set[int] = set()
@@ -88,7 +71,6 @@ def extract(diff_lines: Iterable[str], wanted: set[int]) -> Extract:
             result.commits += 1
             result.last_commit = line[1:].split()[0]
             continue
-        # Added TLE lines only; '+++ b/...' file headers never match '+1 ' or '+2 '.
         if not (line.startswith("+1 ") or line.startswith("+2 ")):
             continue
         tle_line = line[1:]
@@ -101,7 +83,6 @@ def extract(diff_lines: Iterable[str], wanted: set[int]) -> Extract:
 
 
 def names_matching(text: str, pattern: re.Pattern[str]) -> dict[int, str]:
-    """Catalog number -> name for the 3LE entries in ``text`` whose name line matches ``pattern``."""
     lines = [ln.rstrip("\r\n") for ln in text.splitlines()]
     found: dict[int, str] = {}
     for name, line1 in zip(lines, lines[1:]):
@@ -113,7 +94,6 @@ def names_matching(text: str, pattern: re.Pattern[str]) -> dict[int, str]:
 
 
 def gaps(epochs: list[datetime], longer_than: timedelta = GAP) -> list[tuple[datetime, datetime]]:
-    """Consecutive (earlier, later) epoch pairs further apart than ``longer_than``; epochs sorted."""
     return [(a, b) for a, b in zip(epochs, epochs[1:]) if b - a > longer_than]
 
 
@@ -125,10 +105,6 @@ def _git(repo: Path, *args: str) -> str:
 
 
 def _all_names(repo: Path) -> dict[int, list[str]]:
-    """Each object's distinct names, oldest first, in the first version of the file in each month
-    and in the last version."""
-    # shortcut: monthly samples can miss an object that was in active.txt for under a month;
-    # scan every version if a short-lived object ever matters.
     log = _git(repo, "log", "--first-parent", "--reverse", "--format=%H %cI", "--", PATH)
     samples: dict[str, str] = {}
     commits = [row.split() for row in log.splitlines() if row.strip()]
@@ -147,7 +123,7 @@ def _iso(epoch: datetime) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser = argparse.ArgumentParser(description="Pull per-object TLE history out of the OndroNR/tle-archive git history.")
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--norad", type=int, action="append", default=[])
     parser.add_argument("--name-regex", type=re.compile)

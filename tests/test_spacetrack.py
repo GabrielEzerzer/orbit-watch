@@ -91,7 +91,7 @@ def test_rate_limiter_keeps_under_30_a_minute_and_300_an_hour():
     for _ in range(29):
         limiter.wait()
     assert clock.slept == []
-    limiter.wait()  # the 30th within a minute waits for the first to leave the window
+    limiter.wait()
     assert clock.slept == [60.0]
     for _ in range(400):
         limiter.wait()

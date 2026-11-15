@@ -1,14 +1,5 @@
-"""Fetch Space-Track gp_history 2021-01-01..2026-01-01 for the objects added in splits.json.
-
-    hush run -- python tools/fetch_truth_tles.py --cache-dir data/spacetrack
-
-One request per object, cached by ``SpaceTrackSource`` (a cached query never reaches the network
-again). Only objects with ``previously_scored: false`` are fetched: the ISS file for this span is
-already cached, and the six generalisation objects were fetched once over their log spans
-(``fetch_generalise_tles.py``), which Space-Track's once-per-object rule does not let us repeat.
-Fetching a holdout object's element sets is allowed; running the detector on them is not.
-Prints only counts and file sizes, never the environment.
-"""
+# Fetch Space-Track gp_history 2021-01-01..2026-01-01 for the objects added in splits.json.
+# Prints only counts and file sizes, never the environment.
 
 from __future__ import annotations
 
@@ -23,7 +14,7 @@ START, END = date(2021, 1, 1), date(2026, 1, 1)
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Fetch Space-Track gp_history 2021-01-01..2026-01-01 for the objects added in splits.json.")
     p.add_argument("--cache-dir", type=Path, default=CACHE_DIR)
     args = p.parse_args(argv)
     source = SpaceTrackSource.from_env(START, END, cache_dir=args.cache_dir, limiter=RateLimiter())
