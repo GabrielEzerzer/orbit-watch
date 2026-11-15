@@ -1,6 +1,6 @@
 """Fetch Space-Track gp_history 2021-01-01..2026-01-01 for the objects added in splits.json.
 
-    hush run -- python tools/fetch_truth_tles.py --cache-dir D:/code/orbit-watch/data/spacetrack
+    hush run -- python tools/fetch_truth_tles.py --cache-dir data/spacetrack
 
 One request per object, cached by ``SpaceTrackSource`` (a cached query never reaches the network
 again). Only objects with ``previously_scored: false`` are fetched: the ISS file for this span is
