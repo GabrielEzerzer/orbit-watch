@@ -33,7 +33,7 @@ The list is still a lower bound: TASS and roscosmos.ru were not readable, and Cy
 ### Kept out of the CSV
 
 **Events not executed, or not confirmed as executed**
-- **2021-11-16, 20:40 MSK, Progress MS-18, 478 s (plan).** Announced on 2021-11-08 ([RIA](https://ria.ru/20211108/mks-1758100024.html): «Плановая коррекция орбиты МКС запланирована на 16 ноября»). It did not run: on 2021-11-29 Roscosmos wrote «Предыдущая коррекция высоты орбиты проводилась 10 ноября для уклонения от «космического мусора»» ([post 1845](https://t.me/roscosmos_gk/1845)), and the MS-18 count of nine excludes it.
+- **2021-11-16, 20:40 MSK, Progress MS-18, 478 s (plan).** Announced on 2021-11-08 ([RIA](https://ria.ru/20211108/mks-1758100024.html): «Плановая коррекция орбиты МКС запланирована на 16 ноября»). It did not run: on 2021-11-29 Roscosmos wrote «Предыдущая коррекция высоты орбиты проводилась 10 ноября для уклонения от «космического мусора»» ([post 1845](https://t.me/roscosmos_gk/1845)), and Roscosmos's running count of MS-18 corrections (nine) excludes it.
 - **2021-08-19, 07:04 MSK, Zvezda (plan).** Moved to the reserve date of 21 August at NASA's request ([RIA](https://ria.ru/20210819/orbita-1746304779.html)). The 08-21 burn is already in the NASA file.
 - **2022-02-06 (plan).** Moved to 8 February ([post 2508](https://t.me/roscosmos_gk/2508)). The 02-08 burn is in the NASA file.
 

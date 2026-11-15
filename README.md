@@ -51,6 +51,7 @@ from.
 | `data/spacetrack/` | Space-Track `gp_history` and SATCAT answers, kept for good | `SpaceTrackSource`, `tools/fetch_*_tles.py`, `geo_belt satcat` |
 | `data/geo/` | `<norad>.tle` and `manifest.json` for every GEO-region object, 2021-2025 | `jobs.geo_belt` |
 | `data/geo_modes/segments.csv` | One row per mode segment | `jobs.geo_modes` |
+| `data/sources/{ids,qzss,fengyun}/` | Operator manoeuvre logs as published (IDS, QZSS, Fengyun) | downloaded by hand |
 | `data/celestrak/<UTC date>/` | CelesTrak downloads, cached per UTC day | `celestrak`, `spaceweather` |
 | `data/kaggle/<slug>/` | Kaggle kernel pushes and outputs | `tools/kaggle_run.py` |
 
@@ -109,8 +110,12 @@ unmatched detection is a lead, not a false alarm proven.
 | Space-Track 2023 | 16/22 | 16/17 | 20/22 | 20/21 |
 | **Space-Track 2024-2025 (clean holdout)** | 27/42 | 27/27 | **35/42 = 0.83** | **35/35 = 1.00** |
 
-- 2023 is unseen by the thresholds but not by the method: an earlier detector was scored on it
-  once before it was replaced. 2024-2025 is the clean holdout.
+- 2023 is unseen by the thresholds but not by the method: an earlier detector (least-squares
+  lines, sign-blind matching) was scored on it once, precision 16/23 and recall 16/17, before it
+  was replaced. 2024-2025 is the clean holdout.
+- Space-Track loses one archive event in 2021-2022, the 2021-12-03 retrograde debris avoidance:
+  two transitional element sets that the archive lacks pull the measured step from −461 m to
+  about −210 m, and `z` below 12.
 - Leave-one-year-out CV over 2021-2025 on Space-Track (NASA list): precision 64/86 = 0.74,
   recall 64/69 = 0.93 (`findings/cv_2021_2025/`). It was not rerun with the Roscosmos list,
   because it re-chooses the setting.
@@ -156,7 +161,7 @@ series built only through `to_series`, both of which refuse holdout objects unle
 
 #### Where the detector hill-climb stands
 
-Paused (issue #22, which holds the next rounds and the open measurement decisions). The kept
+Paused. Issue #22 holds the rounds tried, the next rounds and the open measurement decisions. The kept
 setting is `harness/evals/settings/inc-channel.json`: the ISS setting in every regime plus the
 inclination channel on GEO (`inc_z_min` 12, `inc_step_min_deg` 0.011). Scores
 (`harness/evals/results/`):
@@ -197,9 +202,21 @@ python -I -m zipfile -e data/kaggle/ow-geo-belt/out/out/geo.zip data/geo
 hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out data/geo
 ```
 
-The `--also` objects are the four LEO satellites `generalise` reads from `data/geo/`. The run kept
-1,808 objects with 4,957,896 TLEs (1,804 by the rule). The manifest records the rule, each
-bundle's sha256 and per-object counts.
+The `--also` objects are the four LEO satellites `generalise` reads from `data/geo/`. The
+manifest records the rule, each bundle's sha256 and per-object counts.
+
+The full run (commit 74a831f, about 16 minutes) read 177,075,602 lines (88,220,159 pairs) and
+kept 1,808 objects with 4,957,896 TLEs, 1,804 of them by the rule: a 184 MB `geo.zip`. 136
+objects have sets outside the region, such as a transfer orbit before arrival. 635,284 lines were
+rejected (the ones looked at are 68-character lines of analyst objects, 8xxxx), 785,425 pairs
+restated an epoch already held with different lines, and 8 pairs failed `parse_tle`.
+
+**Restated epochs.** The mirror's element set numbers and line 1 checksums differ from
+Space-Track's, but the orbital fields match. Against the `gp_history` files of Fengyun-2H (43491)
+and QZS-4 (42965), every epoch the mirror holds matches Space-Track's latest-issued set (highest
+`GP_ID`) on those fields: 4,220 and 1,851 epochs, including all 390 and 718 epochs Space-Track
+issued more than once. So keeping the later record, as `geo_belt` and `series.to_series` do,
+matches Space-Track's latest issue. The mirror lacks 2 of 43491's 4,222 epochs.
 
 ### Operating modes of GEO-region objects
 
@@ -209,9 +226,58 @@ of Geosynchronous Objects*, Issue 21.0, 2019): `controlled_lon_inc` (C1), `contr
 (I), `undetermined` (Ind) and `out_of_region`. The rules and their sources are in the module
 docstring. The job skips the four `--also` objects and the 5 holdout objects, so 1,799 objects are
 classified. Year-end counts, transitions and the summary are in `findings/geo_modes/`; 1,477
-objects keep one mode for the whole period. Against ESA's per-object list for 1 January 2019
-(`tools/esa_classification.py`), 84% of ESA's C1 objects and 98% of its D objects read the same
-mode in early 2021. Known limits are tracked in issues #21, #28, #29 and #30.
+objects keep one mode for the whole period. Known limits are tracked in issues #21, #28, #29,
+#30 and #32.
+
+**Against ESA.** No ESA issue for 2021-2025 could be reached, so there is no same-date check. The
+table puts ESA's counts for 1 January 2019 (each class's opening sentence in section 4, page
+given; the totals match p. 3 and p. 216) beside ours at the end of 2021. It is context, and
+nothing was tuned to it.
+
+| class | ESA, 1 Jan 2019 | source | ours, 31 Dec 2021 |
+|---|---|---|---|
+| C1 | 372 | 4.1, p. 51 | 347 |
+| C2 | 150 | 4.2, p. 83 | 146 |
+| C4 | 7 | 4.3, p. 96 | (in drifting or librating) |
+| D | 831 | 4.4, p. 97 | 876 |
+| L1 | 127 | 4.5, p. 167 | 113 |
+| L2 | 46 | 4.6, p. 178 | 41 |
+| L3 | 22 | 4.7, p. 182 | 18 |
+| I | 21 | 4.8, p. 191 | 21 |
+| Ind | 2 | 4.9, p. 193 | 35 |
+| total | 1,578 | p. 3, p. 216 | 1,597 (1,799 less 190 with no data and 12 out of region) |
+
+The populations differ because ESA classifies everything in DISCOS, including 206 objects from
+JSC Vimpel data and 9 from KIAM (p. 216) that mostly have no public TLEs; three years of
+launches, retirements and re-orbits separate the dates; ESA classifies each object from its whole
+history and corrects some by hand (section 4, p. 50), while we label 30-day windows, so a keeper
+between cycles or a librator at a turning point can be undetermined; and ESA's C4 objects land in
+our drifting or librating classes.
+
+**Per-object check.** A one-off run of `tools/esa_classification.py` on section 3 of the same
+report (pp. 10-49) keeps the 1,342 rows that sit on one line with a page reference inside their
+class's chapter. Matched by COSPAR id to our first determined mode before 1 July 2021, 1,272
+objects have a mode:
+
+| ESA 2019 | objects | same mode in early 2021 | main other modes |
+|---|---|---|---|
+| C1 | 332 | 279 (84%) | controlled_lon 25, drifting 24 |
+| C2 | 117 | 88 (75%) | drifting 22, controlled_lon_inc 4 |
+| C4 | 1 | 0 (0%) | controlled_lon_inc 1 |
+| D | 675 | 663 (98%) | librating_75E 5, librating_both 2 |
+| L1 | 88 | 83 (94%) | drifting 2, controlled_lon_inc 2 |
+| L2 | 29 | 28 (97%) | drifting 1 |
+| L3 | 14 | 10 (71%) | librating_75E 2, drifting 2 |
+| I | 14 | 14 (100%) | |
+| Ind | 2 | 0 (0%) | librating_105W 1, drifting 1 |
+
+Controlled satellites that now read as drifting were not checked one by one; retirements and
+relocations between the dates would explain them. Seven dead satellites hold still for months
+within about half a degree of a stable point and read librating, because one free path fits all
+five years of their longitudes: ATS 3 (3029), NATO 2B (4902), SATCOM C5 (13631), GStar 1
+(15677), GStar 3 (19483) and ACTS (22796) at 105 deg W, and SIRIO (10294) at 75 deg E, with
+swings of 0.2-1.8 deg. ESA lists all seven as L2 or L1. The two L3 objects we call drifting,
+Intelsat 804 (25110) and Cosmos 2479 (38101), pass over the high barrier in 2021-2025.
 
 ## Running on Kaggle CPU
 
