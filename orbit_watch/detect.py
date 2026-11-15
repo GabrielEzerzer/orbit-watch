@@ -31,8 +31,15 @@ does most of the work.
 
 A step appears at several neighbouring gaps as the windows slide past it, so
 flagged gaps (``|z|`` and ``|step|`` over thresholds) are thinned by non-maximum
-suppression: within ``nms_days`` only the highest ``|z|`` survives (the gap
-whose two sides are both clean scatters least, so it scores highest).
+suppression, highest ``|z|`` first (the gap whose two sides are both clean
+scatters least, so it scores highest). Each surviving gap is a peak: it absorbs
+the flagged gaps fewer than ``k`` gaps from it that no stronger peak has
+absorbed, and its detection spans the union of those gaps, with the peak's step
+and ``z``. A flagged gap that is not absorbed is dropped when its centre lies
+within ``nms_days`` of a stronger peak's centre. Absorption is by distance from
+the peak, not chained from gap to gap: a weak gap between two burns, whose
+window mixes both, joins one of them without merging the two (the 2025-09-25
+and 09-26 ISS burns).
 
 A gap is not scored when either side's ``k`` epochs span more than
 ``max_span_days`` or the gap itself is longer than ``max_gap_days``, so there
@@ -66,6 +73,7 @@ class GapScores:
     step_m: np.ndarray  # extrapolated after-minus-before, metres (NaN when not scored)
     z: np.ndarray  # step / standard error (NaN when not scored)
     sigma_m: np.ndarray  # residual scatter used, metres
+    k: int = 0  # epochs per side; pick absorbs flagged gaps fewer than k gaps from a peak
 
     @property
     def valid(self) -> np.ndarray:
@@ -122,11 +130,17 @@ def score_gaps(
     floor = 0.5 * float(np.nanmedian(sigma)) if idx else 0.0
     sigma = np.maximum(sigma, floor)
     z = step / (sigma * np.sqrt(np.pi / 2) * np.sqrt(2.0 / k))
-    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma)
+    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma, k)
 
 
 def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1.0) -> list[Detection]:
-    """Gaps with ``|z| >= z_min`` and ``|step| >= step_min_m``, thinned by non-maximum suppression."""
+    """Gaps with ``|z| >= z_min`` and ``|step| >= step_min_m``, thinned by non-maximum suppression.
+
+    In decreasing ``|z|``: a flagged gap already absorbed is skipped; one whose centre is within
+    ``nms_days`` of a kept peak's centre is dropped; otherwise it is a peak and absorbs the
+    unabsorbed flagged gaps fewer than ``scores.k`` gaps from it. A detection spans its peak's
+    absorbed gaps and carries the peak's step and ``z``.
+    """
     with np.errstate(invalid="ignore"):
         flagged = np.flatnonzero(
             scores.valid & (np.abs(scores.z) >= z_min) & (np.abs(scores.step_m) >= step_min_m)
@@ -134,14 +148,20 @@ def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1
     if not len(flagged):
         return []
     centre = _days(scores.start) + 0.5 * (scores.end - scores.start).astype("int64") / _DAY_US
-    kept: list[int] = []
+    owner: dict[int, int] = {}  # flagged gap -> the peak that absorbed it
+    peaks: list[int] = []
     for i in sorted(flagged, key=lambda j: -abs(scores.z[j])):
-        if not kept or np.min(np.abs(centre[kept] - centre[i])) > nms_days:
-            kept.append(i)
-    return [
-        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]))
-        for i in sorted(kept)
-    ]
+        if i in owner or (peaks and np.min(np.abs(centre[peaks] - centre[i])) <= nms_days):
+            continue
+        peaks.append(i)
+        for j in flagged[np.abs(flagged - i) < max(scores.k, 1)]:
+            owner.setdefault(int(j), i)
+    out = []
+    for p in sorted(peaks):
+        members = [j for j, o in owner.items() if o == p]
+        out.append(Detection(scores.start[min(members)], scores.end[max(members)],
+                             float(scores.step_m[p]), float(scores.z[p])))
+    return out
 
 
 def detect(series: ElementSeries, z_min: float, step_min_m: float, k: int = 6) -> list[Detection]:
