@@ -263,12 +263,41 @@ python -m harness.evals.detector --split test --final --data-dir data   # holdou
 and `test` the holdout objects in 2021-2025, which the command refuses without `--final`. The
 detector setting per regime (ISS, LEO, GEO, IGSO) is a JSON input; `settings/frozen.json` gives
 every regime the ISS setting (k=4, |z|>=12, |step|>=200 m). The command prints one table and writes
-`harness/evals/results/<split>-<settings>.json`: per group, recall over covered events with a 95%
-Wilson interval, recall over all events, and false alarms per object-year on scored, log-covered
-stretches with no logged burn. LEO adds recall on burns of |Δa| >= 50 m, GEO (QZS-3, QZS-6)
-splits east-west and north-south, IGSO and the exploratory Fengyun objects are reported apart,
-and the last line checks each target. Matching, coverage and log loading are `generalise`'s; the
-module docstring gives every rule. The baseline and the planned rounds are in `.agent/journal.md`.
+`harness/evals/results/<split>-<settings>.json`. Per group it gives recall over covered events with
+a 95% Wilson interval, recall over all events, false alarms per object-year, the share of no-burn
+time that is scored, and a count of duplicates. LEO adds recall on burns of |Δa| >= 50 m, GEO
+(QZS-3, QZS-6) splits east-west and north-south, IGSO and the exploratory Fengyun objects are
+reported apart, and the last line checks each target.
+
+The eval fixes its own counting rules, so a change to the detector or its setting cannot move them:
+
+- An event is covered when a reference scores a gap near it. The reference is `score_gaps`' gap
+  rule at k=4 with the 3-day span and 2-day gap limits, copied into the eval. A covered event stays
+  in the denominator whatever the setting scores, and is a miss unless a detection matches it.
+- A detection is matched and counted by its peak gap, the gap its step and z come from, not by its
+  interval.
+- Matching is one-to-one. Each detection goes to the nearest event inside its match window (ties go
+  to the earlier event) and to no other; an event that several detections pick goes to the nearest
+  one. The other detections near a burn are counted as duplicates, neither hits nor false alarms.
+- False alarms are counted on log-covered time with no logged burn that the reference or the
+  setting scores (the union of the two), so declining to score noisy time does not lower the rate.
+
+How the targets read:
+
+- LEO recall >= 0.9 is on burns whose merged net `delta_a_est_m` is at least 50 m. A burn and a
+  counter-burn under 12 h apart merge into one event, judged by its net estimate because that is
+  what a TLE sees. Seven SWOT pairs in 2021-2025 (four in train, three in dev) have every row at
+  50 m or more but a net under 50 m, so they are left out of that subset and count only in the
+  all-events recall. The holdout objects were not checked.
+- GEO recall >= 0.9 east-west and >= 0.8 north-south are on events of one kind. An east-west and a
+  north-south burn merged under 12 h apart (`EW+NS`) is reported as its own subset and counts
+  toward neither target.
+- False alarms <= 1 per object-year are checked for LEO, GEO and IGSO. The ISS rate is reported but
+  not checked, because its burn lists are lower bounds, and the ISS recall target (>= 0.95) is a
+  guardrail. Fengyun is never checked.
+
+Log loading is `generalise`'s; the module docstring gives every rule. The baseline and the rounds
+are in `.agent/journal.md`.
 
 Element sets: an object's Space-Track `gp_history-<norad>-*.json` in `data/spacetrack/` when
 there is one, otherwise `data/geo/<norad>.tle` from the GEO-region job below

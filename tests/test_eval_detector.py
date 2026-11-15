@@ -1,22 +1,46 @@
 import json
 import math
+from dataclasses import replace
 
 import numpy as np
 import pytest
 
 from harness.evals import detector as ev
+from orbit_watch.detect import Detection, score_gaps
 from orbit_watch.elements import parse_omm_json
-from orbit_watch.generalise import LATE_DAYS, TOLERANCE_DAYS, LogEvent, Setting, load_series
-from orbit_watch.series import to_series
+from orbit_watch.generalise import LATE_DAYS, TOLERANCE_DAYS, LogEvent, Setting, load_series, match_near
+from orbit_watch.series import ElementSeries, to_series
 from orbit_watch.truth import HoldoutError, load_splits
 
 from test_generalise import _geo_omm
 
 D = np.timedelta64(86_400_000_000, "us")
+T0 = np.datetime64("2021-01-01T00:00", "us")
+YEAR = (np.datetime64("2021-01-01", "us"), np.datetime64("2022-01-01", "us"))
 
 
 def t(s):
     return np.datetime64(s, "us")
+
+
+def _series(every_days, days, steps_km, seed=1):
+    """A near-GEO semi-major axis with 20 m scatter, one element set every ``every_days`` from T0,
+    and a ``+km`` step after each day in ``steps_km``."""
+    rng = np.random.default_rng(seed)
+    day = np.arange(0, days, every_days)
+    a = 42164.0 + sum(km * (day > d) for d, km in steps_km.items()) + rng.normal(0, 0.02, len(day))
+    flat = np.zeros(len(day))
+    return ElementSeries(43491, T0 + (day * 86_400e6).astype("timedelta64[us]"), a, flat + 1.0, flat, flat,
+                         flat, flat)
+
+
+def _obj(series, events, days):
+    return ev.Obj(43491, "x", "GEO", "test", series, events, [], (T0, T0 + days * D), LATE_DAYS)
+
+
+def _burn(name, day, kind="EW"):
+    return LogEvent(name, kind, None, 0, T0 + int(day * 24) * np.timedelta64(1, "h"),
+                    T0 + int(day * 24 + 2) * np.timedelta64(1, "h"))
 
 
 # ---- arithmetic
@@ -59,7 +83,7 @@ def test_score_object_counts_matches_and_false_alarms_on_scored_no_burn_time():
     obj = ev.Obj(43491, "x", "GEO", "test", series, [burn], [], cov, LATE_DAYS)
     s = Setting(4, 12, 200)
     r = ev.score_object(obj, s, t("2021-01-01"), t("2022-01-01"))
-    assert r["subsets"]["all"] == {"events": 1, "covered": 1, "matched": 1}
+    assert r["subsets"]["all"] == {"events": 1, "covered": 1, "matched": 1, "matched_all": 1}
     assert r["subsets"]["EW"]["matched"] == 1
     assert r["false_alarms"] == 1  # the unlogged step on day 40
     fa_start = t(r["_detail"]["false_alarms"][0]["start_utc"].rstrip("Z"))
@@ -71,6 +95,100 @@ def test_score_object_counts_matches_and_false_alarms_on_scored_no_burn_time():
     # Same detections, burn outside the period: neither matched nor a false alarm (its zone stays out).
     r2 = ev.score_object(obj, s, t("2021-03-20"), t("2022-01-01"))
     assert r2["subsets"]["all"]["events"] == 0 and r2["false_alarms"] == 1
+
+
+# ---- the frozen reference, peak gaps, one-to-one matching, duplicates
+
+def test_reference_is_score_gaps_rule_at_k4():
+    # Spacing 1.05 days puts 4 sets 3.15 days apart, just past the span limit; 2.5 days, past the gap limit.
+    rng = np.random.default_rng(5)
+    irregular = replace(_series(1, 300, {}), epochs=T0 + (np.cumsum(rng.uniform(0.2, 2.4, 300)) * 86_400e6)
+                        .astype("timedelta64[us]"))
+    assert 0 < ev.reference_scored(irregular.epochs).sum() < len(irregular) - 1  # scored and unscored gaps
+    for series in [_series(every, days, {}) for every, days in ((0.9, 30), (1.05, 30), (0.31, 20), (2.5, 40))] + [
+            irregular]:
+        want = score_gaps(series, k=4, max_span_days=3.0, max_gap_days=2.0).valid
+        assert np.array_equal(ev.reference_scored(series.epochs), want)
+    assert ev.reference_scored(_series(0.5, 3, {}).epochs).sum() == 0  # under 2k epochs
+
+
+def test_coverage_is_the_k4_reference_whatever_the_setting_scores():
+    # One set every 0.9 day: 4 sets span 2.7 days (the reference scores every gap), 6 span 4.5 (k=6 none).
+    obj = _obj(_series(0.9, 60, {20.05: 3.0}), [_burn("B", 20.05)], 60)
+    r4 = ev.score_object(obj, Setting(4, 12, 200), *YEAR)
+    assert r4["subsets"]["all"] == {"events": 1, "covered": 1, "matched": 1, "matched_all": 1}
+    r6 = ev.score_object(obj, Setting(6, 12, 200), *YEAR)
+    assert r6["detections"] == 0
+    # The burn stays in the denominator as a miss; it does not leave it.
+    assert r6["subsets"]["all"] == {"events": 1, "covered": 1, "matched": 0, "matched_all": 0}
+
+
+def test_exposure_is_the_union_of_reference_and_setting_scored_time():
+    obj = _obj(_series(0.9, 60, {}), [], 60)
+    r4 = ev.score_object(obj, Setting(4, 12, 200), *YEAR)
+    assert r4["object_years"] > 50 / 365.25 and r4["no_burn_years"] == pytest.approx(60 / 365.25)
+    # k=6 scores nothing here; the reference's scored time stays exposure.
+    assert ev.score_object(obj, Setting(6, 12, 200), *YEAR)["object_years"] == r4["object_years"]
+    # One set every 1.1 day: the reference (4 sets span 3.3 days) scores nothing, k=3 (2.2 days) every
+    # gap. Time only the setting scores is exposure, so detections of its unlogged step are false alarms.
+    obj = _obj(_series(1.1, 60, {30.05: 3.0}), [], 60)
+    r3 = ev.score_object(obj, Setting(3, 12, 200), *YEAR)
+    assert r3["false_alarms"] >= 1 and r3["object_years"] > 50 / 365.25
+    r4 = ev.score_object(obj, Setting(4, 12, 200), *YEAR)
+    assert r4["object_years"] == 0 and r4["no_burn_years"] > 50 / 365.25
+
+
+def test_matching_and_false_alarms_use_the_peak_gap_not_the_interval():
+    # A logged burn on day 10 that the data does not show, and an unlogged step on day 40.
+    series = _series(1 / 3, 70, {40.05: 3.0})
+    obj = _obj(series, [_burn("B", 10.05)], 70)
+    s = Setting(4, 12, 200)
+    (d,) = obj.detections(s)
+    assert ev.score_object(obj, s, *YEAR)["false_alarms"] == 1
+    # The same detection with its interval widened back over the burn: still a miss and a false alarm.
+    obj.detections = lambda s: [replace(d, start=series.epochs[20])]
+    r = ev.score_object(obj, s, *YEAR)
+    assert r["subsets"]["all"] == {"events": 1, "covered": 1, "matched": 0, "matched_all": 0}
+    assert r["false_alarms"] == 1
+    # A peak that is not one gap of the series is refused.
+    obj.detections = lambda s: [Detection(series.epochs[20], d.end, d.step_m, d.z)]
+    with pytest.raises(ValueError, match="one gap"):
+        ev.score_object(obj, s, *YEAR)
+
+
+def test_match_gives_each_detection_only_its_nearest_event():
+    # An NS burn 19 h before an EW burn (QZSS events carry no expected sign), the EW step detected
+    # once at the EW burn and again a day later.
+    ns = LogEvent("NS", "NS", None, 0, t("2021-07-21T01:00"), t("2021-07-21T02:00"))
+    ew = LogEvent("EW", "EW", None, 0, t("2021-07-21T20:00"), t("2021-07-21T21:00"))
+    first = Detection(t("2021-07-21T19:00"), t("2021-07-21T23:00"), -3000.0, -300.0)
+    second = Detection(t("2021-07-22T23:00"), t("2021-07-23T03:00"), -3100.0, -80.0)
+    assert match_near([ns, ew], [first, second], TOLERANCE_DAYS, LATE_DAYS) == {1: 0, 0: 1}
+    assert ev.match([ns, ew], [first, second], TOLERANCE_DAYS, LATE_DAYS) == {1: 0}  # second is no NS hit
+    # An event two detections pick goes to the nearer, whichever comes first in the list.
+    assert ev.match([ns, ew], [second, first], TOLERANCE_DAYS, LATE_DAYS) == {1: 1}
+    # A tie between two events goes to the earlier one, whatever the list order.
+    a = LogEvent("A", "EW", None, 0, t("2021-01-01T00:00"), t("2021-01-01T00:00"))
+    b = LogEvent("B", "EW", None, 0, t("2021-01-01T12:00"), t("2021-01-01T12:00"))
+    mid = Detection(t("2021-01-01T05:00"), t("2021-01-01T07:00"), 500.0, 20.0)
+    assert ev.match([b, a], [mid]) == {1: 0}
+    # The sign still decides eligibility: a nearer event of the wrong sign is passed over.
+    up = replace(a, expected_sign=1)
+    assert ev.match([up, b], [replace(mid, step_m=-500.0)]) == {1: 0}
+
+
+def test_extra_detections_at_a_burn_are_duplicates_not_hits_or_false_alarms():
+    series = _series(1 / 3, 70, {10.05: 3.0})
+    obj = _obj(series, [_burn("B", 10.05)], 70)
+    s = Setting(4, 12, 200)
+    (d,) = obj.detections(s)
+    j = int(np.searchsorted(series.epochs, d.peak_start)) + 4  # four gaps (1.3 days) later
+    extra = Detection(series.epochs[j], series.epochs[j + 1], d.step_m, d.z / 2, "a",
+                      series.epochs[j], series.epochs[j + 1])
+    obj.detections = lambda s: [d, extra]
+    r = ev.score_object(obj, s, *YEAR)
+    assert r["subsets"]["all"]["matched"] == 1
+    assert (r["false_alarms"], r["duplicates"], r["matched_detections"]) == (0, 1, 1)
 
 
 # ---- split and loader

@@ -32,7 +32,11 @@ does most of the work.
 A step appears at several neighbouring gaps as the windows slide past it, so
 flagged gaps (``|z|`` and ``|step|`` over thresholds) are thinned by non-maximum
 suppression: within ``nms_days`` only the highest ``|z|`` survives (the gap
-whose two sides are both clean scatters least, so it scores highest).
+whose two sides are both clean scatters least, so it scores highest). A
+detection's interval is its peak gap, and ``peak_start``/``peak_end`` name that
+gap (the one its step and ``z`` come from) separately, so a rule that widens the
+interval keeps the peak; the frozen evaluation (``harness/evals/detector.py``)
+matches and counts detections by the peak gap.
 
 A gap is not scored when either side's ``k`` epochs span more than
 ``max_span_days`` or the gap itself is longer than ``max_gap_days``, so there
@@ -80,11 +84,19 @@ class GapScores:
 
 @dataclass(frozen=True)
 class Detection:
-    start: np.datetime64  # epoch before the step
-    end: np.datetime64  # epoch after the step
+    start: np.datetime64  # epoch before the step (first epoch of the detection interval)
+    end: np.datetime64  # epoch after the step (last epoch of the detection interval)
     step_m: float  # metres, or degrees when channel is "i"
     z: float
     channel: str = "a"
+    peak_start: np.datetime64 | None = None  # the gap step and z come from; None: start
+    peak_end: np.datetime64 | None = None  # None: end
+
+    def __post_init__(self):
+        if self.peak_start is None:
+            object.__setattr__(self, "peak_start", self.start)
+        if self.peak_end is None:
+            object.__setattr__(self, "peak_end", self.end)
 
     @property
     def sign(self) -> int:
@@ -148,7 +160,8 @@ def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1
         if not kept or np.min(np.abs(centre[kept] - centre[i])) > nms_days:
             kept.append(i)
     return [
-        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]), scores.channel)
+        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]), scores.channel,
+                  scores.start[i], scores.end[i])
         for i in sorted(kept)
     ]
 
