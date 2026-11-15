@@ -9,7 +9,8 @@ from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
-from hypothesis import HealthCheck, assume, given, settings, strategies as st
+from hypothesis import HealthCheck, assume, example, given, settings, strategies as st
+from sgp4.earth_gravity import wgs72
 
 from harness.evals import detector as ev
 from orbit_watch import calibrate, generalise, holdout
@@ -28,6 +29,7 @@ T0 = np.datetime64("2021-01-01T00:00:00", "us")
 DAY_US = 86_400_000_000
 NORAD_A, NORAD_B = 90001, 90002
 FROZEN = Setting(k=4, z_min=12, step_min_m=200)
+SHORT_PERIOD_K = 1.5004 * 1.33
 
 
 def _implied(x: float) -> str:
@@ -150,6 +152,15 @@ def test_series_collapse_ignores_input_order(recs, rng):
     shuffled = list(recs)
     rng.shuffle(shuffled)
     assert distinct_epochs(shuffled) == distinct_epochs(recs)
+
+
+@PROPERTY
+@given(st.lists(st.integers(0, 600), max_size=20))
+@example([0, 0])
+def test_a_record_whose_next_epoch_is_at_least_the_minimum_gap_later_is_kept(extra_s):
+    seconds = np.cumsum([0.0] + [MIN_EPOCH_GAP_S + x for x in extra_s])
+    recs = [_record(NORAD_A, float(t), i) for i, t in enumerate(seconds)]
+    assert distinct_epochs(recs) == {NORAD_A: recs}
 
 
 @PROPERTY
@@ -324,11 +335,15 @@ def test_longitude_wrap_then_unwrap_recovers_the_drift_rate(offset, rate, n, ste
 
 @PROPERTY
 @given(tle_records())
+@example(tle_text(ElementSet(1, None, datetime(2021, 1, 1, tzinfo=timezone.utc), 1.0, 0.8442747, 90.0, 0.0,
+                             180.0, 0.0, 0.0, 0.0, 0.0, 0.0)))
 def test_propagated_state_at_epoch_agrees_with_the_derived_semi_major_axis(record):
     (rec,) = parse_tle(record)
     (r,), (v,) = propagate(rec, [rec.epoch])
-    a_osc = 1.0 / (2.0 / np.linalg.norm(r) - np.dot(v, v) / 398600.8)
-    assert abs(a_osc - rec.semi_major_axis_km) < 0.003 * rec.semi_major_axis_km
+    a = rec.semi_major_axis_km
+    a_osc = 1.0 / (2.0 / np.linalg.norm(r) - np.dot(v, v) / wgs72.mu)
+    bound = SHORT_PERIOD_K * wgs72.j2 * (wgs72.radiusearthkm / a) ** 2 * (1 - rec.eccentricity) ** -3
+    assert abs(a_osc - a) < bound * a
 
 
 @PROPERTY

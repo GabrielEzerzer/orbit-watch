@@ -57,7 +57,7 @@ def test_mapped_command_exists_and_answers_help(feature):
         assert importlib.util.find_spec(name) is not None, name
     env = {k: v for k, v in os.environ.items() if not k.startswith("SPACETRACK_")}
     env.update(PYTHONPATH=str(ROOT), HTTP_PROXY="http://127.0.0.1:9", HTTPS_PROXY="http://127.0.0.1:9",
-               NO_PROXY="")
+               NO_PROXY="", http_proxy="http://127.0.0.1:9", https_proxy="http://127.0.0.1:9", no_proxy="")
     done = subprocess.run([sys.executable, *run], cwd=ROOT, env=env, capture_output=True, text=True,
                           timeout=60)
     assert done.returncode == 0, done.stderr[-2000:]
