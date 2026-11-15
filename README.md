@@ -291,7 +291,10 @@ How the targets read:
   all-events recall. The holdout objects were not checked.
 - GEO recall >= 0.9 east-west and >= 0.8 north-south are on events of one kind. An east-west and a
   north-south burn merged under 12 h apart (`EW+NS`) is reported as its own subset and counts
-  toward neither target.
+  toward neither target. A north-south event is a hit only when the detection matched to it comes
+  from the inclination channel. A semi-major-axis detection matched to it is not a duplicate or a
+  false alarm, but the event is a miss (`wch` in the table): QZS-3's east-west burns usually follow
+  its north-south ones within a day, so such a step is the east-west burn seen early.
 - False alarms <= 1 per object-year are checked for LEO, GEO and IGSO. The ISS rate is reported but
   not checked, because its burn lists are lower bounds, and the ISS recall target (>= 0.95) is a
   guardrail. Fengyun is never checked.

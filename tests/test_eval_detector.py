@@ -191,6 +191,30 @@ def test_extra_detections_at_a_burn_are_duplicates_not_hits_or_false_alarms():
     assert (r["false_alarms"], r["duplicates"], r["matched_detections"]) == (0, 1, 1)
 
 
+
+def test_a_north_south_hit_needs_the_inclination_channel():
+    # A step at a logged NS burn, seen on the semi-major axis: matched (no duplicate, no false
+    # alarm) but no hit, in the NS subset or in "all".
+    series = _series(1 / 3, 70, {10.05: 3.0})
+    obj = _obj(series, [_burn("N", 10.05, kind="NS")], 70)
+    s = Setting(4, 12, 200)
+    (d,) = obj.detections(s)
+    r = ev.score_object(obj, s, *YEAR)
+    assert r["subsets"]["NS"]["matched"] == 0 and r["subsets"]["all"]["matched_all"] == 0
+    assert (r["matched_detections"], r["wrong_channel"], r["false_alarms"], r["duplicates"]) == (1, 1, 0, 0)
+    assert [x["event_id"] for x in r["_detail"]["wrong_channel"]] == ["N"]
+    # The same detection on the inclination channel, alone or merged with the a channel, is a hit.
+    for ch in ("i", "a+i"):
+        obj.detections = lambda s, ch=ch: [replace(d, channel=ch)]
+        r = ev.score_object(obj, s, *YEAR)
+        assert r["subsets"]["NS"]["matched"] == 1 and r["wrong_channel"] == 0
+    # EW and EW+NS events keep the old rule: a semi-major-axis detection hits them.
+    for kind in ("EW", "EW+NS"):
+        obj = _obj(series, [_burn("E", 10.05, kind=kind)], 70)
+        r = ev.score_object(obj, s, *YEAR)
+        assert r["subsets"][kind]["matched"] == 1 and r["wrong_channel"] == 0
+
+
 # ---- split and loader
 
 def test_split_json_agrees_with_groundtruth_splits():

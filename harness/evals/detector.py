@@ -40,6 +40,15 @@ its setting can move them:
   expected sign; the journal's round 1). Targets are matched first; a leftover detection that
   matches an attitude line or an unplanned ISS event by the same rule is dropped, neither a hit
   nor a false alarm.
+* **North-south hits need the inclination channel.** A GEO ``NS`` event is a hit only when the
+  detection it is matched to carries the inclination channel (``Detection.channel`` names ``i``).
+  A semi-major-axis detection matched to it stays matched for one-to-one purposes (it is neither
+  a duplicate nor a false alarm, and no other detection can take the event), but the event is a
+  miss in every subset. QZS-3 usually fires an east-west burn about a day after a north-south one,
+  and QZSS events carry no expected sign, so a semi-major-axis step of east-west size can sit
+  nearest the north-south burn; such a detection saw the east-west burn, not the north-south one
+  (the journal's decision 5). ``wrong_channel`` counts these events. ``EW+NS`` events keep the old
+  rule: they count toward neither target, and their semi-major-axis step is the east-west part.
 
 Per group and period:
 
@@ -106,6 +115,8 @@ SETTING_KEY = {"LEO": "LEO", "GEO": "GEO", "IGSO": "IGSO", "ISS": "ISS", "GEO-Fe
 # (group, subset) -> minimum recall. FA <= 1 per object-year is checked for every group in FA_CHECKED.
 RECALL_TARGETS = {("LEO", ">=50 m"): 0.9, ("GEO", "EW"): 0.9, ("GEO", "NS"): 0.8, ("ISS", "all"): 0.95}
 FA_CHECKED = ("LEO", "GEO", "IGSO")
+# Subsets whose events only an inclination-channel detection can hit (module docstring).
+INC_ONLY_SUBSETS = ("NS",)
 # The coverage reference: score_gaps' gap rule at k=4 with the limits FROZEN was calibrated with
 # (generalise.MAX_SPAN_DAYS / MAX_GAP_DAYS at 3ca08ab), copied so that no detector change moves it.
 REF_K = 4
@@ -291,6 +302,11 @@ def subset_of(obj: Obj, e) -> list[str]:
     return []
 
 
+def counts_as_hit(obj: Obj, e, d: Detection) -> bool:
+    """Whether matching ``d`` to ``e`` is a hit: an NS event needs a detection on the inclination channel."""
+    return "i" in d.channel.split("+") or not set(subset_of(obj, e)) & set(INC_ONLY_SUBSETS)
+
+
 def _check_peaks(obj: Obj, dets: list[Detection]) -> None:
     """Every peak must be one gap of the series: two consecutive epochs."""
     ep = obj.series.epochs
@@ -313,6 +329,7 @@ def score_object(obj: Obj, s: Setting, lo: np.datetime64, hi: np.datetime64) -> 
     rest = [i for i in range(len(dets)) if i not in set(m.values())]
     m_exc = match(exc, [dets[i] for i in rest], TOLERANCE_DAYS, obj.late_days)
     unmatched = [i for j, i in enumerate(rest) if j not in set(m_exc.values())]
+    hit = {ei for ei, di in m.items() if counts_as_hit(obj, ev[ei], dets[di])}
 
     tol, late = _tol(TOLERANCE_DAYS), _tol(TOLERANCE_DAYS if obj.late_days is None else obj.late_days)
     span = (max(lo, obj.coverage[0]), min(hi, obj.coverage[1]))
@@ -338,19 +355,21 @@ def score_object(obj: Obj, s: Setting, lo: np.datetime64, hi: np.datetime64) -> 
     for name in ["all"] + sorted({x for e in ev for x in subset_of(obj, e)}):
         idx = [i for i, e in enumerate(ev) if name == "all" or name in subset_of(obj, e)]
         cov = [i for i in idx if cover[i]]
-        subsets[name] = {"events": len(idx), "covered": len(cov), "matched": sum(i in m for i in cov),
-                         "matched_all": sum(i in m for i in idx)}
+        subsets[name] = {"events": len(idx), "covered": len(cov), "matched": sum(i in hit for i in cov),
+                         "matched_all": sum(i in hit for i in idx)}
     return {
         "subsets": subsets,
         "detections": len(dets), "matched_detections": len(m),
         "dropped_attitude_or_unplanned": len(m_exc),
-        "false_alarms": len(fa), "duplicates": len(dup),
+        "false_alarms": len(fa), "duplicates": len(dup), "wrong_channel": len(m) - len(hit),
         "object_years": years(stretches), "no_burn_years": years(no_burn),
         "_detail": {
             "missed": [{"event_id": getattr(e, "event_id", None) or f"{e.date_utc} {e.time_utc}".strip(),
                         "start_utc": calibrate._iso(e.lo), "kind": getattr(e, "kind", None) or e.category,
                         "delta_a_est_m": getattr(e, "delta_a_est_m", None)}
-                       for i, e in enumerate(ev) if cover[i] and i not in m],
+                       for i, e in enumerate(ev) if cover[i] and i not in hit],
+            "wrong_channel": [{"event_id": e.event_id, "start_utc": calibrate._iso(e.lo), "detection": det_row(dets[m[i]])}
+                              for i, e in enumerate(ev) if i in m and i not in hit],
             "false_alarms": [det_row(dets[i]) for i in fa],
             "duplicates": [det_row(dets[i]) for i in dup],
         },
@@ -399,9 +418,9 @@ def evaluate(split: str, settings_path: Path, data_dir: Path, truth_dir: Path = 
         if not final:  # no per-event detail for the holdout: the test score is a count, not a guide
             per_obj[obj.name].update(detail)
         g = pooled.setdefault(obj.group, {"objects": [], "subsets": {}, "false_alarms": 0, "duplicates": 0,
-                                          "object_years": 0.0, "no_burn_years": 0.0})
+                                          "wrong_channel": 0, "object_years": 0.0, "no_burn_years": 0.0})
         g["objects"].append(obj.name)
-        for key in ("false_alarms", "duplicates", "object_years", "no_burn_years"):
+        for key in ("false_alarms", "duplicates", "wrong_channel", "object_years", "no_burn_years"):
             g[key] += r[key]
         for sub, c in r["subsets"].items():
             acc = g["subsets"].setdefault(sub, {"events": 0, "covered": 0, "matched": 0, "matched_all": 0})
@@ -417,7 +436,7 @@ def evaluate(split: str, settings_path: Path, data_dir: Path, truth_dir: Path = 
             "objects": g["objects"], "setting": settings[SETTING_KEY[gname]].__dict__,
             "subsets": {sub: recall(c["matched"], c["covered"], c["events"], c["matched_all"])
                         for sub, c in g["subsets"].items()},
-            "false_alarms": g["false_alarms"], "duplicates": g["duplicates"],
+            "false_alarms": g["false_alarms"], "duplicates": g["duplicates"], "wrong_channel": g["wrong_channel"],
             "object_years": round(g["object_years"], 3), "no_burn_years": round(g["no_burn_years"], 3),
             "scored_fraction": round(g["object_years"] / g["no_burn_years"], 3) if g["no_burn_years"] else None,
             "fa_per_object_year": fa_rate(g["false_alarms"], g["object_years"]),
@@ -451,7 +470,7 @@ def table(res: dict) -> str:
         return "-" if x is None else f"{x:.{nd}f}"
     head = (f"{'group':<12} {'subset':<7} {'events':>6} {'cov':>4} {'hit':>4} {'recall':>6} "
             f"{'95% CI':>13} {'width':>5} {'hit/ev':>6} {'FA':>4} {'obj-yr':>7} {'FA/yr':>6} "
-            f"{'scored':>6} {'dup':>4}")
+            f"{'scored':>6} {'dup':>4} {'wch':>4}")
     lines = [f"split={res['split']} ({res['period']['from']} to {res['period']['to']}, "
              f"{res['period']['objects']} objects)  settings={res['settings']}  "
              f"commit={res['commit'][:7]}{' (dirty)' if res['dirty'] else ''}", head, "-" * len(head)]
@@ -459,12 +478,13 @@ def table(res: dict) -> str:
         for j, (sub, r) in enumerate(g["subsets"].items()):
             ci = f"[{r['ci95'][0]:.2f}, {r['ci95'][1]:.2f}]" if r["ci95"] else "-"
             fa = (f"{g['false_alarms']:>4} {g['object_years']:>7.2f} {f(g['fa_per_object_year'], 2):>6} "
-                  f"{f(g['scored_fraction'], 2):>6} {g['duplicates']:>4}" if j == 0 else "")
+                  f"{f(g['scored_fraction'], 2):>6} {g['duplicates']:>4} {g['wrong_channel']:>4}" if j == 0 else "")
             lines.append(f"{gname if j == 0 else '':<12} {sub:<7} {r['events']:>6} {r['covered']:>4} "
                          f"{r['matched']:>4} {f(r['recall']):>6} {ci:>13} {f(r['ci95_width'], 2):>5} "
                          f"{f(r['recall_all_events']):>6} {fa}".rstrip())
     lines.append("cov: covered by the k=4 reference. hit/ev: every matched event / events. scored: exposure / "
-                 "no-burn log-covered time. dup: unmatched detections in a burn's match zone.")
+                 "no-burn log-covered time. dup: unmatched detections in a burn's match zone. wch: NS events "
+                 "matched by a semi-major-axis detection only (misses).")
     lines.append("ISS false alarms are against lower-bound lists and not checked; GEO-Fengyun is exploratory.")
     lines.append("targets: " + " | ".join(
         f"{t['check']} {f(t['value'])} ({t['target']}) {t['status']}" for t in res["targets"]))
