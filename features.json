@@ -1,0 +1,158 @@
+{
+  "about": "Every command a user can run, kept complete by tests/test_feature_map.py. Upper-case words in a command are placeholders.",
+  "features": [
+    {
+      "name": "Extract TLE history from the tle-archive git history",
+      "kind": "job",
+      "description": "Pulls the TLE history of chosen objects out of the OndroNR/tle-archive git history, 2021-2023.",
+      "command": "python -m orbit_watch.jobs.extract_tle_archive --out DIR --norad ID [--norad ID ...] [--name-regex REGEX]",
+      "inputs": ["the OndroNR/tle-archive GitHub repository, cloned by the job", "NORAD ids or an object-name regex"],
+      "outputs": ["DIR/<norad>.tle per object", "DIR/manifest.json"],
+      "test": "tests/test_extract_tle_archive.py"
+    },
+    {
+      "name": "Build the GEO-region TLE set",
+      "kind": "job",
+      "description": "Picks every object in the GEO region from yearly full-catalogue TLE bundles and writes its TLE history.",
+      "command": "python -m orbit_watch.jobs.geo_belt build --source URL --bundle PATH_OR_GLOB [--bundle ...] --out DIR_OR_ZIP [--also ID ...]",
+      "inputs": ["TLE bundles as .txt files or inside .zip files", "the bundles' source URL, recorded in the manifest"],
+      "outputs": ["<norad>.tle per object", "manifest.json", "both in a directory or in one .zip"],
+      "test": "tests/test_geo_belt.py"
+    },
+    {
+      "name": "Add SATCAT entries to the GEO-region set",
+      "kind": "job",
+      "description": "Adds each object's Space-Track SATCAT entry (type, launch, decay) to the GEO-region manifest.",
+      "command": "hush run -- python -m orbit_watch.jobs.geo_belt satcat --out DIR",
+      "inputs": ["DIR/manifest.json from the build command", "Space-Track credentials through hush"],
+      "outputs": ["DIR/manifest.json with SATCAT entries", "the SATCAT query cached under data/spacetrack beside DIR"],
+      "test": "tests/test_geo_belt.py"
+    },
+    {
+      "name": "Label GEO operating modes",
+      "kind": "job",
+      "description": "Labels the operating mode of every GEO-region object in 30-day windows, 2021-2025.",
+      "command": "python -m orbit_watch.jobs.geo_modes --geo-dir DIR --out DIR [--summary-dir DIR]",
+      "inputs": ["GEO-DIR/manifest.json and GEO-DIR/<norad>.tle from the GEO-region set", "groundtruth/splits.json, to skip holdout objects"],
+      "outputs": ["OUT/segments.csv", "SUMMARY-DIR/year_end_counts.csv, transitions_per_object.csv, transition_types.csv and summary.json"],
+      "test": "tests/test_modes.py"
+    },
+    {
+      "name": "Compare GEO modes with ESA's classification",
+      "kind": "tool",
+      "description": "Prints, per ESA 2019 class, how many objects have the matching mode in early 2021.",
+      "command": "python tools/esa_classification.py ESA_TEXT SEGMENTS_CSV [--manifest PATH]",
+      "inputs": ["pdftotext output of ESA's Classification of Geosynchronous Objects, Issue 21", "segments.csv from the GEO modes job", "data/geo/manifest.json with SATCAT entries"],
+      "outputs": ["a Markdown table on stdout"],
+      "test": "tests/test_esa_classification.py"
+    },
+    {
+      "name": "Fetch element sets for the generalisation run",
+      "kind": "tool",
+      "description": "Fetches Space-Track gp_history once for each satellite in the generalisation run, over its manoeuvre-log span.",
+      "command": "hush run -- python tools/fetch_generalise_tles.py [NORAD ...]",
+      "inputs": ["Space-Track credentials through hush", "optional NORAD ids (default: all six satellites)"],
+      "outputs": ["data/spacetrack/gp_history-<norad>-<start>--<end>.json", "counts and file sizes on stdout"],
+      "test": "tests/test_feature_map.py"
+    },
+    {
+      "name": "Fetch element sets for the labelled objects",
+      "kind": "tool",
+      "description": "Fetches Space-Track gp_history for 2021-2025 for each object added in groundtruth/splits.json.",
+      "command": "hush run -- python tools/fetch_truth_tles.py [--cache-dir DIR]",
+      "inputs": ["Space-Track credentials through hush", "groundtruth/splits.json"],
+      "outputs": ["CACHE-DIR/gp_history-<norad>-2021-01-01--2026-01-01.json", "counts and file sizes on stdout"],
+      "test": "tests/test_feature_map.py"
+    },
+    {
+      "name": "Run a command on Kaggle",
+      "kind": "tool",
+      "description": "Runs a command on Kaggle CPU against the commit at HEAD and downloads what it wrote.",
+      "command": "python tools/kaggle_run.py [--slug SLUG] [--attach PATH ...] [--dataset OWNER/SLUG ...] [-- COMMAND ...]",
+      "inputs": ["the committed tree at HEAD", "optional uncommitted files to attach", "optional Kaggle datasets", "Kaggle CLI credentials"],
+      "outputs": ["data/kaggle/<slug>/out: COMMIT.txt, run.log, exit_code.txt and the command's outputs", "the command's exit code"],
+      "test": "tests/test_kaggle_run.py"
+    },
+    {
+      "name": "Write the labelled-objects table",
+      "kind": "tool",
+      "description": "Writes groundtruth/objects.md, one row per labelled object with its burn and element-set counts.",
+      "command": "python tools/truth_table.py [--tle-dir DIR]",
+      "inputs": ["groundtruth/splits.json and the ground-truth CSVs", "cached Space-Track gp_history files in TLE-DIR"],
+      "outputs": ["groundtruth/objects.md", "the same table on stdout"],
+      "test": "tests/test_feature_map.py"
+    },
+    {
+      "name": "Detector evaluation",
+      "kind": "eval",
+      "description": "Scores the step detector per regime (ISS, LEO, GEO, IGSO) against fixed periods, objects and targets.",
+      "command": "python -m harness.evals.detector --split SPLIT [--final] --data-dir DIR [--settings JSON] [--truth-dir DIR] [--out JSON]",
+      "inputs": ["harness/evals/split.json", "a settings JSON (default harness/evals/settings/frozen.json)", "element sets under DATA-DIR", "ground truth under TRUTH-DIR"],
+      "outputs": ["a results JSON (default harness/evals/results/<split>-<settings>.json)", "a score table on stdout"],
+      "test": "tests/test_eval_detector.py"
+    },
+    {
+      "name": "Calibrate the detector on the ISS",
+      "kind": "analysis",
+      "description": "Picks the detector thresholds on 2021-2022 ISS burns and scores 2023 once with them.",
+      "command": "python -m orbit_watch.calibrate --tle PATH --truth CSV [CSV ...] --out DIR [--frozen]",
+      "inputs": ["ISS TLE history", "ISS manoeuvre lists from groundtruth/"],
+      "outputs": ["OUT/detections.csv", "OUT/events_scored.csv", "OUT/calibration.json", "OUT/iss_sma.png"],
+      "test": "tests/test_calibrate.py"
+    },
+    {
+      "name": "Score the ISS holdout and cross-validate",
+      "kind": "analysis",
+      "description": "Scores the frozen detector on Space-Track ISS history for 2024-2025, then runs leave-one-year-out cross-validation.",
+      "command": "python -m orbit_watch.holdout --gp PATH --archive PATH --truth CSV [CSV ...] --out DIR",
+      "inputs": ["Space-Track gp_history for the ISS", "the archive ISS TLE history", "ISS manoeuvre lists from groundtruth/"],
+      "outputs": ["OUT/holdout_2024_2025/: detections.csv, events_scored.csv, report.json and a plot", "OUT/cv_2021_2025/: detections.csv, events_scored.csv, report.json and cv_scores.png"],
+      "test": "tests/test_holdout.py"
+    },
+    {
+      "name": "Injection-recovery test on the ISS",
+      "kind": "analysis",
+      "description": "Adds synthetic steps to the real ISS series in memory and measures recall by step size and false alarms on quiet stretches.",
+      "command": "python -m orbit_watch.inject --spacetrack PATH --truth CSV [CSV ...] --out DIR",
+      "inputs": ["Space-Track gp_history for the ISS", "ISS manoeuvre lists from groundtruth/"],
+      "outputs": ["OUT/synthetic_injection_recall.csv", "OUT/synthetic_injection_report.json", "OUT/synthetic_injection_recall.png"],
+      "test": "tests/test_inject.py"
+    },
+    {
+      "name": "Score the detector on operator logs",
+      "kind": "analysis",
+      "description": "Scores the ISS-tuned detector, and a per-regime tune, against IDS (LEO) and QZSS (GEO) manoeuvre logs.",
+      "command": "python -m orbit_watch.generalise --truth-dir DIR --tle-dir DIR --out DIR [--final]",
+      "inputs": ["manoeuvre logs in groundtruth/", "Space-Track gp_history files, or GEO-region TLEs"],
+      "outputs": ["OUT/<satellite>_events_scored.csv and <satellite>_detections.csv", "OUT/<regime>_recall.png", "OUT/report.json"],
+      "test": "tests/test_generalise.py"
+    },
+    {
+      "name": "GEO step and longitude hunt",
+      "kind": "analysis",
+      "description": "Finds semi-major-axis steps in a few GEO objects and reports the longitude and drift rate around each.",
+      "command": "python -m orbit_watch.geo_hunt --tle-dir DIR --norad ID [ID ...] --out DIR",
+      "inputs": ["TLE-DIR/<norad>.tle per object"],
+      "outputs": ["OUT/steps.csv", "OUT/<norad>.png", "OUT/summary.json"],
+      "test": "tests/test_series_and_sources.py"
+    },
+    {
+      "name": "Build ground truth from operator logs",
+      "kind": "analysis",
+      "description": "Turns the published IDS, QZSS and Fengyun manoeuvre logs into the ground-truth CSVs, one row per source row.",
+      "command": "python -m orbit_watch.manoeuvre_logs --ids-dir DIR --qzss-dir DIR --fengyun-dir DIR --out DIR",
+      "inputs": ["IDS *man.txt files", "QZSS manoeuvre logs", "Fengyun manoeuvre logs"],
+      "outputs": ["OUT/ids_manoeuvres.csv", "OUT/qzss_manoeuvres.csv", "OUT/fengyun_manoeuvres.csv"],
+      "test": "tests/test_manoeuvre_logs.py"
+    },
+    {
+      "name": "Write the train and holdout split",
+      "kind": "analysis",
+      "description": "Prints the train/holdout split of the labelled objects from its fixed rule, and writes it with --write.",
+      "command": "python -m orbit_watch.truth [--write]",
+      "inputs": ["the labelled objects and the split rule in orbit_watch/truth.py"],
+      "outputs": ["the split JSON on stdout", "groundtruth/splits.json with --write"],
+      "test": "tests/test_truth.py"
+    }
+  ]
+}
