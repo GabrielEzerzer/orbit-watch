@@ -55,3 +55,12 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
   Space-Track adds that the TLE cannot supply (`GP_ID`, `CREATION_DATE`, `FILE` and the like)
   are left out rather than invented. The field names follow CelesTrak's GP format, which uses the
   same OMM keyword names; Space-Track's own field list sits behind its login and was not checked.
+
+## `geo/`
+
+- `37344_every_2_days.tle`: real element sets of Elektro-L No. 1 (NORAD 37344, 2011-001A),
+  cut from `data/geo/37344.tle`, which `orbit_watch.jobs.geo_belt` extracted from the Kaggle
+  dataset `vaibhavpandey12382/historical-tle-datasets` (yearly TLE bundles 2021-2025; the
+  bundle names and sha256 are in that folder's `manifest.json`). The first element set in each
+  two-day bucket counted from 2021-01-01 is kept: 904 of 2,914, lines unchanged. Read by
+  `tests/test_modes.py`, which checks it against ESA's issue-21 classification of the object.
