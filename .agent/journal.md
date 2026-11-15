@@ -578,3 +578,43 @@ the mock ISS slice restored. `peak_start`/`peak_end` are the peak gap, and the i
 of the absorbed gaps. `merge_channels` now measures centres from the peak gap, not the interval, so
 wider intervals do not change which inclination detections it keeps. While peak = interval this is
 a no-op; a test pins it.
+
+**Result at f9538e0 (`settings/inc-channel.json`, against Step A's inc-channel baseline at bda5807).**
+REVERTED: train ISS 45 → 44/48 and train GEO EW 36 → 35/39.
+
+| Split | Group | Metric | Baseline (bda5807) | Round 4 |
+|---|---|---|---|---|
+| train | GEO | NS hit/cov | 3/17, 0.18 [0.06, 0.41] | 4/17, 0.24 [0.10, 0.47] |
+| train | GEO | EW hit/cov | 36/39 | **35/39** |
+| train | GEO | EW+NS; all | 6/6; 45/62 | 6/6; 45/62 |
+| train | GEO | FA (FA/yr); dup; wch | 4 (1.67); 14; 4 | 4 (1.67); **2**; 2 |
+| train | ISS | hit/cov; FA; dup | 45/48; 3; 0 | **44/48**; 3; 0 |
+| train | LEO; Fengyun | every row; dup | as baseline; 1 | unchanged; 0 |
+| dev | GEO | NS; EW; EW+NS; all | 1/14; 33/34; 3/3; 37/51 | unchanged |
+| dev | GEO | FA (FA/yr); dup; wch | 7 (3.58); 11; 5 | **5 (2.56)**; **1**; 4 |
+| dev | ISS | hit/cov; FA (FA/yr); dup | 35/35; 4 (2.33); 3 | 35/35; 3 (1.75); 0 |
+| dev | LEO | >=50 m; FA; dup | 11/40; 0; 1 | 11/40; 0; 0 |
+
+FROZEN on the same code gives the same picture: train GEO NS 0/17, EW 35/39, ISS 44/48, dup 2;
+dev GEO FA 5, dup 1, ISS FA 3.
+
+The hypothesis held for NS: under Step A, round 4 costs no NS hit. Train NS gains QZS-3-146,
+because the second a-step (2022-10-31) now absorbs the first, and the inclination detection on
+2022-10-30, more than a day from the new peak, survives the merge. Duplicates fall as in round 1,
+and dev GEO false alarms fall 7 → 5 (QZS-3 2025-02-27 and QZS-6 2025-09-22 19:44 absorbed). It fails
+on two absorbed burns:
+
+- **ISS 2023-03-14 11:54** (debris avoidance), as predicted: its gap (05:27, |z| 38.7) is absorbed
+  by the 2023-03-15 06:14 peak (|z| 90.4), whose peak gap is past the ISS's 0.5-day late tolerance.
+- **QZS-3-128** (EW, 2022-02-19 16:59): its gap (2022-02-20 01:45, |z| 38.4) is absorbed by the
+  2022-02-18 13:15 peak (|z| 411.6), which one-to-one matching gives to NS QZS-3-127 (nearer), where
+  Step A makes it a miss (`wch`). EW 128 is then unmatched.
+
+**Can a |z| cap on absorption keep both?** Scratch listing (`pick` with and without peak radius on
+the train objects, 2021-2025, labelled with each baseline detection's fate). The two lost burns'
+gaps have |z| 38.7 and 38.4, 3.2 × z_min. Every false alarm round 4 removes has a higher |z|: QZS-6
+57.5 (a) and 60.7 (i), QZS-3 224, ISS 1,042 (4.8-87 × z_min). Of the 28 duplicates it removes, 24
+have |z| above 38.7 too. The ratio of a gap's |z| to its peak's does not separate them either (0.43
+and 0.09 for the two burns; 0.09-0.77 for the duplicates). So a cap that keeps both burns separate
+(factor ≤ 3.2) also keeps every removed false alarm separate. Round 5 runs it at factor 3 to put
+that on record.
