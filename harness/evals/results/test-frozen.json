@@ -1,0 +1,371 @@
+{
+  "split": "test",
+  "period": {
+    "objects": "holdout",
+    "from": "2021-01-01",
+    "to": "2026-01-01",
+    "requires_final": true
+  },
+  "settings": "frozen",
+  "commit": "3ca08ab624b39b295ef62187569db0b25eb625c6",
+  "dirty": false,
+  "tolerance_days": {
+    "before": 0.5,
+    "after": 2.0,
+    "after_iss": 0.5
+  },
+  "targets": [
+    {
+      "check": "LEO recall >=50 m",
+      "target": ">= 0.9",
+      "value": 0.0,
+      "ci95": [
+        0.0,
+        0.1682
+      ],
+      "status": "MISS"
+    },
+    {
+      "check": "GEO recall EW",
+      "target": ">= 0.9",
+      "value": null,
+      "ci95": null,
+      "status": "no events"
+    },
+    {
+      "check": "GEO recall NS",
+      "target": ">= 0.8",
+      "value": null,
+      "ci95": null,
+      "status": "no events"
+    },
+    {
+      "check": "ISS recall all",
+      "target": ">= 0.95",
+      "value": null,
+      "ci95": null,
+      "status": "no events"
+    },
+    {
+      "check": "LEO false alarms / object-year (13.57 obj-yr)",
+      "target": "<= 1.0",
+      "value": 0.0737,
+      "object_years": 13.574,
+      "status": "PASS"
+    },
+    {
+      "check": "GEO false alarms / object-year (0.00 obj-yr)",
+      "target": "<= 1.0",
+      "value": null,
+      "object_years": 0.0,
+      "status": "no exposure"
+    },
+    {
+      "check": "IGSO false alarms / object-year (3.25 obj-yr)",
+      "target": "<= 1.0",
+      "value": 0.0,
+      "object_years": 3.251,
+      "status": "PASS"
+    }
+  ],
+  "groups": {
+    "LEO": {
+      "objects": [
+        "SARAL",
+        "Sentinel-3A",
+        "Sentinel-6A"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 121,
+          "covered": 120,
+          "matched": 0,
+          "recall": 0.0,
+          "recall_all_events": 0.0,
+          "ci95": [
+            0.0,
+            0.031
+          ],
+          "ci95_width": 0.031
+        },
+        ">=50 m": {
+          "events": 19,
+          "covered": 19,
+          "matched": 0,
+          "recall": 0.0,
+          "recall_all_events": 0.0,
+          "ci95": [
+            0.0,
+            0.1682
+          ],
+          "ci95_width": 0.1682
+        }
+      },
+      "false_alarms": 1,
+      "object_years": 13.574,
+      "fa_per_object_year": 0.0737
+    },
+    "IGSO": {
+      "objects": [
+        "QZS-1",
+        "QZS-2",
+        "QZS-1R"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 22,
+          "covered": 0,
+          "matched": 0,
+          "recall": null,
+          "recall_all_events": 0.0,
+          "ci95": null,
+          "ci95_width": null
+        }
+      },
+      "false_alarms": 0,
+      "object_years": 3.251,
+      "fa_per_object_year": 0.0
+    },
+    "GEO-Fengyun": {
+      "objects": [
+        "Fengyun-2F",
+        "Fengyun-4A"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 27,
+          "covered": 23,
+          "matched": 15,
+          "recall": 0.6522,
+          "recall_all_events": 0.5556,
+          "ci95": [
+            0.4489,
+            0.8119
+          ],
+          "ci95_width": 0.363
+        },
+        "EW": {
+          "events": 24,
+          "covered": 20,
+          "matched": 15,
+          "recall": 0.75,
+          "recall_all_events": 0.625,
+          "ci95": [
+            0.5313,
+            0.8881
+          ],
+          "ci95_width": 0.3568
+        },
+        "NS": {
+          "events": 3,
+          "covered": 3,
+          "matched": 0,
+          "recall": 0.0,
+          "recall_all_events": 0.0,
+          "ci95": [
+            0.0,
+            0.5615
+          ],
+          "ci95_width": 0.5615
+        }
+      },
+      "false_alarms": 10,
+      "object_years": 1.73,
+      "fa_per_object_year": 5.7819
+    }
+  },
+  "objects": {
+    "QZS-1": {
+      "norad_id": 37158,
+      "group": "IGSO",
+      "element_source": "gp_history-37158-2021-01-01--2026-01-01.json",
+      "element_sets": 1644,
+      "subsets": {
+        "all": {
+          "events": 4,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 0,
+      "object_years": 0.5176
+    },
+    "Fengyun-2F": {
+      "norad_id": 38049,
+      "group": "GEO-Fengyun",
+      "element_source": "gp_history-38049-2021-01-01--2026-01-01.json",
+      "element_sets": 3528,
+      "subsets": {
+        "all": {
+          "events": 9,
+          "covered": 7,
+          "matched": 6
+        },
+        "EW": {
+          "events": 9,
+          "covered": 7,
+          "matched": 6
+        }
+      },
+      "detections": 34,
+      "matched_detections": 6,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 5,
+      "object_years": 0.7861
+    },
+    "SARAL": {
+      "norad_id": 39086,
+      "group": "LEO",
+      "element_source": "gp_history-39086-2021-01-01--2026-01-01.json",
+      "element_sets": 4616,
+      "subsets": {
+        "all": {
+          "events": 7,
+          "covered": 7,
+          "matched": 0
+        },
+        ">=50 m": {
+          "events": 7,
+          "covered": 7,
+          "matched": 0
+        }
+      },
+      "detections": 1,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 1,
+      "object_years": 4.71
+    },
+    "Sentinel-3A": {
+      "norad_id": 41335,
+      "group": "LEO",
+      "element_source": "gp_history-41335-2021-01-01--2026-01-01.json",
+      "element_sets": 7678,
+      "subsets": {
+        "all": {
+          "events": 93,
+          "covered": 93,
+          "matched": 0
+        },
+        ">=50 m": {
+          "events": 9,
+          "covered": 9,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 0,
+      "object_years": 4.2909
+    },
+    "Fengyun-4A": {
+      "norad_id": 41882,
+      "group": "GEO-Fengyun",
+      "element_source": "gp_history-41882-2021-01-01--2026-01-01.json",
+      "element_sets": 3758,
+      "subsets": {
+        "all": {
+          "events": 18,
+          "covered": 16,
+          "matched": 9
+        },
+        "EW": {
+          "events": 15,
+          "covered": 13,
+          "matched": 9
+        },
+        "NS": {
+          "events": 3,
+          "covered": 3,
+          "matched": 0
+        }
+      },
+      "detections": 70,
+      "matched_detections": 9,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 5,
+      "object_years": 0.9435
+    },
+    "QZS-2": {
+      "norad_id": 42738,
+      "group": "IGSO",
+      "element_source": "gp_history-42738-2021-01-01--2026-01-01.json",
+      "element_sets": 1619,
+      "subsets": {
+        "all": {
+          "events": 10,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 0,
+      "object_years": 1.3388
+    },
+    "Sentinel-6A": {
+      "norad_id": 46984,
+      "group": "LEO",
+      "element_source": "gp_history-46984-2021-01-01--2026-01-01.json",
+      "element_sets": 3723,
+      "subsets": {
+        "all": {
+          "events": 21,
+          "covered": 20,
+          "matched": 0
+        },
+        ">=50 m": {
+          "events": 3,
+          "covered": 3,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 0,
+      "object_years": 4.5733
+    },
+    "QZS-1R": {
+      "norad_id": 49336,
+      "group": "IGSO",
+      "element_source": "gp_history-49336-2021-01-01--2026-01-01.json",
+      "element_sets": 1622,
+      "subsets": {
+        "all": {
+          "events": 8,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 0,
+      "object_years": 1.3946
+    }
+  }
+}

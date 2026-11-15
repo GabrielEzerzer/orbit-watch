@@ -44,7 +44,7 @@ def test_scoring_loaders_refuse_holdout(tmp_path):
     assert generalise.load_log_events(csv_path, SARAL, final=True) == []
     with pytest.raises(HoldoutError):  # refused before any element-set file is looked for
         generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path)
-    with pytest.raises(ValueError):  # with final=True it gets past the guard to the empty dir
+    with pytest.raises(FileNotFoundError):  # with final=True it gets past the guard to the empty dir
         generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path, final=True)
 
 
@@ -113,9 +113,18 @@ def test_require_not_holdout_lets_unlisted_objects_through():
         truth.require_not_holdout(SARAL)
 
 
-LABEL_READERS_ALLOWED = {"truth.py", "manoeuvre_logs.py"}
+REPO = Path(truth.__file__).resolve().parents[1]
+SCANNED_DIRS = ("orbit_watch", "harness")  # the package and the evaluation code
+LABEL_READERS_ALLOWED = {"orbit_watch/truth.py", "orbit_watch/manoeuvre_logs.py"}
 # Streams multi-GB TLE bundles (element sets, never groundtruth/), so it needs open().
-BULK_READERS_ALLOWED = {"geo_belt.py"}
+BULK_READERS_ALLOWED = {"orbit_watch/jobs/geo_belt.py"}
+
+
+def _scanned_files():
+    """Every .py file under ``SCANNED_DIRS`` except the allowed readers, as repo-relative paths."""
+    allowed = LABEL_READERS_ALLOWED | BULK_READERS_ALLOWED
+    return [p.relative_to(REPO).as_posix() for d in SCANNED_DIRS for p in sorted((REPO / d).rglob("*.py"))
+            if p.relative_to(REPO).as_posix() not in allowed]
 
 
 def _file_readers(tree):
@@ -148,18 +157,18 @@ def _file_readers(tree):
 
 def test_only_truth_py_opens_ground_truth_files():
     """Label CSVs are read through ``truth.read_label_rows`` (which runs the guard) and written
-    by ``manoeuvre_logs``. Any other package module that opens a file for reading or parses CSV
-    from a file fails here. shortcut: a static scan; ``Path.read_text`` + manual splitting would
-    slip past it (every current ``read_text`` reads element sets or source logs)."""
+    by ``manoeuvre_logs``. Any other module of the package or of ``harness/`` that opens a file for
+    reading or parses CSV from a file fails here. shortcut: a static scan; ``Path.read_text`` +
+    manual splitting would slip past it (every current ``read_text`` reads element sets, source
+    logs, or the eval's split and settings JSON)."""
     import ast
 
-    pkg = Path(truth.__file__).parent
+    files = _scanned_files()
+    assert "harness/evals/detector.py" in files and "orbit_watch/generalise.py" in files
     offenders = []
-    for path in sorted(pkg.rglob("*.py")):
-        if path.name in LABEL_READERS_ALLOWED | BULK_READERS_ALLOWED:
-            continue
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        offenders += [f"{path.relative_to(pkg)}:{line} {what}" for line, what in _file_readers(tree)]
+    for rel in files:
+        tree = ast.parse((REPO / rel).read_text(encoding="utf-8"))
+        offenders += [f"{rel}:{line} {what}" for line, what in _file_readers(tree)]
     assert offenders == []
 
 
@@ -178,3 +187,23 @@ def test_label_reader_refuses_holdout_and_filters_by_object(tmp_path):
     assert [r["event_id"] for r in truth.read_label_rows(p, CRYOSAT2)] == ["a"]
     with pytest.raises(HoldoutError):
         truth.read_label_rows(p, SARAL)
+
+
+def test_geo_fallback_refuses_holdout_objects(tmp_path, mock_dir):
+    """``generalise.load_series`` reads ``data/geo/<norad>.tle`` when there is no gp_history file;
+    that path builds the series through ``to_series`` too, so a holdout object is refused."""
+    from orbit_watch.elements import _tle_checksum
+
+    def renumber(line):
+        line = line[:2] + f"{SARAL:05d}" + line[7:68]
+        return line + str(_tle_checksum(line))
+
+    tle_dir, geo_dir = tmp_path / "spacetrack", tmp_path / "geo"
+    tle_dir.mkdir()
+    geo_dir.mkdir()
+    lines = (mock_dir / "geo" / "bundle-sample.txt").read_text(encoding="utf-8").splitlines()[:4]
+    (geo_dir / f"{SARAL}.tle").write_text("".join(renumber(x) + "\n" for x in lines), encoding="utf-8")
+    with pytest.raises(HoldoutError, match="SARAL"):
+        generalise.load_series(SARAL, tle_dir)
+    series, label, _ = generalise.load_series(SARAL, tle_dir, final=True)
+    assert label == f"geo/{SARAL}.tle" and len(series) == 2

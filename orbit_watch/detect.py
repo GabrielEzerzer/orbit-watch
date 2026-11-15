@@ -32,18 +32,33 @@ does most of the work.
 A step appears at several neighbouring gaps as the windows slide past it, so
 flagged gaps (``|z|`` and ``|step|`` over thresholds) are thinned by non-maximum
 suppression: within ``nms_days`` only the highest ``|z|`` survives (the gap
-whose two sides are both clean scatters least, so it scores highest).
+whose two sides are both clean scatters least, so it scores highest). A
+detection's interval is its peak gap, and ``peak_start``/``peak_end`` name that
+gap (the one its step and ``z`` come from) separately, so a rule that widens the
+interval keeps the peak; the frozen evaluation (``harness/evals/detector.py``)
+matches and counts detections by the peak gap.
 
 A gap is not scored when either side's ``k`` epochs span more than
 ``max_span_days`` or the gap itself is longer than ``max_gap_days``, so there
 is no detection across a data outage such as 2022-06-15..19.
 
-Duplicate epochs are already removed by ``to_series``. Only semi-major axis is
-used.
+The same scoring runs on inclination (``channel="i"``, steps in degrees): a
+north-south burn turns the orbit plane and changes the semi-major axis little.
+``merge_channels`` adds inclination detections to the semi-major-axis ones,
+dropping an inclination detection whose centre lies within ``nms_days`` of a
+semi-major-axis detection's centre (the same non-maximum suppression, with the
+semi-major-axis channel first, since ``z`` is not comparable across channels).
+
+A ``Setting`` holds the thresholds. ``pick_setting`` is the detector at one
+setting: ``pick`` on semi-major axis, plus, when the setting turns the
+inclination channel on, ``pick`` on inclination merged in by ``merge_channels``.
+``detect`` runs it on a series, and the frozen evaluation calls it on its cached
+scores, so both detect the same thing.
+
+Duplicate epochs are already removed by ``to_series``.
 """
 
-# shortcut: eccentricity and inclination are not used as secondary channels;
-# add them if out-of-plane or perigee-only burns need finding.
+# shortcut: eccentricity is not used as a channel; add it if perigee-only burns need finding.
 
 from __future__ import annotations
 
@@ -58,14 +73,38 @@ _MAD_TO_SIGMA = 1.4826
 
 
 @dataclass(frozen=True)
+class Setting:
+    """Detector thresholds. The inclination channel is on when ``inc_z_min`` and ``inc_step_min_deg``
+    are both set, and off when both are None."""
+
+    k: int
+    z_min: float
+    step_min_m: float
+    nms_days: float = 1.0
+    inc_z_min: float | None = None
+    inc_step_min_deg: float | None = None
+
+    def __post_init__(self):
+        if (self.inc_z_min is None) != (self.inc_step_min_deg is None):
+            raise ValueError(
+                "the inclination channel needs both inc_z_min and inc_step_min_deg, or neither; got "
+                f"inc_z_min={self.inc_z_min}, inc_step_min_deg={self.inc_step_min_deg}")
+
+    @property
+    def inc_channel(self) -> bool:
+        return self.inc_step_min_deg is not None
+
+
+@dataclass(frozen=True)
 class GapScores:
     """Per-gap scores; index ``i`` is the gap between epochs ``i`` and ``i + 1``."""
 
     start: np.ndarray  # datetime64[us], epoch before the gap
     end: np.ndarray  # datetime64[us], epoch after the gap
-    step_m: np.ndarray  # extrapolated after-minus-before, metres (NaN when not scored)
+    step_m: np.ndarray  # extrapolated after-minus-before: metres, or degrees for channel "i" (NaN when not scored)
     z: np.ndarray  # step / standard error (NaN when not scored)
-    sigma_m: np.ndarray  # residual scatter used, metres
+    sigma_m: np.ndarray  # residual scatter used, in step_m's unit
+    channel: str = "a"  # "a" semi-major axis, "i" inclination
 
     @property
     def valid(self) -> np.ndarray:
@@ -74,10 +113,19 @@ class GapScores:
 
 @dataclass(frozen=True)
 class Detection:
-    start: np.datetime64  # epoch before the step
-    end: np.datetime64  # epoch after the step
-    step_m: float
+    start: np.datetime64  # epoch before the step (first epoch of the detection interval)
+    end: np.datetime64  # epoch after the step (last epoch of the detection interval)
+    step_m: float  # metres, or degrees when channel is "i"
     z: float
+    channel: str = "a"
+    peak_start: np.datetime64 | None = None  # the gap step and z come from; None: start
+    peak_end: np.datetime64 | None = None  # None: end
+
+    def __post_init__(self):
+        if self.peak_start is None:
+            object.__setattr__(self, "peak_start", self.start)
+        if self.peak_end is None:
+            object.__setattr__(self, "peak_end", self.end)
 
     @property
     def sign(self) -> int:
@@ -93,10 +141,12 @@ def _mad(r: np.ndarray) -> np.ndarray:
 
 
 def score_gaps(
-    series: ElementSeries, k: int = 6, max_span_days: float = 3.0, max_gap_days: float = 2.0
+    series: ElementSeries, k: int = 6, max_span_days: float = 3.0, max_gap_days: float = 2.0,
+    channel: str = "a",
 ) -> GapScores:
+    """Score every gap on semi-major axis in metres (``channel="a"``) or inclination in degrees ("i")."""
     t = _days(series.epochs)
-    y = series.semi_major_axis_km * 1000.0
+    y = {"a": lambda: series.semi_major_axis_km * 1000.0, "i": lambda: series.inclination}[channel]()
     n = len(t)
     idx = [i for i in range(k - 1, n - k)
            if t[i + 1] - t[i] <= max_gap_days
@@ -122,7 +172,7 @@ def score_gaps(
     floor = 0.5 * float(np.nanmedian(sigma)) if idx else 0.0
     sigma = np.maximum(sigma, floor)
     z = step / (sigma * np.sqrt(np.pi / 2) * np.sqrt(2.0 / k))
-    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma)
+    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma, channel)
 
 
 def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1.0) -> list[Detection]:
@@ -139,10 +189,41 @@ def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1
         if not kept or np.min(np.abs(centre[kept] - centre[i])) > nms_days:
             kept.append(i)
     return [
-        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]))
+        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]), scores.channel,
+                  scores.start[i], scores.end[i])
         for i in sorted(kept)
     ]
 
 
-def detect(series: ElementSeries, z_min: float, step_min_m: float, k: int = 6) -> list[Detection]:
-    return pick(score_gaps(series, k=k), z_min, step_min_m)
+def _centre(d: Detection) -> np.datetime64:
+    return d.start + (d.end - d.start) / 2
+
+
+def merge_channels(a_dets: list[Detection], i_dets: list[Detection], nms_days: float = 1.0) -> list[Detection]:
+    """``a_dets`` plus each of ``i_dets`` whose centre is more than ``nms_days`` from every ``a_dets`` centre."""
+    tol = np.timedelta64(int(nms_days * _DAY_US), "us")
+    ca = np.array([_centre(d) for d in a_dets], dtype="datetime64[us]")
+    extra = [d for d in i_dets if not len(ca) or np.min(np.abs(ca - _centre(d))) > tol]
+    return sorted(a_dets + extra, key=lambda d: d.start)
+
+
+def pick_setting(a_scores: GapScores, i_scores: GapScores | None, s: Setting) -> list[Detection]:
+    """Detections at setting ``s``: semi-major axis, plus inclination merged in when ``s`` turns it on.
+
+    ``a_scores`` and ``i_scores`` are ``score_gaps`` on each channel at ``s.k``; ``i_scores`` is read
+    only when the channel is on. Both channels are thinned with ``s.nms_days``, and ``merge_channels``
+    keeps every semi-major-axis detection and drops an inclination one within ``s.nms_days`` of one.
+    """
+    if a_scores.channel != "a" or (s.inc_channel and (i_scores is None or i_scores.channel != "i")):
+        raise ValueError("pick_setting needs semi-major-axis scores, and inclination scores when the "
+                         "setting turns the inclination channel on")
+    dets = pick(a_scores, s.z_min, s.step_min_m, s.nms_days)
+    if not s.inc_channel:
+        return dets
+    return merge_channels(dets, pick(i_scores, s.inc_z_min, s.inc_step_min_deg, s.nms_days), s.nms_days)
+
+
+def detect(series: ElementSeries, s: Setting) -> list[Detection]:
+    """``pick_setting`` on ``series``, with ``score_gaps``' default span and gap limits (the evaluation's)."""
+    i_scores = score_gaps(series, k=s.k, channel="i") if s.inc_channel else None
+    return pick_setting(score_gaps(series, k=s.k), i_scores, s)

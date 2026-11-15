@@ -1,0 +1,30 @@
+{
+  "name": "frozen",
+  "note": "generalise.FROZEN (calibrate.py's ISS choice at 508838a) for every regime",
+  "regimes": {
+    "ISS": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    },
+    "LEO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    },
+    "GEO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    },
+    "IGSO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    }
+  }
+}
