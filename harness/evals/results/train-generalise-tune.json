@@ -6,21 +6,26 @@
     "to": "2024-01-01"
   },
   "settings": "generalise-tune",
-  "commit": "3ca08ab624b39b295ef62187569db0b25eb625c6",
+  "commit": "896ae19a9fdd49de4f989d52d61c21b14676f2fb",
   "dirty": false,
   "tolerance_days": {
     "before": 0.5,
     "after": 2.0,
     "after_iss": 0.5
   },
+  "coverage_reference": {
+    "k": 4,
+    "max_span_days": 3.0,
+    "max_gap_days": 2.0
+  },
   "targets": [
     {
       "check": "LEO recall >=50 m",
       "target": ">= 0.9",
-      "value": 0.875,
+      "value": 0.7778,
       "ci95": [
-        0.6398,
-        0.965
+        0.5479,
+        0.91
       ],
       "status": "MISS"
     },
@@ -37,10 +42,10 @@
     {
       "check": "GEO recall NS",
       "target": ">= 0.8",
-      "value": 0.4118,
+      "value": 0.2941,
       "ci95": [
-        0.2161,
-        0.6399
+        0.1328,
+        0.5313
       ],
       "status": "MISS"
     },
@@ -55,10 +60,10 @@
       "status": "MISS"
     },
     {
-      "check": "LEO false alarms / object-year (12.04 obj-yr)",
+      "check": "LEO false alarms / object-year (13.18 obj-yr)",
       "target": "<= 1.0",
-      "value": 0.6644,
-      "object_years": 12.042,
+      "value": 0.607,
+      "object_years": 13.179,
       "status": "PASS"
     },
     {
@@ -92,37 +97,44 @@
         "k": 6,
         "z_min": 40,
         "step_min_m": 0,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 192,
-          "covered": 156,
+          "covered": 174,
           "matched": 117,
-          "recall": 0.75,
+          "matched_all": 117,
+          "recall": 0.6724,
           "recall_all_events": 0.6094,
           "ci95": [
-            0.6766,
-            0.8114
+            0.5996,
+            0.7378
           ],
-          "ci95_width": 0.1348
+          "ci95_width": 0.1382
         },
         ">=50 m": {
           "events": 26,
-          "covered": 16,
+          "covered": 18,
           "matched": 14,
-          "recall": 0.875,
+          "matched_all": 14,
+          "recall": 0.7778,
           "recall_all_events": 0.5385,
           "ci95": [
-            0.6398,
-            0.965
+            0.5479,
+            0.91
           ],
-          "ci95_width": 0.3253
+          "ci95_width": 0.3621
         }
       },
       "false_alarms": 8,
-      "object_years": 12.042,
-      "fa_per_object_year": 0.6644
+      "duplicates": 53,
+      "object_years": 13.179,
+      "no_burn_years": 14.192,
+      "scored_fraction": 0.929,
+      "fa_per_object_year": 0.607
     },
     "GEO": {
       "objects": [
@@ -133,25 +145,29 @@
         "k": 4,
         "z_min": 3,
         "step_min_m": 1000,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 68,
           "covered": 62,
-          "matched": 50,
-          "recall": 0.8065,
-          "recall_all_events": 0.7353,
+          "matched": 48,
+          "matched_all": 48,
+          "recall": 0.7742,
+          "recall_all_events": 0.7059,
           "ci95": [
-            0.6915,
-            0.8857
+            0.6559,
+            0.8604
           ],
-          "ci95_width": 0.1942
+          "ci95_width": 0.2045
         },
         "EW": {
           "events": 43,
           "covered": 39,
           "matched": 37,
+          "matched_all": 37,
           "recall": 0.9487,
           "recall_all_events": 0.8605,
           "ci95": [
@@ -164,6 +180,7 @@
           "events": 7,
           "covered": 6,
           "matched": 6,
+          "matched_all": 6,
           "recall": 1.0,
           "recall_all_events": 0.8571,
           "ci95": [
@@ -175,18 +192,22 @@
         "NS": {
           "events": 18,
           "covered": 17,
-          "matched": 7,
-          "recall": 0.4118,
-          "recall_all_events": 0.3889,
+          "matched": 5,
+          "matched_all": 5,
+          "recall": 0.2941,
+          "recall_all_events": 0.2778,
           "ci95": [
-            0.2161,
-            0.6399
+            0.1328,
+            0.5313
           ],
-          "ci95_width": 0.4238
+          "ci95_width": 0.3985
         }
       },
       "false_alarms": 1,
+      "duplicates": 14,
       "object_years": 2.388,
+      "no_burn_years": 2.602,
+      "scored_fraction": 0.918,
       "fa_per_object_year": 0.4187
     },
     "IGSO": {
@@ -197,13 +218,16 @@
         "k": 4,
         "z_min": 3,
         "step_min_m": 1000,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 7,
           "covered": 0,
           "matched": 0,
+          "matched_all": 0,
           "recall": null,
           "recall_all_events": 0.0,
           "ci95": null,
@@ -211,7 +235,10 @@
         }
       },
       "false_alarms": 0,
+      "duplicates": 0,
       "object_years": 1.222,
+      "no_burn_years": 2.946,
+      "scored_fraction": 0.415,
       "fa_per_object_year": 0.0
     },
     "ISS": {
@@ -222,13 +249,16 @@
         "k": 4,
         "z_min": 12,
         "step_min_m": 200,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 49,
           "covered": 48,
           "matched": 45,
+          "matched_all": 45,
           "recall": 0.9375,
           "recall_all_events": 0.9184,
           "ci95": [
@@ -239,7 +269,10 @@
         }
       },
       "false_alarms": 3,
+      "duplicates": 0,
       "object_years": 2.59,
+      "no_burn_years": 2.617,
+      "scored_fraction": 0.989,
       "fa_per_object_year": 1.1585
     },
     "GEO-Fengyun": {
@@ -250,13 +283,16 @@
         "k": 4,
         "z_min": 3,
         "step_min_m": 1000,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 4,
           "covered": 3,
           "matched": 3,
+          "matched_all": 3,
           "recall": 1.0,
           "recall_all_events": 0.75,
           "ci95": [
@@ -269,6 +305,7 @@
           "events": 4,
           "covered": 3,
           "matched": 3,
+          "matched_all": 3,
           "recall": 1.0,
           "recall_all_events": 0.75,
           "ci95": [
@@ -279,7 +316,10 @@
         }
       },
       "false_alarms": 0,
+      "duplicates": 1,
       "object_years": 0.998,
+      "no_burn_years": 1.021,
+      "scored_fraction": 0.978,
       "fa_per_object_year": 0.0
     }
   },
@@ -293,7 +333,8 @@
         "all": {
           "events": 49,
           "covered": 48,
-          "matched": 45
+          "matched": 45,
+          "matched_all": 45
         }
       },
       "detections": 48,
@@ -304,22 +345,27 @@
           "start_utc": "2021-09-12T00:22:44Z",
           "end_utc": "2021-09-12T01:57:53Z",
           "step_m": 965.8,
-          "z": 52.51
+          "z": 52.51,
+          "channel": "a"
         },
         {
           "start_utc": "2023-03-15T06:14:18Z",
           "end_utc": "2023-03-15T09:18:31Z",
           "step_m": 488.7,
-          "z": 90.44
+          "z": 90.44,
+          "channel": "a"
         },
         {
           "start_utc": "2023-05-04T16:43:50Z",
           "end_utc": "2023-05-05T04:38:59Z",
           "step_m": 312.5,
-          "z": 12.38
+          "z": 12.38,
+          "channel": "a"
         }
       ],
+      "duplicates": [],
       "object_years": 2.5897,
+      "no_burn_years": 2.6174,
       "missed": [
         {
           "event_id": "2021-12-03 07:58",
@@ -350,14 +396,17 @@
         "all": {
           "events": 0,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [],
       "object_years": 0.0,
+      "no_burn_years": 0.0,
       "missed": []
     },
     "CryoSat-2": {
@@ -368,13 +417,15 @@
       "subsets": {
         "all": {
           "events": 52,
-          "covered": 48,
-          "matched": 47
+          "covered": 49,
+          "matched": 47,
+          "matched_all": 47
         },
         ">=50 m": {
           "events": 10,
           "covered": 10,
-          "matched": 10
+          "matched": 10,
+          "matched_all": 10
         }
       },
       "detections": 76,
@@ -385,22 +436,222 @@
           "start_utc": "2021-12-21T20:30:09Z",
           "end_utc": "2021-12-21T22:09:23Z",
           "step_m": 18.2,
-          "z": 360.94
+          "z": 360.94,
+          "channel": "a"
         },
         {
           "start_utc": "2023-11-04T22:03:25Z",
           "end_utc": "2023-11-05T12:56:37Z",
           "step_m": -4.1,
-          "z": -40.2
+          "z": -40.2,
+          "channel": "a"
         }
       ],
-      "object_years": 2.349,
+      "duplicates": [
+        {
+          "start_utc": "2021-05-21T10:40:26Z",
+          "end_utc": "2021-05-21T18:56:39Z",
+          "step_m": 13.1,
+          "z": 259.35,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-11-24T21:45:25Z",
+          "end_utc": "2021-11-25T12:38:37Z",
+          "step_m": 19.5,
+          "z": 316.63,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-02-23T12:52:19Z",
+          "end_utc": "2022-02-23T21:08:32Z",
+          "step_m": 24.6,
+          "z": 199.36,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-04-14T13:44:01Z",
+          "end_utc": "2022-04-14T17:02:30Z",
+          "step_m": 34.2,
+          "z": 373.27,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-05-04T21:41:12Z",
+          "end_utc": "2022-05-05T04:18:11Z",
+          "step_m": 44.2,
+          "z": 211.89,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-05-25T13:54:43Z",
+          "end_utc": "2022-05-25T20:31:42Z",
+          "step_m": 14.6,
+          "z": 95.57,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-06-06T13:43:20Z",
+          "end_utc": "2022-06-06T21:59:34Z",
+          "step_m": -358.8,
+          "z": -7114.78,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-07-15T20:31:10Z",
+          "end_utc": "2022-07-16T13:03:37Z",
+          "step_m": 24.2,
+          "z": 479.98,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-09-02T12:18:12Z",
+          "end_utc": "2022-09-02T20:34:26Z",
+          "step_m": 9.7,
+          "z": 192.47,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-10-03T12:38:23Z",
+          "end_utc": "2022-10-03T19:15:22Z",
+          "step_m": -28.5,
+          "z": -507.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-10-06T11:45:54Z",
+          "end_utc": "2022-10-06T20:02:08Z",
+          "step_m": 40.2,
+          "z": 372.66,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-10-28T06:27:15Z",
+          "end_utc": "2022-10-28T13:04:14Z",
+          "step_m": 29.2,
+          "z": 362.63,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-11-23T12:39:27Z",
+          "end_utc": "2022-11-23T14:18:42Z",
+          "step_m": 27.7,
+          "z": 493.14,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-12-02T13:20:30Z",
+          "end_utc": "2022-12-02T21:36:43Z",
+          "step_m": 22.9,
+          "z": 271.59,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-01-11T20:58:38Z",
+          "end_utc": "2023-01-12T06:54:06Z",
+          "step_m": 37.4,
+          "z": 82.9,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-02-20T13:43:39Z",
+          "end_utc": "2023-02-21T14:32:19Z",
+          "step_m": 22.2,
+          "z": 300.51,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-03-09T20:54:07Z",
+          "end_utc": "2023-03-10T21:42:48Z",
+          "step_m": 57.6,
+          "z": 126.56,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-03-24T13:13:17Z",
+          "end_utc": "2023-03-24T21:29:31Z",
+          "step_m": 40.7,
+          "z": 359.42,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-04-06T22:06:49Z",
+          "end_utc": "2023-04-07T13:00:01Z",
+          "step_m": 21.6,
+          "z": 75.1,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-04-21T12:46:42Z",
+          "end_utc": "2023-04-21T21:02:56Z",
+          "step_m": 30.3,
+          "z": 410.37,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-05-12T13:16:20Z",
+          "end_utc": "2023-05-12T21:32:33Z",
+          "step_m": 37.3,
+          "z": 214.47,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-09-01T13:08:42Z",
+          "end_utc": "2023-09-01T19:45:41Z",
+          "step_m": 44.1,
+          "z": 259.41,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-10-05T14:15:37Z",
+          "end_utc": "2023-10-05T20:52:36Z",
+          "step_m": 53.9,
+          "z": 753.66,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-10-17T14:04:14Z",
+          "end_utc": "2023-10-18T04:57:26Z",
+          "step_m": 55.8,
+          "z": 543.75,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-11-09T04:36:35Z",
+          "end_utc": "2023-11-09T12:52:49Z",
+          "step_m": 56.6,
+          "z": 113.59,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-12-06T05:00:38Z",
+          "end_utc": "2023-12-06T13:16:51Z",
+          "step_m": 36.8,
+          "z": 343.49,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-12-22T03:06:14Z",
+          "end_utc": "2023-12-22T14:40:57Z",
+          "step_m": 20.3,
+          "z": 113.01,
+          "channel": "a"
+        }
+      ],
+      "object_years": 2.4606,
+      "no_burn_years": 2.6413,
       "missed": [
         {
           "event_id": "CryoSat-2-153",
           "start_utc": "2022-04-28T11:18:00Z",
           "kind": "along-track",
           "delta_a_est_m": 1.0
+        },
+        {
+          "event_id": "CryoSat-2-174",
+          "start_utc": "2023-01-24T15:06:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 45.3
         }
       ]
     },
@@ -413,19 +664,66 @@
         "all": {
           "events": 22,
           "covered": 19,
-          "matched": 16
+          "matched": 16,
+          "matched_all": 16
         },
         ">=50 m": {
           "events": 5,
           "covered": 3,
-          "matched": 3
+          "matched": 3,
+          "matched_all": 3
         }
       },
       "detections": 22,
       "matched_detections": 16,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
-      "object_years": 2.535,
+      "duplicates": [
+        {
+          "start_utc": "2021-11-08T21:01:31Z",
+          "end_utc": "2021-11-09T13:53:23Z",
+          "step_m": 11.0,
+          "z": 114.51,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-02-16T13:53:48Z",
+          "end_utc": "2022-02-16T21:23:31Z",
+          "step_m": 10.7,
+          "z": 355.4,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-04-23T12:15:27Z",
+          "end_utc": "2022-04-24T10:44:37Z",
+          "step_m": -26.9,
+          "z": -181.98,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-10-11T15:40:33Z",
+          "end_utc": "2022-10-11T19:25:25Z",
+          "step_m": 11.5,
+          "z": 59.97,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-03-27T13:54:29Z",
+          "end_utc": "2023-03-27T21:24:12Z",
+          "step_m": 15.8,
+          "z": 133.4,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-09-27T18:15:21Z",
+          "end_utc": "2023-09-28T14:52:05Z",
+          "step_m": 12.2,
+          "z": 590.44,
+          "channel": "a"
+        }
+      ],
+      "object_years": 2.6419,
+      "no_burn_years": 2.8511,
       "missed": [
         {
           "event_id": "Jason-3-031",
@@ -456,36 +754,142 @@
         "all": {
           "events": 68,
           "covered": 62,
-          "matched": 50
+          "matched": 48,
+          "matched_all": 48
         },
         "EW": {
           "events": 43,
           "covered": 39,
-          "matched": 37
+          "matched": 37,
+          "matched_all": 37
         },
         "EW+NS": {
           "events": 7,
           "covered": 6,
-          "matched": 6
+          "matched": 6,
+          "matched_all": 6
         },
         "NS": {
           "events": 18,
           "covered": 17,
-          "matched": 7
+          "matched": 5,
+          "matched_all": 5
         }
       },
       "detections": 63,
-      "matched_detections": 50,
+      "matched_detections": 48,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [
         {
           "start_utc": "2023-04-18T23:02:52Z",
           "end_utc": "2023-04-19T14:08:01Z",
           "step_m": -3238.0,
-          "z": -3325.44
+          "z": -3325.44,
+          "channel": "a"
+        }
+      ],
+      "duplicates": [
+        {
+          "start_utc": "2021-02-11T00:56:36Z",
+          "end_utc": "2021-02-11T13:53:42Z",
+          "step_m": -3189.1,
+          "z": -1487.34,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-05-15T11:53:02Z",
+          "end_utc": "2021-05-15T20:29:53Z",
+          "step_m": -3478.9,
+          "z": -1188.26,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-06-07T10:17:42Z",
+          "end_utc": "2021-06-07T21:28:13Z",
+          "step_m": -2904.5,
+          "z": -272.87,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-10-17T23:05:42Z",
+          "end_utc": "2021-10-18T11:09:08Z",
+          "step_m": -2502.4,
+          "z": -14.48,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-11-27T00:16:45Z",
+          "end_utc": "2021-11-27T14:18:42Z",
+          "step_m": -3360.9,
+          "z": -82.38,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-06-09T09:38:42Z",
+          "end_utc": "2022-06-09T20:28:26Z",
+          "step_m": -3031.6,
+          "z": -1118.99,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-07-18T17:49:26Z",
+          "end_utc": "2022-07-19T11:08:27Z",
+          "step_m": -2884.1,
+          "z": -1110.86,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-08-08T22:25:42Z",
+          "end_utc": "2022-08-09T13:28:42Z",
+          "step_m": -3209.0,
+          "z": -16.85,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-12-13T09:17:07Z",
+          "end_utc": "2022-12-13T14:24:42Z",
+          "step_m": -3261.6,
+          "z": -803.79,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-03-06T23:43:13Z",
+          "end_utc": "2023-03-07T21:09:50Z",
+          "step_m": -1201.4,
+          "z": -5.14,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-03-25T11:13:42Z",
+          "end_utc": "2023-03-26T22:42:15Z",
+          "step_m": -3032.5,
+          "z": -748.25,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-03-26T22:42:15Z",
+          "end_utc": "2023-03-27T14:45:42Z",
+          "step_m": -3022.1,
+          "z": -871.65,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-09-16T23:29:52Z",
+          "end_utc": "2023-09-17T13:15:27Z",
+          "step_m": -3132.2,
+          "z": -1664.14,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-10-07T21:39:10Z",
+          "end_utc": "2023-10-07T22:40:45Z",
+          "step_m": -3202.2,
+          "z": -326.26,
+          "channel": "a"
         }
       ],
       "object_years": 2.3881,
+      "no_burn_years": 2.6021,
       "missed": [
         {
           "event_id": "QZS-3-096+QZS-3-097",
@@ -512,6 +916,12 @@
           "delta_a_est_m": -384.0
         },
         {
+          "event_id": "QZS-3-120",
+          "start_utc": "2021-11-25T17:38:50Z",
+          "kind": "NS",
+          "delta_a_est_m": -685.7
+        },
+        {
           "event_id": "QZS-3-123+QZS-3-124",
           "start_utc": "2022-01-08T14:11:51Z",
           "kind": "NS",
@@ -522,6 +932,12 @@
           "start_utc": "2022-06-28T14:53:43Z",
           "kind": "NS",
           "delta_a_est_m": 493.7
+        },
+        {
+          "event_id": "QZS-3-140",
+          "start_utc": "2022-08-07T12:47:34Z",
+          "kind": "NS",
+          "delta_a_est_m": 521.1
         },
         {
           "event_id": "QZS-3-143",
@@ -570,14 +986,17 @@
         "all": {
           "events": 7,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [],
       "object_years": 1.2216,
+      "no_burn_years": 2.9465,
       "missed": []
     },
     "Sentinel-3B": {
@@ -588,13 +1007,15 @@
       "subsets": {
         "all": {
           "events": 44,
-          "covered": 34,
-          "matched": 29
+          "covered": 40,
+          "matched": 29,
+          "matched_all": 29
         },
         ">=50 m": {
           "events": 1,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 43,
@@ -605,23 +1026,112 @@
           "start_utc": "2022-03-15T01:25:12Z",
           "end_utc": "2022-03-15T18:15:04Z",
           "step_m": 18.9,
-          "z": 176.15
+          "z": 176.15,
+          "channel": "a"
         },
         {
           "start_utc": "2022-10-08T10:23:58Z",
           "end_utc": "2022-10-08T18:48:55Z",
           "step_m": 29.0,
-          "z": 83.16
+          "z": 83.16,
+          "channel": "a"
         },
         {
           "start_utc": "2023-03-16T15:04:33Z",
           "end_utc": "2023-03-16T21:48:29Z",
           "step_m": 3.5,
-          "z": 59.88
+          "z": 59.88,
+          "channel": "a"
         }
       ],
-      "object_years": 1.7978,
+      "duplicates": [
+        {
+          "start_utc": "2021-01-14T03:24:49Z",
+          "end_utc": "2021-01-14T10:08:46Z",
+          "step_m": -6.6,
+          "z": -71.0,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-05-20T19:07:24Z",
+          "end_utc": "2021-05-21T10:16:17Z",
+          "step_m": 14.1,
+          "z": 294.05,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-07-23T04:39:46Z",
+          "end_utc": "2021-07-23T18:07:40Z",
+          "step_m": 11.6,
+          "z": 242.06,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2021-10-21T19:14:54Z",
+          "end_utc": "2021-10-22T10:23:47Z",
+          "step_m": 30.3,
+          "z": 634.32,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-06-29T19:07:38Z",
+          "end_utc": "2022-06-30T10:16:31Z",
+          "step_m": 25.1,
+          "z": 178.61,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-11-23T18:56:27Z",
+          "end_utc": "2022-11-24T10:05:20Z",
+          "step_m": 29.4,
+          "z": 615.48,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-12-21T10:05:19Z",
+          "end_utc": "2022-12-22T11:20:08Z",
+          "step_m": 23.6,
+          "z": 214.83,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2022-12-22T16:23:06Z",
+          "end_utc": "2022-12-23T10:53:57Z",
+          "step_m": 21.7,
+          "z": 91.26,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-01-14T02:58:53Z",
+          "end_utc": "2023-01-14T11:23:49Z",
+          "step_m": 26.6,
+          "z": 334.37,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-04-06T19:22:35Z",
+          "end_utc": "2023-04-07T05:28:31Z",
+          "step_m": 46.7,
+          "z": 309.63,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-09-21T04:58:43Z",
+          "end_utc": "2023-09-21T21:48:35Z",
+          "step_m": 45.1,
+          "z": 354.99,
+          "channel": "a"
+        }
+      ],
+      "object_years": 2.4903,
+      "no_burn_years": 2.6976,
       "missed": [
+        {
+          "event_id": "Sentinel-3B-041",
+          "start_utc": "2021-04-14T11:07:00Z",
+          "kind": "cross-track",
+          "delta_a_est_m": 23.2
+        },
         {
           "event_id": "Sentinel-3B-044",
           "start_utc": "2021-09-29T08:40:00Z",
@@ -629,10 +1139,34 @@
           "delta_a_est_m": 6.3
         },
         {
+          "event_id": "Sentinel-3B-055",
+          "start_utc": "2022-09-21T07:45:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 18.5
+        },
+        {
           "event_id": "Sentinel-3B-064",
           "start_utc": "2023-03-13T15:57:00Z",
           "kind": "cross-track",
           "delta_a_est_m": 1.3
+        },
+        {
+          "event_id": "Sentinel-3B-067",
+          "start_utc": "2023-04-20T09:55:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 32.7
+        },
+        {
+          "event_id": "Sentinel-3B-071",
+          "start_utc": "2023-07-27T07:35:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 30.9
+        },
+        {
+          "event_id": "Sentinel-3B-074",
+          "start_utc": "2023-08-31T07:24:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 26.0
         },
         {
           "event_id": "Sentinel-3B-076",
@@ -651,6 +1185,12 @@
           "start_utc": "2023-11-15T09:44:00Z",
           "kind": "along-track",
           "delta_a_est_m": 34.8
+        },
+        {
+          "event_id": "Sentinel-3B-082",
+          "start_utc": "2023-12-07T08:34:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 44.8
         }
       ]
     },
@@ -663,19 +1203,31 @@
         "all": {
           "events": 4,
           "covered": 3,
-          "matched": 3
+          "matched": 3,
+          "matched_all": 3
         },
         "EW": {
           "events": 4,
           "covered": 3,
-          "matched": 3
+          "matched": 3,
+          "matched_all": 3
         }
       },
       "detections": 12,
       "matched_detections": 3,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [
+        {
+          "start_utc": "2022-01-19T11:18:53Z",
+          "end_utc": "2022-01-19T13:02:15Z",
+          "step_m": -2694.0,
+          "z": -342.93,
+          "channel": "a"
+        }
+      ],
       "object_years": 0.9982,
+      "no_burn_years": 1.021,
       "missed": []
     },
     "HY-2C": {
@@ -686,15 +1238,18 @@
       "subsets": {
         "all": {
           "events": 22,
-          "covered": 20,
-          "matched": 5
+          "covered": 22,
+          "matched": 5,
+          "matched_all": 5
         }
       },
       "detections": 5,
       "matched_detections": 5,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
-      "object_years": 2.6301,
+      "duplicates": [],
+      "object_years": 2.7006,
+      "no_burn_years": 2.8474,
       "missed": [
         {
           "event_id": "HY-2C-003",
@@ -737,6 +1292,12 @@
           "start_utc": "2022-02-22T02:07:00Z",
           "kind": "along-track",
           "delta_a_est_m": 11.0
+        },
+        {
+          "event_id": "HY-2C-010",
+          "start_utc": "2022-04-14T07:55:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 22.0
         },
         {
           "event_id": "HY-2C-011",
@@ -785,6 +1346,12 @@
           "start_utc": "2023-07-25T03:15:00Z",
           "kind": "along-track",
           "delta_a_est_m": 21.0
+        },
+        {
+          "event_id": "HY-2C-023",
+          "start_utc": "2023-11-28T02:10:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 32.0
         }
       ]
     },
@@ -797,12 +1364,14 @@
         "all": {
           "events": 21,
           "covered": 20,
-          "matched": 8
+          "matched": 8,
+          "matched_all": 8
         },
         ">=50 m": {
           "events": 3,
           "covered": 3,
-          "matched": 1
+          "matched": 1,
+          "matched_all": 1
         }
       },
       "detections": 13,
@@ -813,10 +1382,42 @@
           "start_utc": "2022-01-24T18:45:49Z",
           "end_utc": "2022-01-25T06:54:33Z",
           "step_m": -2.1,
-          "z": -61.42
+          "z": -61.42,
+          "channel": "a"
         }
       ],
-      "object_years": 2.2393,
+      "duplicates": [
+        {
+          "start_utc": "2022-07-02T16:28:09Z",
+          "end_utc": "2022-07-03T02:52:46Z",
+          "step_m": -157.5,
+          "z": -258.95,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-07-11T19:28:19Z",
+          "end_utc": "2023-07-12T04:08:50Z",
+          "step_m": 24.2,
+          "z": 465.21,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-08-29T18:07:05Z",
+          "end_utc": "2023-08-29T21:35:17Z",
+          "step_m": 20.3,
+          "z": 645.43,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-11-24T03:31:57Z",
+          "end_utc": "2023-11-24T12:12:29Z",
+          "step_m": 17.7,
+          "z": 300.77,
+          "channel": "a"
+        }
+      ],
+      "object_years": 2.2937,
+      "no_burn_years": 2.3944,
       "missed": [
         {
           "event_id": "HY-2D-002",
@@ -900,13 +1501,15 @@
       "subsets": {
         "all": {
           "events": 31,
-          "covered": 15,
-          "matched": 12
+          "covered": 24,
+          "matched": 12,
+          "matched_all": 12
         },
         ">=50 m": {
           "events": 7,
-          "covered": 0,
-          "matched": 0
+          "covered": 2,
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 20,
@@ -917,17 +1520,111 @@
           "start_utc": "2023-05-16T13:06:23Z",
           "end_utc": "2023-05-16T21:37:19Z",
           "step_m": 31.0,
-          "z": 101.4
+          "z": 101.4,
+          "channel": "a"
         },
         {
           "start_utc": "2023-10-30T22:17:51Z",
           "end_utc": "2023-10-31T13:43:54Z",
           "step_m": -1.5,
-          "z": -46.87
+          "z": -46.87,
+          "channel": "a"
         }
       ],
-      "object_years": 0.4907,
+      "duplicates": [
+        {
+          "start_utc": "2023-04-07T12:23:02Z",
+          "end_utc": "2023-04-08T12:13:40Z",
+          "step_m": 31.0,
+          "z": 142.19,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-05-06T14:40:06Z",
+          "end_utc": "2023-05-07T02:35:25Z",
+          "step_m": 15.9,
+          "z": 291.01,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-06-02T05:20:33Z",
+          "end_utc": "2023-06-03T10:17:45Z",
+          "step_m": 17.7,
+          "z": 221.38,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-06-17T11:30:56Z",
+          "end_utc": "2023-06-17T20:01:53Z",
+          "step_m": 33.1,
+          "z": 423.59,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2023-11-18T12:10:19Z",
+          "end_utc": "2023-11-18T20:44:47Z",
+          "step_m": 19.7,
+          "z": 211.42,
+          "channel": "a"
+        }
+      ],
+      "object_years": 0.5924,
+      "no_burn_years": 0.7606,
       "missed": [
+        {
+          "event_id": "SWOT-001+SWOT-002",
+          "start_utc": "2023-01-11T02:38:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -2396.3
+        },
+        {
+          "event_id": "SWOT-003+SWOT-004",
+          "start_utc": "2023-01-13T01:39:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -457.2
+        },
+        {
+          "event_id": "SWOT-005+SWOT-006",
+          "start_utc": "2023-01-15T02:54:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -48.4
+        },
+        {
+          "event_id": "SWOT-009",
+          "start_utc": "2023-01-27T04:59:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 37.7
+        },
+        {
+          "event_id": "SWOT-010+SWOT-011",
+          "start_utc": "2023-01-31T00:52:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -5.8
+        },
+        {
+          "event_id": "SWOT-012+SWOT-013",
+          "start_utc": "2023-02-08T00:36:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 0.0
+        },
+        {
+          "event_id": "SWOT-014+SWOT-015",
+          "start_utc": "2023-02-10T00:16:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -0.5
+        },
+        {
+          "event_id": "SWOT-016+SWOT-017",
+          "start_utc": "2023-02-14T01:26:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 0.8
+        },
+        {
+          "event_id": "SWOT-018",
+          "start_utc": "2023-02-17T05:59:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 47.6
+        },
         {
           "event_id": "SWOT-021+SWOT-022",
           "start_utc": "2023-03-30T08:09:00Z",
@@ -957,14 +1654,17 @@
         "all": {
           "events": 0,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [],
       "object_years": 0.0,
+      "no_burn_years": 0.0,
       "missed": []
     },
     "Sentinel-6B": {
@@ -976,14 +1676,17 @@
         "all": {
           "events": 0,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [],
       "object_years": 0.0,
+      "no_burn_years": 0.0,
       "missed": []
     }
   }

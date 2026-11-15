@@ -6,21 +6,26 @@
     "to": "2026-01-01"
   },
   "settings": "generalise-tune",
-  "commit": "3ca08ab624b39b295ef62187569db0b25eb625c6",
+  "commit": "896ae19a9fdd49de4f989d52d61c21b14676f2fb",
   "dirty": false,
   "tolerance_days": {
     "before": 0.5,
     "after": 2.0,
     "after_iss": 0.5
   },
+  "coverage_reference": {
+    "k": 4,
+    "max_span_days": 3.0,
+    "max_gap_days": 2.0
+  },
   "targets": [
     {
       "check": "LEO recall >=50 m",
       "target": ">= 0.9",
-      "value": 0.8421,
+      "value": 0.8,
       "ci95": [
-        0.6958,
-        0.9256
+        0.6524,
+        0.895
       ],
       "status": "MISS"
     },
@@ -37,10 +42,10 @@
     {
       "check": "GEO recall NS",
       "target": ">= 0.8",
-      "value": 0.2143,
+      "value": 0.0714,
       "ci95": [
-        0.0757,
-        0.4759
+        0.0127,
+        0.3147
       ],
       "status": "MISS"
     },
@@ -55,10 +60,10 @@
       "status": "PASS"
     },
     {
-      "check": "LEO false alarms / object-year (9.93 obj-yr)",
+      "check": "LEO false alarms / object-year (10.55 obj-yr)",
       "target": "<= 1.0",
-      "value": 1.5109,
-      "object_years": 9.928,
+      "value": 1.4216,
+      "object_years": 10.552,
       "status": "MISS"
     },
     {
@@ -92,37 +97,44 @@
         "k": 6,
         "z_min": 40,
         "step_min_m": 0,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 196,
-          "covered": 176,
+          "covered": 185,
           "matched": 158,
-          "recall": 0.8977,
+          "matched_all": 158,
+          "recall": 0.8541,
           "recall_all_events": 0.8061,
           "ci95": [
-            0.8441,
-            0.9343
+            0.796,
+            0.8977
           ],
-          "ci95_width": 0.0902
+          "ci95_width": 0.1017
         },
         ">=50 m": {
           "events": 47,
-          "covered": 38,
+          "covered": 40,
           "matched": 32,
-          "recall": 0.8421,
+          "matched_all": 32,
+          "recall": 0.8,
           "recall_all_events": 0.6809,
           "ci95": [
-            0.6958,
-            0.9256
+            0.6524,
+            0.895
           ],
-          "ci95_width": 0.2297
+          "ci95_width": 0.2426
         }
       },
       "false_alarms": 15,
-      "object_years": 9.928,
-      "fa_per_object_year": 1.5109
+      "duplicates": 91,
+      "object_years": 10.552,
+      "no_burn_years": 10.806,
+      "scored_fraction": 0.976,
+      "fa_per_object_year": 1.4216
     },
     "GEO": {
       "objects": [
@@ -133,25 +145,29 @@
         "k": 4,
         "z_min": 3,
         "step_min_m": 1000,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 57,
           "covered": 51,
-          "matched": 39,
-          "recall": 0.7647,
-          "recall_all_events": 0.6842,
+          "matched": 37,
+          "matched_all": 37,
+          "recall": 0.7255,
+          "recall_all_events": 0.6491,
           "ci95": [
-            0.6324,
-            0.86
+            0.5905,
+            0.8289
           ],
-          "ci95_width": 0.2276
+          "ci95_width": 0.2383
         },
         "EW": {
           "events": 37,
           "covered": 34,
           "matched": 33,
+          "matched_all": 33,
           "recall": 0.9706,
           "recall_all_events": 0.8919,
           "ci95": [
@@ -164,6 +180,7 @@
           "events": 4,
           "covered": 3,
           "matched": 3,
+          "matched_all": 3,
           "recall": 1.0,
           "recall_all_events": 0.75,
           "ci95": [
@@ -175,18 +192,22 @@
         "NS": {
           "events": 16,
           "covered": 14,
-          "matched": 3,
-          "recall": 0.2143,
-          "recall_all_events": 0.1875,
+          "matched": 1,
+          "matched_all": 1,
+          "recall": 0.0714,
+          "recall_all_events": 0.0625,
           "ci95": [
-            0.0757,
-            0.4759
+            0.0127,
+            0.3147
           ],
-          "ci95_width": 0.4002
+          "ci95_width": 0.302
         }
       },
       "false_alarms": 1,
+      "duplicates": 12,
       "object_years": 1.956,
+      "no_burn_years": 2.087,
+      "scored_fraction": 0.937,
       "fa_per_object_year": 0.5113
     },
     "IGSO": {
@@ -197,13 +218,16 @@
         "k": 4,
         "z_min": 3,
         "step_min_m": 1000,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 4,
           "covered": 0,
           "matched": 0,
+          "matched_all": 0,
           "recall": null,
           "recall_all_events": 0.0,
           "ci95": null,
@@ -211,7 +235,10 @@
         }
       },
       "false_alarms": 0,
+      "duplicates": 0,
       "object_years": 0.462,
+      "no_burn_years": 1.964,
+      "scored_fraction": 0.235,
       "fa_per_object_year": 0.0
     },
     "ISS": {
@@ -222,13 +249,16 @@
         "k": 4,
         "z_min": 12,
         "step_min_m": 200,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 36,
           "covered": 35,
           "matched": 35,
+          "matched_all": 35,
           "recall": 1.0,
           "recall_all_events": 0.9722,
           "ci95": [
@@ -239,7 +269,10 @@
         }
       },
       "false_alarms": 4,
+      "duplicates": 3,
       "object_years": 1.719,
+      "no_burn_years": 1.739,
+      "scored_fraction": 0.989,
       "fa_per_object_year": 2.3272
     },
     "GEO-Fengyun": {
@@ -250,13 +283,16 @@
         "k": 4,
         "z_min": 3,
         "step_min_m": 1000,
-        "nms_days": 1.0
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
       },
       "subsets": {
         "all": {
           "events": 0,
           "covered": 0,
           "matched": 0,
+          "matched_all": 0,
           "recall": null,
           "recall_all_events": null,
           "ci95": null,
@@ -264,7 +300,10 @@
         }
       },
       "false_alarms": 0,
+      "duplicates": 0,
       "object_years": 0.0,
+      "no_burn_years": 0.0,
+      "scored_fraction": null,
       "fa_per_object_year": null
     }
   },
@@ -278,7 +317,8 @@
         "all": {
           "events": 36,
           "covered": 35,
-          "matched": 35
+          "matched": 35,
+          "matched_all": 35
         }
       },
       "detections": 42,
@@ -289,28 +329,56 @@
           "start_utc": "2024-09-09T01:02:11Z",
           "end_utc": "2024-09-09T05:39:02Z",
           "step_m": -257.1,
-          "z": -27.42
+          "z": -27.42,
+          "channel": "a"
         },
         {
           "start_utc": "2024-09-29T04:02:20Z",
           "end_utc": "2024-09-29T09:41:16Z",
           "step_m": 231.0,
-          "z": 60.43
+          "z": 60.43,
+          "channel": "a"
         },
         {
           "start_utc": "2025-04-28T16:46:37Z",
           "end_utc": "2025-04-29T04:34:06Z",
           "step_m": 462.1,
-          "z": 12.0
+          "z": 12.0,
+          "channel": "a"
         },
         {
           "start_utc": "2025-11-20T05:19:55Z",
           "end_utc": "2025-11-20T13:04:27Z",
           "step_m": 2729.8,
-          "z": 1042.2
+          "z": 1042.2,
+          "channel": "a"
+        }
+      ],
+      "duplicates": [
+        {
+          "start_utc": "2024-06-14T11:46:04Z",
+          "end_utc": "2024-06-14T19:30:07Z",
+          "step_m": 3464.6,
+          "z": 188.53,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-04T02:26:37Z",
+          "end_utc": "2025-09-04T21:00:39Z",
+          "step_m": 945.4,
+          "z": 220.24,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-10-15T07:11:07Z",
+          "end_utc": "2025-10-15T19:34:16Z",
+          "step_m": 2393.7,
+          "z": 652.66,
+          "channel": "a"
         }
       ],
       "object_years": 1.7188,
+      "no_burn_years": 1.7385,
       "missed": []
     },
     "SPOT-5": {
@@ -322,14 +390,17 @@
         "all": {
           "events": 0,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 1,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [],
       "object_years": 0.0,
+      "no_burn_years": 0.0,
       "missed": []
     },
     "CryoSat-2": {
@@ -341,12 +412,14 @@
         "all": {
           "events": 40,
           "covered": 40,
-          "matched": 39
+          "matched": 39,
+          "matched_all": 39
         },
         ">=50 m": {
           "events": 18,
           "covered": 18,
-          "matched": 17
+          "matched": 17,
+          "matched_all": 17
         }
       },
       "detections": 70,
@@ -357,34 +430,224 @@
           "start_utc": "2024-04-10T14:35:38Z",
           "end_utc": "2024-04-10T22:51:51Z",
           "step_m": 39.8,
-          "z": 127.74
+          "z": 127.74,
+          "channel": "a"
         },
         {
           "start_utc": "2024-04-23T13:33:40Z",
           "end_utc": "2024-04-23T21:49:53Z",
           "step_m": 62.8,
-          "z": 126.24
+          "z": 126.24,
+          "channel": "a"
         },
         {
           "start_utc": "2024-07-22T18:45:21Z",
           "end_utc": "2024-07-22T22:03:51Z",
           "step_m": 49.8,
-          "z": 252.37
+          "z": 252.37,
+          "channel": "a"
         },
         {
           "start_utc": "2024-10-08T12:33:29Z",
           "end_utc": "2024-10-08T14:12:44Z",
           "step_m": 83.5,
-          "z": 92.13
+          "z": 92.13,
+          "channel": "a"
         },
         {
           "start_utc": "2025-10-29T11:24:18Z",
           "end_utc": "2025-10-29T21:19:46Z",
           "step_m": 45.5,
-          "z": 56.36
+          "z": 56.36,
+          "channel": "a"
         }
       ],
-      "object_years": 1.6415,
+      "duplicates": [
+        {
+          "start_utc": "2024-01-10T10:14:47Z",
+          "end_utc": "2024-01-11T12:42:43Z",
+          "step_m": 35.2,
+          "z": 116.63,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-03-08T12:38:09Z",
+          "end_utc": "2024-03-08T14:17:23Z",
+          "step_m": 41.2,
+          "z": 338.33,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-04-12T22:49:58Z",
+          "end_utc": "2024-04-13T13:43:10Z",
+          "step_m": 42.2,
+          "z": 123.03,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-05-08T04:13:37Z",
+          "end_utc": "2024-05-08T14:09:05Z",
+          "step_m": 38.4,
+          "z": 46.77,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-05-23T14:44:27Z",
+          "end_utc": "2024-05-23T21:21:26Z",
+          "step_m": 74.8,
+          "z": 117.6,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-06-14T22:39:52Z",
+          "end_utc": "2024-06-15T13:33:04Z",
+          "step_m": 41.3,
+          "z": 819.53,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-09T13:30:34Z",
+          "end_utc": "2024-08-09T21:46:48Z",
+          "step_m": 38.8,
+          "z": 55.49,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-16T20:50:32Z",
+          "end_utc": "2024-08-17T11:43:45Z",
+          "step_m": 41.9,
+          "z": 82.26,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-09-04T14:45:06Z",
+          "end_utc": "2024-09-04T18:03:36Z",
+          "step_m": 66.8,
+          "z": 483.24,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-09-17T13:43:07Z",
+          "end_utc": "2024-09-17T21:59:21Z",
+          "step_m": 61.5,
+          "z": 206.02,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-10T20:47:49Z",
+          "end_utc": "2024-10-11T13:20:16Z",
+          "step_m": -11.4,
+          "z": -72.86,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-31T13:01:09Z",
+          "end_utc": "2024-10-31T21:17:22Z",
+          "step_m": 97.4,
+          "z": 141.43,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-11-13T05:22:07Z",
+          "end_utc": "2024-11-13T13:38:21Z",
+          "step_m": 84.6,
+          "z": 622.85,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-12-06T15:45:17Z",
+          "end_utc": "2024-12-06T20:43:01Z",
+          "step_m": 51.8,
+          "z": 1027.55,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-12-20T13:52:36Z",
+          "end_utc": "2024-12-20T22:08:50Z",
+          "step_m": 76.6,
+          "z": 97.66,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-01-08T14:24:05Z",
+          "end_utc": "2025-01-08T22:40:18Z",
+          "step_m": 84.3,
+          "z": 509.7,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-01-29T14:53:41Z",
+          "end_utc": "2025-01-29T21:30:40Z",
+          "step_m": 58.3,
+          "z": 204.4,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-28T04:29:38Z",
+          "end_utc": "2025-02-28T14:25:06Z",
+          "step_m": 47.6,
+          "z": 180.99,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-03-29T21:24:02Z",
+          "end_utc": "2025-03-30T12:17:14Z",
+          "step_m": 45.7,
+          "z": 184.08,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-04-24T22:38:25Z",
+          "end_utc": "2025-04-25T13:31:38Z",
+          "step_m": 57.9,
+          "z": 231.14,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-05-25T22:58:23Z",
+          "end_utc": "2025-05-27T21:17:13Z",
+          "step_m": 35.1,
+          "z": 410.17,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-06-18T14:19:16Z",
+          "end_utc": "2025-06-18T22:35:31Z",
+          "step_m": 306.0,
+          "z": 3667.67,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-07-09T21:27:30Z",
+          "end_utc": "2025-07-09T23:06:44Z",
+          "step_m": -274.6,
+          "z": -5446.5,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-07-25T11:16:40Z",
+          "end_utc": "2025-07-25T22:51:23Z",
+          "step_m": 31.1,
+          "z": 197.9,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-05T13:55:00Z",
+          "end_utc": "2025-09-05T22:11:13Z",
+          "step_m": 39.4,
+          "z": 294.67,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-25T16:54:24Z",
+          "end_utc": "2025-09-26T22:40:48Z",
+          "step_m": 42.1,
+          "z": 401.79,
+          "channel": "a"
+        }
+      ],
+      "object_years": 1.6914,
+      "no_burn_years": 1.7269,
       "missed": [
         {
           "event_id": "CryoSat-2-198",
@@ -402,13 +665,15 @@
       "subsets": {
         "all": {
           "events": 28,
-          "covered": 23,
-          "matched": 17
+          "covered": 26,
+          "matched": 17,
+          "matched_all": 17
         },
         ">=50 m": {
           "events": 12,
-          "covered": 8,
-          "matched": 4
+          "covered": 10,
+          "matched": 4,
+          "matched_all": 4
         }
       },
       "detections": 31,
@@ -419,16 +684,105 @@
           "start_utc": "2025-06-01T14:56:04Z",
           "end_utc": "2025-06-01T22:25:47Z",
           "step_m": -1027.6,
-          "z": -17203.84
+          "z": -17203.84,
+          "channel": "a"
         },
         {
           "start_utc": "2025-06-24T21:02:04Z",
           "end_utc": "2025-06-25T04:29:27Z",
           "step_m": -4.8,
-          "z": -149.1
+          "z": -149.1,
+          "channel": "a"
         }
       ],
-      "object_years": 1.7235,
+      "duplicates": [
+        {
+          "start_utc": "2024-01-08T14:04:48Z",
+          "end_utc": "2024-01-08T19:42:05Z",
+          "step_m": 13.8,
+          "z": 550.48,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-02-26T22:20:10Z",
+          "end_utc": "2024-02-27T03:57:27Z",
+          "step_m": 9.4,
+          "z": 135.85,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-06-13T12:27:49Z",
+          "end_utc": "2024-06-13T14:20:15Z",
+          "step_m": 12.9,
+          "z": 146.1,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-23T13:38:32Z",
+          "end_utc": "2024-08-24T04:37:58Z",
+          "step_m": 18.4,
+          "z": 424.36,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-04T21:15:15Z",
+          "end_utc": "2024-10-05T04:44:58Z",
+          "step_m": 16.1,
+          "z": 197.66,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-11-15T10:07:39Z",
+          "end_utc": "2024-11-15T13:52:31Z",
+          "step_m": 21.0,
+          "z": 483.85,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-04T14:04:29Z",
+          "end_utc": "2025-02-05T12:33:39Z",
+          "step_m": -6.7,
+          "z": -43.95,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-03-19T05:10:52Z",
+          "end_utc": "2025-03-19T14:33:01Z",
+          "step_m": 21.3,
+          "z": 192.89,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-05-16T20:25:19Z",
+          "end_utc": "2025-05-17T13:17:11Z",
+          "step_m": 17.8,
+          "z": 137.3,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-06-16T11:42:45Z",
+          "end_utc": "2025-06-16T21:02:00Z",
+          "step_m": -349.0,
+          "z": -14311.92,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-10-12T22:25:55Z",
+          "end_utc": "2025-10-13T07:45:08Z",
+          "step_m": 12.4,
+          "z": 345.48,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-11-28T20:20:05Z",
+          "end_utc": "2025-11-29T03:47:28Z",
+          "step_m": 13.2,
+          "z": 123.69,
+          "channel": "a"
+        }
+      ],
+      "object_years": 1.7806,
+      "no_burn_years": 1.8201,
       "missed": [
         {
           "event_id": "Jason-3-054",
@@ -449,6 +803,18 @@
           "delta_a_est_m": 7945.0
         },
         {
+          "event_id": "Jason-3-062",
+          "start_utc": "2025-01-21T18:21:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -7888.0
+        },
+        {
+          "event_id": "Jason-3-063",
+          "start_utc": "2025-01-23T16:22:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -4880.3
+        },
+        {
           "event_id": "Jason-3-064",
           "start_utc": "2025-01-24T23:18:00Z",
           "kind": "along-track",
@@ -465,6 +831,12 @@
           "start_utc": "2025-06-29T15:10:00Z",
           "kind": "along-track",
           "delta_a_est_m": -5.0
+        },
+        {
+          "event_id": "Jason-3-077",
+          "start_utc": "2025-08-19T23:12:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 15.0
         }
       ]
     },
@@ -477,36 +849,121 @@
         "all": {
           "events": 47,
           "covered": 44,
-          "matched": 34
+          "matched": 32,
+          "matched_all": 32
         },
         "EW": {
           "events": 30,
           "covered": 29,
-          "matched": 28
+          "matched": 28,
+          "matched_all": 28
         },
         "EW+NS": {
           "events": 4,
           "covered": 3,
-          "matched": 3
+          "matched": 3,
+          "matched_all": 3
         },
         "NS": {
           "events": 13,
           "covered": 12,
-          "matched": 3
+          "matched": 1,
+          "matched_all": 1
         }
       },
       "detections": 44,
-      "matched_detections": 34,
+      "matched_detections": 32,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [
         {
           "start_utc": "2025-02-27T20:29:12Z",
           "end_utc": "2025-02-28T14:03:38Z",
           "step_m": -3042.6,
-          "z": -224.27
+          "z": -224.27,
+          "channel": "a"
+        }
+      ],
+      "duplicates": [
+        {
+          "start_utc": "2024-01-08T07:27:36Z",
+          "end_utc": "2024-01-08T12:37:00Z",
+          "step_m": -2934.9,
+          "z": -328.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-06-08T05:38:11Z",
+          "end_utc": "2024-06-08T13:38:54Z",
+          "step_m": -3192.3,
+          "z": -1409.34,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-01T20:41:45Z",
+          "end_utc": "2024-07-02T14:58:26Z",
+          "step_m": -3794.6,
+          "z": -455.38,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-24T04:10:42Z",
+          "end_utc": "2024-07-24T13:15:13Z",
+          "step_m": -3313.5,
+          "z": -1396.83,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-15T21:19:07Z",
+          "end_utc": "2024-08-16T13:57:26Z",
+          "step_m": -3574.0,
+          "z": -14.04,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-20T18:28:44Z",
+          "end_utc": "2024-10-20T19:34:42Z",
+          "step_m": -3078.6,
+          "z": -1252.36,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-05T04:35:38Z",
+          "end_utc": "2025-02-06T14:06:38Z",
+          "step_m": -2444.5,
+          "z": -52.03,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-26T12:56:38Z",
+          "end_utc": "2025-02-27T20:29:12Z",
+          "step_m": -3183.3,
+          "z": -168.69,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-07-25T00:10:38Z",
+          "end_utc": "2025-07-25T10:32:21Z",
+          "step_m": -2237.3,
+          "z": -247.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-08-15T22:04:03Z",
+          "end_utc": "2025-08-16T08:20:48Z",
+          "step_m": -3198.9,
+          "z": -534.92,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-27T01:00:38Z",
+          "end_utc": "2025-12-27T06:45:26Z",
+          "step_m": -3396.2,
+          "z": -830.14,
+          "channel": "a"
         }
       ],
       "object_years": 1.6617,
+      "no_burn_years": 1.7277,
       "missed": [
         {
           "event_id": "QZS-3-180+QZS-3-181",
@@ -551,10 +1008,22 @@
           "delta_a_est_m": 164.6
         },
         {
+          "event_id": "QZS-3-211+QZS-3-212",
+          "start_utc": "2025-02-03T12:00:25Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
+        },
+        {
           "event_id": "QZS-3-215",
           "start_utc": "2025-03-18T09:43:28Z",
           "kind": "NS",
           "delta_a_est_m": 384.0
+        },
+        {
+          "event_id": "QZS-3-225+QZS-3-226",
+          "start_utc": "2025-07-23T00:46:53Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
         },
         {
           "event_id": "QZS-3-229",
@@ -579,14 +1048,17 @@
         "all": {
           "events": 4,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [],
       "object_years": 0.4621,
+      "no_burn_years": 1.9641,
       "missed": []
     },
     "Sentinel-3B": {
@@ -597,13 +1069,15 @@
       "subsets": {
         "all": {
           "events": 52,
-          "covered": 46,
-          "matched": 41
+          "covered": 50,
+          "matched": 41,
+          "matched_all": 41
         },
         ">=50 m": {
           "events": 8,
           "covered": 8,
-          "matched": 7
+          "matched": 7,
+          "matched_all": 7
         }
       },
       "detections": 65,
@@ -614,28 +1088,175 @@
           "start_utc": "2024-10-02T03:44:07Z",
           "end_utc": "2024-10-02T17:12:01Z",
           "step_m": 56.1,
-          "z": 105.3
+          "z": 105.3,
+          "channel": "a"
         },
         {
           "start_utc": "2024-12-03T10:20:40Z",
           "end_utc": "2024-12-03T18:45:36Z",
           "step_m": 47.8,
-          "z": 66.84
+          "z": 66.84,
+          "channel": "a"
         },
         {
           "start_utc": "2025-01-01T11:09:15Z",
           "end_utc": "2025-01-01T17:53:12Z",
           "step_m": 34.0,
-          "z": 58.11
+          "z": 58.11,
+          "channel": "a"
         },
         {
           "start_utc": "2025-10-03T12:20:30Z",
           "end_utc": "2025-10-04T15:16:17Z",
           "step_m": 45.6,
-          "z": 173.54
+          "z": 173.54,
+          "channel": "a"
         }
       ],
-      "object_years": 1.2558,
+      "duplicates": [
+        {
+          "start_utc": "2024-01-05T04:10:07Z",
+          "end_utc": "2024-01-05T19:19:00Z",
+          "step_m": 34.0,
+          "z": 486.22,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-02-01T14:16:04Z",
+          "end_utc": "2024-02-02T03:43:58Z",
+          "step_m": 21.0,
+          "z": 242.74,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-02-26T18:30:26Z",
+          "end_utc": "2024-02-27T14:42:17Z",
+          "step_m": 27.8,
+          "z": 64.67,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-03-29T04:32:35Z",
+          "end_utc": "2024-03-29T11:16:32Z",
+          "step_m": 45.4,
+          "z": 134.77,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-05-15T19:22:54Z",
+          "end_utc": "2024-05-16T10:31:47Z",
+          "step_m": 45.6,
+          "z": 93.52,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-06-21T18:23:08Z",
+          "end_utc": "2024-06-22T04:29:03Z",
+          "step_m": 42.2,
+          "z": 547.37,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-27T17:49:31Z",
+          "end_utc": "2024-07-28T10:39:23Z",
+          "step_m": 33.5,
+          "z": 99.49,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-19T11:09:17Z",
+          "end_utc": "2024-08-20T03:59:09Z",
+          "step_m": 41.5,
+          "z": 46.98,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-21T18:41:52Z",
+          "end_utc": "2024-08-22T04:47:47Z",
+          "step_m": 40.2,
+          "z": 53.92,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-11T09:54:25Z",
+          "end_utc": "2024-10-11T18:19:21Z",
+          "step_m": 47.3,
+          "z": 71.26,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-24T12:39:02Z",
+          "end_utc": "2024-10-24T19:22:59Z",
+          "step_m": 32.0,
+          "z": 214.63,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-11-13T03:55:24Z",
+          "end_utc": "2024-11-13T17:23:18Z",
+          "step_m": 67.7,
+          "z": 417.08,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-12-21T04:10:22Z",
+          "end_utc": "2024-12-21T19:19:15Z",
+          "step_m": 38.3,
+          "z": 82.01,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-01-08T04:43:59Z",
+          "end_utc": "2025-01-08T21:33:51Z",
+          "step_m": 32.5,
+          "z": 47.76,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-04-01T19:00:32Z",
+          "end_utc": "2025-04-02T10:09:25Z",
+          "step_m": 37.0,
+          "z": 113.66,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-12T11:24:27Z",
+          "end_utc": "2025-09-12T21:30:22Z",
+          "step_m": 32.7,
+          "z": 178.96,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-10-20T01:33:28Z",
+          "end_utc": "2025-10-21T14:35:11Z",
+          "step_m": 28.8,
+          "z": 62.76,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-11-22T02:18:25Z",
+          "end_utc": "2025-11-22T03:59:24Z",
+          "step_m": 34.6,
+          "z": 293.57,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-11T10:50:50Z",
+          "end_utc": "2025-12-12T18:49:36Z",
+          "step_m": 28.2,
+          "z": 318.07,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-13T03:14:32Z",
+          "end_utc": "2025-12-13T15:01:26Z",
+          "step_m": 27.0,
+          "z": 116.49,
+          "channel": "a"
+        }
+      ],
+      "object_years": 1.6078,
+      "no_burn_years": 1.6509,
       "missed": [
         {
           "event_id": "Sentinel-3B-088",
@@ -662,6 +1283,30 @@
           "delta_a_est_m": 68.0
         },
         {
+          "event_id": "Sentinel-3B-113",
+          "start_utc": "2025-01-30T08:33:00Z",
+          "kind": "cross-track",
+          "delta_a_est_m": 43.1
+        },
+        {
+          "event_id": "Sentinel-3B-114",
+          "start_utc": "2025-02-06T07:25:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 34.0
+        },
+        {
+          "event_id": "Sentinel-3B-119",
+          "start_utc": "2025-04-16T07:17:00Z",
+          "kind": "cross-track",
+          "delta_a_est_m": 37.3
+        },
+        {
+          "event_id": "Sentinel-3B-126",
+          "start_utc": "2025-08-13T07:40:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 22.7
+        },
+        {
           "event_id": "Sentinel-3B-131",
           "start_utc": "2025-10-12T08:30:00Z",
           "kind": "along-track",
@@ -678,14 +1323,17 @@
         "all": {
           "events": 0,
           "covered": 0,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 7,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [],
       "object_years": 0.0,
+      "no_burn_years": 0.0,
       "missed": []
     },
     "HY-2C": {
@@ -696,13 +1344,15 @@
       "subsets": {
         "all": {
           "events": 20,
-          "covered": 18,
-          "matched": 17
+          "covered": 19,
+          "matched": 17,
+          "matched_all": 17
         },
         ">=50 m": {
           "events": 1,
           "covered": 1,
-          "matched": 1
+          "matched": 1,
+          "matched_all": 1
         }
       },
       "detections": 27,
@@ -713,11 +1363,84 @@
           "start_utc": "2024-10-02T03:06:24Z",
           "end_utc": "2024-10-02T10:02:49Z",
           "step_m": -1.6,
-          "z": -48.14
+          "z": -48.14,
+          "channel": "a"
         }
       ],
-      "object_years": 1.7988,
+      "duplicates": [
+        {
+          "start_utc": "2024-07-04T11:36:50Z",
+          "end_utc": "2024-07-04T13:20:56Z",
+          "step_m": 24.9,
+          "z": 139.59,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-31T22:56:32Z",
+          "end_utc": "2024-08-01T04:08:51Z",
+          "step_m": 23.0,
+          "z": 178.04,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-21T15:10:26Z",
+          "end_utc": "2024-08-21T18:38:38Z",
+          "step_m": 31.8,
+          "z": 302.63,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-11-11T13:00:46Z",
+          "end_utc": "2024-11-11T19:57:11Z",
+          "step_m": 59.4,
+          "z": 266.0,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-01-08T14:16:41Z",
+          "end_utc": "2025-01-08T19:29:00Z",
+          "step_m": 40.1,
+          "z": 947.56,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-06-08T18:19:07Z",
+          "end_utc": "2025-06-09T22:04:47Z",
+          "step_m": 18.3,
+          "z": 228.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-07-11T14:02:32Z",
+          "end_utc": "2025-07-11T19:14:51Z",
+          "step_m": 9.7,
+          "z": 250.08,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-08-05T23:03:13Z",
+          "end_utc": "2025-08-06T14:40:10Z",
+          "step_m": 7.2,
+          "z": 48.9,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-10T07:30:17Z",
+          "end_utc": "2025-09-10T14:26:42Z",
+          "step_m": 24.7,
+          "z": 268.44,
+          "channel": "a"
+        }
+      ],
+      "object_years": 1.8287,
+      "no_burn_years": 1.8642,
       "missed": [
+        {
+          "event_id": "HY-2C-042",
+          "start_utc": "2025-11-08T01:45:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 34.3
+        },
         {
           "event_id": "HY-2C-044",
           "start_utc": "2025-12-24T07:38:00Z",
@@ -734,21 +1457,75 @@
       "subsets": {
         "all": {
           "events": 20,
-          "covered": 17,
-          "matched": 17
+          "covered": 18,
+          "matched": 17,
+          "matched_all": 17
         },
         ">=50 m": {
           "events": 3,
           "covered": 2,
-          "matched": 2
+          "matched": 2,
+          "matched_all": 2
         }
       },
       "detections": 23,
       "matched_detections": 17,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
-      "object_years": 1.7942,
-      "missed": []
+      "duplicates": [
+        {
+          "start_utc": "2024-02-21T22:29:45Z",
+          "end_utc": "2024-02-22T03:42:04Z",
+          "step_m": 19.2,
+          "z": 623.23,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-03-27T22:16:20Z",
+          "end_utc": "2024-03-28T05:12:45Z",
+          "step_m": 25.2,
+          "z": 251.16,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-05-25T04:44:33Z",
+          "end_utc": "2024-05-25T13:25:04Z",
+          "step_m": 23.9,
+          "z": 145.13,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-12-19T02:49:07Z",
+          "end_utc": "2024-12-19T06:17:20Z",
+          "step_m": 34.3,
+          "z": 1111.56,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-01-24T11:33:42Z",
+          "end_utc": "2025-01-24T13:17:48Z",
+          "step_m": 23.5,
+          "z": 653.55,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-05-22T04:15:49Z",
+          "end_utc": "2025-05-22T12:56:20Z",
+          "step_m": 30.4,
+          "z": 869.9,
+          "channel": "a"
+        }
+      ],
+      "object_years": 1.8309,
+      "no_burn_years": 1.8645,
+      "missed": [
+        {
+          "event_id": "HY-2D-027",
+          "start_utc": "2024-07-22T22:30:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 29.2
+        }
+      ]
     },
     "SWOT": {
       "norad_id": 54754,
@@ -759,7 +1536,8 @@
         "all": {
           "events": 30,
           "covered": 30,
-          "matched": 26
+          "matched": 26,
+          "matched_all": 26
         }
       },
       "detections": 47,
@@ -770,22 +1548,154 @@
           "start_utc": "2024-07-30T21:13:51Z",
           "end_utc": "2024-07-31T12:39:54Z",
           "step_m": 1.6,
-          "z": 40.84
+          "z": 40.84,
+          "channel": "a"
         },
         {
           "start_utc": "2024-09-12T13:02:09Z",
           "end_utc": "2024-09-12T21:36:38Z",
           "step_m": 39.0,
-          "z": 218.14
+          "z": 218.14,
+          "channel": "a"
         },
         {
           "start_utc": "2025-12-12T03:14:56Z",
           "end_utc": "2025-12-12T06:40:43Z",
           "step_m": 27.0,
-          "z": 253.22
+          "z": 253.22,
+          "channel": "a"
         }
       ],
-      "object_years": 1.6673,
+      "duplicates": [
+        {
+          "start_utc": "2024-01-13T12:39:19Z",
+          "end_utc": "2024-01-13T19:30:53Z",
+          "step_m": 21.8,
+          "z": 254.35,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-03-17T13:12:25Z",
+          "end_utc": "2024-03-17T21:46:53Z",
+          "step_m": 23.3,
+          "z": 244.59,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-04-06T04:48:18Z",
+          "end_utc": "2024-04-06T13:22:46Z",
+          "step_m": 23.6,
+          "z": 325.67,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-05-05T13:37:46Z",
+          "end_utc": "2024-05-05T22:12:15Z",
+          "step_m": 29.9,
+          "z": 153.26,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-05-23T20:38:40Z",
+          "end_utc": "2024-05-24T13:47:36Z",
+          "step_m": 28.9,
+          "z": 76.29,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-05-25T20:39:42Z",
+          "end_utc": "2024-05-26T13:48:39Z",
+          "step_m": 29.3,
+          "z": 156.06,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-06T21:01:25Z",
+          "end_utc": "2024-07-07T14:10:22Z",
+          "step_m": 27.0,
+          "z": 818.31,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-12T20:09:18Z",
+          "end_utc": "2024-10-13T13:18:14Z",
+          "step_m": 30.7,
+          "z": 82.9,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-11-16T18:44:30Z",
+          "end_utc": "2024-11-17T18:45:01Z",
+          "step_m": 21.5,
+          "z": 200.84,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-12-06T20:37:44Z",
+          "end_utc": "2024-12-07T10:20:54Z",
+          "step_m": 20.4,
+          "z": 619.25,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-01-11T14:04:46Z",
+          "end_utc": "2025-01-11T20:56:21Z",
+          "step_m": 26.3,
+          "z": 265.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-08T19:27:56Z",
+          "end_utc": "2025-02-08T22:53:43Z",
+          "step_m": 30.5,
+          "z": 250.92,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-03-08T11:07:57Z",
+          "end_utc": "2025-03-08T19:42:26Z",
+          "step_m": 27.2,
+          "z": 158.6,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-05-10T21:57:54Z",
+          "end_utc": "2025-05-11T15:06:51Z",
+          "step_m": 25.9,
+          "z": 83.27,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-06-21T13:45:12Z",
+          "end_utc": "2025-06-21T22:19:41Z",
+          "step_m": 17.3,
+          "z": 319.23,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-08-09T03:53:12Z",
+          "end_utc": "2025-08-09T14:10:34Z",
+          "step_m": 17.1,
+          "z": 200.36,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-20T21:23:51Z",
+          "end_utc": "2025-09-21T04:15:25Z",
+          "step_m": 22.6,
+          "z": 196.36,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-11-13T23:34:41Z",
+          "end_utc": "2025-11-14T06:26:16Z",
+          "step_m": 21.5,
+          "z": 86.34,
+          "channel": "a"
+        }
+      ],
+      "object_years": 1.7592,
+      "no_burn_years": 1.7956,
       "missed": [
         {
           "event_id": "SWOT-052+SWOT-053",
@@ -822,24 +1732,37 @@
         "all": {
           "events": 10,
           "covered": 7,
-          "matched": 5
+          "matched": 5,
+          "matched_all": 5
         },
         "EW": {
           "events": 7,
           "covered": 5,
-          "matched": 5
+          "matched": 5,
+          "matched_all": 5
         },
         "NS": {
           "events": 3,
           "covered": 2,
-          "matched": 0
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 19,
       "matched_detections": 5,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
+      "duplicates": [
+        {
+          "start_utc": "2025-12-11T03:00:38Z",
+          "end_utc": "2025-12-11T13:56:27Z",
+          "step_m": -1925.2,
+          "z": -984.53,
+          "channel": "a"
+        }
+      ],
       "object_years": 0.2941,
+      "no_burn_years": 0.3593,
       "missed": [
         {
           "event_id": "QZS-6-002",
@@ -864,19 +1787,23 @@
         "all": {
           "events": 6,
           "covered": 2,
-          "matched": 1
+          "matched": 1,
+          "matched_all": 1
         },
         ">=50 m": {
           "events": 5,
           "covered": 1,
-          "matched": 1
+          "matched": 1,
+          "matched_all": 1
         }
       },
       "detections": 1,
       "matched_detections": 1,
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
-      "object_years": 0.0467,
+      "duplicates": [],
+      "object_years": 0.0529,
+      "no_burn_years": 0.0842,
       "missed": [
         {
           "event_id": "Sentinel-6B-002",
