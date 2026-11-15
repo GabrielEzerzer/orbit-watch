@@ -618,3 +618,16 @@ have |z| above 38.7 too. The ratio of a gap's |z| to its peak's does not separat
 and 0.09 for the two burns; 0.09-0.77 for the duplicates). So a cap that keeps both burns separate
 (factor ≤ 3.2) also keeps every removed false alarm separate. Round 5 runs it at factor 3 to put
 that on record.
+
+### Round 5: peak-radius NMS with a |z| cap on absorption
+
+**Hypothesis.** Round 4 lost two burns whose own gaps were strong (|z| 38.4 and 38.7) but sat
+within k gaps of a stronger peak. If a peak absorbs a flagged gap only when the gap's |z| is under
+`ABSORB_Z_FACTOR` × z_min, strong separate steps stay separate and both burns come back. Prediction
+from round 4's listing: the cap also keeps every false alarm round 4 removed (|z| ≥ 57.5), so GEO
+FA should return to baseline, and the round should fail on its target.
+
+**Change.** Round 4's code again (peak radius, peak-gap merge centres, the mock ISS slice), plus the
+cap. Factor 3, chosen on train: the largest whole factor under 38.4 / 12 = 3.2, the lower of the
+two lost burns' gaps. A constant in `detect.py`, not a setting. Test: a |z| 38.7 gap two gaps from
+a |z| 90 peak stays its own detection.

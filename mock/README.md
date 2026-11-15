@@ -64,3 +64,8 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
   (55841) and Luch / Olymp-K 1 (40258) sets of 2021 (2023 for 55841). The rule's edge cases (GTO,
   a 24-hour orbit with e > 0.2, an object that arrives) are synthetic TLE pairs built inside
   `tests/test_geo_belt.py`, not files here.
+- `gp_history-25544-2025-09-17--2025-10-04.json`: **recorded data.** The 44 records with `EPOCH`
+  from 2025-09-17 to 2025-10-04 (UTC), copied unchanged from the Space-Track `gp_history` download
+  `data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json`. Through `holdout.load_gp_history`
+  they give 35 element sets, whose gaps 15, 17 and 19 are gaps 8822, 8824 and 8826 of the full
+  series (the 2025-09-25 aborted reboost and the 09-26 reboost) with the same step and z at k=4.
