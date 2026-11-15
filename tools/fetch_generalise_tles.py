@@ -28,7 +28,7 @@ def span(norad: int) -> tuple[date, date]:
 
 
 def main(argv: list[str]) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Fetch Space-Track gp_history for the satellites in the generalisation run, once each, over their log spans.")
     p.add_argument("norad", type=int, nargs="*", help="NORAD ids to fetch (default: every object in SPANS)")
     wanted = p.parse_args(argv).norad or list(SPANS)
     limiter = RateLimiter()
