@@ -311,7 +311,7 @@ each). The job reads any local `.txt` or `.zip` bundle, so Space-Track's own zip
 someone downloads them in a browser into `data/bulk/` (run Python on them with `-I`).
 
 ```
-MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-geo-belt --dataset vaibhavpandey12382/historical-tle-datasets -- python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '/kaggle/input/**/tle2021.txt' --bundle '/kaggle/input/**/tle2022.txt' --bundle '/kaggle/input/**/tle2023.txt' --bundle '/kaggle/input/**/tle2024.txt' --bundle '/kaggle/input/**/tle2025.txt' --out /kaggle/working/out/geo.zip
+MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-geo-belt --dataset vaibhavpandey12382/historical-tle-datasets -- python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '/kaggle/input/**/tle2021.txt' --bundle '/kaggle/input/**/tle2022.txt' --bundle '/kaggle/input/**/tle2023.txt' --bundle '/kaggle/input/**/tle2024.txt' --bundle '/kaggle/input/**/tle2025.txt' --also 36508 --also 41240 --also 54754 --also 27421 --out /kaggle/working/out/geo.zip
 python -I -m zipfile -e data/kaggle/ow-geo-belt/out/out/geo.zip data/geo
 hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out data/geo
 ```
@@ -326,7 +326,10 @@ with epochs in the period, and de-duplicates by epoch as `series.to_series` does
 appears again with different lines, the later one is kept and counted under `epoch_conflicts`.
 Selection runs before that de-duplication, so an object can be selected by a pair that a later
 pair at the same epoch replaces; such an object shows `by_rule: true` with `in_region_count: 0`.
-`--bundle` takes paths or recursive globs (the mirror nests some years one folder deeper). The
+`--bundle` takes paths or recursive globs (the mirror nests some years one folder deeper). `--also <norad>` (repeatable) adds an object
+outside the rule; the run above adds the four LEO satellites that `generalise` uses (CryoSat-2, Jason-3,
+SWOT, SPOT-5), whose Space-Track files are no longer on this machine. The manifest marks each
+object `by_rule` true or false. The
 output is `<norad>.tle` per object (2-line TLEs in epoch order) and `manifest.json`: the source,
 the period, the rule, each bundle's name, size, sha256, line and pair counts and rejected lines
 (non-blank lines that are not part of a line pair or a name line before one), and per object its
@@ -334,14 +337,22 @@ name lines (if the bundle has any), TLE count, how many of those meet the rule, 
 pairs the parser rejected and epoch conflicts. On Kaggle it writes one `geo.zip`, not thousands
 of files.
 
-A run on the 2025 file alone (commit 6062535) took about 4 minutes on Kaggle. It read 41,559,202
-lines (20,743,825 pairs) and selected 1,777 objects with 1,078,917 TLEs. That came to a 40 MB
-`geo.zip` holding 152 MB of TLE text. 28 objects have sets outside the region, such as 65588,
-which moves from a 5 rev/day transfer orbit to GEO. 71,552 lines were rejected; the ones looked
-at are 68-character lines of analyst objects (8xxxx), which `parse_tle` refuses. 157,047 pairs
-restated an epoch already held with different lines; what differs between them was not checked.
-All five years should take roughly 20 minutes and give about 5 million TLEs (about 750 MB of
-text).
+The full run (commit 74a831f) took about 16 minutes on Kaggle. It read 177,075,602 lines
+(88,220,159 pairs) from the five files and kept 1,808 objects with 4,957,896 TLEs: 1,804 by the
+rule and the four added with `--also`. That is a 184 MB `geo.zip` holding 666 MB of TLE text. The
+mirror's 2021, 2022 and 2024 files end every line 1 with a backslash, which the job drops. 136
+objects have sets outside the region, such as 65588, which moves from a 5 rev/day transfer orbit to
+GEO. 635,284 lines were rejected; the ones looked at are 68-character lines of analyst objects
+(8xxxx), which `parse_tle` refuses. 785,425 pairs restated an epoch already held with different
+lines, and 8 pairs failed `parse_tle`. 1,766 objects have a last set in December 2025.
+
+**Restated epochs.** The mirror's numbering fields differ from Space-Track's: line 1's element set
+number and checksum are not the ones `gp_history` serves for the same set. The orbital fields
+(line 1 up to column 64 and all of line 2 but the checksum) match. Against the `gp_history` files
+of Fengyun-2H (43491) and QZS-4 (42965), every epoch the mirror holds matches the latest-issued set
+(highest `GP_ID`) on those fields: 4,220 and 1,851 epochs, including all 390 and 718 epochs that
+Space-Track issued more than once with different lines. So keeping the later record matches
+Space-Track's latest issue. The mirror lacks 2 of 43491's 4,222 epochs.
 
 `satcat` adds each object's SATCAT entry (`OBJECT_NAME`, `OBJECT_TYPE`, `INTLDES`, `COUNTRY`,
 `LAUNCH`, `DECAY`) to `data/geo/manifest.json`, or `null` for an object the catalogue lacks. It is
