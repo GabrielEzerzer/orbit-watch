@@ -399,7 +399,7 @@ opened; there are 5 in this data. It writes one row per segment (start, end, mod
 element sets, longitude arc, mean drift, inclination range) to `data/geo_modes/segments.csv`,
 which is git-ignored. The summary goes to `findings/geo_modes/`: `year_end_counts.csv`,
 `transitions_per_object.csv`, `transition_types.csv` and `summary.json`. The full run over 1,799
-objects took 134 s on this laptop. Earlier runs, with the files not yet in the disk cache, took
+objects took 169 s on this laptop. Earlier runs, with the files not yet in the disk cache, took
 5 to 12 minutes.
 
 **Modes.** The classes are ESA's, from ESA Space Debris Office, *Classification of
@@ -412,14 +412,14 @@ GEN-DB-LOG-00290-OPS-SD), but no copy was reachable.
 
 | mode | ESA | meaning and rule |
 |---|---|---|
-| `controlled_lon_inc` | C1 | longitude held, median inclination at most 0.3 deg (ESA's bound) |
-| `controlled_lon` | C2 | longitude held, inclination above 0.3 deg |
+| `controlled_lon_inc` | C1 | longitude held, and median inclination at most 0.3 deg (ESA's bound) in some window within a year either side, since ESA accepts control at larger angles within one year |
+| `controlled_lon` | C2 | longitude held, and no window within a year either side at 0.3 deg or less |
 | `drifting` | D | not held, and either circulating past both potential maxima or manoeuvring inside the window |
 | `librating_75E` | L1 | free and trapped in the well of the stable point at 75 deg E |
 | `librating_105W` | L2 | free and trapped in the well of the stable point at 105 deg W |
 | `librating_both` | L3 | free, above the lower barrier but below the higher one, so it swings over both wells |
 | `inclined` | I | median inclination above 25 deg (ESA's bound) |
-| `undetermined` | Ind | too few element sets, or held still with no way to tell control from a librator's turning point |
+| `undetermined` | Ind | too few element sets, or held still where a free object could sit as still (a librator's turning point) and no burn or longer hold shows control |
 | `out_of_region` | – | median semi-major axis outside 37,948-46,380 km or eccentricity above 0.25 (ESA table 1: the GEO, IGO and EGO classes together) |
 
 Graveyard objects above GEO still read as `drifting`, as they do in ESA's list. ESA's C4
@@ -442,18 +442,34 @@ for most operators) and dates a relocation to within a month. The thresholds and
   windows spread below 0.15 deg and 147 between 0.15 and 0.5 deg.
 - A held window counts as control only if a 90-day run of three windows that includes it is also
   held, or if it is stiller than the natural acceleration lets a free object be. A librator at its
-  turning point also sits still for weeks.
+  turning point also sits still for weeks. Within about 6 deg of a stable point or 2 deg of a
+  barrier a free path bends less than 0.3 deg in 90 days, so there a held run counts only if it
+  holds a burn, or if the consecutive held windows around it spread less than half of what a free
+  path bends over their whole span.
 - Wide-box keepers (Meteosat at 0 deg E uses a box about 1.3 deg wide) cross their box under the
   natural acceleration and burn at the edge. A window counts as control if it and some 90-day run
   that includes it stay within 1.5 deg, and the run holds a burn. Among 90-day runs with a burn in
   250 sampled objects, 933 spread under 1 deg, 10 spread 1-3 deg and the rest 3 deg or more.
-- A burn is a window whose longitude leaves a free path: the robust scatter about a quadratic in
-  time is above 0.02 deg. Free librators sit near 0.001 deg (95th percentile 0.007 deg).
+- A burn is a window whose longitude leaves a free path (the robust scatter about a quadratic in
+  time is above 0.02 deg; free librators sit near 0.001 deg, 95th percentile 0.007 deg) while
+  the windows on either side do not lie on one free path either. That second test fits a cubic
+  through both neighbours with its curvature pinned to the natural acceleration. In a seeded
+  sample of 400 objects it leaves 0.42 % of 2,153 free-librator windows above 0.02 deg (99th
+  percentile 0.017 deg), and 99.5 % of keeper windows and every relocation above it. A window
+  of poor element sets between two windows of one free path is therefore no burn.
 - Energy decides between trapped and drifting. With the tesseral potential of the EGM96 (2,2),
-  (3,1) and (3,3) terms, `drift**2 / 2 + potential(longitude)` is conserved for a free object, so
-  one window tells whether the object is trapped in a well, above the lower barrier, or
-  circulating. The derived stable points are 75.1 deg E and 104.9 deg W (ESA section 2 gives
-  75 E and 105 W).
+  (3,1) and (3,3) terms, each scaled by Kaula's inclination function for the object's
+  inclination, `drift**2 / 2 + potential(longitude)` is conserved for a free object. Comparing
+  it with the two potential maxima tells whether the object is trapped in a well, above the lower
+  barrier, or circulating. The derived stable points are 75.1 deg E and 104.9 deg W (ESA section
+  2 gives 75 E and 105 W).
+- Window estimates of that energy still swing by a few per cent with the phase of the libration,
+  because luni-solar terms and degree 4 and up are left out. Each run of free windows therefore
+  takes one energy, the median of its windows. A run goes on through held windows (a turning
+  point, a barrier top) and ends at a burn, or between two windows that each follow a free path
+  but not the same one. A run whose path passes over a barrier is not trapped behind it,
+  whatever its energy reads: over the high barrier it is drifting, and an eastern or western
+  librator that passes over the low one is `librating_both`.
 
 **Year-end counts.** Each object is counted in the mode of its segment that holds 31 December
 12:00 UTC. `no_data` is an object whose history does not reach that instant, mostly later
@@ -461,31 +477,36 @@ launches.
 
 | mode | 2021 | 2022 | 2023 | 2024 | 2025 |
 |---|---|---|---|---|---|
-| controlled_lon_inc | 347 | 357 | 367 | 364 | 351 |
-| controlled_lon | 158 | 155 | 157 | 163 | 171 |
-| drifting | 876 | 889 | 922 | 963 | 1,011 |
-| librating_75E | 116 | 113 | 117 | 120 | 123 |
-| librating_105W | 36 | 41 | 36 | 35 | 35 |
-| librating_both | 13 | 20 | 20 | 20 | 21 |
+| controlled_lon_inc | 362 | 367 | 387 | 382 | 372 |
+| controlled_lon | 137 | 142 | 136 | 139 | 142 |
+| drifting | 876 | 891 | 924 | 965 | 1,013 |
+| librating_75E | 112 | 113 | 114 | 118 | 122 |
+| librating_105W | 35 | 41 | 36 | 35 | 35 |
+| librating_both | 18 | 18 | 21 | 20 | 20 |
 | inclined | 21 | 21 | 21 | 21 | 20 |
-| undetermined | 30 | 33 | 31 | 39 | 23 |
+| undetermined | 36 | 36 | 32 | 45 | 31 |
 | out_of_region | 12 | 10 | 4 | 4 | 2 |
 | no_data | 190 | 160 | 124 | 70 | 42 |
 
-**Transitions.** With undetermined segments ignored (their neighbours then merge), 1,436 of the
-1,799 objects keep one mode for the whole period, 126 change once, 102 change twice and 135 change
+**Transitions.** With undetermined segments ignored (their neighbours then merge), 1,483 of the
+1,799 objects keep one mode for the whole period, 128 change once, 96 change twice and 92 change
 three times or more. The most common changes:
 
-- `controlled_lon` to `drifting`: 174.
-- `drifting` to `controlled_lon_inc`: 160, mostly arrivals.
-- `drifting` to `controlled_lon`: 122.
-- `controlled_lon_inc` to `controlled_lon`: 111, where north-south keeping stops or the
-  inclination wanders across 0.3 deg.
-- `controlled_lon_inc` to `drifting`: 101.
+- `drifting` to `controlled_lon_inc`: 177, mostly arrivals.
+- `controlled_lon` to `drifting`: 154.
+- `controlled_lon_inc` to `drifting`: 120.
+- `drifting` to `controlled_lon`: 101.
+- `controlled_lon_inc` to `controlled_lon`: 50, where north-south keeping stops and the
+  inclination stays above 0.3 deg for more than a year. Eight go the other way.
 
-About 30 objects each way move between `librating_both` and `librating_75E`. They sit near the
-lower barrier, where TLE noise in the drift rate decides the side. Counted over all segments, most
-changes go into or out of `undetermined` (`findings/geo_modes/transition_types.csv`).
+No object moves between two libration classes. When each window took its own energy, 81 changes
+went between `librating_both` and `librating_75E` or `librating_105W`, about 30 each way for the
+eastern well. The cause was not noise in the element sets but the energy estimate itself: from
+the equatorial potential it swung with the phase of the libration, for Intelsat 804 (25110) from
+0.909 to 1.004 of the high barrier's energy, more than these objects' margin to a barrier. Kaula's
+inclination factors narrow that swing (0.952 to 1.005 for Intelsat 804), and one energy per run
+with the barrier-crossing check removes the flips. Counted over all segments, most changes go
+into or out of `undetermined` (`findings/geo_modes/transition_types.csv`).
 
 **Against ESA.** No ESA issue for 2021-2025 could be reached, so there is no same-date
 validation. The table puts ESA's counts for 1 January 2019 beside ours at the end of 2021, three
@@ -496,15 +517,15 @@ to it.
 
 | class | ESA, 1 Jan 2019 | source | ours, 31 Dec 2021 |
 |---|---|---|---|
-| C1 | 372 | 4.1, p. 51 | 347 |
-| C2 | 150 | 4.2, p. 83 | 158 |
+| C1 | 372 | 4.1, p. 51 | 362 |
+| C2 | 150 | 4.2, p. 83 | 137 |
 | C4 | 7 | 4.3, p. 96 | (in drifting or librating) |
 | D | 831 | 4.4, p. 97 | 876 |
-| L1 | 127 | 4.5, p. 167 | 116 |
-| L2 | 46 | 4.6, p. 178 | 36 |
-| L3 | 22 | 4.7, p. 182 | 13 |
+| L1 | 127 | 4.5, p. 167 | 112 |
+| L2 | 46 | 4.6, p. 178 | 35 |
+| L3 | 22 | 4.7, p. 182 | 18 |
 | I | 21 | 4.8, p. 191 | 21 |
-| Ind | 2 | 4.9, p. 193 | 30 |
+| Ind | 2 | 4.9, p. 193 | 36 |
 | total | 1,578 | p. 3, p. 216 | 1,597 (1,799 less 190 with no data and 12 out of region) |
 
 Why the populations differ:
@@ -514,39 +535,55 @@ Why the populations differ:
   catalogue only, so old librators known only to Vimpel or KIAM are missing.
 - Three years of launches, end-of-life manoeuvres and re-orbits separate the two dates.
 - ESA classifies each object from its history of orbital data and corrects some by hand, mainly
-  small librators that its routine called controlled (section 4, p. 50). We classify each 30-day
-  window on its own, so at a given instant a satellite between keeping cycles, or a librator at a
-  turning point, can be undetermined.
+  small librators that its routine called controlled (section 4, p. 50). We classify 30-day
+  windows, with only a free run's energy shared between them, so at a given instant a satellite
+  between keeping cycles, or a librator at a turning point, can be undetermined.
 - Ours counts every object that was in the region at any time in 2021-2025, less the 5 holdout
   objects. ESA's C4 objects land in our drifting or librating classes.
 
 **Per-object check.** Section 3 of the same report (pp. 10-49) lists each object's class by COSPAR
-id, and 1,462 of its rows parsed cleanly from the PDF text. Matching them to our first determined
-mode before 1 July 2021 gave 1,394 objects with a mode:
+id. `tools/esa_classification.py` reads it from the PDF's text and prints the table below; its
+docstring gives the two commands. A row counts only when it sits on one line and its page
+reference falls inside the section 4 chapter of its class, because in places the PDF text shifts
+the right-hand columns by a line. That keeps 1,342 rows. Matching them by COSPAR id to our first
+determined mode before 1 July 2021 gives 1,272 objects with a mode:
 
 | ESA 2019 | objects | same mode in early 2021 | main other modes |
 |---|---|---|---|
-| C1 | 346 | 282 (82%) | drifting 31, controlled_lon 28 |
-| C2 | 126 | 91 (72%) | drifting 26, controlled_lon_inc 6 |
-| D | 737 | 714 (97%) | librating_75E 9, controlled 8 |
-| L1 | 109 | 96 (88%) | drifting 7, controlled 4 |
-| L2 | 39 | 26 (67%) | controlled_lon 7, drifting 5 |
-| L3 | 19 | 14 (74%) | librating_75E 3, drifting 2 |
-| I | 15 | 14 (93%) | drifting 1 |
+| C1 | 332 | 280 (84%) | drifting 25, controlled_lon 23 |
+| C2 | 117 | 88 (75%) | drifting 22, controlled_lon_inc 4 |
+| C4 | 1 | 0 (0%) | controlled_lon_inc 1 |
+| D | 675 | 663 (98%) | librating_75E 5, librating_both 2 |
+| L1 | 88 | 82 (93%) | drifting 2, controlled_lon_inc 2 |
+| L2 | 29 | 24 (83%) | controlled_lon 4, drifting 1 |
+| L3 | 14 | 10 (71%) | librating_75E 2, drifting 2 |
+| I | 14 | 14 (100%) | |
+| Ind | 2 | 0 (0%) | librating_105W 1, drifting 1 |
 
 Controlled satellites that now read as drifting were not checked one by one; retirements and
-relocations in the two years between the dates would explain them. The L2 objects we call
-controlled are small western librators (see the limits below).
+relocations in the two years between the dates would explain them. The four L2 objects we call
+controlled sit within about 1.5 deg of 105 deg W, where a free path bends so little that a held
+run is weak evidence (see the limits below); they were not examined one by one. The two L3
+objects we call drifting, Intelsat 804 (25110) and Cosmos 2479 (38101), pass over the high barrier in
+2021-2025.
 
 **Known limits.** Each is a `shortcut:` comment in `orbit_watch/modes.py`.
 
-- A mode change is dated to the 30-day window that holds it, not to the day.
-- The tesseral potential is evaluated on the equator. That holds below 25 deg inclination, the only
-  range where it is used.
+- A mode change is dated to the 30-day window that holds it, not to the day. A change between C1
+  and C2 is dated up to a year off, by ESA's one-year rule.
+- The potential keeps only the resonant terms of degree 2 and 3, so an energy within about 2 % of
+  a barrier can fall on the wrong side when the run's path does not cross it. Syncom 3 (858),
+  D for ESA, turns back 3 deg east of the high barrier in early 2023 and reads `librating_both`, but
+  its last run, after a gap in its element sets in 2025, reads `drifting`.
 - A relocation slower than about 0.45 deg/day with no burn inside a window reads as librating,
   because C4 is not separated.
-- Librators that swing less than about 6 deg from a stable point read as controlled at their
-  turning points.
+- Within about 6 deg of a stable point or 2 deg of a barrier, a keeper with no burn big enough to
+  see reads undetermined until its hold outlasts a free object's. North-south keeping (an
+  inclination held near 0) would prove control sooner but is not used. A librator there whose
+  element sets scatter enough to pass the burn test still reads controlled at its turning points.
+- One wild element set in a sparse window can break the held test and the window's own fit:
+  Star One D2 (49055) has one on 2022-06-11 (semi-major axis 43,606 km, longitude about 17 deg off), and that
+  window reads `drifting` between two controlled segments at the same slot.
 - A wide-box keeper that goes a whole 90-day run without a burn reads as librating or undetermined
   for those windows.
 - The EGM96 coefficients in the code are quoted from Lemoine et al., NASA/TP-1998-206861. They were

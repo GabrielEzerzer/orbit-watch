@@ -128,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     with open(sd / "transition_types.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["from", "to", "count_all_segments", "count_ignoring_undetermined"])
-        for a, b in sorted(set(types_all) | set(types_det), key=lambda k: -types_all[k]):
+        for a, b in sorted(set(types_all) | set(types_det), key=lambda k: (-types_all[k], k)):
             w.writerow([a, b, types_all[a, b], types_det[a, b]])
     summary = {
         "geo_dir_object_count": manifest["object_count"],

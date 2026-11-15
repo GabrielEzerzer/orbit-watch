@@ -32,16 +32,30 @@ def kept(days, lon0, seed=0, box=0.04):
     return lon0 + box * np.sin(2 * np.pi * days / 14.0) + rng.normal(0, 0.003, len(days))
 
 
-def free_motion(lon0, days, dt=0.05):
-    """A free object released at rest at ``lon0``, integrated with the natural acceleration."""
+def free_motion(lon0, days, dt=0.05, inc=0.0, kicks=()):
+    """A free object released at rest at ``lon0``, integrated with the natural acceleration at
+    inclination ``inc``. ``kicks`` are (day, change of drift in deg/day) pairs: manoeuvres."""
     t = np.arange(0.0, days[-1] + dt, dt)
     lon, v = np.empty_like(t), 0.0
     lon[0] = lon0
+    kicks = sorted(kicks)
     for k in range(1, len(t)):  # velocity Verlet
-        a = M.longitude_acceleration(lon[k - 1])
+        a = M.longitude_acceleration(lon[k - 1], inc)
         lon[k] = lon[k - 1] + v * dt + 0.5 * a * dt**2
-        v += 0.5 * (a + M.longitude_acceleration(lon[k])) * dt
+        v += 0.5 * (a + M.longitude_acceleration(lon[k], inc)) * dt
+        while kicks and kicks[0][0] <= t[k]:
+            v += kicks.pop(0)[1]
     return np.interp(days, t, lon)
+
+
+def at_rest_with_energy(e, inc, west, east):
+    """The longitude between ``west`` and ``east`` where a free object at rest has energy ``e``."""
+    grid = np.linspace(west, east, 20001)
+    return float(grid[np.argmin([abs(M.tesseral_potential(x, inc) - e) for x in grid])])
+
+
+def window_of(day):
+    return int(np.searchsorted(EDGES, day, side="right")) - 1
 
 
 def modes_of(records):
@@ -72,14 +86,148 @@ def test_drifter_is_drifting():
 @pytest.mark.parametrize("lon0, expected", [(90.0, "librating_75E"), (240.0, "librating_105W"),
                                             (150.0, "librating_both")])
 def test_free_librator_is_librating_and_never_controlled(lon0, expected):
-    v = M.tesseral_potential(lon0)
+    v = M.tesseral_potential(lon0, 6.0)
     if expected == "librating_both":
-        assert M.tesseral_potential(M.BARRIER_LOW_DEG) < v < M.tesseral_potential(M.BARRIER_HIGH_DEG)
+        assert M.tesseral_potential(M.BARRIER_LOW_DEG, 6.0) < v < M.tesseral_potential(M.BARRIER_HIGH_DEG, 6.0)
     days = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 1.0)
-    lon = free_motion(lon0, days)  # released at the turning point of its swing
+    lon = free_motion(lon0, days, inc=6.0)  # released at the turning point of its swing
     found = modes_of(element_sets(days, (lon + 180.0) % 360.0 - 180.0, inc=6.0))
     assert set(found) <= {expected, "undetermined"}
     assert found.count(expected) >= 0.85 * len(found)
+
+
+def test_inclined_potential_uses_kaulas_inclination_functions():
+    # Kaula, Theory of Satellite Geodesy (1966), table 1: at i = 0 the GEO-resonant terms are the
+    # unnormalised P_nm(0), 3, -1.5 and 15; (2,2) scales by ((1 + cos i) / 2)^2, (3,3) by its cube.
+    assert [M._inclination_function(n, m, 0.0) for n, m in [(2, 2), (3, 1), (3, 3)]] == pytest.approx([3, -1.5, 15])
+    half = (1 + np.cos(np.radians(12.0))) / 2
+    assert M._inclination_function(2, 2, 12.0) == pytest.approx(3 * half**2)
+    assert M._inclination_function(3, 3, 12.0) == pytest.approx(15 * half**3)
+    assert M._inclination_function(3, 1, 90.0) == pytest.approx(15 / 16 - 0.75)
+
+
+def test_inclined_librator_near_the_low_barrier_keeps_one_mode():
+    # Released at rest 1 % below the low barrier's energy at 12 deg, just west of it: it librates
+    # about 105 W and never crosses. Cosmos 2291 (14 deg) read L3 and L2 by turns in this place.
+    inc, low = 12.0, M.BARRIER_LOW_DEG - 360.0
+    lon0 = at_rest_with_energy(0.99 * M.tesseral_potential(M.BARRIER_LOW_DEG, inc), inc, low - 30.0, low - 0.01)
+    days = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 1.0)
+    lon = free_motion(lon0, days, inc=inc)
+    assert lon.max() < low
+    found = modes_of(element_sets(days, (lon + 180.0) % 360.0 - 180.0, inc=inc))
+    assert set(found) <= {"librating_105W", "undetermined"}
+    assert found.count("librating_105W") >= 0.85 * len(found)
+    # The classifier's potential is never exact (luni-solar terms and degree 4 and up are left
+    # out). Element sets that claim 0.05 deg for the same path put its energy a few per cent off
+    # with the phase of the swing, as the equatorial potential did for Cosmos 2291: window by
+    # window it would cross the barrier for months. One energy for the run keeps one mode.
+    found = modes_of(element_sets(days, (lon + 180.0) % 360.0 - 180.0, inc=0.05))
+    assert set(found) <= {"librating_105W", "undetermined"}
+    assert found.count("librating_105W") >= 0.85 * len(found)
+
+
+@pytest.mark.parametrize("norad, expected, crosses", [(22269, "librating_both", "low"), (25110, "drifting", "high")])
+def test_a_path_over_a_barrier_is_not_trapped_behind_it(mock_dir, norad, expected, crosses):
+    # Real element sets, one every four days, 2021-2025 (mock/README.md). Both energies sit within
+    # about 2 % of a barrier, closer than the potential's error. Cosmos 2224 (22269) reads below
+    # the low barrier, but after turning at 144.6 E it goes on west past it to 16.9 W: librating
+    # over both stable points. The undetermined window at the turning point does not end its run,
+    # so the first 22 windows are librating_both too. Intelsat 804 (25110) reads below the high
+    # barrier, but passes over it at 0.02 deg/day and goes on round the belt: drifting.
+    tr = M.track(parse_tle((mock_dir / "geo" / f"{norad}_every_4_days.tle").read_text(encoding="utf-8")))
+    barrier = M.BARRIER_LOW_DEG if crosses == "low" else M.BARRIER_HIGH_DEG
+    assert tr.lon.min() < M.wrap180(barrier) < tr.lon.max()
+    found = [w.mode for w in M.classify(tr)]
+    assert set(found) <= {expected, "undetermined"} and found.count("undetermined") <= 1
+
+
+def test_manoeuvre_between_two_windows_ends_the_free_run():
+    # Librating about 75 E for six windows, then sent drifting west at 3 deg/day exactly at a window
+    # edge: neither window holds the burn, but the two do not lie on one free path, so the
+    # librating windows keep their own energy instead of the drifter's.
+    days = np.arange(EDGES[0], EDGES[14], 0.5)
+    lon = free_motion(90.0, days, inc=6.0)
+    at = days >= EDGES[6]
+    lon[at] = lon[np.argmax(at) - 1] - 3.0 * (days[at] - EDGES[6])
+    found = modes_of(element_sets(days, (lon + 180.0) % 360.0 - 180.0, inc=6.0))
+    assert set(found[:6]) <= {"librating_75E", "undetermined"} and "librating_75E" in found[:6]
+    assert set(found[6:]) == {"drifting"}
+
+
+def test_librator_with_outlier_element_sets_stays_one_mode():
+    # Two months of poor tracking, like 39688 in 2024: every element set in windows 15 and 40 is
+    # off by 0.03 deg (1 sigma), so each window leaves a free path. Its neighbours lie on one free
+    # path, so it holds no manoeuvre.
+    days = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 0.5)
+    lon = free_motion(90.0, days, inc=6.0)
+    rng = np.random.default_rng(3)
+    for k in (15, 40):
+        bad = (days >= EDGES[k]) & (days < EDGES[k + 1])
+        lon[bad] += rng.normal(0.0, 0.03, bad.sum())
+    found = modes_of(element_sets(days, lon, inc=6.0, drift=0.0))
+    assert set(found) <= {"librating_75E", "undetermined"}
+    assert found.count("librating_75E") >= 0.85 * len(found)
+
+
+def test_manoeuvre_of_a_librator_is_still_drifting():
+    # The same librator burns 0.1 deg/day east halfway through window 25.
+    days = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 0.5)
+    burn_day = (EDGES[25] + EDGES[26]) / 2
+    lon = free_motion(90.0, days, inc=6.0, kicks=[(burn_day, 0.1)])
+    found = modes_of(element_sets(days, lon, inc=6.0, drift=0.0))
+    assert found[window_of(burn_day)] == "drifting"
+    assert found.count("drifting") <= 2
+
+
+def test_small_libration_about_a_stable_point_is_not_control():
+    # Released at rest 2 deg east of 75 E: a 90-day stretch near each turning point sags less than
+    # 0.3 deg, so a held run is no proof of control there without a burn in it.
+    days = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 1.0)
+    lon = free_motion(M.STABLE_EAST_DEG + 2.0, days, inc=6.0)
+    found = modes_of(element_sets(days, lon, inc=6.0))
+    assert not {"controlled_lon", "controlled_lon_inc"} & set(found)
+    assert found.count("librating_75E") >= 0.5 * len(found)
+
+
+def test_tight_keeper_near_a_stable_point_is_control():
+    # Kept within 0.01 deg at 1 deg from 75 E for eight windows, with no burn big enough to see:
+    # a free object there could sit as still for 90 days, but not for 240.
+    days = np.arange(0.0, EDGES[8], 0.5)
+    found = modes_of(element_sets(days, kept(days, M.STABLE_EAST_DEG + 1.0, box=0.01)))
+    assert found == ["controlled_lon_inc"] * 8
+
+
+def test_inclination_sawtooth_under_control_stays_c1():
+    # North-south keeping that lets the inclination reach 0.45 deg before each burn back to 0:
+    # ESA counts control at larger angles within one year as C1 (issue 21, section 2).
+    days = np.arange(0.0, EDGES[20], 0.5)
+    inc = 0.45 * (days % 200.0) / 200.0
+    assert set(modes_of(element_sets(days, kept(days, 10.0), inc=inc))) == {"controlled_lon_inc"}
+
+
+def test_inclination_growing_past_the_c1_limit_changes_mode_once():
+    # North-south keeping stops on day 0: the inclination grows 0.8 deg a year and never returns.
+    days = np.arange(0.0, EDGES[40], 0.5)
+    found = modes_of(element_sets(days, kept(days, 10.0), inc=0.02 + 0.8 * days / 365.25))
+    changes = sum(a != b for a, b in zip(found, found[1:]))
+    assert found[0] == "controlled_lon_inc" and found[-1] == "controlled_lon" and changes == 1
+
+
+@pytest.mark.parametrize("drift, every", [(2.0, 3.5), (60.0, 6.0)])
+def test_fast_drifter_sampled_sparsely_is_drifting(drift, every):
+    # 2 deg/day every 3.5 days moves 7 deg between element sets, which plain unwrapping follows.
+    # 60 deg/day (a = 38,050 km, inside ESA's region) every 6 days moves 360 deg between them:
+    # without the mean-motion guide in _unwrapped every set lands on the same longitude and the
+    # object reads held.
+    days = np.arange(0.0, EDGES[6], every)
+    lon = (drift * days + 180.0) % 360.0 - 180.0
+    assert set(modes_of(element_sets(days, lon, drift=drift, inc=3.0))) == {"drifting"}
+
+
+def test_eccentricity_alone_puts_an_orbit_out_of_region():
+    # A 24-hour orbit (semi-major axis in range) with eccentricity 0.3, above ESA's 0.25.
+    days = np.arange(0.0, EDGES[3], 0.5)
+    assert set(modes_of(element_sets(days, kept(days, 10.0), ecc=0.3))) == {"out_of_region"}
 
 
 def test_relocation_gives_three_segments_on_the_window_grid():
@@ -182,6 +330,20 @@ def test_year_end_counts_and_transitions():
     assert per_all == {2: 1, 0: 1} and per_det == {0: 2}
     assert types_all == {("controlled_lon_inc", "undetermined"): 1, ("undetermined", "controlled_lon_inc"): 1}
     assert types_det == {}
+
+
+def test_transition_types_with_equal_counts_sort_by_name(tmp_path, mock_dir):
+    # Cosmos 2224 goes librating_both -> undetermined -> librating_both: two types, once each.
+    # Ties sort by name, so the file comes out the same on every run.
+    geo = tmp_path / "geo"
+    geo.mkdir()
+    (geo / "22269.tle").write_text((mock_dir / "geo" / "22269_every_4_days.tle").read_text(), encoding="utf-8")
+    manifest = {"object_count": 1, "objects": {"22269": {"by_rule": True}}}
+    (geo / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert geo_modes.main(["--geo-dir", str(geo), "--out", str(tmp_path / "out"),
+                           "--summary-dir", str(tmp_path / "summary")]) == 0
+    rows = (tmp_path / "summary" / "transition_types.csv").read_text().splitlines()
+    assert rows[1:] == ["librating_both,undetermined,1,0", "undetermined,librating_both,1,0"]
 
 
 def test_job_skips_holdout_and_non_region_objects_before_opening_them(tmp_path, mock_dir):
