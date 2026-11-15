@@ -293,3 +293,31 @@ Train grid (GEO; every setting gives train NS 9/17, EW 36/39, EW+NS 6/6):
 
 Chosen: z 12 (the a channel's own floor, so one new parameter) and the smallest step floor with no
 train FA rise, 0.011 deg (`settings/inc-channel.json`).
+
+**Result at bc4f8bb (`settings/inc-channel.json` against FROZEN).** KEPT.
+
+| Split | Group | Subset | FROZEN hit/cov (hit/ev) | Round 2 hit/cov (hit/ev) |
+|---|---|---|---|---|
+| dev | GEO | NS | 5/14 (5/16) | **6/14 (6/16)**, 0.43 [0.21, 0.67] |
+| dev | GEO | EW | 33/34 (33/37) | 33/34 (33/37) |
+| dev | GEO | EW+NS | 3/3 (3/4) | 3/3 (3/4) |
+| dev | GEO | all | 41/51 (41/57) | 42/51 (42/57) |
+| dev | GEO | FA/obj-yr | 7 / 1.96 = 3.58 | 7 / 1.96 = 3.58 |
+| dev | LEO | >=50 m; FA/yr | 11/40 (11/47); 0.00 | unchanged |
+| dev | ISS | all; FA | 35/35; 4 | unchanged |
+| train | GEO | NS | 6/17 (6/18) | **9/17 (9/18)**, 0.53 [0.31, 0.74] |
+| train | GEO | EW | 36/39 (36/43) | 36/39 (36/43) |
+| train | GEO | EW+NS | 6/6 (6/7) | 6/6 (6/7) |
+| train | GEO | all | 48/62 (48/68) | 51/62 (51/68) |
+| train | GEO | FA/obj-yr | 4 / 2.39 = 1.67 | 4 / 2.39 = 1.67 |
+| train | LEO | >=50 m; FA/yr | 4/18 (4/26); 0.15 | unchanged |
+| train | ISS | all; FA | 45/48; 3 | unchanged |
+| train | Fengyun | all; FA | 3/3; 0 | unchanged |
+
+Covered counts are unchanged in every regime. The gain rests on few events: three on train
+(QZS-3-103, 159, 162+163) and one on dev (QZS-3-235+236); the dev interval still spans 0.21-0.67.
+The inclination channel added four QZS-3 detections in 2021-2025 that match nothing and are not
+false alarms (they sit in a burn's exclusion zone or outside a scored stretch), and one QZS-6
+detection on 2025-03-17 (+0.034 deg), before QZS-6's log coverage starts on 2025-08-02. The NS
+burns less than a day before an EW burn are still found only through duplicate a detections
+(round 1), as the hypothesis expected.
