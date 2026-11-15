@@ -30,6 +30,8 @@ each other, and dead objects that move. Built out of interest.
 - `orbit_watch.spacetrack`: `SpaceTrackSource`, an `ElementSource` for Space-Track's `gp_history`
   class between two dates. It is written from Space-Track's public documentation and has never
   been run against the live API.
+- `orbit_watch.modes` and `orbit_watch.jobs.geo_modes`: ESA operating modes (controlled,
+  drifting, librating and the rest) of every GEO-region object in 30-day windows, 2021-2025 (below).
 - `orbit_watch.jobs.extract_tle_archive`: pulls per-object TLE history out of the
   [OndroNR/tle-archive](https://github.com/OndroNR/tle-archive) git history (below).
 
@@ -379,6 +381,176 @@ Space-Track's latest issue. The mirror lacks 2 of 43491's 4,222 epochs.
 `LAUNCH`, `DECAY`) to `data/geo/manifest.json`, or `null` for an object the catalogue lacks. It is
 one Space-Track query for the whole catalogue (Space-Track allows SATCAT once a day and asks for
 combined queries), kept for good under `data/spacetrack/` beside the output folder.
+
+## Operating modes of GEO-region objects
+
+`orbit_watch.modes` labels each GEO-region object's operating mode through time from its mean
+longitude, drift rate and inclination. It is layer 1 of a routine model for the belt: the mode
+changes and their dates matter as much as the labels. `orbit_watch.jobs.geo_modes` runs it over
+every object of `data/geo`:
+
+```
+python -m orbit_watch.jobs.geo_modes --geo-dir data/geo --out data/geo_modes
+```
+
+The job skips the four LEO objects that the manifest marks `by_rule: false`. It also skips the
+holdout objects of `groundtruth/splits.json`, taken from `truth.load_splits` before any file is
+opened; there are 5 in this data. It writes one row per segment (start, end, mode, windows,
+element sets, longitude arc, mean drift, inclination range) to `data/geo_modes/segments.csv`,
+which is git-ignored. The summary goes to `findings/geo_modes/`: `year_end_counts.csv`,
+`transitions_per_object.csv`, `transition_types.csv` and `summary.json`. The full run over 1,799
+objects took 134 s on this laptop. Earlier runs, with the files not yet in the disk cache, took
+5 to 12 minutes.
+
+**Modes.** The classes are ESA's, from ESA Space Debris Office, *Classification of
+Geosynchronous Objects*, Issue 21.0, 19 July 2019, GEN-DB-LOG-00270-OPS-SD, status at
+1 January 2019. Section 2 defines the classes and table 1 (p. 6) the region. ESA does not host the
+report publicly; the copy read is at
+<https://astronomer.ru/data/0128/Classification_of_Geosynchronous_Objects_I21R0.pdf>. Issue 21
+is the newest issue that could be found. Later issues exist (a conference paper cites Issue 23,
+GEN-DB-LOG-00290-OPS-SD), but no copy was reachable.
+
+| mode | ESA | meaning and rule |
+|---|---|---|
+| `controlled_lon_inc` | C1 | longitude held, median inclination at most 0.3 deg (ESA's bound) |
+| `controlled_lon` | C2 | longitude held, inclination above 0.3 deg |
+| `drifting` | D | not held, and either circulating past both potential maxima or manoeuvring inside the window |
+| `librating_75E` | L1 | free and trapped in the well of the stable point at 75 deg E |
+| `librating_105W` | L2 | free and trapped in the well of the stable point at 105 deg W |
+| `librating_both` | L3 | free, above the lower barrier but below the higher one, so it swings over both wells |
+| `inclined` | I | median inclination above 25 deg (ESA's bound) |
+| `undetermined` | Ind | too few element sets, or held still with no way to tell control from a librator's turning point |
+| `out_of_region` | – | median semi-major axis outside 37,948-46,380 km or eccentricity above 0.25 (ESA table 1: the GEO, IGO and EGO classes together) |
+
+Graveyard objects above GEO still read as `drifting`, as they do in ESA's list. ESA's C4
+(controlled drift) is not separated, because telling it from D needs manoeuvre detection, the next
+layer.
+
+**How a window is classified.** The period from 2021-01-01 to 2026-01-01 is cut into 30-day
+windows, laid backwards from 2026-01-01 so that every object shares the grid (the first window is
+26 days). Each window is classified from its own element sets, and adjacent windows with the same
+mode are merged into segments. Thirty days holds a full east-west keeping cycle (about two weeks
+for most operators) and dates a relocation to within a month. The thresholds and their sources:
+
+- A window needs at least 5 element sets spanning 10 days; otherwise it is `undetermined`, because
+  fewer sets cannot give a drift rate.
+- Longitude is the mean longitude (node + argument of perigee + mean anomaly - GMST), the quantity
+  ESA tabulates. The sub-satellite longitude would add an inclined orbit's daily figure-eight.
+- A window is held when the 5th-95th percentile spread of its longitude is at most 0.3 deg. ITU
+  Radio Regulations No. 22.6 sets +-0.1 deg east-west for geostationary stations. 0.3 leaves room
+  for TLE noise and sits in the gap of the spread histogram: in 150 sampled objects, 2,627
+  windows spread below 0.15 deg and 147 between 0.15 and 0.5 deg.
+- A held window counts as control only if a 90-day run of three windows that includes it is also
+  held, or if it is stiller than the natural acceleration lets a free object be. A librator at its
+  turning point also sits still for weeks.
+- Wide-box keepers (Meteosat at 0 deg E uses a box about 1.3 deg wide) cross their box under the
+  natural acceleration and burn at the edge. A window counts as control if it and some 90-day run
+  that includes it stay within 1.5 deg, and the run holds a burn. Among 90-day runs with a burn in
+  250 sampled objects, 933 spread under 1 deg, 10 spread 1-3 deg and the rest 3 deg or more.
+- A burn is a window whose longitude leaves a free path: the robust scatter about a quadratic in
+  time is above 0.02 deg. Free librators sit near 0.001 deg (95th percentile 0.007 deg).
+- Energy decides between trapped and drifting. With the tesseral potential of the EGM96 (2,2),
+  (3,1) and (3,3) terms, `drift**2 / 2 + potential(longitude)` is conserved for a free object, so
+  one window tells whether the object is trapped in a well, above the lower barrier, or
+  circulating. The derived stable points are 75.1 deg E and 104.9 deg W (ESA section 2 gives
+  75 E and 105 W).
+
+**Year-end counts.** Each object is counted in the mode of its segment that holds 31 December
+12:00 UTC. `no_data` is an object whose history does not reach that instant, mostly later
+launches.
+
+| mode | 2021 | 2022 | 2023 | 2024 | 2025 |
+|---|---|---|---|---|---|
+| controlled_lon_inc | 347 | 357 | 367 | 364 | 351 |
+| controlled_lon | 158 | 155 | 157 | 163 | 171 |
+| drifting | 876 | 889 | 922 | 963 | 1,011 |
+| librating_75E | 116 | 113 | 117 | 120 | 123 |
+| librating_105W | 36 | 41 | 36 | 35 | 35 |
+| librating_both | 13 | 20 | 20 | 20 | 21 |
+| inclined | 21 | 21 | 21 | 21 | 20 |
+| undetermined | 30 | 33 | 31 | 39 | 23 |
+| out_of_region | 12 | 10 | 4 | 4 | 2 |
+| no_data | 190 | 160 | 124 | 70 | 42 |
+
+**Transitions.** With undetermined segments ignored (their neighbours then merge), 1,436 of the
+1,799 objects keep one mode for the whole period, 126 change once, 102 change twice and 135 change
+three times or more. The most common changes:
+
+- `controlled_lon` to `drifting`: 174.
+- `drifting` to `controlled_lon_inc`: 160, mostly arrivals.
+- `drifting` to `controlled_lon`: 122.
+- `controlled_lon_inc` to `controlled_lon`: 111, where north-south keeping stops or the
+  inclination wanders across 0.3 deg.
+- `controlled_lon_inc` to `drifting`: 101.
+
+About 30 objects each way move between `librating_both` and `librating_75E`. They sit near the
+lower barrier, where TLE noise in the drift rate decides the side. Counted over all segments, most
+changes go into or out of `undetermined` (`findings/geo_modes/transition_types.csv`).
+
+**Against ESA.** No ESA issue for 2021-2025 could be reached, so there is no same-date
+validation. The table puts ESA's counts for 1 January 2019 beside ours at the end of 2021, three
+years later. ESA's counts are for the 1,578 objects with orbital data in Issue 21: each class's
+count is the opening sentence of its list in section 4 (page given), and the totals match the
+abstract (p. 3) and section 7 (p. 216). The table is context, not a check, and nothing was tuned
+to it.
+
+| class | ESA, 1 Jan 2019 | source | ours, 31 Dec 2021 |
+|---|---|---|---|
+| C1 | 372 | 4.1, p. 51 | 347 |
+| C2 | 150 | 4.2, p. 83 | 158 |
+| C4 | 7 | 4.3, p. 96 | (in drifting or librating) |
+| D | 831 | 4.4, p. 97 | 876 |
+| L1 | 127 | 4.5, p. 167 | 116 |
+| L2 | 46 | 4.6, p. 178 | 36 |
+| L3 | 22 | 4.7, p. 182 | 13 |
+| I | 21 | 4.8, p. 191 | 21 |
+| Ind | 2 | 4.9, p. 193 | 30 |
+| total | 1,578 | p. 3, p. 216 | 1,597 (1,799 less 190 with no data and 12 out of region) |
+
+Why the populations differ:
+
+- ESA classifies everything in its DISCOS database. That includes 206 objects classified from JSC
+  Vimpel data and 9 from KIAM (p. 216), many of which have no public TLEs. Ours covers the public
+  catalogue only, so old librators known only to Vimpel or KIAM are missing.
+- Three years of launches, end-of-life manoeuvres and re-orbits separate the two dates.
+- ESA classifies each object from its history of orbital data and corrects some by hand, mainly
+  small librators that its routine called controlled (section 4, p. 50). We classify each 30-day
+  window on its own, so at a given instant a satellite between keeping cycles, or a librator at a
+  turning point, can be undetermined.
+- Ours counts every object that was in the region at any time in 2021-2025, less the 5 holdout
+  objects. ESA's C4 objects land in our drifting or librating classes.
+
+**Per-object check.** Section 3 of the same report (pp. 10-49) lists each object's class by COSPAR
+id, and 1,462 of its rows parsed cleanly from the PDF text. Matching them to our first determined
+mode before 1 July 2021 gave 1,394 objects with a mode:
+
+| ESA 2019 | objects | same mode in early 2021 | main other modes |
+|---|---|---|---|
+| C1 | 346 | 282 (82%) | drifting 31, controlled_lon 28 |
+| C2 | 126 | 91 (72%) | drifting 26, controlled_lon_inc 6 |
+| D | 737 | 714 (97%) | librating_75E 9, controlled 8 |
+| L1 | 109 | 96 (88%) | drifting 7, controlled 4 |
+| L2 | 39 | 26 (67%) | controlled_lon 7, drifting 5 |
+| L3 | 19 | 14 (74%) | librating_75E 3, drifting 2 |
+| I | 15 | 14 (93%) | drifting 1 |
+
+Controlled satellites that now read as drifting were not checked one by one; retirements and
+relocations in the two years between the dates would explain them. The L2 objects we call
+controlled are small western librators (see the limits below).
+
+**Known limits.** Each is a `shortcut:` comment in `orbit_watch/modes.py`.
+
+- A mode change is dated to the 30-day window that holds it, not to the day.
+- The tesseral potential is evaluated on the equator. That holds below 25 deg inclination, the only
+  range where it is used.
+- A relocation slower than about 0.45 deg/day with no burn inside a window reads as librating,
+  because C4 is not separated.
+- Librators that swing less than about 6 deg from a stable point read as controlled at their
+  turning points.
+- A wide-box keeper that goes a whole 90-day run without a burn reads as librating or undetermined
+  for those windows.
+- The EGM96 coefficients in the code are quoted from Lemoine et al., NASA/TP-1998-206861. They were
+  checked only through the stable points and barriers they give.
 
 ## Running the tests
 
