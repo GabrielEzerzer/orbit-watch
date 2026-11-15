@@ -13,6 +13,11 @@ rule:
           - regex: '^(?:allow|expect)\s*\('
           - regex: '^rustfmt\s*::\s*skip\b'
           - regex: '(?s)^cfg_attr\s*\(.*(?:\b(?:allow|expect)\s*\(|\brustfmt\s*::\s*skip\b)'
+    - kind: token_tree
+      regex: '(?s)^\[\s*(?:(?:allow|expect)\s*\(|rustfmt\s*::\s*skip\b|cfg_attr\s*\(.*(?:\b(?:allow|expect)\s*\(|\brustfmt\s*::\s*skip\b))'
+      any:
+        - follows: { regex: '^#$' }
+        - follows: { regex: '^!$', follows: { regex: '^#$' } }
     - all:
         - any:
             - kind: line_comment

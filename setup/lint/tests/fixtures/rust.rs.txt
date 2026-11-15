@@ -35,3 +35,11 @@ fn tail() {
     let x = 1; /* inline block fails */
     // line fails
 }
+
+macro_rules! suppressed {
+    () => {
+        #[allow(dead_code)]
+        #[derive(Debug)]
+        struct Inside;
+    };
+}

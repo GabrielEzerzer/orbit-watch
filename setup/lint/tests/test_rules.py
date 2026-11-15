@@ -1,7 +1,9 @@
 # Tests for the comment-ban ast-grep rules: fixtures per language, header limits, justification words and suppressions.
 import json
+import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +15,13 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 NC = "no-comments"
 SUP = "no-inline-suppressions"
 JUST = "no-justification-header"
+AST_GREP_MISSING = ("ast-grep is not on PATH. Install it with `uv tool install ast-grep-cli==0.51.1` "
+                    "or `pip install ast-grep-cli==0.51.1`, then rerun the tests.")
+
+
+def setUpModule():
+    if shutil.which("ast-grep") is None:
+        raise RuntimeError(AST_GREP_MISSING)
 
 
 def scan_matches(files):
@@ -52,7 +61,7 @@ class Fixtures(unittest.TestCase):
 
     def test_rust(self):
         self.check("rust.rs.txt", "sample.rs", {
-            5: [NC], 7: [NC], 10: [NC], 21: [SUP], 24: [SUP], 28: [SUP], 35: [NC], 36: [NC],
+            5: [NC], 7: [NC], 10: [NC], 21: [SUP], 24: [SUP], 28: [SUP], 35: [NC], 36: [NC], 41: [SUP],
         })
 
     def test_python(self):
@@ -328,6 +337,19 @@ class Suppressions(unittest.TestCase):
             with self.subTest(attribute):
                 self.assertEqual(scan({"a.rs": f"{attribute}\nfn f() {{}}\n"}), {("a.rs", 1, SUP)})
 
+    def test_rust_attributes_in_macro_token_trees_fail(self):
+        for attribute in ["#[allow(dead_code)]", "#[expect(unused)]", "#![allow(clippy::all)]", "# [ allow ( x ) ]",
+                          "#[cfg_attr(test, allow(x))]", "#[rustfmt::skip]"]:
+            for text in [f"macro_rules! m {{\n    () => {{\n        {attribute}\n        fn f() {{}}\n    }};\n}}\n",
+                         f"fn g() {{}}\nm! {{\n    {attribute}\n    fn f() {{}}\n}}\n"]:
+                with self.subTest(attribute=attribute, text=text):
+                    self.assertEqual(scan({"a.rs": text}), {("a.rs", 3, SUP)})
+
+    def test_rust_macro_token_trees_without_suppressions_pass(self):
+        text = ("macro_rules! m {\n    () => {\n        #[derive(Debug)]\n        #[cfg(test)]\n        struct S;\n"
+                "        let v = a[allow(1)];\n        n![allow(x)];\n        #[cfg_attr(test, derive(Clone))]\n        struct T;\n    };\n}\n")
+        self.assertEqual(scan({"a.rs": text}), set())
+
     def test_rust_other_attributes_pass(self):
         self.assertEqual(scan({"a.rs": "#[derive(Debug)]\n#[cfg(test)]\n#[cfg_attr(test, derive(Clone))]\nstruct S;\n"}), set())
 
@@ -337,6 +359,17 @@ class Suppressions(unittest.TestCase):
             "a.ts": 'export const x = "// eslint-disable-line @ts-ignore";\n',
         }
         self.assertEqual(scan(files), set())
+
+
+class MissingAstGrep(unittest.TestCase):
+    def test_suite_fails_once_with_the_install_command(self):
+        env = dict(os.environ, PATH=str(Path(shutil.which("git")).parent))
+        proc = subprocess.run([sys.executable, "-m", "unittest", "test_rules.Headers"], cwd=Path(__file__).parent,
+                              capture_output=True, text=True, encoding="utf-8", env=env)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn(AST_GREP_MISSING, proc.stderr)
+        self.assertNotIn("TypeError", proc.stderr)
+        self.assertEqual(proc.stderr.count("ERROR: "), 1, proc.stderr)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Lint ratchet: runs the comment-ban ast-grep rules on every file git lists in the current repo.
-# Fails when a file gains violations over .lint-baseline.json, or when that baseline rose against a base ref.
+# Fails on any violation .lint-baseline.json does not record, or when that baseline grew against a base ref.
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -31,6 +32,7 @@ INTERPRETERS = [
 GLOB_SPECIAL = "*?[]{}\\"
 BATCH_CHARS = 7000
 SCAN_SUMMARY = re.compile(r"Error: (\d+) error\(s\) found in code\.\nHelp: [^\n]*")
+HASH = re.compile(r"[0-9a-f]{16}")
 IGNORE_MARKER = "ast-grep-ignore"
 IGNORE_RULE = "no-ast-grep-ignore"
 IGNORE_MESSAGE = (
@@ -40,6 +42,10 @@ IGNORE_MESSAGE = (
 
 
 class ToolError(Exception):
+    pass
+
+
+class OldBaseline(ToolError):
     pass
 
 
@@ -126,7 +132,7 @@ def batches(paths):
 def ast_grep(args, paths):
     binary = shutil.which("ast-grep")
     if binary is None:
-        raise ToolError("ast-grep is not on PATH")
+        raise ToolError("ast-grep is not on PATH; install it with `uv tool install ast-grep-cli==0.51.1` or `pip install ast-grep-cli==0.51.1`")
     for batch in batches(paths):
         proc = subprocess.run([binary, *args, "--", *batch], capture_output=True, text=True, encoding="utf-8")
         yield args, proc
@@ -205,8 +211,12 @@ def normalise(path):
     return path.strip().replace("\\", "/").removeprefix("./")
 
 
+def identity(text):
+    return hashlib.sha256(" ".join(text.split()).encode("utf-8")).hexdigest()[:16]
+
+
 def finding(match, rule, message):
-    return normalise(match["file"]), match["range"]["start"]["line"] + 1, rule, message
+    return normalise(match["file"]), match["range"]["start"]["line"] + 1, rule, message, identity(match["text"])
 
 
 def collect_findings(files):
@@ -225,22 +235,27 @@ def collect_findings(files):
     return sorted(findings)
 
 
-def count(findings):
-    counts = {}
-    for (path, rule), n in Counter((path, rule) for path, _, rule, _ in findings).items():
-        counts.setdefault(path, {})[rule] = n
-    return counts
+def entries(findings):
+    found = {}
+    for path, _, rule, _, key in findings:
+        found.setdefault(path, {}).setdefault(rule, []).append(key)
+    return {path: {rule: sorted(keys) for rule, keys in rules.items()} for path, rules in found.items()}
 
 
 def validated(baseline, source):
     if not isinstance(baseline, dict):
-        raise ToolError(f"{source} must be a JSON object mapping files to rule counts")
+        raise ToolError(f"{source} must be a JSON object mapping files to rules")
     for path, rules in baseline.items():
         if not isinstance(rules, dict):
-            raise ToolError(f"{source}: {path} must map rule ids to counts")
-        for rule, n in rules.items():
-            if type(n) is not int or n < 0:
-                raise ToolError(f"{source}: {path} {rule} is {json.dumps(n)}; counts must be non-negative integers")
+            raise ToolError(f"{source}: {path} must map rule ids to lists of violation hashes")
+        for rule, keys in rules.items():
+            if type(keys) is int:
+                raise OldBaseline(
+                    f"{source} holds a count per file and rule, an older format that cannot tell a new violation "
+                    "from an old one. Delete it and run with --init to record each violation"
+                )
+            if not isinstance(keys, list) or not all(isinstance(key, str) and HASH.fullmatch(key) for key in keys):
+                raise ToolError(f"{source}: {path} {rule} must be a list of 16-character violation hashes")
     return baseline
 
 
@@ -268,18 +283,18 @@ def load_base_baseline(ref):
     return parsed_baseline(git_output("show", spec), spec)
 
 
-def write_baseline(counts):
-    text = json.dumps(counts, indent=2, sort_keys=True) + "\n"
+def write_baseline(recorded):
+    text = json.dumps(recorded, indent=2, sort_keys=True) + "\n"
     Path(BASELINE).write_text(text, encoding="utf-8", newline="\n")
 
 
-def rises(allowed, counts):
+def added(allowed, recorded):
     found = {}
-    for path, rules in sorted(counts.items()):
-        for rule, n in sorted(rules.items()):
-            limit = allowed.get(path, {}).get(rule, 0)
-            if n > limit:
-                found.setdefault(rule, []).append((path, limit, n))
+    for path, rules in sorted(recorded.items()):
+        for rule, keys in sorted(rules.items()):
+            extra = Counter(keys) - Counter(allowed.get(path, {}).get(rule, []))
+            if extra:
+                found[path, rule] = extra
     return found
 
 
@@ -311,82 +326,93 @@ def baseline_commit():
 def carry(allowed, pairs):
     carried = {path: dict(rules) for path, rules in allowed.items() if path not in pairs}
     for old, new in pairs.items():
-        for rule, n in allowed.get(old, {}).items():
+        for rule, keys in allowed.get(old, {}).items():
             target = carried.setdefault(new, {})
-            target[rule] = target.get(rule, 0) + n
+            target[rule] = sorted(target.get(rule, []) + keys)
     return carried
 
 
-def report_rises(risen, findings):
-    for rule, items in sorted(risen.items()):
-        for path, limit, n in items:
-            print(f"{path}: {rule} has {n} violations, baseline allows {limit}")
-            for f_path, line, f_rule, message in findings:
-                if f_path == path and f_rule == rule:
-                    print(f"  {f_path}:{line}: {f_rule}: {message}")
+def print_located(path, rule, extra, findings):
+    left, picked = Counter(extra), []
+    for found in reversed(findings):
+        if found[0] == path and found[2] == rule and left[found[4]] > 0:
+            left[found[4]] -= 1
+            picked.append(found)
+    for f_path, line, f_rule, message, _ in reversed(picked):
+        print(f"  {f_path}:{line}: {f_rule}: {message}")
 
 
-def check_base(ref, baseline):
-    base = load_base_baseline(ref)
+def report_new(new, findings):
+    for (path, rule), extra in new.items():
+        print(f"{path}: {extra.total()} {rule} violations are not in the baseline")
+        print_located(path, rule, extra, findings)
+
+
+def check_base(ref, baseline, findings):
+    try:
+        base = load_base_baseline(ref)
+    except OldBaseline:
+        print(f"{ref} has a {BASELINE} in the older count format, so there is nothing to compare against")
+        return True
     if base is None:
         print(f"{ref} has no {BASELINE}, so there is nothing to compare against")
         return True
     pairs = renames(ref)
     renamed_from = {new: old for old, new in pairs.items()}
-    risen = rises(carry(base, pairs), baseline)
-    for rule, items in sorted(risen.items()):
-        for path, limit, n in items:
-            print(f"{BASELINE}: {path} allows {n} {rule} violations, {ref} allowed {limit}")
-            if path in renamed_from:
-                print(f"  {path} was renamed from {renamed_from[path]} since {ref}, and only that file's {limit} carried over")
-    if risen:
-        print(f"the baseline rose against {ref}. Fix the violations instead, or merge {ref} if it lowered these counts")
-    return not risen
+    new = added(carry(base, pairs), baseline)
+    for (path, rule), extra in new.items():
+        print(f"{BASELINE}: {path} adds {extra.total()} {rule} violations that {ref} did not have")
+        if path in renamed_from:
+            print(f"  {path} was renamed from {renamed_from[path]} since {ref}, and only that file's entries carried over")
+        print_located(path, rule, extra, findings)
+    if new:
+        print(f"the baseline grew against {ref}. Fix the violations instead, or merge {ref} if it removed these entries")
+    return not new
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fail when lint violations rise above .lint-baseline.json.")
+    parser = argparse.ArgumentParser(description="Fail on any lint violation that .lint-baseline.json does not record.")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--init", action="store_true", help="write the first baseline")
-    mode.add_argument("--update", action="store_true", help="lower the baseline to the current counts")
-    mode.add_argument("--base", metavar="REF", help="also fail if the baseline rose against the one at REF")
+    mode.add_argument("--update", action="store_true", help="remove the baseline entries of fixed violations")
+    mode.add_argument("--base", metavar="REF", help="also fail if the baseline grew against the one at REF")
     args = parser.parse_args()
     try:
         os.chdir(git_output("rev-parse", "--show-toplevel").strip())
         if args.init and Path(BASELINE).exists():
-            raise ToolError(f"{BASELINE} already exists; use --update to lower it")
+            raise ToolError(f"{BASELINE} already exists; use --update to remove fixed violations from it")
         files = candidates()
         findings = collect_findings(files)
-        counts = count(findings)
+        recorded = entries(findings)
         if args.init:
-            write_baseline(counts)
-            print(f"wrote {BASELINE} with {len(findings)} violations in {len(counts)} files")
+            write_baseline(recorded)
+            print(f"wrote {BASELINE} with {len(findings)} violations in {len(recorded)} files")
             return 0
         baseline = load_baseline()
         carried = carry(baseline, renames(baseline_commit()))
         if args.update:
-            risen = rises(carried, counts)
-            if risen:
-                report_rises(risen, findings)
-                print("refusing to update: the baseline can only go down")
+            new = added(carried, recorded)
+            if new:
+                report_new(new, findings)
+                print("refusing to update: the baseline can only lose entries")
                 return 1
-            write_baseline(counts)
-            print(f"updated {BASELINE} to {len(findings)} violations in {len(counts)} files")
+            write_baseline(recorded)
+            print(f"updated {BASELINE} to {len(findings)} violations in {len(recorded)} files")
             return 0
-        risen = rises(baseline, counts)
-        base_ok = check_base(args.base, baseline) if args.base else True
+        new = added(baseline, recorded)
+        base_ok = check_base(args.base, baseline, findings) if args.base else True
     except ToolError as error:
         print(f"ratchet: {error}", file=sys.stderr)
         return 2
-    if risen:
-        report_rises(risen, findings)
-        if not rises(carried, counts):
+    if new:
+        report_new(new, findings)
+        if not added(carried, recorded):
             print("these violations moved with files git sees as renamed; run with --update to move their baseline entries")
-    elif any(n > counts.get(path, {}).get(rule, 0) for path, rules in baseline.items() for rule, n in rules.items()):
-        print("violations fell below the baseline; run with --update to lock the lower counts in")
-    if risen or not base_ok:
+    elif added(recorded, baseline):
+        print("some baseline violations are fixed; run with --update to remove their entries")
+    if new or not base_ok:
         return 1
-    print(f"ratchet passed: {len(findings)} violations, none above the baseline")
+    print(f"ratchet passed: {len(findings)} violations, all in the baseline")
     return 0
 
 
