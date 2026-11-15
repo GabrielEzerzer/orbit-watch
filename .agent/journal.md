@@ -316,8 +316,9 @@ train FA rise, 0.011 deg (`settings/inc-channel.json`).
 
 Covered counts are unchanged in every regime. The gain rests on few events: three on train
 (QZS-3-103, 159, 162+163) and one on dev (QZS-3-235+236); the dev interval still spans 0.21-0.67.
-The inclination channel added four QZS-3 detections in 2021-2025 that match nothing and are not
-false alarms (they sit in a burn's exclusion zone or outside a scored stretch), and one QZS-6
-detection on 2025-03-17 (+0.034 deg), before QZS-6's log coverage starts on 2025-08-02. The NS
+The inclination channel kept five detections after the merge: the four QZS-3 ones are exactly
+the recovered burns (train detections 64 -> 67, matched 48 -> 51; dev 49 -> 50, matched 36 -> 37),
+and one QZS-6 detection on 2025-03-17 (+0.034 deg) lies before QZS-6's log coverage starts on
+2025-08-02, so it is not scored. The NS
 burns less than a day before an EW burn are still found only through duplicate a detections
 (round 1), as the hypothesis expected.
