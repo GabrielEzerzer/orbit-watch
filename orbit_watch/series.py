@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from orbit_watch.elements import ElementSet
+from orbit_watch.truth import require_not_holdout
 
 
 @dataclass(frozen=True)
@@ -33,7 +34,7 @@ class ElementSeries:
 MIN_EPOCH_GAP_S = 60.0
 
 
-def distinct_epochs(records: Iterable[ElementSet]) -> dict[int, list[ElementSet]]:
+def distinct_epochs(records: Iterable[ElementSet], *, final: bool = False) -> dict[int, list[ElementSet]]:
     """Per NORAD id, the records ``to_series`` keeps, in epoch order.
 
     When two records for one object share an epoch, the one that comes later in
@@ -44,10 +45,15 @@ def distinct_epochs(records: Iterable[ElementSet]) -> dict[int, list[ElementSet]
     under 1 s for QZS-3), and two epochs that close give the detector's
     Theil-Sen slope pairs a near-zero time base, which turns into fake steps of
     thousands of km.
+
+    Raises ``truth.HoldoutError`` if any object is in the holdout of
+    ``groundtruth/splits.json``, unless ``final``; objects the file does not list pass.
     """
     by_object: dict[int, dict] = {}
     for rec in records:
         by_object.setdefault(rec.norad_id, {})[rec.epoch] = rec
+    for norad_id in by_object:
+        require_not_holdout(norad_id, final=final)
     out = {}
     for norad_id, by_epoch in by_object.items():
         epochs = sorted(by_epoch)
@@ -56,11 +62,11 @@ def distinct_epochs(records: Iterable[ElementSet]) -> dict[int, list[ElementSet]
     return out
 
 
-def to_series(records: Iterable[ElementSet]) -> dict[int, ElementSeries]:
+def to_series(records: Iterable[ElementSet], *, final: bool = False) -> dict[int, ElementSeries]:
     """Group records by NORAD id, sort by epoch and drop duplicate and near-duplicate epochs
-    (``distinct_epochs``)."""
+    (``distinct_epochs``, which also refuses holdout objects unless ``final``)."""
     out = {}
-    for norad_id, recs in distinct_epochs(records).items():
+    for norad_id, recs in distinct_epochs(records, final=final).items():
         out[norad_id] = ElementSeries(
             norad_id=norad_id,
             epochs=np.array([r.epoch.replace(tzinfo=None) for r in recs], dtype="datetime64[us]"),

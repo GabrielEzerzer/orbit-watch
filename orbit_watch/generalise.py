@@ -58,6 +58,28 @@ the ISS), so z runs into the hundreds and a grid capped at 30 pinned the first t
 
 Recall counts covered events (at least one scored gap overlaps the event window), by the
 estimated |Delta-a| bin and by kind. Delta-a is the log parser's Gauss estimate, not measured.
+An event without an estimate (the Fengyun logs carry no Delta-v) still counts for matching and
+recall, and is left out of the size bins.
+
+Attitude-only log rows (Fengyun ``kind`` ``attitude``) change no orbit, so they are not scoring
+targets, as calibrate.py does with the ISS's unplanned attitude events: they are not in recall,
+and a detection that matches one (after the targets are matched) is dropped from the detection
+list, so it is neither a true nor a false positive.
+
+Coverage. A log only vouches for the period it covers (``log_coverage``): from its first row's
+start to, for IDS, the file's revision date (each file is the operator's live record, updated
+with every burn, so it is complete up to its last update), and for QZSS and Fengyun, the last
+row's end (their revision dates are a web page's date and a repository commit date, which say
+nothing about when the log was last kept: QZS-1 was retired in 2022 and its log ends on
+2022-02-28, while the page is dated 2026; the Fengyun lines end in January and February 2022).
+Element sets outside the coverage are still scored, so gaps near its edges keep their context,
+but detections that could not match an event inside it (ending more than ``TOLERANCE_DAYS``
+before it starts, or starting more than ``LATE_DAYS`` after it ends) are dropped, so they do
+not count as false alarms.
+
+``run`` never takes ``final=True``: it tunes over its objects, and tuning on a holdout object
+would spend the holdout. The final scoring runs a frozen setting chosen on train objects
+(not built yet).
 """
 
 from __future__ import annotations
@@ -74,6 +96,7 @@ from orbit_watch.calibrate import TOLERANCE_DAYS, Z_GRID, _iso, _ratio
 from orbit_watch.detect import Detection, pick, score_gaps
 from orbit_watch.elements import parse_omm_json
 from orbit_watch.series import ElementSeries, to_series
+from orbit_watch.truth import HoldoutError, read_label_rows, require_allowed
 
 
 @dataclass(frozen=True)
@@ -113,14 +136,16 @@ SATELLITES = (  # (name, NORAD id, regime, ground-truth file)
 class LogEvent:
     event_id: str
     kind: str
-    delta_a_est_m: float
+    delta_a_est_m: float | None  # None: the log gives no Delta-v (Fengyun)
     expected_sign: int  # +1 up, -1 down, 0 either (same rule as calibrate._sign_ok)
     lo: np.datetime64
     hi: np.datetime64
     n_rows: int = 1
 
     @property
-    def bin(self) -> str:
+    def bin(self) -> str | None:
+        if self.delta_a_est_m is None:
+            return None
         a = abs(self.delta_a_est_m)
         for label, top in zip(BIN_LABELS, BIN_EDGES_M[1:]):
             if a < top:
@@ -132,32 +157,54 @@ def _t(s: str) -> np.datetime64:
     return np.datetime64(s.rstrip("Z"), "us")
 
 
-def load_log_events(path: Path, norad: int) -> list[LogEvent]:
-    """Events for one satellite: one per log row, then merged when under ``MERGE_HOURS`` apart."""
-    with open(path, encoding="utf-8", newline="") as f:
-        rows = [r for r in csv.DictReader(f) if int(r["norad_id"]) == norad]
+def load_log_events(path: Path, norad: int, *, final: bool = False) -> list[LogEvent]:
+    """Events for one satellite: one per log row, then merged when under ``MERGE_HOURS`` apart.
+
+    Attitude-only rows (kind ``attitude``) are merged only with each other and keep kind
+    ``attitude``; ``Satellite`` keeps them out of the targets. Refuses holdout and unassigned
+    objects unless ``final`` (``orbit_watch.truth``)."""
+    rows = read_label_rows(path, norad, final=final)
     rows.sort(key=lambda r: r["start_utc"])
     merge_gap = np.timedelta64(int(MERGE_HOURS * 3600e6), "us")
     clusters: list[list[dict]] = []
-    for r in rows:
-        if clusters and _t(r["start_utc"]) - max(_t(x["end_utc"]) for x in clusters[-1]) < merge_gap:
-            clusters[-1].append(r)
-        else:
-            clusters.append([r])
+    for attitude in (False, True):
+        part: list[list[dict]] = []
+        for r in rows:
+            if (r["kind"] == "attitude") != attitude:
+                continue
+            if part and _t(r["start_utc"]) - max(_t(x["end_utc"]) for x in part[-1]) < merge_gap:
+                part[-1].append(r)
+            else:
+                part.append([r])
+        clusters += part
     events = []
     for rs in clusters:
-        das = [float(r["delta_a_est_m"]) for r in rs]
+        das = [float(r["delta_a_est_m"]) if r["delta_a_est_m"] else None for r in rs]
         kinds = sorted({r["kind"] for r in rs})
-        if "dvx_m_s" in rs[0] or kinds != ["along-track"]:
+        if "dvx_m_s" in rs[0] or kinds != ["along-track"] or None in das:
             sign = 0  # QZSS: DVX frame undocumented; IDS cross-track: no direction in a
         elif all(d > 0 for d in das) or all(d < 0 for d in das):
             sign = int(np.sign(das[0]))
         else:
             sign = 0  # burn and counter-burn: the net sign is within the estimate's error
         events.append(LogEvent("+".join(r["event_id"] for r in rs), "+".join(kinds),
-                               round(sum(das), 1), sign, _t(rs[0]["start_utc"]),
-                               max(_t(r["end_utc"]) for r in rs), len(rs)))
+                               None if None in das else round(sum(das), 1), sign,
+                               _t(rs[0]["start_utc"]), max(_t(r["end_utc"]) for r in rs), len(rs)))
+    events.sort(key=lambda e: e.lo)
     return events
+
+
+def log_coverage(path: Path, norad: int, *, final: bool = False) -> tuple[np.datetime64, np.datetime64]:
+    """The period one object's log vouches for (see the module docstring): first row's start to
+    the IDS file's revision date, or to the last row's end for QZSS and Fengyun."""
+    rows = read_label_rows(path, norad, final=final)
+    if not rows:
+        raise ValueError(f"{path}: no log rows for NORAD {norad}")
+    lo = min(_t(r["start_utc"]) for r in rows)
+    hi = max(_t(r["end_utc"]) for r in rows)
+    if "burn_times_utc" in rows[0]:  # IDS layout
+        hi = max([hi] + [np.datetime64(r["source_revision"], "us") for r in rows])
+    return lo, hi
 
 
 def split_date(events: list[LogEvent]) -> np.datetime64:
@@ -252,15 +299,20 @@ def _pool(results: list[dict]) -> dict:
 class Satellite:
     """One object's series, log events, split and cached per-k gap scores."""
 
-    def __init__(self, name: str, norad: int, regime: str, truth: Path, tle_dir: Path):
+    def __init__(self, name: str, norad: int, regime: str, truth: Path, tle_dir: Path,
+                 final: bool = False):
+        require_allowed(norad, final=final)  # before the element sets are read
         (path,) = sorted(tle_dir.glob(f"gp_history-{norad}-*.json"))
         self.name, self.norad, self.regime, self.tle_file = name, norad, regime, path.name
         records = [r for r in parse_omm_json(path.read_text(encoding="utf-8")) if r.norad_id == norad]
-        self.series: ElementSeries = to_series(records)[norad]
+        self.series: ElementSeries = to_series(records, final=final)[norad]
         self.near_duplicates_dropped = len({r.epoch for r in records}) - len(self.series)
         first, last = self.series.epochs[0], self.series.epochs[-1]
-        self.all_events = load_log_events(truth, norad)
-        self.events = [e for e in self.all_events if e.hi >= first and e.lo <= last]
+        self.coverage = log_coverage(truth, norad, final=final)
+        self.all_events = load_log_events(truth, norad, final=final)
+        inside = [e for e in self.all_events if e.hi >= first and e.lo <= last]
+        self.events = [e for e in inside if e.kind != "attitude"]
+        self.attitude = [e for e in inside if e.kind == "attitude"]
         self.split = split_date(self.events)
         self.ev_test = [e.lo >= self.split for e in self.events]
         self._scores, self._cover = {}, {}
@@ -273,9 +325,19 @@ class Satellite:
         return self._scores[k], self._cover[k]
 
     def run(self, s: Setting):
+        """Detections inside the log's coverage (widened by the match tolerances), with those
+        matching an attitude event removed, and their one-to-one match to the target events."""
         sc, cover = self.scores(s.k)
-        dets = pick(sc, s.z_min, s.step_min_m, s.nms_days)
+        lo, hi = self.coverage[0] - _tol(TOLERANCE_DAYS), self.coverage[1] + _tol(LATE_DAYS)
+        dets = [d for d in pick(sc, s.z_min, s.step_min_m, s.nms_days) if d.end >= lo and d.start <= hi]
         m = match_near(self.events, dets, late_days=LATE_DAYS)
+        if self.attitude:
+            rest = [i for i in range(len(dets)) if i not in set(m.values())]
+            m_att = match_near(self.attitude, [dets[i] for i in rest], late_days=LATE_DAYS)
+            gone = {rest[j] for j in m_att.values()}
+            keep = [i for i in range(len(dets)) if i not in gone]
+            new_index = {old: new for new, old in enumerate(keep)}
+            dets, m = [dets[i] for i in keep], {e: new_index[d] for e, d in m.items()}
         det_test = [d.start >= self.split for d in dets]
         return sc, cover, dets, m, det_test
 
@@ -305,7 +367,8 @@ class Satellite:
         floor = 50 if self.regime == "LEO" else 500
         lags = []
         for i, e in enumerate(self.events):
-            if abs(e.delta_a_est_m) < floor or self.ev_test[i] != (which == "test"):
+            if (e.delta_a_est_m is None or abs(e.delta_a_est_m) < floor
+                    or self.ev_test[i] != (which == "test")):
                 continue
             w = (sc.end >= e.lo - day) & (sc.start <= e.hi + 4 * day) & sc.valid
             if e.expected_sign:
@@ -360,7 +423,7 @@ def _sign_and_ratio(sat: Satellite, s: Setting) -> dict:
     """For matched events: does the step sign agree with the estimate, and step / estimate."""
     _, _, dets, m, _ = sat.run(s)
     pairs = [(sat.events[e].delta_a_est_m, dets[d].step_m) for e, d in m.items()
-             if abs(sat.events[e].delta_a_est_m) >= 100]
+             if sat.events[e].delta_a_est_m is not None and abs(sat.events[e].delta_a_est_m) >= 100]
     same = sum(np.sign(a) == np.sign(st) for a, st in pairs)
     ratios = [st / a for a, st in pairs if np.sign(a) == np.sign(st)]
     return {"matched_events_with_estimate_ge_100m": len(pairs), "same_sign": int(same),
@@ -423,8 +486,9 @@ def plot(regime: str, sats: list[Satellite], tuned: Setting, path: Path) -> None
     ax = axes[2]
     for sat, c, mk in zip(sats, colours, markers):
         _, _, dets, m, _ = sat.run(FROZEN)
-        a = [abs(sat.events[e].delta_a_est_m) for e in m]
-        st = [abs(dets[d].step_m) for d in m.values()]
+        known = {e: d for e, d in m.items() if sat.events[e].delta_a_est_m is not None}
+        a = [abs(sat.events[e].delta_a_est_m) for e in known]
+        st = [abs(dets[d].step_m) for d in known.values()]
         ax.scatter(a, st, s=40, marker=mk, color=c, edgecolors="white", linewidths=1, label=sat.name)
     lim = ax.get_xlim()[0] or 1, max(ax.get_xlim()[1], ax.get_ylim()[1])
     ax.plot([10, lim[1]], [10, lim[1]], color="0.5", lw=1, ls="--", label="detected = estimate")
@@ -451,7 +515,16 @@ TEST_PART_NOT_BLIND = (
 )
 
 
-def run(truth_dir: Path, tle_dir: Path, out: Path) -> dict:
+FINAL_REFUSED = (
+    "generalise.run tunes its setting over the objects it scores, so it never runs on the holdout "
+    "(final=True): the final path scores a frozen setting chosen on train objects, without "
+    "tuning, and that scorer is not built yet"
+)
+
+
+def run(truth_dir: Path, tle_dir: Path, out: Path, final: bool = False) -> dict:
+    if final:
+        raise HoldoutError(FINAL_REFUSED)
     out.mkdir(parents=True, exist_ok=True)
     sats = [Satellite(n, norad, reg, truth_dir / f, tle_dir) for n, norad, reg, f in SATELLITES]
     report = {
@@ -519,8 +592,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--truth-dir", type=Path, required=True)
     p.add_argument("--tle-dir", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--final", action="store_true",
+                   help="refused: this run tunes, and the holdout is only scored at a frozen, "
+                        "train-chosen setting")
     args = p.parse_args(argv)
-    r = run(args.truth_dir, args.tle_dir, args.out)
+    r = run(args.truth_dir, args.tle_dir, args.out, final=args.final)
     for regime, v in r["regimes"].items():
         print(regime, json.dumps(v["tuned_setting"]), json.dumps(v["pooled"]))
     return 0

@@ -40,6 +40,7 @@ import numpy as np
 from orbit_watch.detect import Detection, GapScores, pick, score_gaps
 from orbit_watch.elements import parse_tle
 from orbit_watch.series import to_series
+from orbit_watch.truth import read_label_rows
 
 ISS = 25544
 TOLERANCE_DAYS = 0.5
@@ -85,16 +86,15 @@ class Event:
 
 def load_events(path: Path) -> list[Event]:
     events = []
-    with open(path, encoding="utf-8", newline="") as f:
-        for row in csv.DictReader(f):
-            day = datetime.strptime(row["date_utc"], "%Y-%m-%d")
-            if row["time_utc"]:
-                hh, mm = map(int, row["time_utc"].split(":"))
-                lo = hi = day + timedelta(hours=hh, minutes=mm)
-            else:  # US-local date: plus or minus one day
-                lo, hi = day - timedelta(days=1), day + timedelta(days=2)
-            events.append(Event(row["date_utc"], row["time_utc"], row["type"], row["delta_v_m_s"],
-                                np.datetime64(lo, "us"), np.datetime64(hi, "us")))
+    for row in read_label_rows(path, ISS):
+        day = datetime.strptime(row["date_utc"], "%Y-%m-%d")
+        if row["time_utc"]:
+            hh, mm = map(int, row["time_utc"].split(":"))
+            lo = hi = day + timedelta(hours=hh, minutes=mm)
+        else:  # US-local date: plus or minus one day
+            lo, hi = day - timedelta(days=1), day + timedelta(days=2)
+        events.append(Event(row["date_utc"], row["time_utc"], row["type"], row["delta_v_m_s"],
+                            np.datetime64(lo, "us"), np.datetime64(hi, "us")))
     return events
 
 
