@@ -1,6 +1,6 @@
 {
   "name": "inc-channel",
-  "note": "FROZEN for every regime, plus the inclination channel on GEO (round 2, README 'Where the detector hill-climb stands'): inc_z_min 12, inc_step_min_deg 0.011, the loosest train-grid setting at which train GEO false alarms do not rise",
+  "note": "FROZEN for every regime, plus the inclination channel on GEO (round 2 of issue #22): inc_z_min 12, inc_step_min_deg 0.011, the loosest train-grid setting at which train GEO false alarms do not rise",
   "regimes": {
     "ISS": {
       "k": 4,
