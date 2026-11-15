@@ -779,7 +779,8 @@ over the high barrier in 2021-2025.
 - Within about 6 deg of a stable point or 2 deg of a barrier, a hold of a year or less that a
   moving free path fits reads undetermined, keeper or not, unless a burn or more than a year of
   inclination at 0.3 deg or less shows control. Express AM-33 (32478) at 11 deg W from August
-  2021 to August 2022 fits one at 0.057 deg, near the 0.06 limit, and reads undetermined. A
+  2021 to August 2022 fits one at 0.056 deg, near the 0.06 limit, over 358 days, 7 days short
+  of the year after which it would read librating; it reads undetermined. A
   librator there whose element sets scatter enough to pass the burn test still reads controlled
   at its turning points.
 - A keeper there that lets its longitude swing freely inside its box for more than a year, with
@@ -787,7 +788,8 @@ over the high barrier in 2021-2025.
   belt.
 - The moving-path test has little margin on short holds. SJ-20 (44910), in its last three
   windows at 78 deg E, gives a path range of 4.0 times its misfit, at the limit, and reads
-  controlled. The free hold closest to the limit, Express AM-33 at 11 deg W, gives 5.3. A dead
+  controlled. The hold that fits closest above the limit, Express AM-33 at 11 deg W, gives 5.3;
+  it relocated there and shares Express AM-44's slot, so whether it is free is not known. A dead
   object resting at an equilibrium with a swing under about four times its element-set scatter
   (a few hundredths of a degree) would read controlled; none was found.
 - A dead object whose inclination stays at 0.3 deg or less for more than a year would read
