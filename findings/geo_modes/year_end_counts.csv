@@ -1,11 +1,11 @@
 mode,2021,2022,2023,2024,2025
-controlled_lon_inc,347,357,367,366,350
-controlled_lon,152,152,156,155,164
+controlled_lon_inc,347,356,367,366,351
+controlled_lon,146,148,150,151,163
 drifting,876,891,924,965,1012
-librating_75E,112,113,114,118,123
-librating_105W,35,41,36,35,35
+librating_75E,113,114,115,119,124
+librating_105W,41,46,41,41,40
 librating_both,18,18,21,20,20
 inclined,21,21,21,21,20
-undetermined,36,36,32,45,31
+undetermined,35,35,32,42,25
 out_of_region,12,10,4,4,2
 no_data,190,160,124,70,42

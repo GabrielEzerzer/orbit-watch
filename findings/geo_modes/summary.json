@@ -14,8 +14,8 @@
     49336
   ],
   "objects_classified": 1799,
-  "segments": 4602,
-  "transitions_all_segments": 2803,
-  "transitions_ignoring_undetermined": 761,
-  "run_seconds": 227.0
+  "segments": 4546,
+  "transitions_all_segments": 2747,
+  "transitions_ignoring_undetermined": 763,
+  "run_seconds": 127.8
 }

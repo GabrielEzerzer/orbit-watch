@@ -230,6 +230,56 @@ def test_small_libration_about_a_stable_point_is_not_control():
     assert found.count("librating_75E") >= 0.5 * len(found)
 
 
+def stable_point(inc, near=M.STABLE_EAST_DEG):
+    grid = np.linspace(near - 1.0, near + 1.0, 200001)
+    return float(grid[np.argmin(M.tesseral_potential(grid, inc))])
+
+
+FIVE_YEARS = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 1.0)
+CONTROLLED = {"controlled_lon", "controlled_lon_inc"}
+
+
+@pytest.mark.parametrize("swing", [0.1, 0.3, 1.0, 2.0])
+def test_small_free_librator_at_a_stable_point_is_never_controlled(swing):
+    lon = free_motion(stable_point(6.0) + swing / 2, FIVE_YEARS, inc=6.0)
+    assert lon.max() - lon.min() == pytest.approx(swing, rel=0.05)
+    found = modes_of(element_sets(FIVE_YEARS, lon, inc=6.0))
+    assert set(found) <= {"librating_75E", "undetermined"} and "librating_75E" in found
+
+
+def test_free_librator_off_the_model_is_never_controlled():
+    west = stable_point(6.0, M.STABLE_WEST_DEG) - 360.0
+    lon = free_motion(west + 0.15, FIVE_YEARS, inc=6.0, accel_scale=1.1) - 0.3
+    found = modes_of(element_sets(FIVE_YEARS, lon, inc=6.0))
+    assert set(found) <= {"librating_105W", "undetermined"} and "librating_105W" in found
+
+
+def test_keeper_parked_at_a_stable_point_is_control():
+    found = modes_of(element_sets(FIVE_YEARS, kept(FIVE_YEARS, stable_point(3.0), box=0.01), inc=3.0))
+    assert set(found) == {"controlled_lon"}
+
+
+def test_free_libration_with_the_inclination_held_is_c1():
+    lon = free_motion(stable_point(0.05) + 0.1, FIVE_YEARS, inc=0.05)
+    assert set(modes_of(element_sets(FIVE_YEARS, lon, inc=0.05))) == {"controlled_lon_inc"}
+
+
+def test_dead_librator_passing_under_the_c1_inclination_is_never_controlled():
+    inc = np.hypot(0.85 * (FIVE_YEARS - 400.0) / 365.25, 0.05)
+    lon = free_motion(stable_point(1.0) + 0.1, FIVE_YEARS, inc=1.0)
+    found = modes_of(element_sets(FIVE_YEARS, lon, inc=inc))
+    assert set(found) <= {"librating_75E", "undetermined"} and "librating_75E" in found
+
+
+def test_quiet_hold_under_a_year_near_a_stable_point_is_undetermined():
+    days = np.arange(EDGES[0], EDGES[8], 0.5)
+    arc = free_motion(stable_point(3.0) + 0.5, days - EDGES[2], inc=3.0)
+    lon = np.where(days < EDGES[2], arc[np.argmax(days >= EDGES[2])] - 0.5 * (days - EDGES[2]),
+                   np.where(days < EDGES[6], arc, arc[np.argmax(days >= EDGES[6])] + 0.5 * (days - EDGES[6])))
+    found = modes_of(element_sets(days, lon, inc=3.0))
+    assert found[2:6] == ["undetermined"] * 4 and not CONTROLLED & set(found)
+
+
 def test_tight_keeper_near_a_stable_point_is_control():
     # Kept within 0.01 deg at 1 deg from 75 E for eight windows, with no burn big enough to see:
     # a free object there could sit as still for 90 days, but not for 240.

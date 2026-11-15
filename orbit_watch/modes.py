@@ -54,8 +54,9 @@ rule does not make for us, one line each:
   Without this, librators flicker into "controlled" at every turning point. Where a free path
   bends by less than the held spread in 90 days (within about 6 deg of a stable point or 2 deg
   of a barrier), a held 90-day run proves nothing by itself: it counts only if it holds a burn,
-  or if the consecutive held windows around it spread less than half of what a free path bends
-  over their whole span.
+  if the inclination stays at C1 for more than a year (north-south keeping), or if no free path
+  that moves fits the consecutive held windows around it. A hold of more than a year that one
+  fits is free; a shorter one is undetermined.
 * Wide-box keepers (Meteosat at 0 deg E keeps a box about 1.3 deg wide) let the natural
   acceleration carry them across the box and burn at its edge. A window not held counts as
   controlled if it and some 90-day run of three windows that includes it stay within ``BOX_DEG``
@@ -95,9 +96,6 @@ rule does not make for us, one line each:
 # shortcut: a whole window of a relocation slower than about 0.45 deg/day, with no burn in it, is
 # free and trapped, so it reads as librating (ESA's C4 is not separated); manoeuvre detection
 # (layer 2) can tell it apart.
-# shortcut: within about 6 deg of a stable point or 2 deg of a barrier, a keeper with no burn big
-# enough to see reads undetermined until its hold outlasts a free object's; north-south burns (an
-# inclination held near 0) would prove control sooner, from the inclination vector.
 # shortcut: one wild element set (a corrupt mean motion) in a sparse window can break the held test
 # and the window's own fit, as for 49055 on 2022-06-11; reject sets far off the window's median
 # semi-major axis if it matters.
@@ -131,6 +129,10 @@ NEIGHBOUR_REACH = 3
 DROP_WORST = 3
 HELD_RUN = 3  # windows
 BOX_DEG = 1.5
+FREE_SHIFT_DEG = 0.5
+FREE_SCALE = (0.8, 1.25)
+MOVING_SWING = 4.0
+YEAR_DAYS = 365
 C1_MAX_INCLINATION_DEG = 0.3  # ESA, section 2, C1
 INCLINED_MIN_DEG = 25.0  # ESA, section 2, I
 REGION_A_KM = (37948.0, 46380.0)  # ESA, table 1, IGO and EGO
@@ -302,6 +304,30 @@ def _free_residual(days: np.ndarray, u: np.ndarray, accel: float | None = None) 
     return float(1.4826 * np.median(np.abs(_free_residuals(days, u, accel))))
 
 
+def _free_path(days: np.ndarray, u: np.ndarray, inc_deg: float) -> tuple[float, float]:
+    mean = float(np.mean(u))
+    a0 = float(longitude_acceleration(mean, inc_deg))
+    a1 = float(longitude_acceleration(mean + 0.01, inc_deg) - longitude_acceleration(mean - 0.01, inc_deg)) / 0.02
+    t = days - days.mean()
+    half = float(np.abs(t).max())
+    p, eq = u - mean, -a0 / a1
+    best = (float("inf"), 0.0)
+    for s in np.linspace(*FREE_SCALE, 46):
+        g = sqrt(abs(s * a1))
+        b = (np.column_stack([np.cos(g * t), np.sin(g * t)]) if a1 < 0
+             else np.column_stack([np.exp(g * (t - half)), np.exp(-g * (t + half))]))
+        a = np.column_stack([np.ones_like(t), b])
+        coef = np.linalg.lstsq(a, p, rcond=None)[0]
+        if abs(coef[0] - eq) > FREE_SHIFT_DEG:
+            centre = eq + np.copysign(FREE_SHIFT_DEG, coef[0] - eq)
+            coef = np.concatenate([[centre], np.linalg.lstsq(b, p - centre, rcond=None)[0]])
+        path = a @ coef
+        misfit = float(1.4826 * np.median(np.abs(p - path)))
+        if misfit < best[0]:
+            best = (misfit, float(path.max() - path.min()))
+    return best
+
+
 @dataclass(frozen=True)
 class Window:
     start: float  # days since GRID_START
@@ -366,20 +392,38 @@ def classify(tr: Track) -> list[Window]:
     def held(k: int) -> bool:
         return enough(k) and spread(idx[k]) <= HELD_SPREAD_DEG
 
-    def still_chain(k: int, accel: float) -> bool:
-        """The chain of consecutive held windows around k spreads less than half of what a free
-        object with acceleration ``accel`` would sag over the chain's span: the one-window test
-        (``spread < 0.5 * free_sag``) applied to the whole hold."""
+    def chain(k: int) -> tuple[int, int]:
         a, b = k, k
         while a > 0 and held(a - 1):
             a -= 1
         while b < len(idx) - 1 and held(b + 1):
             b += 1
-        chain = np.concatenate(idx[a:b + 1])
-        return spread(chain) < 0.5 * 0.45 * accel * ((tr.days[chain[-1]] - tr.days[chain[0]]) / 2) ** 2
+        return a, b
+
+    @lru_cache(maxsize=None)
+    def chain_free(a: int, b: int) -> bool:
+        """The consecutive held windows a..b follow a free path that moves: one fits them within
+        SPLIT_RESIDUAL_DEG and its range is more than MOVING_SWING times its misfit. A path that
+        only sits at an equilibrium fits a keeper parked there as well as a free object."""
+        sel = np.concatenate(idx[a:b + 1])
+        u = _unwrapped(tr.days[sel], tr.lon[sel], float(np.median(tr.rate[sel])))
+        misfit, swing = _free_path(tr.days[sel], u, float(np.median(tr.inclination[sel])))
+        return misfit <= SPLIT_RESIDUAL_DEG and swing > MOVING_SWING * misfit
+
+    def chain_days(a: int, b: int) -> float:
+        return float(tr.days[idx[b][-1]] - tr.days[idx[a][0]])
 
     inc_median = {k: float(np.median(tr.inclination[idx[k]])) for k in range(len(idx)) if enough(k)}
     low_inc = sorted(k for k, v in inc_median.items() if v <= C1_MAX_INCLINATION_DEG)
+    low_groups = [[low_inc[0]]] if low_inc else []
+    for j in low_inc[1:]:
+        if (j - low_groups[-1][-1]) * WINDOW_DAYS <= YEAR_DAYS:
+            low_groups[-1].append(j)
+        else:
+            low_groups.append([j])
+
+    def inclination_held(k: int) -> bool:
+        return any(g[0] <= k <= g[-1] and (g[-1] - g[0] + 1) * WINDOW_DAYS > YEAR_DAYS for g in low_groups)
 
     def c1(k: int) -> bool:
         """ESA's C1: inclination at most 0.3 deg, "however control at larger angles within one year
@@ -389,7 +433,7 @@ def classify(tr: Track) -> list[Window]:
         if inc_median[k] <= C1_MAX_INCLINATION_DEG:
             return True
         i = bisect_left(low_inc, k)
-        return 0 < i < len(low_inc) and (low_inc[i] - low_inc[i - 1]) * WINDOW_DAYS <= 365
+        return 0 < i < len(low_inc) and (low_inc[i] - low_inc[i - 1]) * WINDOW_DAYS <= YEAR_DAYS
 
     rows, free, slow = [], {}, {}  # free: window -> (energy, mean longitude, inclination); slow: window -> mean longitude
     for k in range(first, last + 1):
@@ -413,7 +457,8 @@ def classify(tr: Track) -> list[Window]:
         # acceleration allows (a free path sags by about 0.45 * |accel| * (span / 2)^2 inside the
         # 5-95 % spread). Where a free object sags less than HELD_SPREAD_DEG in 90 days (within
         # about 6 deg of a stable point, 2 deg of a barrier) a held 90-day run proves nothing: it
-        # counts only if it holds a burn, or if the hold lasts longer than a free object's could.
+        # counts only if it holds a burn, if the inclination is held, or if no free path that
+        # moves fits the whole hold. A hold of more than a year that one does fit is free.
         # Wide-box keepers are caught by their burns: a 90-day run inside BOX_DEG with a
         # manoeuvre in it, the window itself inside BOX_DEG too so the window that holds the end
         # of a relocation stays drifting. A free librator never burns.
@@ -421,9 +466,13 @@ def classify(tr: Track) -> list[Window]:
         accel = abs(float(longitude_acceleration(mean_lon, inc_median[k])))
         free_sag = 0.45 * accel * ((d[-1] - d[0]) / 2) ** 2
         run_held = any(run_spread(j) <= HELD_SPREAD_DEG for j in runs)
+        free_hold = False
         if run_held and 0.45 * accel * (HELD_RUN * WINDOW_DAYS / 2) ** 2 < HELD_SPREAD_DEG:
-            run_held = (any(run_spread(j) <= HELD_SPREAD_DEG and any(burn(i) for i in range(j, j + HELD_RUN)) for j in runs)
-                        or still_chain(k, accel))
+            burnt = any(run_spread(j) <= HELD_SPREAD_DEG and any(burn(i) for i in range(j, j + HELD_RUN)) for j in runs)
+            a, b = chain(k)
+            free_chain = not burnt and not inclination_held(k) and chain_free(a, b)
+            run_held = not free_chain
+            free_hold = free_chain and chain_days(a, b) > YEAR_DAYS
         tight = still and (run_held or spread(sel) < 0.5 * free_sag)
         wide = spread(sel) <= BOX_DEG and any(run_spread(j) <= BOX_DEG and any(burn(i) for i in range(j, j + HELD_RUN)) for j in runs)
         if not (REGION_A_KM[0] <= np.median(tr.semi_major_axis_km[sel]) <= REGION_A_KM[1]
@@ -433,7 +482,7 @@ def classify(tr: Track) -> list[Window]:
             mode = "inclined"
         elif tight or wide:
             mode = "controlled_lon_inc" if c1(k) else "controlled_lon"
-        elif still:
+        elif still and not free_hold:
             mode = "undetermined"
             slow[k] = mean_lon
         elif burn(k):
