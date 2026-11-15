@@ -646,7 +646,7 @@ three times or more. The most common changes:
 - `controlled_lon_inc` to `drifting`: 100.
 - `controlled_lon_inc` to `controlled_lon`: 77, where north-south keeping stops. Each is dated
   to the window where the inclination passes 0.3 deg, including stops in the record's last
-  year and stops followed within a year by retirement. 16 go the other way: 12 where the
+  year and stops followed within a year by retirement. 16 go the other way: 13 where the
   inclination is brought down from 0.5-3 deg, and three are the record-start case under the
   limits below.
 
