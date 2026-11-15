@@ -31,5 +31,5 @@ def test_every_tracked_file_sits_under_a_known_top_level_folder():
 
 
 def test_misplaced_names_files_outside_the_known_folders():
-    assert misplaced(["orbit_watch/detect.py", "README.md", "scripts/run.py", "notes.txt", "mock/x.tle"]) == [
+    assert misplaced(["orbit_watch/detect.py", "README.md", "scripts/run.py", "notes.txt", "groundtruth/x.csv"]) == [
         "notes.txt", "scripts/run.py"]

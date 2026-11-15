@@ -280,9 +280,10 @@ relocations between the dates would explain them. Seven dead satellites hold sti
 within about half a degree of a stable point and read librating, because one free path fits all
 five years of their longitudes: ATS 3 (3029), NATO 2B (4902), SATCOM C5 (13631), GStar 1
 (15677), GStar 3 (19483) and ACTS (22796) at 105 deg W, and SIRIO (10294) at 75 deg E, with
-swings of 0.2-1.8 deg. ESA lists all seven as L2 or L1, GStar 1 and ACTS on rows the page check
-drops. The two L3 objects we call drifting,
-Intelsat 804 (25110) and Cosmos 2479 (38101), pass over the high barrier in 2021-2025.
+swings of 0.2-1.8 deg. ESA lists all seven as L2 or L1; the comparison table counts neither
+GStar 1, whose row cites a page outside the L2 chapter, nor ACTS, whose status row has no
+class. The two L3 objects we call drifting, Intelsat 804 (25110) and Cosmos 2479 (38101), pass
+over the high barrier in 2021-2025.
 
 ## Running on Kaggle CPU
 

@@ -96,6 +96,10 @@ class Layers(unittest.TestCase):
                 "tests/test_i.py": "from pathlib import Path\nTEST_ROOT = Path(__file__).parent\nT = TEST_ROOT / \"data\"\n",
                 "tests/test_j.py": "from pathlib import Path\nT = Path(__file__).parents[1].joinpath(\"mock\", \"x.tle\")\n",
                 "tests/test_k.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = REPO.joinpath(\"data\")\n",
+                "tests/test_o.py": "from pathlib import Path\nHERE = Path(__file__).parent\nT = HERE.parent / \"mock\" / \"x.tle\"\n",
+                "tests/test_p.py": "import os\nREPO = os.path.dirname(os.path.dirname(__file__))\nT = os.path.join(REPO, \"data\", \"x\")\n",
+                "tests/test_q.py": "import numpy as np\nT = np.loadtxt(\"data/x.txt\")\n",
+                "tests/test_r.py": "def test_x(name):\n    return open(f\"mock/geo/{name}\").read()\n",
             },
             {
                 "tests/test_e.py": "def test_x(mock_dir):\n    return (mock_dir / \"geo\" / \"x.tle\").read_text()\n",
@@ -105,6 +109,8 @@ class Layers(unittest.TestCase):
                 "tests/test_l.py": "def test_x(tmp_path):\n    tmp_path.joinpath(\"data\").mkdir()\n",
                 "tests/test_m.py": "def test_x(mock_dir):\n    return mock_dir.joinpath(\"geo\", \"x.tle\").read_text()\n",
                 "tests/test_n.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = REPO / \"orbit_watch\"\n",
+                "tests/test_s.py": "def test_x(tmp_path):\n    (tmp_path / \"tle2025.txt\" / \"data\").mkdir(parents=True)\n",
+                "tests/test_t.py": "import os\ndef test_x(tmp_path):\n    os.makedirs(os.path.join(tmp_path, \"data\"))\n",
             },
         )
 

@@ -109,7 +109,7 @@ def test_zip_bundle_with_names_bad_lines_and_restated_epochs(tmp_path, sample):
     )
     bundle = tmp_path / "tle2021.zip"
     with zipfile.ZipFile(bundle, "w") as zf:
-        zf.writestr("data/exports/tle2021.txt", member + "\n")
+        zf.writestr("exports/tle2021.txt", member + "\n")
     manifest = json.loads(build("zip", [bundle])["manifest.json"])
     luch = manifest["objects"]["37951"]
     assert luch["names"] == ["LUCH 5A"]
