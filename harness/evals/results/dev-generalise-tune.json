@@ -6,7 +6,7 @@
     "to": "2026-01-01"
   },
   "settings": "generalise-tune",
-  "commit": "896ae19a9fdd49de4f989d52d61c21b14676f2fb",
+  "commit": "13fc6a9df2dbe027f19878a317eb85c83c6dc608",
   "dirty": false,
   "tolerance_days": {
     "before": 0.5,
@@ -42,10 +42,10 @@
     {
       "check": "GEO recall NS",
       "target": ">= 0.8",
-      "value": 0.0714,
+      "value": 0.0,
       "ci95": [
-        0.0127,
-        0.3147
+        0.0,
+        0.2153
       ],
       "status": "MISS"
     },
@@ -131,6 +131,7 @@
       },
       "false_alarms": 15,
       "duplicates": 91,
+      "wrong_channel": 0,
       "object_years": 10.552,
       "no_burn_years": 10.806,
       "scored_fraction": 0.976,
@@ -153,15 +154,15 @@
         "all": {
           "events": 57,
           "covered": 51,
-          "matched": 37,
-          "matched_all": 37,
-          "recall": 0.7255,
-          "recall_all_events": 0.6491,
+          "matched": 36,
+          "matched_all": 36,
+          "recall": 0.7059,
+          "recall_all_events": 0.6316,
           "ci95": [
-            0.5905,
-            0.8289
+            0.57,
+            0.8129
           ],
-          "ci95_width": 0.2383
+          "ci95_width": 0.2429
         },
         "EW": {
           "events": 37,
@@ -192,19 +193,20 @@
         "NS": {
           "events": 16,
           "covered": 14,
-          "matched": 1,
-          "matched_all": 1,
-          "recall": 0.0714,
-          "recall_all_events": 0.0625,
+          "matched": 0,
+          "matched_all": 0,
+          "recall": 0.0,
+          "recall_all_events": 0.0,
           "ci95": [
-            0.0127,
-            0.3147
+            0.0,
+            0.2153
           ],
-          "ci95_width": 0.302
+          "ci95_width": 0.2153
         }
       },
       "false_alarms": 1,
       "duplicates": 12,
+      "wrong_channel": 1,
       "object_years": 1.956,
       "no_burn_years": 2.087,
       "scored_fraction": 0.937,
@@ -236,6 +238,7 @@
       },
       "false_alarms": 0,
       "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.462,
       "no_burn_years": 1.964,
       "scored_fraction": 0.235,
@@ -270,6 +273,7 @@
       },
       "false_alarms": 4,
       "duplicates": 3,
+      "wrong_channel": 0,
       "object_years": 1.719,
       "no_burn_years": 1.739,
       "scored_fraction": 0.989,
@@ -301,6 +305,7 @@
       },
       "false_alarms": 0,
       "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0,
       "no_burn_years": 0.0,
       "scored_fraction": null,
@@ -324,7 +329,14 @@
       "detections": 42,
       "matched_detections": 35,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 4,
+      "duplicates": 3,
+      "wrong_channel": 0,
+      "object_years": 1.7188,
+      "no_burn_years": 1.7385,
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2024-09-09T01:02:11Z",
           "end_utc": "2024-09-09T05:39:02Z",
@@ -354,7 +366,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-06-14T11:46:04Z",
           "end_utc": "2024-06-14T19:30:07Z",
@@ -376,10 +388,7 @@
           "z": 652.66,
           "channel": "a"
         }
-      ],
-      "object_years": 1.7188,
-      "no_burn_years": 1.7385,
-      "missed": []
+      ]
     },
     "SPOT-5": {
       "norad_id": 27421,
@@ -397,11 +406,15 @@
       "detections": 1,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0,
       "no_burn_years": 0.0,
-      "missed": []
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "CryoSat-2": {
       "norad_id": 36508,
@@ -425,7 +438,21 @@
       "detections": 70,
       "matched_detections": 39,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 5,
+      "duplicates": 26,
+      "wrong_channel": 0,
+      "object_years": 1.6914,
+      "no_burn_years": 1.7269,
+      "missed": [
+        {
+          "event_id": "CryoSat-2-198",
+          "start_utc": "2024-03-25T13:17:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 59.9
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2024-04-10T14:35:38Z",
           "end_utc": "2024-04-10T22:51:51Z",
@@ -462,7 +489,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-01-10T10:14:47Z",
           "end_utc": "2024-01-11T12:42:43Z",
@@ -645,16 +672,6 @@
           "z": 401.79,
           "channel": "a"
         }
-      ],
-      "object_years": 1.6914,
-      "no_burn_years": 1.7269,
-      "missed": [
-        {
-          "event_id": "CryoSat-2-198",
-          "start_utc": "2024-03-25T13:17:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 59.9
-        }
       ]
     },
     "Jason-3": {
@@ -679,7 +696,69 @@
       "detections": 31,
       "matched_detections": 17,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 2,
+      "duplicates": 12,
+      "wrong_channel": 0,
+      "object_years": 1.7806,
+      "no_burn_years": 1.8201,
+      "missed": [
+        {
+          "event_id": "Jason-3-054",
+          "start_utc": "2024-04-12T05:27:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 11.8
+        },
+        {
+          "event_id": "Jason-3-060",
+          "start_utc": "2025-01-07T21:41:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 7996.0
+        },
+        {
+          "event_id": "Jason-3-061",
+          "start_utc": "2025-01-10T00:22:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 7945.0
+        },
+        {
+          "event_id": "Jason-3-062",
+          "start_utc": "2025-01-21T18:21:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -7888.0
+        },
+        {
+          "event_id": "Jason-3-063",
+          "start_utc": "2025-01-23T16:22:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -4880.3
+        },
+        {
+          "event_id": "Jason-3-064",
+          "start_utc": "2025-01-24T23:18:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -2878.2
+        },
+        {
+          "event_id": "Jason-3-072",
+          "start_utc": "2025-06-10T21:24:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -7775.2
+        },
+        {
+          "event_id": "Jason-3-075",
+          "start_utc": "2025-06-29T15:10:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -5.0
+        },
+        {
+          "event_id": "Jason-3-077",
+          "start_utc": "2025-08-19T23:12:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 15.0
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2025-06-01T14:56:04Z",
           "end_utc": "2025-06-01T22:25:47Z",
@@ -695,7 +774,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-01-08T14:04:48Z",
           "end_utc": "2024-01-08T19:42:05Z",
@@ -780,64 +859,6 @@
           "z": 123.69,
           "channel": "a"
         }
-      ],
-      "object_years": 1.7806,
-      "no_burn_years": 1.8201,
-      "missed": [
-        {
-          "event_id": "Jason-3-054",
-          "start_utc": "2024-04-12T05:27:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 11.8
-        },
-        {
-          "event_id": "Jason-3-060",
-          "start_utc": "2025-01-07T21:41:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 7996.0
-        },
-        {
-          "event_id": "Jason-3-061",
-          "start_utc": "2025-01-10T00:22:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 7945.0
-        },
-        {
-          "event_id": "Jason-3-062",
-          "start_utc": "2025-01-21T18:21:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -7888.0
-        },
-        {
-          "event_id": "Jason-3-063",
-          "start_utc": "2025-01-23T16:22:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -4880.3
-        },
-        {
-          "event_id": "Jason-3-064",
-          "start_utc": "2025-01-24T23:18:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -2878.2
-        },
-        {
-          "event_id": "Jason-3-072",
-          "start_utc": "2025-06-10T21:24:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -7775.2
-        },
-        {
-          "event_id": "Jason-3-075",
-          "start_utc": "2025-06-29T15:10:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -5.0
-        },
-        {
-          "event_id": "Jason-3-077",
-          "start_utc": "2025-08-19T23:12:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 15.0
-        }
       ]
     },
     "QZS-3": {
@@ -849,8 +870,8 @@
         "all": {
           "events": 47,
           "covered": 44,
-          "matched": 32,
-          "matched_all": 32
+          "matched": 31,
+          "matched_all": 31
         },
         "EW": {
           "events": 30,
@@ -867,14 +888,112 @@
         "NS": {
           "events": 13,
           "covered": 12,
-          "matched": 1,
-          "matched_all": 1
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 44,
       "matched_detections": 32,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 1,
+      "duplicates": 11,
+      "wrong_channel": 1,
+      "object_years": 1.6617,
+      "no_burn_years": 1.7277,
+      "missed": [
+        {
+          "event_id": "QZS-3-180+QZS-3-181",
+          "start_utc": "2024-01-05T14:08:07Z",
+          "kind": "NS",
+          "delta_a_est_m": 329.2
+        },
+        {
+          "event_id": "QZS-3-184",
+          "start_utc": "2024-02-15T23:56:49Z",
+          "kind": "NS",
+          "delta_a_est_m": 685.7
+        },
+        {
+          "event_id": "QZS-3-187",
+          "start_utc": "2024-04-02T20:51:33Z",
+          "kind": "NS",
+          "delta_a_est_m": 219.4
+        },
+        {
+          "event_id": "QZS-3-189",
+          "start_utc": "2024-04-26T15:59:40Z",
+          "kind": "EW",
+          "delta_a_est_m": -3264.0
+        },
+        {
+          "event_id": "QZS-3-194+QZS-3-195",
+          "start_utc": "2024-06-29T14:29:50Z",
+          "kind": "NS",
+          "delta_a_est_m": 493.7
+        },
+        {
+          "event_id": "QZS-3-198",
+          "start_utc": "2024-08-13T12:03:07Z",
+          "kind": "NS",
+          "delta_a_est_m": 768.0
+        },
+        {
+          "event_id": "QZS-3-204",
+          "start_utc": "2024-11-08T06:20:23Z",
+          "kind": "NS",
+          "delta_a_est_m": 164.6
+        },
+        {
+          "event_id": "QZS-3-211+QZS-3-212",
+          "start_utc": "2025-02-03T12:00:25Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
+        },
+        {
+          "event_id": "QZS-3-215",
+          "start_utc": "2025-03-18T09:43:28Z",
+          "kind": "NS",
+          "delta_a_est_m": 384.0
+        },
+        {
+          "event_id": "QZS-3-221+QZS-3-222",
+          "start_utc": "2025-06-10T03:37:54Z",
+          "kind": "NS",
+          "delta_a_est_m": 54.9
+        },
+        {
+          "event_id": "QZS-3-225+QZS-3-226",
+          "start_utc": "2025-07-23T00:46:53Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
+        },
+        {
+          "event_id": "QZS-3-229",
+          "start_utc": "2025-09-03T22:30:05Z",
+          "kind": "NS",
+          "delta_a_est_m": 54.9
+        },
+        {
+          "event_id": "QZS-3-235+QZS-3-236",
+          "start_utc": "2025-11-30T16:09:33Z",
+          "kind": "NS",
+          "delta_a_est_m": 137.2
+        }
+      ],
+      "wrong_channel_list": [
+        {
+          "event_id": "QZS-3-221+QZS-3-222",
+          "start_utc": "2025-06-10T03:37:54Z",
+          "detection": {
+            "start_utc": "2025-06-10T00:48:28Z",
+            "end_utc": "2025-06-10T20:18:38Z",
+            "step_m": -2979.7,
+            "z": -509.53,
+            "channel": "a"
+          }
+        }
+      ],
+      "false_alarm_list": [
         {
           "start_utc": "2025-02-27T20:29:12Z",
           "end_utc": "2025-02-28T14:03:38Z",
@@ -883,7 +1002,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-01-08T07:27:36Z",
           "end_utc": "2024-01-08T12:37:00Z",
@@ -961,82 +1080,6 @@
           "z": -830.14,
           "channel": "a"
         }
-      ],
-      "object_years": 1.6617,
-      "no_burn_years": 1.7277,
-      "missed": [
-        {
-          "event_id": "QZS-3-180+QZS-3-181",
-          "start_utc": "2024-01-05T14:08:07Z",
-          "kind": "NS",
-          "delta_a_est_m": 329.2
-        },
-        {
-          "event_id": "QZS-3-184",
-          "start_utc": "2024-02-15T23:56:49Z",
-          "kind": "NS",
-          "delta_a_est_m": 685.7
-        },
-        {
-          "event_id": "QZS-3-187",
-          "start_utc": "2024-04-02T20:51:33Z",
-          "kind": "NS",
-          "delta_a_est_m": 219.4
-        },
-        {
-          "event_id": "QZS-3-189",
-          "start_utc": "2024-04-26T15:59:40Z",
-          "kind": "EW",
-          "delta_a_est_m": -3264.0
-        },
-        {
-          "event_id": "QZS-3-194+QZS-3-195",
-          "start_utc": "2024-06-29T14:29:50Z",
-          "kind": "NS",
-          "delta_a_est_m": 493.7
-        },
-        {
-          "event_id": "QZS-3-198",
-          "start_utc": "2024-08-13T12:03:07Z",
-          "kind": "NS",
-          "delta_a_est_m": 768.0
-        },
-        {
-          "event_id": "QZS-3-204",
-          "start_utc": "2024-11-08T06:20:23Z",
-          "kind": "NS",
-          "delta_a_est_m": 164.6
-        },
-        {
-          "event_id": "QZS-3-211+QZS-3-212",
-          "start_utc": "2025-02-03T12:00:25Z",
-          "kind": "NS",
-          "delta_a_est_m": -164.6
-        },
-        {
-          "event_id": "QZS-3-215",
-          "start_utc": "2025-03-18T09:43:28Z",
-          "kind": "NS",
-          "delta_a_est_m": 384.0
-        },
-        {
-          "event_id": "QZS-3-225+QZS-3-226",
-          "start_utc": "2025-07-23T00:46:53Z",
-          "kind": "NS",
-          "delta_a_est_m": -164.6
-        },
-        {
-          "event_id": "QZS-3-229",
-          "start_utc": "2025-09-03T22:30:05Z",
-          "kind": "NS",
-          "delta_a_est_m": 54.9
-        },
-        {
-          "event_id": "QZS-3-235+QZS-3-236",
-          "start_utc": "2025-11-30T16:09:33Z",
-          "kind": "NS",
-          "delta_a_est_m": 137.2
-        }
       ]
     },
     "QZS-4": {
@@ -1055,11 +1098,15 @@
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.4621,
       "no_burn_years": 1.9641,
-      "missed": []
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "Sentinel-3B": {
       "norad_id": 43437,
@@ -1083,7 +1130,69 @@
       "detections": 65,
       "matched_detections": 41,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 4,
+      "duplicates": 20,
+      "wrong_channel": 0,
+      "object_years": 1.6078,
+      "no_burn_years": 1.6509,
+      "missed": [
+        {
+          "event_id": "Sentinel-3B-088",
+          "start_utc": "2024-03-20T08:30:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 27.0
+        },
+        {
+          "event_id": "Sentinel-3B-090",
+          "start_utc": "2024-03-29T05:30:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -1.9
+        },
+        {
+          "event_id": "Sentinel-3B-100",
+          "start_utc": "2024-09-03T07:33:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 22.9
+        },
+        {
+          "event_id": "Sentinel-3B-103",
+          "start_utc": "2024-10-03T08:13:00Z",
+          "kind": "cross-track",
+          "delta_a_est_m": 68.0
+        },
+        {
+          "event_id": "Sentinel-3B-113",
+          "start_utc": "2025-01-30T08:33:00Z",
+          "kind": "cross-track",
+          "delta_a_est_m": 43.1
+        },
+        {
+          "event_id": "Sentinel-3B-114",
+          "start_utc": "2025-02-06T07:25:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 34.0
+        },
+        {
+          "event_id": "Sentinel-3B-119",
+          "start_utc": "2025-04-16T07:17:00Z",
+          "kind": "cross-track",
+          "delta_a_est_m": 37.3
+        },
+        {
+          "event_id": "Sentinel-3B-126",
+          "start_utc": "2025-08-13T07:40:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 22.7
+        },
+        {
+          "event_id": "Sentinel-3B-131",
+          "start_utc": "2025-10-12T08:30:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -13.3
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2024-10-02T03:44:07Z",
           "end_utc": "2024-10-02T17:12:01Z",
@@ -1113,7 +1222,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-01-05T04:10:07Z",
           "end_utc": "2024-01-05T19:19:00Z",
@@ -1254,64 +1363,6 @@
           "z": 116.49,
           "channel": "a"
         }
-      ],
-      "object_years": 1.6078,
-      "no_burn_years": 1.6509,
-      "missed": [
-        {
-          "event_id": "Sentinel-3B-088",
-          "start_utc": "2024-03-20T08:30:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 27.0
-        },
-        {
-          "event_id": "Sentinel-3B-090",
-          "start_utc": "2024-03-29T05:30:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -1.9
-        },
-        {
-          "event_id": "Sentinel-3B-100",
-          "start_utc": "2024-09-03T07:33:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 22.9
-        },
-        {
-          "event_id": "Sentinel-3B-103",
-          "start_utc": "2024-10-03T08:13:00Z",
-          "kind": "cross-track",
-          "delta_a_est_m": 68.0
-        },
-        {
-          "event_id": "Sentinel-3B-113",
-          "start_utc": "2025-01-30T08:33:00Z",
-          "kind": "cross-track",
-          "delta_a_est_m": 43.1
-        },
-        {
-          "event_id": "Sentinel-3B-114",
-          "start_utc": "2025-02-06T07:25:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 34.0
-        },
-        {
-          "event_id": "Sentinel-3B-119",
-          "start_utc": "2025-04-16T07:17:00Z",
-          "kind": "cross-track",
-          "delta_a_est_m": 37.3
-        },
-        {
-          "event_id": "Sentinel-3B-126",
-          "start_utc": "2025-08-13T07:40:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 22.7
-        },
-        {
-          "event_id": "Sentinel-3B-131",
-          "start_utc": "2025-10-12T08:30:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -13.3
-        }
       ]
     },
     "Fengyun-2H": {
@@ -1330,11 +1381,15 @@
       "detections": 7,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0,
       "no_burn_years": 0.0,
-      "missed": []
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "HY-2C": {
       "norad_id": 46469,
@@ -1358,7 +1413,27 @@
       "detections": 27,
       "matched_detections": 17,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 1,
+      "duplicates": 9,
+      "wrong_channel": 0,
+      "object_years": 1.8287,
+      "no_burn_years": 1.8642,
+      "missed": [
+        {
+          "event_id": "HY-2C-042",
+          "start_utc": "2025-11-08T01:45:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 34.3
+        },
+        {
+          "event_id": "HY-2C-044",
+          "start_utc": "2025-12-24T07:38:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 22.8
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2024-10-02T03:06:24Z",
           "end_utc": "2024-10-02T10:02:49Z",
@@ -1367,7 +1442,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-07-04T11:36:50Z",
           "end_utc": "2024-07-04T13:20:56Z",
@@ -1431,22 +1506,6 @@
           "z": 268.44,
           "channel": "a"
         }
-      ],
-      "object_years": 1.8287,
-      "no_burn_years": 1.8642,
-      "missed": [
-        {
-          "event_id": "HY-2C-042",
-          "start_utc": "2025-11-08T01:45:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 34.3
-        },
-        {
-          "event_id": "HY-2C-044",
-          "start_utc": "2025-12-24T07:38:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 22.8
-        }
       ]
     },
     "HY-2D": {
@@ -1471,8 +1530,22 @@
       "detections": 23,
       "matched_detections": 17,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [
+      "false_alarms": 0,
+      "duplicates": 6,
+      "wrong_channel": 0,
+      "object_years": 1.8309,
+      "no_burn_years": 1.8645,
+      "missed": [
+        {
+          "event_id": "HY-2D-027",
+          "start_utc": "2024-07-22T22:30:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 29.2
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": [
         {
           "start_utc": "2024-02-21T22:29:45Z",
           "end_utc": "2024-02-22T03:42:04Z",
@@ -1515,16 +1588,6 @@
           "z": 869.9,
           "channel": "a"
         }
-      ],
-      "object_years": 1.8309,
-      "no_burn_years": 1.8645,
-      "missed": [
-        {
-          "event_id": "HY-2D-027",
-          "start_utc": "2024-07-22T22:30:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 29.2
-        }
       ]
     },
     "SWOT": {
@@ -1543,7 +1606,39 @@
       "detections": 47,
       "matched_detections": 26,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 3,
+      "duplicates": 18,
+      "wrong_channel": 0,
+      "object_years": 1.7592,
+      "no_burn_years": 1.7956,
+      "missed": [
+        {
+          "event_id": "SWOT-052+SWOT-053",
+          "start_utc": "2024-06-07T08:40:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -1.9
+        },
+        {
+          "event_id": "SWOT-063+SWOT-064",
+          "start_utc": "2024-12-29T14:25:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 1.0
+        },
+        {
+          "event_id": "SWOT-067+SWOT-068",
+          "start_utc": "2025-03-02T07:18:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 0.1
+        },
+        {
+          "event_id": "SWOT-070+SWOT-071",
+          "start_utc": "2025-03-09T12:38:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -0.2
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2024-07-30T21:13:51Z",
           "end_utc": "2024-07-31T12:39:54Z",
@@ -1566,7 +1661,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-01-13T12:39:19Z",
           "end_utc": "2024-01-13T19:30:53Z",
@@ -1693,34 +1788,6 @@
           "z": 86.34,
           "channel": "a"
         }
-      ],
-      "object_years": 1.7592,
-      "no_burn_years": 1.7956,
-      "missed": [
-        {
-          "event_id": "SWOT-052+SWOT-053",
-          "start_utc": "2024-06-07T08:40:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -1.9
-        },
-        {
-          "event_id": "SWOT-063+SWOT-064",
-          "start_utc": "2024-12-29T14:25:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 1.0
-        },
-        {
-          "event_id": "SWOT-067+SWOT-068",
-          "start_utc": "2025-03-02T07:18:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": 0.1
-        },
-        {
-          "event_id": "SWOT-070+SWOT-071",
-          "start_utc": "2025-03-09T12:38:00Z",
-          "kind": "along-track",
-          "delta_a_est_m": -0.2
-        }
       ]
     },
     "QZS-6": {
@@ -1751,16 +1818,9 @@
       "detections": 19,
       "matched_detections": 5,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [
-        {
-          "start_utc": "2025-12-11T03:00:38Z",
-          "end_utc": "2025-12-11T13:56:27Z",
-          "step_m": -1925.2,
-          "z": -984.53,
-          "channel": "a"
-        }
-      ],
+      "false_alarms": 0,
+      "duplicates": 1,
+      "wrong_channel": 0,
       "object_years": 0.2941,
       "no_burn_years": 0.3593,
       "missed": [
@@ -1775,6 +1835,17 @@
           "start_utc": "2025-11-17T06:28:44Z",
           "kind": "NS",
           "delta_a_est_m": 164.5
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": [
+        {
+          "start_utc": "2025-12-11T03:00:38Z",
+          "end_utc": "2025-12-11T13:56:27Z",
+          "step_m": -1925.2,
+          "z": -984.53,
+          "channel": "a"
         }
       ]
     },
@@ -1800,8 +1871,9 @@
       "detections": 1,
       "matched_detections": 1,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0529,
       "no_burn_years": 0.0842,
       "missed": [
@@ -1811,7 +1883,10 @@
           "kind": "cross-track",
           "delta_a_est_m": 8.0
         }
-      ]
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     }
   }
 }

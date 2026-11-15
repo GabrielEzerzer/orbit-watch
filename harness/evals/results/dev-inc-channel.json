@@ -6,8 +6,8 @@
     "to": "2026-01-01"
   },
   "settings": "inc-channel",
-  "commit": "84555a6841b1f2e6961af3f423d6bbfd6ca09157",
-  "dirty": true,
+  "commit": "13fc6a9df2dbe027f19878a317eb85c83c6dc608",
+  "dirty": false,
   "tolerance_days": {
     "before": 0.5,
     "after": 2.0,
@@ -329,7 +329,14 @@
       "detections": 42,
       "matched_detections": 35,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 4,
+      "duplicates": 3,
+      "wrong_channel": 0,
+      "object_years": 1.7188,
+      "no_burn_years": 1.7385,
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2024-09-09T01:02:11Z",
           "end_utc": "2024-09-09T05:39:02Z",
@@ -359,7 +366,7 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2024-06-14T11:46:04Z",
           "end_utc": "2024-06-14T19:30:07Z",
@@ -381,11 +388,7 @@
           "z": 652.66,
           "channel": "a"
         }
-      ],
-      "wrong_channel": [],
-      "object_years": 1.7188,
-      "no_burn_years": 1.7385,
-      "missed": []
+      ]
     },
     "SPOT-5": {
       "norad_id": 27421,
@@ -403,12 +406,15 @@
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0,
       "no_burn_years": 0.0,
-      "missed": []
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "CryoSat-2": {
       "norad_id": 36508,
@@ -432,17 +438,9 @@
       "detections": 3,
       "matched_detections": 2,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [
-        {
-          "start_utc": "2025-06-18T12:40:01Z",
-          "end_utc": "2025-06-18T14:19:16Z",
-          "step_m": 306.5,
-          "z": 4185.83,
-          "channel": "a"
-        }
-      ],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 1,
+      "wrong_channel": 0,
       "object_years": 1.6914,
       "no_burn_years": 1.7269,
       "missed": [
@@ -674,6 +672,17 @@
           "kind": "along-track",
           "delta_a_est_m": 19.5
         }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": [
+        {
+          "start_utc": "2025-06-18T12:40:01Z",
+          "end_utc": "2025-06-18T14:19:16Z",
+          "step_m": 306.5,
+          "z": 4185.83,
+          "channel": "a"
+        }
       ]
     },
     "Jason-3": {
@@ -698,9 +707,9 @@
       "detections": 8,
       "matched_detections": 8,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 1.7806,
       "no_burn_years": 1.8201,
       "missed": [
@@ -812,7 +821,10 @@
           "kind": "along-track",
           "delta_a_est_m": 13.8
         }
-      ]
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "QZS-3": {
       "norad_id": 42917,
@@ -848,158 +860,9 @@
       "detections": 50,
       "matched_detections": 37,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
-        {
-          "start_utc": "2025-02-27T20:29:12Z",
-          "end_utc": "2025-02-28T14:03:38Z",
-          "step_m": -3042.6,
-          "z": -224.27,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2025-12-15T20:50:23Z",
-          "end_utc": "2025-12-16T07:06:43Z",
-          "step_m": 680.3,
-          "z": 698.83,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2025-12-21T12:37:21Z",
-          "end_utc": "2025-12-21T13:48:06Z",
-          "step_m": -705.4,
-          "z": -365.42,
-          "channel": "a"
-        }
-      ],
-      "duplicates": [
-        {
-          "start_utc": "2024-01-08T07:27:36Z",
-          "end_utc": "2024-01-08T12:37:00Z",
-          "step_m": -2934.9,
-          "z": -328.81,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2024-06-08T05:38:11Z",
-          "end_utc": "2024-06-08T13:38:54Z",
-          "step_m": -3192.3,
-          "z": -1409.34,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2024-07-01T20:41:45Z",
-          "end_utc": "2024-07-02T14:58:26Z",
-          "step_m": -3794.6,
-          "z": -455.38,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2024-07-24T04:10:42Z",
-          "end_utc": "2024-07-24T13:15:13Z",
-          "step_m": -3313.5,
-          "z": -1396.83,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2024-08-15T21:19:07Z",
-          "end_utc": "2024-08-16T13:57:26Z",
-          "step_m": -3574.0,
-          "z": -14.04,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2024-10-20T18:28:44Z",
-          "end_utc": "2024-10-20T19:34:42Z",
-          "step_m": -3078.6,
-          "z": -1252.36,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2025-02-05T04:35:38Z",
-          "end_utc": "2025-02-06T14:06:38Z",
-          "step_m": -2444.5,
-          "z": -52.03,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2025-02-26T12:56:38Z",
-          "end_utc": "2025-02-27T20:29:12Z",
-          "step_m": -3183.3,
-          "z": -168.69,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2025-08-15T22:04:03Z",
-          "end_utc": "2025-08-16T08:20:48Z",
-          "step_m": -3198.9,
-          "z": -534.92,
-          "channel": "a"
-        },
-        {
-          "start_utc": "2025-12-27T01:00:38Z",
-          "end_utc": "2025-12-27T06:45:26Z",
-          "step_m": -3396.2,
-          "z": -830.14,
-          "channel": "a"
-        }
-      ],
-      "wrong_channel": [
-        {
-          "event_id": "QZS-3-180+QZS-3-181",
-          "start_utc": "2024-01-05T14:08:07Z",
-          "detection": {
-            "start_utc": "2024-01-05T13:31:38Z",
-            "end_utc": "2024-01-05T16:54:42Z",
-            "step_m": -354.4,
-            "z": -72.28,
-            "channel": "a"
-          }
-        },
-        {
-          "event_id": "QZS-3-187",
-          "start_utc": "2024-04-02T20:51:33Z",
-          "detection": {
-            "start_utc": "2024-04-02T16:32:38Z",
-            "end_utc": "2024-04-02T21:08:58Z",
-            "step_m": 360.7,
-            "z": 69.89,
-            "channel": "a"
-          }
-        },
-        {
-          "event_id": "QZS-3-211+QZS-3-212",
-          "start_utc": "2025-02-03T12:00:25Z",
-          "detection": {
-            "start_utc": "2025-02-02T22:09:03Z",
-            "end_utc": "2025-02-03T11:52:00Z",
-            "step_m": -810.7,
-            "z": -20.46,
-            "channel": "a"
-          }
-        },
-        {
-          "event_id": "QZS-3-221+QZS-3-222",
-          "start_utc": "2025-06-10T03:37:54Z",
-          "detection": {
-            "start_utc": "2025-06-10T00:48:28Z",
-            "end_utc": "2025-06-10T20:18:38Z",
-            "step_m": -2979.7,
-            "z": -509.53,
-            "channel": "a"
-          }
-        },
-        {
-          "event_id": "QZS-3-225+QZS-3-226",
-          "start_utc": "2025-07-23T00:46:53Z",
-          "detection": {
-            "start_utc": "2025-07-22T13:54:09Z",
-            "end_utc": "2025-07-23T02:08:38Z",
-            "step_m": -780.8,
-            "z": -112.25,
-            "channel": "a"
-          }
-        }
-      ],
+      "false_alarms": 3,
+      "duplicates": 10,
+      "wrong_channel": 5,
       "object_years": 1.6617,
       "no_burn_years": 1.7277,
       "missed": [
@@ -1075,6 +938,158 @@
           "kind": "NS",
           "delta_a_est_m": 54.9
         }
+      ],
+      "wrong_channel_list": [
+        {
+          "event_id": "QZS-3-180+QZS-3-181",
+          "start_utc": "2024-01-05T14:08:07Z",
+          "detection": {
+            "start_utc": "2024-01-05T13:31:38Z",
+            "end_utc": "2024-01-05T16:54:42Z",
+            "step_m": -354.4,
+            "z": -72.28,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-187",
+          "start_utc": "2024-04-02T20:51:33Z",
+          "detection": {
+            "start_utc": "2024-04-02T16:32:38Z",
+            "end_utc": "2024-04-02T21:08:58Z",
+            "step_m": 360.7,
+            "z": 69.89,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-211+QZS-3-212",
+          "start_utc": "2025-02-03T12:00:25Z",
+          "detection": {
+            "start_utc": "2025-02-02T22:09:03Z",
+            "end_utc": "2025-02-03T11:52:00Z",
+            "step_m": -810.7,
+            "z": -20.46,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-221+QZS-3-222",
+          "start_utc": "2025-06-10T03:37:54Z",
+          "detection": {
+            "start_utc": "2025-06-10T00:48:28Z",
+            "end_utc": "2025-06-10T20:18:38Z",
+            "step_m": -2979.7,
+            "z": -509.53,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-225+QZS-3-226",
+          "start_utc": "2025-07-23T00:46:53Z",
+          "detection": {
+            "start_utc": "2025-07-22T13:54:09Z",
+            "end_utc": "2025-07-23T02:08:38Z",
+            "step_m": -780.8,
+            "z": -112.25,
+            "channel": "a"
+          }
+        }
+      ],
+      "false_alarm_list": [
+        {
+          "start_utc": "2025-02-27T20:29:12Z",
+          "end_utc": "2025-02-28T14:03:38Z",
+          "step_m": -3042.6,
+          "z": -224.27,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-15T20:50:23Z",
+          "end_utc": "2025-12-16T07:06:43Z",
+          "step_m": 680.3,
+          "z": 698.83,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-21T12:37:21Z",
+          "end_utc": "2025-12-21T13:48:06Z",
+          "step_m": -705.4,
+          "z": -365.42,
+          "channel": "a"
+        }
+      ],
+      "duplicate_list": [
+        {
+          "start_utc": "2024-01-08T07:27:36Z",
+          "end_utc": "2024-01-08T12:37:00Z",
+          "step_m": -2934.9,
+          "z": -328.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-06-08T05:38:11Z",
+          "end_utc": "2024-06-08T13:38:54Z",
+          "step_m": -3192.3,
+          "z": -1409.34,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-01T20:41:45Z",
+          "end_utc": "2024-07-02T14:58:26Z",
+          "step_m": -3794.6,
+          "z": -455.38,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-24T04:10:42Z",
+          "end_utc": "2024-07-24T13:15:13Z",
+          "step_m": -3313.5,
+          "z": -1396.83,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-15T21:19:07Z",
+          "end_utc": "2024-08-16T13:57:26Z",
+          "step_m": -3574.0,
+          "z": -14.04,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-20T18:28:44Z",
+          "end_utc": "2024-10-20T19:34:42Z",
+          "step_m": -3078.6,
+          "z": -1252.36,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-05T04:35:38Z",
+          "end_utc": "2025-02-06T14:06:38Z",
+          "step_m": -2444.5,
+          "z": -52.03,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-26T12:56:38Z",
+          "end_utc": "2025-02-27T20:29:12Z",
+          "step_m": -3183.3,
+          "z": -168.69,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-08-15T22:04:03Z",
+          "end_utc": "2025-08-16T08:20:48Z",
+          "step_m": -3198.9,
+          "z": -534.92,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-27T01:00:38Z",
+          "end_utc": "2025-12-27T06:45:26Z",
+          "step_m": -3396.2,
+          "z": -830.14,
+          "channel": "a"
+        }
       ]
     },
     "QZS-4": {
@@ -1093,12 +1108,15 @@
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.4621,
       "no_burn_years": 1.9641,
-      "missed": []
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "Sentinel-3B": {
       "norad_id": 43437,
@@ -1122,9 +1140,9 @@
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 1.6078,
       "no_burn_years": 1.6509,
       "missed": [
@@ -1428,7 +1446,10 @@
           "kind": "along-track",
           "delta_a_est_m": 29.6
         }
-      ]
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "Fengyun-2H": {
       "norad_id": 43491,
@@ -1446,12 +1467,15 @@
       "detections": 9,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0,
       "no_burn_years": 0.0,
-      "missed": []
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "HY-2C": {
       "norad_id": 46469,
@@ -1475,9 +1499,9 @@
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 1.8287,
       "no_burn_years": 1.8642,
       "missed": [
@@ -1595,7 +1619,10 @@
           "kind": "along-track",
           "delta_a_est_m": 22.8
         }
-      ]
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "HY-2D": {
       "norad_id": 48621,
@@ -1619,9 +1646,9 @@
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 1.8309,
       "no_burn_years": 1.8645,
       "missed": [
@@ -1733,7 +1760,10 @@
           "kind": "along-track",
           "delta_a_est_m": 26.6
         }
-      ]
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "SWOT": {
       "norad_id": 54754,
@@ -1751,9 +1781,9 @@
       "detections": 0,
       "matched_detections": 0,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 1.7592,
       "no_burn_years": 1.7956,
       "missed": [
@@ -1937,7 +1967,10 @@
           "kind": "along-track",
           "delta_a_est_m": 26.8
         }
-      ]
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     },
     "QZS-6": {
       "norad_id": 62876,
@@ -1967,7 +2000,27 @@
       "detections": 31,
       "matched_detections": 5,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [
+      "false_alarms": 4,
+      "duplicates": 1,
+      "wrong_channel": 0,
+      "object_years": 0.2941,
+      "no_burn_years": 0.3593,
+      "missed": [
+        {
+          "event_id": "QZS-6-002",
+          "start_utc": "2025-08-22T13:44:42Z",
+          "kind": "NS",
+          "delta_a_est_m": 164.6
+        },
+        {
+          "event_id": "QZS-6-008+QZS-6-009",
+          "start_utc": "2025-11-17T06:28:44Z",
+          "kind": "NS",
+          "delta_a_est_m": 164.5
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
         {
           "start_utc": "2025-09-02T21:24:24Z",
           "end_utc": "2025-09-03T03:02:09Z",
@@ -1997,30 +2050,13 @@
           "channel": "a"
         }
       ],
-      "duplicates": [
+      "duplicate_list": [
         {
           "start_utc": "2025-12-11T03:00:38Z",
           "end_utc": "2025-12-11T13:56:27Z",
           "step_m": -1925.2,
           "z": -984.53,
           "channel": "a"
-        }
-      ],
-      "wrong_channel": [],
-      "object_years": 0.2941,
-      "no_burn_years": 0.3593,
-      "missed": [
-        {
-          "event_id": "QZS-6-002",
-          "start_utc": "2025-08-22T13:44:42Z",
-          "kind": "NS",
-          "delta_a_est_m": 164.6
-        },
-        {
-          "event_id": "QZS-6-008+QZS-6-009",
-          "start_utc": "2025-11-17T06:28:44Z",
-          "kind": "NS",
-          "delta_a_est_m": 164.5
         }
       ]
     },
@@ -2046,9 +2082,9 @@
       "detections": 1,
       "matched_detections": 1,
       "dropped_attitude_or_unplanned": 0,
-      "false_alarms": [],
-      "duplicates": [],
-      "wrong_channel": [],
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0529,
       "no_burn_years": 0.0842,
       "missed": [
@@ -2058,7 +2094,10 @@
           "kind": "cross-track",
           "delta_a_est_m": 8.0
         }
-      ]
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
     }
   }
 }
