@@ -1,8 +1,8 @@
 mode,2021,2022,2023,2024,2025
-controlled_lon_inc,362,367,387,382,372
-controlled_lon,137,142,136,139,142
-drifting,876,891,924,965,1013
-librating_75E,112,113,114,118,122
+controlled_lon_inc,347,357,367,366,350
+controlled_lon,152,152,156,155,164
+drifting,876,891,924,965,1012
+librating_75E,112,113,114,118,123
 librating_105W,35,41,36,35,35
 librating_both,18,18,21,20,20
 inclined,21,21,21,21,20

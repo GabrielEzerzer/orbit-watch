@@ -9,9 +9,10 @@ does not host it publicly). ESA's classes and the mode names used here:
 ==================  ====  ============================================================================
 mode                ESA   rule here
 ==================  ====  ============================================================================
-controlled_lon_inc  C1    longitude held (below), and the median inclination is at most 0.3 deg in
-                          some window within a year either side (ESA's 0.3 and its one year)
-controlled_lon      C2    longitude held, and no window within a year either side is at 0.3 deg or less
+controlled_lon_inc  C1    longitude held (below), and the window's median inclination is at most 0.3 deg,
+                          or it lies between two such windows at most a year apart (ESA's 0.3 and its
+                          one year)
+controlled_lon      C2    longitude held, and the inclination above 0.3 deg with no return seen within a year
 drifting            D     not held, and too fast to be trapped by the stable points (energy, below)
 librating_75E       L1    not held, trapped in the well of the eastern stable point (75 deg E)
 librating_105W      L2    not held, trapped in the well of the western stable point (105 deg W)
@@ -70,8 +71,10 @@ rule does not make for us, one line each:
   the natural acceleration, leaves more than ``FREE_RESIDUAL_DEG``. A noisy window between two
   windows of one free path is no manoeuvre. In a seeded sample of 400 objects that two-window
   fit leaves 0.42 % of 2,153 free-librator windows above 0.02 deg (99th percentile 0.017),
-  99.5 % of keeper windows and every relocation above it. With no data on one side (the ends of
-  the record, a gap) the window's own path decides.
+  99.5 % of keeper windows and every relocation above it. Across a gap the nearest window with
+  data, up to ``NEIGHBOUR_REACH`` windows out, stands in for a neighbour. With none on one side
+  (the ends of the record, a long gap) the window's own path decides, without its
+  ``DROP_WORST`` worst element sets.
 * Trapped or drifting: with the longitude acceleration of the Earth's tesseral harmonics
   (``tesseral_potential``, its terms scaled by Kaula's inclination functions),
   ``1/2 * drift**2 + potential(longitude)`` is conserved for a free object. Comparing it with the
@@ -79,8 +82,9 @@ rule does not make for us, one line each:
   (L3) or circulates (D). Window estimates of it still scatter by a few per cent with the phase
   of the swing (luni-solar terms and degree 4 and up are left out), so each run of free windows
   takes one energy, the median. A run goes on through still windows (a turning point, a barrier
-  top) and ends at a burn, or between two windows that each follow a free path but not the same
-  one. A run whose path passes over a barrier is not trapped behind it, whatever the energy reads.
+  top) and ends at a burn, or between two windows that each follow a free path but clearly not
+  the same one (the pinned fit through both leaves more than ``SPLIT_RESIDUAL_DEG``). A run whose
+  path passes over a barrier is not trapped behind it, whatever the energy reads.
 """
 
 # shortcut: segment boundaries fall on the 30-day grid, so a mode change is dated to within a
@@ -94,8 +98,6 @@ rule does not make for us, one line each:
 # shortcut: within about 6 deg of a stable point or 2 deg of a barrier, a keeper with no burn big
 # enough to see reads undetermined until its hold outlasts a free object's; north-south burns (an
 # inclination held near 0) would prove control sooner, from the inclination vector.
-# shortcut: a change between C1 and C2 is dated up to a year off (C1 -> C2 a year after the
-# inclination was last within 0.3 deg, C2 -> C1 a year before it first is); ESA's one-year rule.
 # shortcut: one wild element set (a corrupt mean motion) in a sparse window can break the held test
 # and the window's own fit, as for 49055 on 2022-06-11; reject sets far off the window's median
 # semi-major axis if it matters.
@@ -104,6 +106,7 @@ rule does not make for us, one line each:
 
 from __future__ import annotations
 
+from bisect import bisect_left
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -123,6 +126,9 @@ MIN_SETS = 5
 MIN_SPAN_DAYS = 10.0
 HELD_SPREAD_DEG = 0.3
 FREE_RESIDUAL_DEG = 0.02
+SPLIT_RESIDUAL_DEG = 3 * FREE_RESIDUAL_DEG
+NEIGHBOUR_REACH = 3
+DROP_WORST = 3
 HELD_RUN = 3  # windows
 BOX_DEG = 1.5
 C1_MAX_INCLINATION_DEG = 0.3  # ESA, section 2, C1
@@ -280,17 +286,20 @@ def _arc(lon: np.ndarray) -> tuple[float, float]:
     return float(wrap180(x[(i + 1) % len(x)])), float(wrap180(x[i]))
 
 
+def _free_residuals(days: np.ndarray, u: np.ndarray, accel: float | None = None) -> np.ndarray:
+    t = days - days.mean()
+    y, basis = (u, [t**2, t, np.ones_like(t)]) if accel is None else (u - 0.5 * accel * t**2, [t**3, t, np.ones_like(t)])
+    a = np.column_stack(basis)
+    return y - a @ np.linalg.lstsq(a, y, rcond=None)[0]
+
+
 def _free_residual(days: np.ndarray, u: np.ndarray, accel: float | None = None) -> float:
     """Robust scatter (1.4826 x median absolute residual, deg) of the unwrapped longitude about a
     free path; a manoeuvre breaks it. Within a window the path is any quadratic in time. With
     ``accel`` (deg/day^2) its curvature is pinned to the natural acceleration, ``accel / 2 * t**2``,
     with a cubic term for the change of acceleration along the path: over 90 days a keeper held
     still away from a stable point then cannot pass for a free object."""
-    t = days - days.mean()
-    y, basis = (u, [t**2, t, np.ones_like(t)]) if accel is None else (u - 0.5 * accel * t**2, [t**3, t, np.ones_like(t)])
-    a = np.column_stack(basis)
-    r = y - a @ np.linalg.lstsq(a, y, rcond=None)[0]
-    return float(1.4826 * np.median(np.abs(r)))
+    return float(1.4826 * np.median(np.abs(_free_residuals(days, u, accel))))
 
 
 @dataclass(frozen=True)
@@ -321,23 +330,34 @@ def classify(tr: Track) -> list[Window]:
     def spread(sel: np.ndarray) -> float:
         return _spread(tr.days[sel], tr.lon[sel], tr.rate[sel])
 
-    def free_residual(sel: np.ndarray, pinned: bool = False) -> float:
+    def free_residual(sel: np.ndarray, pinned: bool = False, drop: int = 0) -> float:
         d = tr.days[sel]
         u = _unwrapped(d, tr.lon[sel], float(np.median(tr.rate[sel])))
         accel = float(longitude_acceleration(float(wrap180(np.mean(u))), float(np.median(tr.inclination[sel]))))
-        return _free_residual(d, u, accel if pinned else None)
+        accel = accel if pinned else None
+        for _ in range(min(drop, len(d) - MIN_SETS)):
+            keep = np.arange(len(d)) != np.argmax(np.abs(_free_residuals(d, u, accel)))
+            d, u = d[keep], u[keep]
+        return _free_residual(d, u, accel)
+
+    def nearest_with_data(k: int, step: int) -> int | None:
+        return next((j for j in range(k + step, k + step * (NEIGHBOUR_REACH + 1), step)
+                     if 0 <= j < len(idx) and enough(j)), None)
 
     @lru_cache(maxsize=None)
     def burn(k: int) -> bool:
         """A manoeuvre falls inside the window: its longitude leaves a free path, and the element
-        sets of the windows on either side do not lie on one free path either. A stray element
-        set or a noisy window between two windows of one free path is not a manoeuvre. Without
-        data on both sides (the ends of the record, a gap) the window's own path decides."""
+        sets of the nearest windows with data on either side, up to NEIGHBOUR_REACH windows out,
+        do not lie on one free path either. A stray element set or a noisy window between two
+        windows of one free path is not a manoeuvre. Without such a window on one side (the ends
+        of the record, a long gap) the window's own path decides, without its DROP_WORST worst
+        element sets."""
         if free_residual(idx[k]) <= FREE_RESIDUAL_DEG:
             return False
-        if not (0 < k < len(idx) - 1 and enough(k - 1) and enough(k + 1)):
-            return True
-        return free_residual(np.concatenate([idx[k - 1], idx[k + 1]]), pinned=True) > FREE_RESIDUAL_DEG
+        before, after = nearest_with_data(k, -1), nearest_with_data(k, 1)
+        if before is None or after is None:
+            return free_residual(idx[k], drop=DROP_WORST) > FREE_RESIDUAL_DEG
+        return free_residual(np.concatenate([idx[before], idx[after]]), pinned=True) > FREE_RESIDUAL_DEG
 
     @lru_cache(maxsize=None)
     def run_spread(j: int) -> float:
@@ -359,12 +379,17 @@ def classify(tr: Track) -> list[Window]:
         return spread(chain) < 0.5 * 0.45 * accel * ((tr.days[chain[-1]] - tr.days[chain[0]]) / 2) ** 2
 
     inc_median = {k: float(np.median(tr.inclination[idx[k]])) for k in range(len(idx)) if enough(k)}
+    low_inc = sorted(k for k, v in inc_median.items() if v <= C1_MAX_INCLINATION_DEG)
 
     def c1(k: int) -> bool:
         """ESA's C1: inclination at most 0.3 deg, "however control at larger angles within one year
-        is accepted as well" (section 2). A keeper whose inclination is back to 0.3 deg or less
-        within a year either side is C1, so C1 -> C2 means north-south keeping stopped."""
-        return any(v <= C1_MAX_INCLINATION_DEG for j, v in inc_median.items() if abs(j - k) * WINDOW_DAYS <= 365)
+        is accepted as well" (section 2). A window is C1 if its own median inclination is at most
+        0.3 deg, or if it lies in an excursion between two such windows at most a year apart, so
+        C1 -> C2 is dated where the inclination passes 0.3 deg and means north-south keeping stopped."""
+        if inc_median[k] <= C1_MAX_INCLINATION_DEG:
+            return True
+        i = bisect_left(low_inc, k)
+        return 0 < i < len(low_inc) and (low_inc[i] - low_inc[i - 1]) * WINDOW_DAYS <= 365
 
     rows, free, slow = [], {}, {}  # free: window -> (energy, mean longitude, inclination); slow: window -> mean longitude
     for k in range(first, last + 1):
@@ -428,9 +453,9 @@ def classify(tr: Track) -> list[Window]:
     lon_of = {**slow, **{k: v[1] for k, v in free.items()}}
 
     def manoeuvre_between(k: int) -> bool:
-        """Windows k - 1 and k each lie on a free path, but not on the same one."""
+        """Windows k - 1 and k each lie on a free path, but clearly not on the same one."""
         return (max(free_residual(idx[k - 1]), free_residual(idx[k])) <= FREE_RESIDUAL_DEG
-                and free_residual(np.concatenate([idx[k - 1], idx[k]]), pinned=True) > FREE_RESIDUAL_DEG)
+                and free_residual(np.concatenate([idx[k - 1], idx[k]]), pinned=True) > SPLIT_RESIDUAL_DEG)
 
     def crossed(path: np.ndarray, barrier: float) -> bool:
         return bool(np.floor((path.max() - barrier) / 360.0) > np.floor((path.min() - barrier) / 360.0))

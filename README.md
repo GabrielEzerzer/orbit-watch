@@ -399,7 +399,7 @@ opened; there are 5 in this data. It writes one row per segment (start, end, mod
 element sets, longitude arc, mean drift, inclination range) to `data/geo_modes/segments.csv`,
 which is git-ignored. The summary goes to `findings/geo_modes/`: `year_end_counts.csv`,
 `transitions_per_object.csv`, `transition_types.csv` and `summary.json`. The full run over 1,799
-objects took 169 s on this laptop. Earlier runs, with the files not yet in the disk cache, took
+objects took 227 s on this laptop. Earlier runs, with the files not yet in the disk cache, took
 5 to 12 minutes.
 
 **Modes.** The classes are ESA's, from ESA Space Debris Office, *Classification of
@@ -412,8 +412,8 @@ GEN-DB-LOG-00290-OPS-SD), but no copy was reachable.
 
 | mode | ESA | meaning and rule |
 |---|---|---|
-| `controlled_lon_inc` | C1 | longitude held, and median inclination at most 0.3 deg (ESA's bound) in some window within a year either side, since ESA accepts control at larger angles within one year |
-| `controlled_lon` | C2 | longitude held, and no window within a year either side at 0.3 deg or less |
+| `controlled_lon_inc` | C1 | longitude held, and the window's median inclination at most 0.3 deg (ESA's bound), or the window lies in an excursion above it between two windows at 0.3 deg or less at most a year apart, since ESA accepts control at larger angles within one year |
+| `controlled_lon` | C2 | longitude held, and the inclination above 0.3 deg with no return to it seen within a year |
 | `drifting` | D | not held, and either circulating past both potential maxima or manoeuvring inside the window |
 | `librating_75E` | L1 | free and trapped in the well of the stable point at 75 deg E |
 | `librating_105W` | L2 | free and trapped in the well of the stable point at 105 deg W |
@@ -456,7 +456,13 @@ for most operators) and dates a relocation to within a month. The thresholds and
   through both neighbours with its curvature pinned to the natural acceleration. In a seeded
   sample of 400 objects it leaves 0.42 % of 2,153 free-librator windows above 0.02 deg (99th
   percentile 0.017 deg), and 99.5 % of keeper windows and every relocation above it. A window
-  of poor element sets between two windows of one free path is therefore no burn.
+  of poor element sets between two windows of one free path is therefore no burn. Where a
+  neighbour has too little data (a gap), the nearest window with data on that side, up to 3
+  windows out, stands in for it. With none on one side (the ends of the record, a longer gap),
+  the window's own misfit counts only if it stays above 0.02 deg once its 3 worst element sets
+  are dropped: a bad set is one set whatever went wrong in it, while a burn moves every set
+  after it. Rejecting sets by semi-major axis instead would miss bad sets whose mean motion is
+  fine, such as the one 0.10 deg off in 43646's window of 2024-07-10.
 - Energy decides between trapped and drifting. With the tesseral potential of the EGM96 (2,2),
   (3,1) and (3,3) terms, each scaled by Kaula's inclination function for the object's
   inclination, `drift**2 / 2 + potential(longitude)` is conserved for a free object. Comparing
@@ -467,9 +473,14 @@ for most operators) and dates a relocation to within a month. The thresholds and
   because luni-solar terms and degree 4 and up are left out. Each run of free windows therefore
   takes one energy, the median of its windows. A run goes on through held windows (a turning
   point, a barrier top) and ends at a burn, or between two windows that each follow a free path
-  but not the same one. A run whose path passes over a barrier is not trapped behind it,
-  whatever its energy reads: over the high barrier it is drifting, and an eastern or western
-  librator that passes over the low one is `librating_both`.
+  but clearly not the same one: the pinned fit through both leaves more than 0.06 deg (three
+  times the burn limit). At the burn limit this split fired on 6 of 1,968 pairs of clean
+  free-librator windows in a seeded sample of 400 objects, all of them 43355 at 14.8 deg, at up
+  to 0.051 deg; none reaches 0.06. A drift change of 0.011 deg/day or more between two windows
+  still leaves more than 0.06 deg (on synthetic librators the misfit is about 5.6 times the
+  change, at any longitude or inclination tried). A run whose path passes over a barrier is
+  not trapped behind it, whatever its energy reads: over the high barrier it is drifting, and
+  an eastern or western librator that passes over the low one is `librating_both`.
 
 **Year-end counts.** Each object is counted in the mode of its segment that holds 31 December
 12:00 UTC. `no_data` is an object whose history does not reach that instant, mostly later
@@ -477,10 +488,10 @@ launches.
 
 | mode | 2021 | 2022 | 2023 | 2024 | 2025 |
 |---|---|---|---|---|---|
-| controlled_lon_inc | 362 | 367 | 387 | 382 | 372 |
-| controlled_lon | 137 | 142 | 136 | 139 | 142 |
-| drifting | 876 | 891 | 924 | 965 | 1,013 |
-| librating_75E | 112 | 113 | 114 | 118 | 122 |
+| controlled_lon_inc | 347 | 357 | 367 | 366 | 350 |
+| controlled_lon | 152 | 152 | 156 | 155 | 164 |
+| drifting | 876 | 891 | 924 | 965 | 1,012 |
+| librating_75E | 112 | 113 | 114 | 118 | 123 |
 | librating_105W | 35 | 41 | 36 | 35 | 35 |
 | librating_both | 18 | 18 | 21 | 20 | 20 |
 | inclined | 21 | 21 | 21 | 21 | 20 |
@@ -488,16 +499,19 @@ launches.
 | out_of_region | 12 | 10 | 4 | 4 | 2 |
 | no_data | 190 | 160 | 124 | 70 | 42 |
 
-**Transitions.** With undetermined segments ignored (their neighbours then merge), 1,483 of the
-1,799 objects keep one mode for the whole period, 128 change once, 96 change twice and 92 change
+**Transitions.** With undetermined segments ignored (their neighbours then merge), 1,476 of the
+1,799 objects keep one mode for the whole period, 132 change once, 97 change twice and 94 change
 three times or more. The most common changes:
 
-- `drifting` to `controlled_lon_inc`: 177, mostly arrivals.
-- `controlled_lon` to `drifting`: 154.
-- `controlled_lon_inc` to `drifting`: 120.
-- `drifting` to `controlled_lon`: 101.
-- `controlled_lon_inc` to `controlled_lon`: 50, where north-south keeping stops and the
-  inclination stays above 0.3 deg for more than a year. Eight go the other way.
+- `controlled_lon` to `drifting`: 173.
+- `drifting` to `controlled_lon_inc`: 159, mostly arrivals.
+- `drifting` to `controlled_lon`: 118.
+- `controlled_lon_inc` to `drifting`: 100.
+- `controlled_lon_inc` to `controlled_lon`: 77, where north-south keeping stops. Each is dated
+  to the window where the inclination passes 0.3 deg, including stops in the record's last
+  year and stops followed within a year by retirement. 16 go the other way: 12 where the
+  inclination is brought down from 0.5-3 deg, and three are the record-start case under the
+  limits below.
 
 No object moves between two libration classes. When each window took its own energy, 81 changes
 went between `librating_both` and `librating_75E` or `librating_105W`, about 30 each way for the
@@ -517,8 +531,8 @@ to it.
 
 | class | ESA, 1 Jan 2019 | source | ours, 31 Dec 2021 |
 |---|---|---|---|
-| C1 | 372 | 4.1, p. 51 | 362 |
-| C2 | 150 | 4.2, p. 83 | 137 |
+| C1 | 372 | 4.1, p. 51 | 347 |
+| C2 | 150 | 4.2, p. 83 | 152 |
 | C4 | 7 | 4.3, p. 96 | (in drifting or librating) |
 | D | 831 | 4.4, p. 97 | 876 |
 | L1 | 127 | 4.5, p. 167 | 112 |
@@ -550,7 +564,7 @@ determined mode before 1 July 2021 gives 1,272 objects with a mode:
 
 | ESA 2019 | objects | same mode in early 2021 | main other modes |
 |---|---|---|---|
-| C1 | 332 | 280 (84%) | drifting 25, controlled_lon 23 |
+| C1 | 332 | 278 (84%) | drifting 25, controlled_lon 25 |
 | C2 | 117 | 88 (75%) | drifting 22, controlled_lon_inc 4 |
 | C4 | 1 | 0 (0%) | controlled_lon_inc 1 |
 | D | 675 | 663 (98%) | librating_75E 5, librating_both 2 |
@@ -567,10 +581,33 @@ run is weak evidence (see the limits below); they were not examined one by one. 
 objects we call drifting, Intelsat 804 (25110) and Cosmos 2479 (38101), pass over the high barrier in
 2021-2025.
 
-**Known limits.** Each is a `shortcut:` comment in `orbit_watch/modes.py`.
+**Known limits.** The older ones are also `shortcut:` comments in `orbit_watch/modes.py`.
 
-- A mode change is dated to the 30-day window that holds it, not to the day. A change between C1
-  and C2 is dated up to a year off, by ESA's one-year rule.
+- A mode change is dated to the 30-day window that holds it, not to the day.
+- A record that starts or ends inside an excursion of the inclination above 0.3 deg reads C2
+  there, because the return to 0.3 deg, if any, is not in the record. A keeper that lets its
+  inclination run past 0.3 deg between north-south burns shows a C1 -> C2 change in its last
+  months, or a C2 -> C1 change in its first. On the belt that gives at least three of each:
+  41869, 41911 and 44978 in November and December 2025, and 29155, 36411 and 40732 in early
+  2021, all keepers whose inclination rises to 0.4-0.5 deg and comes back about every ten
+  windows.
+- Across a gap the two-window burn test can span up to 7 windows, and a free path pinned to the
+  natural acceleration fits worse over a longer span: on free librators of that 400-object
+  sample it leaves 1 % above 0.02 deg over 3 windows, 23 % over 4 and 63 % over 5. Only a good
+  fit clears a window, so a noisy window beside a gap is still called a burn more often than
+  one with data on both sides.
+- A noisy window between two neighbours with data is still a burn when the pinned fit through
+  the neighbours misses too. 43355 (14.8 deg) reads `drifting` in its window of 2022-02-21: its
+  element sets scatter by 0.03-0.05 deg around that turning point, the last ones of the window
+  before sit up to 0.19 deg off the two-window fit, and its curvature is about 20 % above the
+  model's (-0.0021 against -0.0017 deg/day^2), so the two-window fit leaves 0.062 deg. Dropping
+  the 3 worst sets of every window would clear it, but it also drops 31 % of the burns found in
+  keeper windows, which the wide-box and stable-point rules rely on.
+- The run split's pinned fit through two windows is plain least squares, so a bad set in a
+  sparse window can split a free run: 43396 splits in July and August 2023 (windows of 7 and 8
+  sets, 0.07 and 0.12 deg) though the two-window fits around them leave 0.010 and 0.028 deg.
+  Each piece then takes its own median energy; there it is far from a barrier and the label
+  holds.
 - The potential keeps only the resonant terms of degree 2 and 3, so an energy within about 2 % of
   a barrier can fall on the wrong side when the run's path does not cross it. Syncom 3 (858),
   D for ESA, turns back 3 deg east of the high barrier in early 2023 and reads `librating_both`, but

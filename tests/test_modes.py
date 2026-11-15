@@ -32,17 +32,18 @@ def kept(days, lon0, seed=0, box=0.04):
     return lon0 + box * np.sin(2 * np.pi * days / 14.0) + rng.normal(0, 0.003, len(days))
 
 
-def free_motion(lon0, days, dt=0.05, inc=0.0, kicks=()):
+def free_motion(lon0, days, dt=0.05, inc=0.0, kicks=(), accel_scale=1.0):
     """A free object released at rest at ``lon0``, integrated with the natural acceleration at
-    inclination ``inc``. ``kicks`` are (day, change of drift in deg/day) pairs: manoeuvres."""
+    inclination ``inc`` times ``accel_scale``. ``kicks`` are (day, change of drift in deg/day)
+    pairs: manoeuvres."""
     t = np.arange(0.0, days[-1] + dt, dt)
     lon, v = np.empty_like(t), 0.0
     lon[0] = lon0
     kicks = sorted(kicks)
     for k in range(1, len(t)):  # velocity Verlet
-        a = M.longitude_acceleration(lon[k - 1], inc)
+        a = accel_scale * M.longitude_acceleration(lon[k - 1], inc)
         lon[k] = lon[k - 1] + v * dt + 0.5 * a * dt**2
-        v += 0.5 * (a + M.longitude_acceleration(lon[k], inc)) * dt
+        v += 0.5 * (a + accel_scale * M.longitude_acceleration(lon[k], inc)) * dt
         while kicks and kicks[0][0] <= t[k]:
             v += kicks.pop(0)[1]
     return np.interp(days, t, lon)
@@ -126,6 +127,17 @@ def test_inclined_librator_near_the_low_barrier_keeps_one_mode():
     assert found.count("librating_105W") >= 0.85 * len(found)
 
 
+def test_librator_whose_acceleration_is_a_tenth_off_the_model_keeps_one_mode():
+    inc, low = 12.0, M.BARRIER_LOW_DEG - 360.0
+    lon0 = at_rest_with_energy(0.97 * M.tesseral_potential(M.BARRIER_LOW_DEG, inc), inc, low - 40.0, low - 0.01)
+    days = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 1.0)
+    lon = free_motion(lon0, days, inc=inc, accel_scale=1.1)
+    assert lon.max() < low
+    found = modes_of(element_sets(days, (lon + 180.0) % 360.0 - 180.0, inc=inc))
+    assert set(found) <= {"librating_105W", "undetermined"}
+    assert found.count("librating_105W") >= 0.85 * len(found)
+
+
 @pytest.mark.parametrize("norad, expected, crosses", [(22269, "librating_both", "low"), (25110, "drifting", "high")])
 def test_a_path_over_a_barrier_is_not_trapped_behind_it(mock_dir, norad, expected, crosses):
     # Real element sets, one every four days, 2021-2025 (mock/README.md). Both energies sit within
@@ -179,6 +191,35 @@ def test_manoeuvre_of_a_librator_is_still_drifting():
     assert found.count("drifting") <= 2
 
 
+def librator_with_a_gap(gap_windows, kicks=()):
+    days = np.arange(0.0, (M.GRID_END - M.GRID_START).days, 1.0)
+    lon = free_motion(90.0, days, inc=6.0, kicks=kicks)
+    keep = (days < EDGES[31]) | (days >= EDGES[31 + gap_windows])
+    return days[keep], lon[keep]
+
+
+@pytest.mark.parametrize("gap_windows, n_bad", [(1, 4), (4, 4), (1, 8)])
+def test_librator_with_bad_element_sets_before_a_gap_stays_librating(gap_windows, n_bad):
+    days, lon = librator_with_a_gap(gap_windows)
+    off_km = 6.0
+    off_drift = -1.5 * 360.0 * M.SIDEREAL_REV_PER_DAY * off_km / 42164.17
+    bad = np.flatnonzero(days < EDGES[31])[-n_bad:]
+    drift = np.gradient(lon, days)
+    lon[bad] += off_drift * (days[bad] - days[bad[0]] + 1.0)
+    drift[bad] += off_drift
+    found = modes_of(element_sets(days, lon, inc=6.0, drift=drift))
+    assert found[30] == "librating_75E"
+    assert set(found) <= {"librating_75E", "undetermined"}
+
+
+@pytest.mark.parametrize("gap_windows", [1, 4])
+def test_burn_before_a_gap_is_still_drifting(gap_windows):
+    burn_day = EDGES[31] - 8.0
+    days, lon = librator_with_a_gap(gap_windows, kicks=[(burn_day, 0.03)])
+    found = modes_of(element_sets(days, lon, inc=6.0, drift=0.0))
+    assert found[window_of(burn_day)] == "drifting"
+
+
 def test_small_libration_about_a_stable_point_is_not_control():
     # Released at rest 2 deg east of 75 E: a 90-day stretch near each turning point sags less than
     # 0.3 deg, so a held run is no proof of control there without a burn in it.
@@ -201,16 +242,42 @@ def test_inclination_sawtooth_under_control_stays_c1():
     # North-south keeping that lets the inclination reach 0.45 deg before each burn back to 0:
     # ESA counts control at larger angles within one year as C1 (issue 21, section 2).
     days = np.arange(0.0, EDGES[20], 0.5)
-    inc = 0.45 * (days % 200.0) / 200.0
+    inc = 0.45 * ((days - EDGES[20] + 20.0) % 200.0) / 200.0
     assert set(modes_of(element_sets(days, kept(days, 10.0), inc=inc))) == {"controlled_lon_inc"}
 
 
-def test_inclination_growing_past_the_c1_limit_changes_mode_once():
+def crossing_window(days, inc):
+    return window_of(days[np.argmax(inc > M.C1_MAX_INCLINATION_DEG)])
+
+
+def test_inclination_growing_past_the_c1_limit_changes_mode_once_at_the_crossing():
     # North-south keeping stops on day 0: the inclination grows 0.8 deg a year and never returns.
     days = np.arange(0.0, EDGES[40], 0.5)
-    found = modes_of(element_sets(days, kept(days, 10.0), inc=0.02 + 0.8 * days / 365.25))
+    inc = 0.02 + 0.8 * days / 365.25
+    found = modes_of(element_sets(days, kept(days, 10.0), inc=inc))
     changes = sum(a != b for a, b in zip(found, found[1:]))
     assert found[0] == "controlled_lon_inc" and found[-1] == "controlled_lon" and changes == 1
+    assert abs(found.index("controlled_lon") - crossing_window(days, inc)) <= 1
+
+
+def test_stop_eight_months_before_the_record_ends_is_c2():
+    days = np.arange(0.0, EDGES[30] + 240.0, 0.5)
+    inc = 0.02 + 0.8 * np.clip(days - EDGES[30], 0.0, None) / 365.25
+    found = modes_of(element_sets(days, kept(days, 10.0), inc=inc))
+    assert found[-1] == "controlled_lon" and sum(a != b for a, b in zip(found, found[1:])) == 1
+    assert abs(found.index("controlled_lon") - crossing_window(days, inc)) <= 1
+
+
+def test_stop_and_restart_over_a_year_apart_are_dated_at_the_crossings():
+    days = np.arange(0.0, EDGES[50], 0.5)
+    peak = 0.02 + 0.8 * 600.0 / 365.25
+    inc = np.where(days < 100.0, 0.02, np.where(days < 700.0, 0.02 + 0.8 * (days - 100.0) / 365.25,
+                                                np.maximum(peak - 1.6 * (days - 700.0) / 365.25, 0.02)))
+    found = modes_of(element_sets(days, kept(days, 10.0), inc=inc))
+    c2 = [k for k, m in enumerate(found) if m == "controlled_lon"]
+    assert set(found) == {"controlled_lon_inc", "controlled_lon"} and c2 == list(range(c2[0], c2[-1] + 1))
+    back = window_of(days[len(days) - 1 - np.argmax(inc[::-1] > M.C1_MAX_INCLINATION_DEG)])
+    assert abs(c2[0] - crossing_window(days, inc)) <= 1 and abs(c2[-1] - back) <= 1
 
 
 @pytest.mark.parametrize("drift, every", [(2.0, 3.5), (60.0, 6.0)])
