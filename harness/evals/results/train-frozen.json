@@ -6,7 +6,7 @@
     "to": "2024-01-01"
   },
   "settings": "frozen",
-  "commit": "896ae19a9fdd49de4f989d52d61c21b14676f2fb",
+  "commit": "84555a6841b1f2e6961af3f423d6bbfd6ca09157",
   "dirty": false,
   "tolerance_days": {
     "before": 0.5,
@@ -42,10 +42,10 @@
     {
       "check": "GEO recall NS",
       "target": ">= 0.8",
-      "value": 0.2353,
+      "value": 0.0,
       "ci95": [
-        0.0956,
-        0.4726
+        0.0,
+        0.1843
       ],
       "status": "MISS"
     },
@@ -131,6 +131,7 @@
       },
       "false_alarms": 2,
       "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 13.179,
       "no_burn_years": 14.192,
       "scored_fraction": 0.929,
@@ -153,15 +154,15 @@
         "all": {
           "events": 68,
           "covered": 62,
-          "matched": 46,
-          "matched_all": 46,
-          "recall": 0.7419,
-          "recall_all_events": 0.6765,
+          "matched": 42,
+          "matched_all": 42,
+          "recall": 0.6774,
+          "recall_all_events": 0.6176,
           "ci95": [
-            0.6212,
-            0.8345
+            0.5537,
+            0.7805
           ],
-          "ci95_width": 0.2133
+          "ci95_width": 0.2268
         },
         "EW": {
           "events": 43,
@@ -192,19 +193,20 @@
         "NS": {
           "events": 18,
           "covered": 17,
-          "matched": 4,
-          "matched_all": 4,
-          "recall": 0.2353,
-          "recall_all_events": 0.2222,
+          "matched": 0,
+          "matched_all": 0,
+          "recall": 0.0,
+          "recall_all_events": 0.0,
           "ci95": [
-            0.0956,
-            0.4726
+            0.0,
+            0.1843
           ],
-          "ci95_width": 0.3771
+          "ci95_width": 0.1843
         }
       },
       "false_alarms": 4,
       "duplicates": 14,
+      "wrong_channel": 4,
       "object_years": 2.388,
       "no_burn_years": 2.602,
       "scored_fraction": 0.918,
@@ -236,6 +238,7 @@
       },
       "false_alarms": 0,
       "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 1.222,
       "no_burn_years": 2.946,
       "scored_fraction": 0.415,
@@ -270,6 +273,7 @@
       },
       "false_alarms": 3,
       "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 2.59,
       "no_burn_years": 2.617,
       "scored_fraction": 0.989,
@@ -317,6 +321,7 @@
       },
       "false_alarms": 0,
       "duplicates": 1,
+      "wrong_channel": 0,
       "object_years": 0.998,
       "no_burn_years": 1.021,
       "scored_fraction": 0.978,
@@ -364,6 +369,7 @@
         }
       ],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 2.5897,
       "no_burn_years": 2.6174,
       "missed": [
@@ -405,6 +411,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.0,
       "no_burn_years": 0.0,
       "missed": []
@@ -433,6 +440,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 2.4606,
       "no_burn_years": 2.6413,
       "missed": [
@@ -750,6 +758,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 2.6419,
       "no_burn_years": 2.8511,
       "missed": [
@@ -860,8 +869,8 @@
         "all": {
           "events": 68,
           "covered": 62,
-          "matched": 46,
-          "matched_all": 46
+          "matched": 42,
+          "matched_all": 42
         },
         "EW": {
           "events": 43,
@@ -878,8 +887,8 @@
         "NS": {
           "events": 18,
           "covered": 17,
-          "matched": 4,
-          "matched_all": 4
+          "matched": 0,
+          "matched_all": 0
         }
       },
       "detections": 64,
@@ -1015,6 +1024,52 @@
           "channel": "a"
         }
       ],
+      "wrong_channel": [
+        {
+          "event_id": "QZS-3-110+QZS-3-111",
+          "start_utc": "2021-07-21T01:30:05Z",
+          "detection": {
+            "start_utc": "2021-07-20T23:03:29Z",
+            "end_utc": "2021-07-21T05:56:43Z",
+            "step_m": -2770.3,
+            "z": -17.57,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-127",
+          "start_utc": "2022-02-18T12:02:03Z",
+          "detection": {
+            "start_utc": "2022-02-18T13:15:17Z",
+            "end_utc": "2022-02-19T00:37:42Z",
+            "step_m": -3136.2,
+            "z": -411.58,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-143",
+          "start_utc": "2022-09-17T10:06:40Z",
+          "detection": {
+            "start_utc": "2022-09-17T10:35:00Z",
+            "end_utc": "2022-09-17T19:11:41Z",
+            "step_m": 507.3,
+            "z": 54.4,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-146",
+          "start_utc": "2022-10-30T07:17:07Z",
+          "detection": {
+            "start_utc": "2022-10-30T00:56:42Z",
+            "end_utc": "2022-10-31T07:01:42Z",
+            "step_m": -2706.3,
+            "z": -222.51,
+            "channel": "a"
+          }
+        }
+      ],
       "object_years": 2.3881,
       "no_burn_years": 2.6021,
       "missed": [
@@ -1037,6 +1092,12 @@
           "delta_a_est_m": -548.6
         },
         {
+          "event_id": "QZS-3-110+QZS-3-111",
+          "start_utc": "2021-07-21T01:30:05Z",
+          "kind": "NS",
+          "delta_a_est_m": 137.2
+        },
+        {
           "event_id": "QZS-3-117",
           "start_utc": "2021-10-15T20:20:50Z",
           "kind": "NS",
@@ -1055,6 +1116,12 @@
           "delta_a_est_m": 301.7
         },
         {
+          "event_id": "QZS-3-127",
+          "start_utc": "2022-02-18T12:02:03Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
+        },
+        {
           "event_id": "QZS-3-136+QZS-3-137",
           "start_utc": "2022-06-28T14:53:43Z",
           "kind": "NS",
@@ -1065,6 +1132,18 @@
           "start_utc": "2022-08-07T12:47:34Z",
           "kind": "NS",
           "delta_a_est_m": 521.1
+        },
+        {
+          "event_id": "QZS-3-143",
+          "start_utc": "2022-09-17T10:06:40Z",
+          "kind": "NS",
+          "delta_a_est_m": 685.7
+        },
+        {
+          "event_id": "QZS-3-146",
+          "start_utc": "2022-10-30T07:17:07Z",
+          "kind": "NS",
+          "delta_a_est_m": 82.3
         },
         {
           "event_id": "QZS-3-153",
@@ -1134,6 +1213,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 1.2216,
       "no_burn_years": 2.9465,
       "missed": []
@@ -1162,6 +1242,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 2.4903,
       "no_burn_years": 2.6976,
       "missed": [
@@ -1439,6 +1520,7 @@
           "channel": "a"
         }
       ],
+      "wrong_channel": [],
       "object_years": 0.9982,
       "no_burn_years": 1.021,
       "missed": []
@@ -1461,6 +1543,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 2.7006,
       "no_burn_years": 2.8474,
       "missed": [
@@ -1622,6 +1705,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 2.2937,
       "no_burn_years": 2.3944,
       "missed": [
@@ -1786,6 +1870,7 @@
         }
       ],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.5924,
       "no_burn_years": 0.7606,
       "missed": [
@@ -1953,6 +2038,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.0,
       "no_burn_years": 0.0,
       "missed": []
@@ -1975,6 +2061,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.0,
       "no_burn_years": 0.0,
       "missed": []

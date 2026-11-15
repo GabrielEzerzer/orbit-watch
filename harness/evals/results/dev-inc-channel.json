@@ -6,8 +6,8 @@
     "to": "2026-01-01"
   },
   "settings": "inc-channel",
-  "commit": "896ae19a9fdd49de4f989d52d61c21b14676f2fb",
-  "dirty": false,
+  "commit": "84555a6841b1f2e6961af3f423d6bbfd6ca09157",
+  "dirty": true,
   "tolerance_days": {
     "before": 0.5,
     "after": 2.0,
@@ -42,10 +42,10 @@
     {
       "check": "GEO recall NS",
       "target": ">= 0.8",
-      "value": 0.4286,
+      "value": 0.0714,
       "ci95": [
-        0.2138,
-        0.6741
+        0.0127,
+        0.3147
       ],
       "status": "MISS"
     },
@@ -131,6 +131,7 @@
       },
       "false_alarms": 0,
       "duplicates": 1,
+      "wrong_channel": 0,
       "object_years": 10.552,
       "no_burn_years": 10.806,
       "scored_fraction": 0.976,
@@ -153,15 +154,15 @@
         "all": {
           "events": 57,
           "covered": 51,
-          "matched": 42,
-          "matched_all": 42,
-          "recall": 0.8235,
-          "recall_all_events": 0.7368,
+          "matched": 37,
+          "matched_all": 37,
+          "recall": 0.7255,
+          "recall_all_events": 0.6491,
           "ci95": [
-            0.6975,
-            0.9043
+            0.5905,
+            0.8289
           ],
-          "ci95_width": 0.2068
+          "ci95_width": 0.2383
         },
         "EW": {
           "events": 37,
@@ -192,19 +193,20 @@
         "NS": {
           "events": 16,
           "covered": 14,
-          "matched": 6,
-          "matched_all": 6,
-          "recall": 0.4286,
-          "recall_all_events": 0.375,
+          "matched": 1,
+          "matched_all": 1,
+          "recall": 0.0714,
+          "recall_all_events": 0.0625,
           "ci95": [
-            0.2138,
-            0.6741
+            0.0127,
+            0.3147
           ],
-          "ci95_width": 0.4603
+          "ci95_width": 0.302
         }
       },
       "false_alarms": 7,
       "duplicates": 11,
+      "wrong_channel": 5,
       "object_years": 1.956,
       "no_burn_years": 2.087,
       "scored_fraction": 0.937,
@@ -236,6 +238,7 @@
       },
       "false_alarms": 0,
       "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.462,
       "no_burn_years": 1.964,
       "scored_fraction": 0.235,
@@ -270,6 +273,7 @@
       },
       "false_alarms": 4,
       "duplicates": 3,
+      "wrong_channel": 0,
       "object_years": 1.719,
       "no_burn_years": 1.739,
       "scored_fraction": 0.989,
@@ -301,6 +305,7 @@
       },
       "false_alarms": 0,
       "duplicates": 0,
+      "wrong_channel": 0,
       "object_years": 0.0,
       "no_burn_years": 0.0,
       "scored_fraction": null,
@@ -377,6 +382,7 @@
           "channel": "a"
         }
       ],
+      "wrong_channel": [],
       "object_years": 1.7188,
       "no_burn_years": 1.7385,
       "missed": []
@@ -399,6 +405,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.0,
       "no_burn_years": 0.0,
       "missed": []
@@ -435,6 +442,7 @@
           "channel": "a"
         }
       ],
+      "wrong_channel": [],
       "object_years": 1.6914,
       "no_burn_years": 1.7269,
       "missed": [
@@ -692,6 +700,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 1.7806,
       "no_burn_years": 1.8201,
       "missed": [
@@ -814,8 +823,8 @@
         "all": {
           "events": 47,
           "covered": 44,
-          "matched": 37,
-          "matched_all": 37
+          "matched": 32,
+          "matched_all": 32
         },
         "EW": {
           "events": 30,
@@ -832,8 +841,8 @@
         "NS": {
           "events": 13,
           "covered": 12,
-          "matched": 6,
-          "matched_all": 6
+          "matched": 1,
+          "matched_all": 1
         }
       },
       "detections": 50,
@@ -934,14 +943,83 @@
           "channel": "a"
         }
       ],
+      "wrong_channel": [
+        {
+          "event_id": "QZS-3-180+QZS-3-181",
+          "start_utc": "2024-01-05T14:08:07Z",
+          "detection": {
+            "start_utc": "2024-01-05T13:31:38Z",
+            "end_utc": "2024-01-05T16:54:42Z",
+            "step_m": -354.4,
+            "z": -72.28,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-187",
+          "start_utc": "2024-04-02T20:51:33Z",
+          "detection": {
+            "start_utc": "2024-04-02T16:32:38Z",
+            "end_utc": "2024-04-02T21:08:58Z",
+            "step_m": 360.7,
+            "z": 69.89,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-211+QZS-3-212",
+          "start_utc": "2025-02-03T12:00:25Z",
+          "detection": {
+            "start_utc": "2025-02-02T22:09:03Z",
+            "end_utc": "2025-02-03T11:52:00Z",
+            "step_m": -810.7,
+            "z": -20.46,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-221+QZS-3-222",
+          "start_utc": "2025-06-10T03:37:54Z",
+          "detection": {
+            "start_utc": "2025-06-10T00:48:28Z",
+            "end_utc": "2025-06-10T20:18:38Z",
+            "step_m": -2979.7,
+            "z": -509.53,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-225+QZS-3-226",
+          "start_utc": "2025-07-23T00:46:53Z",
+          "detection": {
+            "start_utc": "2025-07-22T13:54:09Z",
+            "end_utc": "2025-07-23T02:08:38Z",
+            "step_m": -780.8,
+            "z": -112.25,
+            "channel": "a"
+          }
+        }
+      ],
       "object_years": 1.6617,
       "no_burn_years": 1.7277,
       "missed": [
+        {
+          "event_id": "QZS-3-180+QZS-3-181",
+          "start_utc": "2024-01-05T14:08:07Z",
+          "kind": "NS",
+          "delta_a_est_m": 329.2
+        },
         {
           "event_id": "QZS-3-184",
           "start_utc": "2024-02-15T23:56:49Z",
           "kind": "NS",
           "delta_a_est_m": 685.7
+        },
+        {
+          "event_id": "QZS-3-187",
+          "start_utc": "2024-04-02T20:51:33Z",
+          "kind": "NS",
+          "delta_a_est_m": 219.4
         },
         {
           "event_id": "QZS-3-189",
@@ -968,10 +1046,28 @@
           "delta_a_est_m": 164.6
         },
         {
+          "event_id": "QZS-3-211+QZS-3-212",
+          "start_utc": "2025-02-03T12:00:25Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
+        },
+        {
           "event_id": "QZS-3-215",
           "start_utc": "2025-03-18T09:43:28Z",
           "kind": "NS",
           "delta_a_est_m": 384.0
+        },
+        {
+          "event_id": "QZS-3-221+QZS-3-222",
+          "start_utc": "2025-06-10T03:37:54Z",
+          "kind": "NS",
+          "delta_a_est_m": 54.9
+        },
+        {
+          "event_id": "QZS-3-225+QZS-3-226",
+          "start_utc": "2025-07-23T00:46:53Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
         },
         {
           "event_id": "QZS-3-229",
@@ -999,6 +1095,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.4621,
       "no_burn_years": 1.9641,
       "missed": []
@@ -1027,6 +1124,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 1.6078,
       "no_burn_years": 1.6509,
       "missed": [
@@ -1350,6 +1448,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.0,
       "no_burn_years": 0.0,
       "missed": []
@@ -1378,6 +1477,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 1.8287,
       "no_burn_years": 1.8642,
       "missed": [
@@ -1521,6 +1621,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 1.8309,
       "no_burn_years": 1.8645,
       "missed": [
@@ -1652,6 +1753,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 1.7592,
       "no_burn_years": 1.7956,
       "missed": [
@@ -1904,6 +2006,7 @@
           "channel": "a"
         }
       ],
+      "wrong_channel": [],
       "object_years": 0.2941,
       "no_burn_years": 0.3593,
       "missed": [
@@ -1945,6 +2048,7 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": [],
       "duplicates": [],
+      "wrong_channel": [],
       "object_years": 0.0529,
       "no_burn_years": 0.0842,
       "missed": [

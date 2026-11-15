@@ -242,7 +242,8 @@ measurement-rule questions came up. None was changed:
 4. **ISS guardrail on train** starts below 0.95 (0.938). Should it be judged on dev only, or
    "no worse than 45/48 on train and 35/35 on dev"?
 
-5. **GEO NS hits that rest on a-channel steps near an EW burn.** QZS-3's NS burns usually come
+5. **GEO NS hits that rest on a-channel steps near an EW burn.** Settled at 84555a6 (Step A below):
+   an NS hit needs an inclination-channel detection. The question as first asked: QZS-3's NS burns usually come
    less than a day before an EW burn, and QZSS events have no expected sign, so time is the only
    thing that ties a step to one of the two burns. One-to-one matching (896ae19) stopped a second
    detection of one EW step from being credited with the NS burn too; that removed QZS-3-120 and
@@ -256,6 +257,10 @@ measurement-rule questions came up. None was changed:
    (round 2) or a step size an NS burn can explain, rather than any detection nearest in time?
    On the corrected eval, round 1 (#13) still loses train NS and also one train ISS burn (below),
    so it stays reverted either way.
+6. **Sub-kilometre a-steps at NS burns.** Under Step A, five of the nine NS events matched by a
+   semi-major-axis detection have steps of 350-810 m (dev QZS-3-180+181, 187, 211+212, 225+226;
+   train QZS-3-143), not the ~3 km of an EW burn. If an NS burn's own change in a can be that size,
+   a size-aware rule would credit them. Not changed: the rule stands as decided.
 
 Also disclosed: while checking whether any log row lacks `delta_a_est_m`, I read the label CSVs
 directly with a one-off script, outside `orbit_watch.truth`. It printed per-object, per-year row
@@ -466,3 +471,38 @@ Round 1 removed four unmatched holdout detections, which is #13's prediction ("a
 and in 2023 it traded the 2023-11-10 debris avoidance for the 2023-11-09 reboost. Round 2 leaves
 every ISS number unchanged: the head report equals the committed one except for the input paths.
 These outputs went to a scratch folder; `findings/` is unchanged.
+
+## Step A: a north-south hit needs the inclination channel (eval rule, 84555a6)
+
+Decision 5, as decided: a GEO `NS` event is a hit only when the detection matched to it carries the
+inclination channel. A semi-major-axis detection matched to an NS event still counts as matched for
+one-to-one purposes, so it is neither a duplicate nor a false alarm and no other detection can take
+the event, but the event is a miss in every subset, `all` included. The new `wrong_channel` field
+(`wch` in the table) counts those events, and `_detail.wrong_channel` lists them. `Detection.channel`
+already existed (`pick` sets it from `GapScores.channel` since round 2), so the detector did not
+change. `counts_as_hit` reads `"i" in channel.split("+")`, so round 3's merged detections (`a+i`)
+count. `EW+NS` events keep the old rule: they count toward neither target, and a semi-major-axis
+step there is the east-west part of the merged burn. That is one constant (`INC_ONLY_SUBSETS`) if it
+should change. Test: `test_a_north_south_hit_needs_the_inclination_channel`, which fails on the old
+eval.
+
+| Split | Setting | GEO NS hit/cov | GEO all hit/cov | wch | EW, EW+NS, FA, dup, other regimes |
+|---|---|---|---|---|---|
+| train | FROZEN | 4/17 → **0/17**, 0.00 [0.00, 0.18] | 46/62 → 42/62 | 4 | unchanged (EW 36/39, EW+NS 6/6, FA 4, dup 14) |
+| train | inc-channel | 7/17 → **3/17**, 0.18 [0.06, 0.41] | 49/62 → 45/62 | 4 | unchanged |
+| dev | FROZEN | 5/14 → **0/14**, 0.00 [0.00, 0.22] | 41/51 → 36/51 | 5 | unchanged (EW 33/34, EW+NS 3/3, FA 7, dup 11) |
+| dev | inc-channel | 6/14 → **1/14**, 0.07 [0.01, 0.31] | 42/51 → 37/51 | 5 | unchanged |
+
+The inclination channel's hits are exactly round 2's recovered burns: train QZS-3-103, 159 and
+162+163, dev QZS-3-235+236. The a-matched NS events (`wch`), the same under both settings:
+
+- train QZS-3-110+111 (-2,770 m), 127 (-3,136 m), 146 (-2,706 m): EW-sized, as decision 5 said.
+  QZS-3-143 (+507 m, peak gap 29 min after the burn) is the fourth.
+- dev QZS-3-221+222 (-2,980 m), and four smaller steps: 180+181 (-354 m), 187 (+361 m, peak 4 h
+  before the burn), 211+212 (-811 m), 225+226 (-781 m).
+
+Not every a-matched NS event is EW-sized: five of the nine are steps of 350-810 m. Whether those
+are the NS burns' own change in a (a north-south burn is not purely out of plane) or the following EW
+burn was not checked; the rule counts them as misses either way (DECISION FOR GABRIEL 6).
+
+Every baseline below is on this eval. Result JSONs: `harness/evals/results/{train,dev}-{frozen,inc-channel}.json`.
