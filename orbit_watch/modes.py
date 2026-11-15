@@ -25,10 +25,10 @@ out_of_region       --    median semi-major axis outside 37,948-46,380 km or ecc
 ESA's C4 (a controlled drift orbit) is not separated: telling it from D needs manoeuvre detection,
 which is the next layer. Such windows read as drifting or librating.
 
-ESA classifies one snapshot a year from a year of history. Here the time from 2021-01-01 to
+ESA classifies each object once, at a reference date, from its orbital history. Here 2021-01-01 to
 2026-01-01 is cut into fixed 30-day windows, laid backwards from 2026-01-01 so every object shares
 the same grid (the first window is 26 days long). Each window is classified from its own element
-sets, and adjacent windows with the same mode are merged into segments. Choices that ESA's yearly
+sets, and adjacent windows with the same mode are merged into segments. Choices that ESA's
 rule does not make for us, one line each:
 
 * 30 days: long enough to hold a full east-west station-keeping cycle (about two weeks for most
@@ -51,7 +51,15 @@ rule does not make for us, one line each:
   natural acceleration bends a free path by a known amount). Otherwise it is undetermined.
   Without this, librators flicker into "controlled" at every turning point. Over 90 days a free
   object turning more than about 6 deg from a stable point bends by more than the held spread;
-  smaller swings still pass as controlled (ESA corrects those by hand, section 4).
+  smaller swings still pass as controlled (ESA corrects those by hand, section 4, p. 50).
+* Wide-box keepers (Meteosat at 0 deg E keeps a box about 1.3 deg wide) let the natural
+  acceleration carry them across the box and burn at its edge. A window not held counts as
+  controlled if it and some 90-day run of three windows that includes it stay within ``BOX_DEG``
+  = 1.5 deg and that run holds a burn (a window off a free path, below). Free librators never
+  burn. Among 90-day runs that hold a burn, in a sample of 250 objects, 933 spread less than
+  1 deg, 10 spread 1-3 deg and the rest are relocations of 3 deg or more; 1.5 sits in that gap.
+  The window's own spread must fit too, so the window that holds the end of a relocation is
+  drifting, not control.
 * A window the energy calls trapped counts as librating only if its longitude follows a free
   path: the robust scatter about a quadratic in time is at most ``FREE_RESIDUAL_DEG``. Free
   librators sit near 0.001 deg (95th percentile 0.007 deg in a sample of 200 objects); a
@@ -71,12 +79,15 @@ rule does not make for us, one line each:
 # (layer 2) can tell it apart.
 # shortcut: librators swinging less than about 6 deg from a stable point read as controlled at the
 # turning points of their swing; a longer held run would catch them at the cost of short parks.
+# shortcut: a wide-box keeper that goes a whole 90-day run without a burn reads as librating or
+# undetermined for those windows; manoeuvre detection (layer 2) gives the burns directly.
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from math import factorial, sqrt
 
 import numpy as np
@@ -92,6 +103,7 @@ MIN_SPAN_DAYS = 10.0
 HELD_SPREAD_DEG = 0.3
 FREE_RESIDUAL_DEG = 0.02
 HELD_RUN = 3  # windows
+BOX_DEG = 1.5
 C1_MAX_INCLINATION_DEG = 0.3  # ESA, section 2, C1
 INCLINED_MIN_DEG = 25.0  # ESA, section 2, I
 REGION_A_KM = (37948.0, 46380.0)  # ESA, table 1, IGO and EGO
@@ -266,6 +278,16 @@ def classify(tr: Track) -> list[Window]:
     def spread(sel: np.ndarray) -> float:
         return _spread(tr.days[sel], tr.lon[sel], tr.rate[sel])
 
+    @lru_cache(maxsize=None)
+    def burn(k: int) -> bool:
+        """The window's longitude leaves a free path: a manoeuvre falls inside it."""
+        d = tr.days[idx[k]]
+        return _free_residual(d, _unwrapped(d, tr.lon[idx[k]], float(np.median(tr.rate[idx[k]])))) > FREE_RESIDUAL_DEG
+
+    @lru_cache(maxsize=None)
+    def run_spread(j: int) -> float:
+        return spread(np.concatenate([idx[i] for i in range(j, j + HELD_RUN)]))
+
     out = []
     for k in range(first, last + 1):
         sel = idx[k]
@@ -279,31 +301,31 @@ def classify(tr: Track) -> list[Window]:
         u = _unwrapped(d, lon, r)
         west, east = _arc(lon)
         evidence = dict(lon_min=west, lon_max=east, drift=drift, inc_min=float(inc.min()), inc_max=float(inc.max()))
-        held_spread = spread(sel)
+        held = spread(sel) <= HELD_SPREAD_DEG
+        # Runs of HELD_RUN consecutive windows that include this one, all with enough data.
+        runs = [j for j in range(k - HELD_RUN + 1, k + 1)
+                if j >= 0 and j + HELD_RUN <= len(idx) and all(enough(i) for i in range(j, j + HELD_RUN))]
+        # A free object at the turning point of a libration sits still for weeks too, so a held
+        # window is control only if a 90-day run is held too, or if it is stiller than the natural
+        # acceleration allows (a free path sags by about 0.45 * |accel| * (span / 2)^2 inside the
+        # 5-95 % spread). Wide-box keepers are caught by their burns: a 90-day run inside
+        # BOX_DEG with a manoeuvre in it, the window itself inside BOX_DEG too so the window
+        # that holds the end of a relocation stays drifting. A free librator never burns.
+        free_sag = 0.45 * abs(float(longitude_acceleration(float(wrap180(np.mean(u)))))) * ((d[-1] - d[0]) / 2) ** 2
+        tight = held and (any(run_spread(j) <= HELD_SPREAD_DEG for j in runs) or spread(sel) < 0.5 * free_sag)
+        wide = spread(sel) <= BOX_DEG and any(run_spread(j) <= BOX_DEG and any(burn(i) for i in range(j, j + HELD_RUN)) for j in runs)
         if not (REGION_A_KM[0] <= np.median(tr.semi_major_axis_km[sel]) <= REGION_A_KM[1]
                 and np.median(tr.eccentricity[sel]) <= REGION_E_MAX):
             mode = "out_of_region"
         elif np.median(inc) > INCLINED_MIN_DEG:
             mode = "inclined"
-        elif held_spread <= HELD_SPREAD_DEG:
-            # A free object at the turning point of a libration sits still for weeks too. It is
-            # control if the longitude is held over HELD_RUN consecutive windows that include this
-            # one, or if the window is stiller than the natural acceleration allows: a free
-            # object's longitude sags by at least about 0.45 * |accel| * (span / 2)^2 inside the
-            # 5-95 % spread.
-            runs = (range(j, j + HELD_RUN) for j in range(k - HELD_RUN + 1, k + 1))
-            run_held = any(
-                all(0 <= i < len(idx) and enough(i) for i in run)
-                and spread(np.concatenate([idx[i] for i in run])) <= HELD_SPREAD_DEG
-                for run in runs)
-            free_sag = 0.45 * abs(float(longitude_acceleration(float(wrap180(np.mean(u)))))) * ((d[-1] - d[0]) / 2) ** 2
-            if run_held or held_spread < 0.5 * free_sag:
-                mode = "controlled_lon_inc" if np.median(inc) <= C1_MAX_INCLINATION_DEG else "controlled_lon"
-            else:
-                mode = "undetermined"
+        elif tight or wide:
+            mode = "controlled_lon_inc" if np.median(inc) <= C1_MAX_INCLINATION_DEG else "controlled_lon"
+        elif held:
+            mode = "undetermined"
         else:
             mode = libration_mode(float(wrap180(np.mean(u))), drift)
-            if mode != "drifting" and _free_residual(d, u) > FREE_RESIDUAL_DEG:
+            if mode != "drifting" and burn(k):
                 mode = "drifting"  # trapped by energy but not moving freely: manoeuvring
         out.append(Window(start, end, mode, len(sel), **evidence))
     return out

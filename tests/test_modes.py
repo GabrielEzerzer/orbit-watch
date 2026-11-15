@@ -117,6 +117,29 @@ def test_short_park_far_from_a_stable_point_is_control():
     assert modes_of(element_sets(days, lon)) == ["drifting", "controlled_lon_inc", "drifting"]
 
 
+def test_wide_box_keeper_is_controlled_by_its_burns():
+    # A keeper that lets the natural acceleration carry it across a 1 deg box and burns at the
+    # edge, like Meteosat at 0 E: free arcs of P = sqrt(8 w / |a|) days joined by velocity kinks.
+    # Each window is too wide for the held test; the burns in every 90-day run make it control.
+    lon0, w = 20.0, 1.0
+    a = float(M.longitude_acceleration(lon0))
+    period = np.sqrt(8 * w / abs(a))
+    days = np.arange(0.0, EDGES[8], 0.5)
+    t = days % period - period / 2
+    lon = lon0 + np.sign(a) * (0.5 * abs(a) * t**2 - w / 2) + np.random.default_rng(2).normal(0, 0.003, len(days))
+    assert set(modes_of(element_sets(days, lon, drift=a * t))) == {"controlled_lon_inc"}
+
+
+def test_window_holding_the_end_of_a_relocation_is_drifting():
+    # Arriving at 2 deg/day three days into window 3, then kept: the 90-day run is inside the box
+    # but for its 5 % tail, and window 3 holds a burn, so only the window's own spread dates it.
+    arrive = EDGES[3] + 3
+    days = np.arange(EDGES[0], EDGES[7], 0.5)
+    lon = np.where(days < arrive, -20.0 - 2.0 * (days - arrive), kept(days, -20.0))
+    c1 = "controlled_lon_inc"
+    assert modes_of(element_sets(days, lon)) == ["drifting"] * 4 + [c1, c1, c1]
+
+
 def test_sparse_window_is_undetermined_and_far_orbit_is_out_of_region():
     days = np.concatenate([np.arange(0.0, EDGES[3], 0.5), [EDGES[3] + 1, EDGES[3] + 9, EDGES[3] + 20],
                            np.arange(EDGES[4], EDGES[7], 0.5)])
