@@ -263,3 +263,13 @@ def test_load_series_falls_back_to_geo_tle(tmp_path, mock_dir):
     (geo_dir / "43491.tle").write_text("not read\n", encoding="utf-8")
     series, label, _ = load_series(43491, tle_dir)
     assert label == "gp_history-43491-x.json" and len(series) == 15
+
+
+def test_detect_uses_the_span_and_gap_limits_the_eval_uses():
+    import inspect
+
+    from orbit_watch import generalise
+
+    defaults = inspect.signature(score_gaps).parameters
+    assert defaults["max_span_days"].default == generalise.MAX_SPAN_DAYS
+    assert defaults["max_gap_days"].default == generalise.MAX_GAP_DAYS

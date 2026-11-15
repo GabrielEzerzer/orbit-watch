@@ -326,7 +326,10 @@ python -m harness.evals.detector --split train --data-dir data --settings harnes
 
 `settings/inc-channel.json` is the kept setting. It is FROZEN in every regime, plus the inclination
 channel on GEO with `inc_z_min` 12 and `inc_step_min_deg` 0.011, the loosest step floor on a
-train-only grid at which train GEO false alarms did not rise. Its scores against the targets
+train-only grid at which train GEO false alarms did not rise. The grid was `inc_z_min` 12 or 20
+by `inc_step_min_deg` 0.003, 0.005, 0.008 and 0.011; train false alarms were 9, 7, 5, 4 at z 12
+and 5, 5, 4, 4 at z 20. It ran before the north-south hit rule, which does not change false
+alarms. Its scores against the targets
 (`harness/evals/results/`) are below; FROZEN gives the same except where noted.
 
 | Target | train | dev |
