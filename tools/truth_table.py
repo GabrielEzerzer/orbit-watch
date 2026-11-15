@@ -1,6 +1,6 @@
 """Write groundtruth/objects.md: one row per labelled object, generated from the files.
 
-    python tools/truth_table.py --tle-dir D:/code/orbit-watch/data/spacetrack
+    python tools/truth_table.py --tle-dir data/spacetrack
 
 Burns 2021-2025 counts the object's log rows starting in 2021-2025 (an IDS row can hold several
 burns; a QZSS NS-1/NS-2 pair is two rows). Element sets counts the records in the object's cached
