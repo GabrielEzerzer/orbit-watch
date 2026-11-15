@@ -182,6 +182,39 @@ nothing was tuned. All harness code reads labels only through the guarded loader
 3. **Per-regime settings tuned on train,** scored on dev. Candidates include `max_gap_days` /
    `max_span_days` for IGSO (finding above).
 
+## Keep rule
+
+The eval sets are small, so a gain must show on both dev and train, or show on dev with train
+unchanged, to count. A round is kept only if:
+
+- its target metric improves;
+- no regime's covered recall or matched/all-events recall (`hit/ev`) drops on dev or train;
+- false alarms per object-year rise in no regime;
+- the ISS stays at or above baseline on both splits (35/35 dev, 45/48 train; pooled 2021-25 >= 0.95);
+- the `covered` denominator does not shrink for the regime being improved. A gain that comes from
+  events leaving the denominator does not count; `hit/ev` is reported beside it.
+
+A round's write-up says when its gain rests on a handful of events. A round that fails is reverted
+with `git revert`, so the history shows the attempt.
+
 ## Rounds
 
-(none yet)
+### Round 1: #13 peak-radius NMS
+
+**Hypothesis.** One burn flags several neighbouring gaps as the windows slide past it. Time-only
+NMS (1 day) keeps a second flagged gap when it sits more than a day from the best one (a
+transitional element set between them, or GEO's one or two element sets a day), and that gap is
+reported as a second detection: a false alarm on GEO (part of 3.58/yr on dev) and an unmatched
+ISS detection (#13's five). Letting each peak absorb the flagged gaps fewer than k gaps from it
+removes them without merging distinct burns: a gap k or more away from the peak has a window
+whose before-side and after-side are each separated from the peak's by the peak's gap.
+
+**Change.** `detect.pick`: flagged gaps in decreasing |z|; a gap not yet absorbed becomes a peak
+unless its centre is within `nms_days` of a kept peak's centre (the existing time rule, between
+peaks only); a peak absorbs the unabsorbed flagged gaps fewer than k gaps from it. The detection
+spans the union of its gaps; step and z are the peak's. `GapScores` carries k. Not repeated
+(earlier failures): window-overlap merging (2k), chained grouping. Test: the real ISS
+2025-09-24..27 gaps (8822 z 72, 8824 z 12.4 mixing both burns, 8826 z 177 in the 2021-2025
+Space-Track series; 15/17/19 in the `mock/` slice) must give two detections.
+
+**Target.** GEO FA/object-year down, ISS unmatched detections down, no recall lost.
