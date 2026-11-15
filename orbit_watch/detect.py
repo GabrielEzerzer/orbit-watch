@@ -44,10 +44,13 @@ is no detection across a data outage such as 2022-06-15..19.
 
 The same scoring runs on inclination (``channel="i"``, steps in degrees): a
 north-south burn turns the orbit plane and changes the semi-major axis little.
-``merge_channels`` adds inclination detections to the semi-major-axis ones,
-dropping an inclination detection whose centre lies within ``nms_days`` of a
-semi-major-axis detection's centre (the same non-maximum suppression, with the
-semi-major-axis channel first, since ``z`` is not comparable across channels).
+``merge_channels`` adds inclination detections to the semi-major-axis ones by
+gap identity, not by time: an inclination detection whose peak gap is a
+semi-major-axis detection's peak gap (or overlaps it) is folded into that
+detection, which then carries both channels (``channel="a+i"``) and keeps its
+semi-major-axis step and ``z``, since ``z`` is not comparable across channels.
+Every other inclination detection is kept, however close in time, so a
+north-south burn hours before an east-west one is still reported.
 
 Duplicate epochs are already removed by ``to_series``.
 """
@@ -56,7 +59,7 @@ Duplicate epochs are already removed by ``to_series``.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 
@@ -88,7 +91,7 @@ class Detection:
     end: np.datetime64  # epoch after the step (last epoch of the detection interval)
     step_m: float  # metres, or degrees when channel is "i"
     z: float
-    channel: str = "a"
+    channel: str = "a"  # "a", "i", or "a+i" when merge_channels folds the two together
     peak_start: np.datetime64 | None = None  # the gap step and z come from; None: start
     peak_end: np.datetime64 | None = None  # None: end
 
@@ -170,12 +173,17 @@ def _centre(d: Detection) -> np.datetime64:
     return d.start + (d.end - d.start) / 2
 
 
-def merge_channels(a_dets: list[Detection], i_dets: list[Detection], nms_days: float = 1.0) -> list[Detection]:
-    """``a_dets`` plus each of ``i_dets`` whose centre is more than ``nms_days`` from every ``a_dets`` centre."""
-    tol = np.timedelta64(int(nms_days * _DAY_US), "us")
-    ca = np.array([_centre(d) for d in a_dets], dtype="datetime64[us]")
-    extra = [d for d in i_dets if not len(ca) or np.min(np.abs(ca - _centre(d))) > tol]
-    return sorted(a_dets + extra, key=lambda d: d.start)
+def merge_channels(a_dets: list[Detection], i_dets: list[Detection]) -> list[Detection]:
+    """``a_dets`` plus ``i_dets``; an inclination detection whose peak gap overlaps an ``a_dets`` peak
+    gap is folded into that detection, which then carries ``channel="a+i"``."""
+    out, extra = list(a_dets), []
+    for d in i_dets:
+        j = next((j for j, a in enumerate(out) if d.peak_start < a.peak_end and a.peak_start < d.peak_end), None)
+        if j is None:
+            extra.append(d)
+        else:
+            out[j] = replace(out[j], channel="a+i")
+    return sorted(out + extra, key=lambda d: d.start)
 
 
 def detect(series: ElementSeries, z_min: float, step_min_m: float, k: int = 6) -> list[Detection]:

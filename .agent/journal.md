@@ -506,3 +506,22 @@ are the NS burns' own change in a (a north-south burn is not purely out of plane
 burn was not checked; the rule counts them as misses either way (DECISION FOR GABRIEL 6).
 
 Every baseline below is on this eval. Result JSONs: `harness/evals/results/{train,dev}-{frozen,inc-channel}.json`.
+
+### Round 3: merge channels by gap identity, not by time
+
+**Hypothesis.** `merge_channels` drops an inclination detection whose centre lies within `nms_days`
+of any semi-major-axis detection's centre, so an NS burn next to an EW burn (QZS-3 often fires NS
+then EW within a day) can never be found: the EW step suppresses it. Under Step A those NS burns
+are misses. Keeping an inclination detection unless its peak gap is the same gap as (or overlaps)
+a semi-major-axis detection's peak gap, and in that case keeping one detection that carries both
+channels (`a+i`), should turn them into NS hits.
+
+**Risk, seen before the change** (a scratch listing of `pick`'s inclination detections on the
+train objects, 2021-2025, against the nearest semi-major-axis peak). Of the 45 inclination
+detections, 18 share their peak gap with an a-detection (these become `a+i`) and 21 more are
+dropped today at 1-7 gaps from one. Several of those 21 sit in the GEO false-alarm clusters
+(QZS-3 2021-06-19/25, 2021-12-14/20, 2025-12-21; QZS-6 2025-09-03/10): pairs of opposite-sign
+inclination steps of about 0.03 deg a few days apart, next to the ±500-700 m a-steps already
+counted as false alarms. Kept, they are new false alarms, which would fail the keep rule.
+
+**Target.** GEO NS hit/cov up on dev and train; GEO FA/obj-yr and `dup` not up.
