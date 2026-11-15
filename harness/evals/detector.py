@@ -57,7 +57,7 @@ from pathlib import Path
 import numpy as np
 
 from orbit_watch import calibrate, holdout
-from orbit_watch.detect import Detection, pick, score_gaps
+from orbit_watch.detect import Detection, merge_channels, pick, score_gaps
 from orbit_watch.generalise import (LATE_DAYS, MAX_GAP_DAYS, MAX_SPAN_DAYS, TOLERANCE_DAYS, Setting,
                                     covered, load_log_events, load_series, log_coverage, match_near)
 from orbit_watch.truth import GROUNDTRUTH, HoldoutError, load_splits, require_allowed
@@ -140,11 +140,19 @@ class Obj:
     late_days: float | None
     _scores: dict = field(default_factory=dict)
 
-    def scores(self, k: int):
-        if k not in self._scores:
-            self._scores[k] = score_gaps(self.series, k=k, max_span_days=MAX_SPAN_DAYS,
-                                         max_gap_days=MAX_GAP_DAYS)
-        return self._scores[k]
+    def scores(self, k: int, channel: str = "a"):
+        if (k, channel) not in self._scores:
+            self._scores[k, channel] = score_gaps(self.series, k=k, max_span_days=MAX_SPAN_DAYS,
+                                                  max_gap_days=MAX_GAP_DAYS, channel=channel)
+        return self._scores[k, channel]
+
+    def detections(self, s: Setting) -> list[Detection]:
+        """The detector at setting ``s``: semi-major axis, plus inclination when ``s`` turns it on."""
+        dets = pick(self.scores(s.k), s.z_min, s.step_min_m, s.nms_days)
+        if s.inc_step_min_deg is None:
+            return dets
+        inc = pick(self.scores(s.k, "i"), s.inc_z_min, s.inc_step_min_deg, s.nms_days)
+        return merge_channels(dets, inc, s.nms_days)
 
 
 def load_object(entry: dict, truth_dir: Path, tle_dir: Path, geo_dir: Path, group: str,
@@ -191,7 +199,7 @@ def score_object(obj: Obj, s: Setting, lo: np.datetime64, hi: np.datetime64) -> 
     in_p = lambda t: lo <= t < hi  # noqa: E731
     ev = [e for e in obj.events if in_p(_mid(e))]
     exc = [e for e in obj.excluded if in_p(_mid(e))]
-    dets: list[Detection] = [d for d in pick(sc, s.z_min, s.step_min_m, s.nms_days) if in_p(d.start)]
+    dets: list[Detection] = [d for d in obj.detections(s) if in_p(d.start)]
     cover = covered(ev, sc, TOLERANCE_DAYS, obj.late_days)
     m = match_near(ev, dets, TOLERANCE_DAYS, obj.late_days)
     rest = [i for i in range(len(dets)) if i not in set(m.values())]

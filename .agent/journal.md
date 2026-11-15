@@ -262,3 +262,34 @@ one of the two events. Baseline NS recall on train therefore rests in part on du
 detections, and any change that removes duplicates lowers it. Dev NS stayed 5/14 by chance (one
 lost, QZS-3-221+222; one gained, QZS-3-194+195). Under the keep rule this round is reverted;
 see DECISION FOR GABRIEL 5.
+
+### Round 2: inclination channel for north-south burns
+
+**Hypothesis.** A GEO north-south burn turns the orbit plane and changes the semi-major axis
+little, so the a-only detector misses it (NS 5/14 dev, 6/17 train). On QZS-3 the inclination
+series shows NS burns as steps of about 0.005-0.03 deg against a scatter of about 0.0001 deg
+(median sigma 0.096 mdeg at k=4), while EW burns leave it flat (|step| under 0.001 deg).
+Scoring inclination like semi-major axis should find the NS burns that are more than a day from
+an EW burn. The ones less than a day before an EW burn (most QZS-3 NS burns) fall in the EW
+step's NMS window and stay unfound: the merge gives the a channel priority.
+
+**Change.** `score_gaps(..., channel="i")` scores inclination in degrees with the same method;
+`Detection` and `GapScores` carry the channel. `merge_channels` adds inclination detections whose
+centre is more than `nms_days` from every a-detection's centre. `Setting` gains `inc_z_min` and
+`inc_step_min_deg` (off when None); the eval's `Obj.detections` runs the inclination channel only
+when the setting turns it on, so ISS, LEO and IGSO are untouched. Wiring this through is one call
+in `harness/evals/detector.py`; matching and counting are unchanged.
+
+**Threshold, from train only.** Grid on train, GEO only, k=4: inc_z_min in {12, 20},
+inc_step_min_deg in {0.003, 0.005, 0.008, 0.011}. Rule: the loosest setting at which train
+GEO FA does not rise.
+
+Train grid (GEO; every setting gives train NS 9/17, EW 36/39, EW+NS 6/6):
+
+| inc_z_min | 0.003 deg | 0.005 | 0.008 | 0.011 |
+|---|---|---|---|---|
+| 12 | FA 9 | 7 | 5 | **4** |
+| 20 | 5 | 5 | 4 | 4 |
+
+Chosen: z 12 (the a channel's own floor, so one new parameter) and the smallest step floor with no
+train FA rise, 0.011 deg (`settings/inc-channel.json`).

@@ -38,12 +38,17 @@ A gap is not scored when either side's ``k`` epochs span more than
 ``max_span_days`` or the gap itself is longer than ``max_gap_days``, so there
 is no detection across a data outage such as 2022-06-15..19.
 
-Duplicate epochs are already removed by ``to_series``. Only semi-major axis is
-used.
+The same scoring runs on inclination (``channel="i"``, steps in degrees): a
+north-south burn turns the orbit plane and changes the semi-major axis little.
+``merge_channels`` adds inclination detections to the semi-major-axis ones,
+dropping an inclination detection whose centre lies within ``nms_days`` of a
+semi-major-axis detection's centre (the same non-maximum suppression, with the
+semi-major-axis channel first, since ``z`` is not comparable across channels).
+
+Duplicate epochs are already removed by ``to_series``.
 """
 
-# shortcut: eccentricity and inclination are not used as secondary channels;
-# add them if out-of-plane or perigee-only burns need finding.
+# shortcut: eccentricity is not used as a channel; add it if perigee-only burns need finding.
 
 from __future__ import annotations
 
@@ -63,9 +68,10 @@ class GapScores:
 
     start: np.ndarray  # datetime64[us], epoch before the gap
     end: np.ndarray  # datetime64[us], epoch after the gap
-    step_m: np.ndarray  # extrapolated after-minus-before, metres (NaN when not scored)
+    step_m: np.ndarray  # extrapolated after-minus-before: metres, or degrees for channel "i" (NaN when not scored)
     z: np.ndarray  # step / standard error (NaN when not scored)
-    sigma_m: np.ndarray  # residual scatter used, metres
+    sigma_m: np.ndarray  # residual scatter used, in step_m's unit
+    channel: str = "a"  # "a" semi-major axis, "i" inclination
 
     @property
     def valid(self) -> np.ndarray:
@@ -76,8 +82,9 @@ class GapScores:
 class Detection:
     start: np.datetime64  # epoch before the step
     end: np.datetime64  # epoch after the step
-    step_m: float
+    step_m: float  # metres, or degrees when channel is "i"
     z: float
+    channel: str = "a"
 
     @property
     def sign(self) -> int:
@@ -93,10 +100,12 @@ def _mad(r: np.ndarray) -> np.ndarray:
 
 
 def score_gaps(
-    series: ElementSeries, k: int = 6, max_span_days: float = 3.0, max_gap_days: float = 2.0
+    series: ElementSeries, k: int = 6, max_span_days: float = 3.0, max_gap_days: float = 2.0,
+    channel: str = "a",
 ) -> GapScores:
+    """Score every gap on semi-major axis in metres (``channel="a"``) or inclination in degrees ("i")."""
     t = _days(series.epochs)
-    y = series.semi_major_axis_km * 1000.0
+    y = {"a": lambda: series.semi_major_axis_km * 1000.0, "i": lambda: series.inclination}[channel]()
     n = len(t)
     idx = [i for i in range(k - 1, n - k)
            if t[i + 1] - t[i] <= max_gap_days
@@ -122,7 +131,7 @@ def score_gaps(
     floor = 0.5 * float(np.nanmedian(sigma)) if idx else 0.0
     sigma = np.maximum(sigma, floor)
     z = step / (sigma * np.sqrt(np.pi / 2) * np.sqrt(2.0 / k))
-    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma)
+    return GapScores(series.epochs[:-1], series.epochs[1:], step, z, sigma, channel)
 
 
 def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1.0) -> list[Detection]:
@@ -139,9 +148,21 @@ def pick(scores: GapScores, z_min: float, step_min_m: float, nms_days: float = 1
         if not kept or np.min(np.abs(centre[kept] - centre[i])) > nms_days:
             kept.append(i)
     return [
-        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]))
+        Detection(scores.start[i], scores.end[i], float(scores.step_m[i]), float(scores.z[i]), scores.channel)
         for i in sorted(kept)
     ]
+
+
+def _centre(d: Detection) -> np.datetime64:
+    return d.start + (d.end - d.start) / 2
+
+
+def merge_channels(a_dets: list[Detection], i_dets: list[Detection], nms_days: float = 1.0) -> list[Detection]:
+    """``a_dets`` plus each of ``i_dets`` whose centre is more than ``nms_days`` from every ``a_dets`` centre."""
+    tol = np.timedelta64(int(nms_days * _DAY_US), "us")
+    ca = np.array([_centre(d) for d in a_dets], dtype="datetime64[us]")
+    extra = [d for d in i_dets if not len(ca) or np.min(np.abs(ca - _centre(d))) > tol]
+    return sorted(a_dets + extra, key=lambda d: d.start)
 
 
 def detect(series: ElementSeries, z_min: float, step_min_m: float, k: int = 6) -> list[Detection]:

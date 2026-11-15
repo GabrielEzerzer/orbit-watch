@@ -106,6 +106,8 @@ class Setting:
     z_min: float
     step_min_m: float
     nms_days: float = 1.0
+    inc_z_min: float | None = None  # inclination channel (detect.py); off when inc_step_min_deg is None
+    inc_step_min_deg: float | None = None
 
 
 FROZEN = Setting(k=4, z_min=12, step_min_m=200)  # FINDINGS.md, calibration run at 508838a

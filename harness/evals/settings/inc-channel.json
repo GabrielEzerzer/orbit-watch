@@ -1,0 +1,32 @@
+{
+  "name": "inc-channel",
+  "note": "FROZEN for every regime, plus the inclination channel on GEO (round 2, .agent/journal.md): inc_z_min 12, inc_step_min_deg 0.011, the loosest train-grid setting at which train GEO false alarms do not rise",
+  "regimes": {
+    "ISS": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    },
+    "LEO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    },
+    "GEO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0,
+      "inc_z_min": 12,
+      "inc_step_min_deg": 0.011
+    },
+    "IGSO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    }
+  }
+}
