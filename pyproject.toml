@@ -18,3 +18,4 @@ packages = ["orbit_watch", "orbit_watch.jobs"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
