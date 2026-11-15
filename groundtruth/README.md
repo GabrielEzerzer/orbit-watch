@@ -23,12 +23,84 @@ How it was built:
 - `vehicle` uses Roscosmos names (Progress MS-NN), and NASA numbers the same ships differently (Progress 79 = 79P). Rows therefore match NASA rows and detections on date and time, not on vehicle.
 - `type` is `deboost`, `debris_avoidance` or `reboost`. `deboost` must step down and the other two may step either way under calibrate.py's sign rule, the same as NASA's `debris avoidance`.
 
-Coverage confidence, from the research notes, which check the list against Roscosmos's own running counts of corrections:
+Coverage confidence, from checking the list against Roscosmos's own running counts of corrections:
 - **High, November 2021 to August 2024.** The counts match the combined list from November 2021 to December 2023 and from February to August 2024. One total in mid-2022 is one higher than the list, most likely because Roscosmos counted a Cygnus test burn that is already in the NASA file; the Progress-only count for the same months matches exactly.
 - **Medium elsewhere:** January to October 2021, September to December 2024, and 2025. No running count covers these months, so the list rests on Telegram and RIA alone.
 - **Thinnest, September to December 2025.** Only one Russian burn was found (2025-11-19, already in the NASA file). A burn reported only by TASS or roscosmos.ru could not be ruled out, because neither site could be fetched.
 
 The list is still a lower bound: TASS and roscosmos.ru were not readable, and Cygnus and Dragon burns reported outside NASA were not searched.
+
+### Kept out of the CSV
+
+**Events not executed, or not confirmed as executed**
+- **2021-11-16, 20:40 MSK, Progress MS-18, 478 s (plan).** Announced on 2021-11-08 ([RIA](https://ria.ru/20211108/mks-1758100024.html): «Плановая коррекция орбиты МКС запланирована на 16 ноября»). It did not run: on 2021-11-29 Roscosmos wrote «Предыдущая коррекция высоты орбиты проводилась 10 ноября для уклонения от «космического мусора»» ([post 1845](https://t.me/roscosmos_gk/1845)), and the MS-18 count of nine excludes it.
+- **2021-08-19, 07:04 MSK, Zvezda (plan).** Moved to the reserve date of 21 August at NASA's request ([RIA](https://ria.ru/20210819/orbita-1746304779.html)). The 08-21 burn is already in the NASA file.
+- **2022-02-06 (plan).** Moved to 8 February ([post 2508](https://t.me/roscosmos_gk/2508)). The 02-08 burn is in the NASA file.
+
+**Seen and judged not to belong**
+- Nauka module free-flight burns, 2021-07-23 to 2021-07-28 (posts 1265, 1286, 1287). These were the module's own approach manoeuvres before docking, not ISS orbit changes.
+- Progress and Soyuz phasing, deorbit and descent burns (for example posts 741, 1275, 2030, 4950). These are not ISS orbit changes.
+- Weekly digest posts (15641, 15850, 17992) that only refer back to burns already listed.
+
+**No row was dropped for doubt about whether it happened.** Every executed burn found is either a CSV row or matched to a NASA row below.
+
+### Burns already in the NASA file, with the Roscosmos time
+
+These matched a NASA row within ±1 day, so they are not in the CSV. Many NASA rows have no clock time, and the Roscosmos post gives one. Use the MSK→UTC conversion and date rule described above. Where the NASA row date is one day earlier, NASA dated a late US-evening burn by US local time.
+
+| NASA row date | Roscosmos post | time in post (MSK) | burn time UTC |
+|---|---|---|---|
+| 2021-01-21 | [711](https://t.me/roscosmos_gk/711) | 19:14 | 2021-01-21 16:14 (date stated in post) |
+| 2021-05-20 | [1038](https://t.me/roscosmos_gk/1038) | 20:01 | 2021-05-20 17:01 |
+| 2021-08-21 | [1401](https://t.me/roscosmos_gk/1401) | 07:04 | 2021-08-21 04:04 |
+| 2021-12-03 | [1890](https://t.me/roscosmos_gk/1890) | 10:58 | 2021-12-03 07:58 |
+| 2022-01-12 | [2356](https://t.me/roscosmos_gk/2356) | 21:24 | 2022-01-12 18:24 |
+| 2022-02-08 | [2521](https://t.me/roscosmos_gk/2521) | 10:56 | 2022-02-08 07:56 |
+| 2022-04-23 | [4113](https://t.me/roscosmos_gk/4113) | 16:25 | 2022-04-23 13:25 |
+| 2022-06-16 | [5284](https://t.me/roscosmos_gk/5284) | 22:03 | 2022-06-16 19:03 |
+| 2022-08-10 | [6168](https://t.me/roscosmos_gk/6168) | 10:16 | 2022-08-10 07:16 |
+| 2022-08-24 | [6354](https://t.me/roscosmos_gk/6354) | 05:20 | 2022-08-25 02:20 |
+| 2022-09-15 | [6696](https://t.me/roscosmos_gk/6696) | 21:10 | 2022-09-15 18:10 |
+| 2022-10-01 | [6938](https://t.me/roscosmos_gk/6938) | 14:05 | 2022-10-01 11:05 |
+| 2022-10-17 | [7143](https://t.me/roscosmos_gk/7143) | 22:27 | 2022-10-17 19:27 |
+| 2022-10-25 | [7302](https://t.me/roscosmos_gk/7302) | 03:25 | 2022-10-25 00:25 |
+| 2022-11-30 | [7714](https://t.me/roscosmos_gk/7714) | 15:25 | 2022-11-30 12:25 |
+| 2022-12-21 | [7949](https://t.me/roscosmos_gk/7949) | 16:42 | 2022-12-21 13:42 |
+| 2023-02-03 | [8298](https://t.me/roscosmos_gk/8298) | 13:30 | 2023-02-03 10:30 |
+| 2023-02-19 | [8508](https://t.me/roscosmos_gk/8508) | 07:20 | 2023-02-20 04:20 |
+| 2023-03-06 | [8671](https://t.me/roscosmos_gk/8671) | 15:42 | 2023-03-06 12:42 |
+| 2023-03-08 | [8695](https://t.me/roscosmos_gk/8695) | 22:47 | 2023-03-08 19:47 |
+| 2023-05-18 | [9501](https://t.me/roscosmos_gk/9501) | 19:43 | 2023-05-18 16:43 |
+| 2023-06-16 | [9790](https://t.me/roscosmos_gk/9790) | 09:27 | 2023-06-16 06:27 |
+| 2023-07-04 | [10006](https://t.me/roscosmos_gk/10006) | 00:17 | 2023-07-04 21:17 |
+| 2023-07-27 | [10237](https://t.me/roscosmos_gk/10237) | 15:02 | 2023-07-27 12:02 |
+| 2023-08-05 | [10324](https://t.me/roscosmos_gk/10324) | 05:03 | 2023-08-06 02:03 |
+| 2023-08-24 | [10604](https://t.me/roscosmos_gk/10604) | 18:00 | 2023-08-24 15:00 |
+| 2023-09-08 | [10762](https://t.me/roscosmos_gk/10762) | 21:52 | 2023-09-08 18:52 |
+| 2023-09-29 | [11019](https://t.me/roscosmos_gk/11019) | 15:01 | 2023-09-29 12:01 |
+| 2023-10-18 | [11242](https://t.me/roscosmos_gk/11242) | 06:46 | 2023-10-19 03:46 |
+| 2023-11-09 | [11468](https://t.me/roscosmos_gk/11468) | 00:11 (post omits "мск") | 2023-11-09 21:11 |
+| 2023-11-10 | [11473](https://t.me/roscosmos_gk/11473) | 18:07 | 2023-11-10 15:07 |
+| 2024-01-12 | [12057](https://t.me/roscosmos_gk/12057) | 19:30 | 2024-01-12 16:30 |
+| 2024-01-27 | [12162](https://t.me/roscosmos_gk/12162) | 14:39 | 2024-01-27 11:39 |
+| 2024-02-23 | [12464](https://t.me/roscosmos_gk/12464) | 03:21 | 2024-02-24 00:21 |
+| 2024-03-14 | [12765](https://t.me/roscosmos_gk/12765) | 16:11 | 2024-03-14 13:11 |
+| 2024-04-25 | [13416](https://t.me/roscosmos_gk/13416) | 05:35 | 2024-04-26 02:35 |
+| 2024-06-15 | [13913](https://t.me/roscosmos_gk/13913) | 07:40 | 2024-06-15 04:40 |
+| 2024-06-29 | [14037](https://t.me/roscosmos_gk/14037) | 01:39 | 2024-06-29 22:39 |
+| 2024-07-31 | [14324](https://t.me/roscosmos_gk/14324) | 12:51 | 2024-07-31 09:51 |
+| 2024-08-27 | [14692](https://t.me/roscosmos_gk/14692) | 04:46 | 2024-08-28 01:46 |
+| 2024-09-05 | [14779](https://t.me/roscosmos_gk/14779) | 22:45 | 2024-09-05 19:45 |
+| 2024-11-19 | [15688](https://t.me/roscosmos_gk/15688) | 23:09 | 2024-11-19 20:09 |
+| 2024-11-25 | [15772](https://t.me/roscosmos_gk/15772) | 12:49 | 2024-11-25 09:49 |
+| 2025-02-19 | [16625](https://t.me/roscosmos_gk/16625) | 04:30 | 2025-02-20 01:30 |
+| 2025-03-17 | [16984](https://t.me/roscosmos_gk/16984) | 19:00 | 2025-03-17 16:00 |
+| 2025-04-23 | [17341](https://t.me/roscosmos_gk/17341) | 03:08 | 2025-04-24 00:08 |
+| 2025-04-30 | [17375](https://t.me/roscosmos_gk/17375) | 01:10 | 2025-04-30 22:10 |
+| 2025-07-16 | [17807](https://t.me/roscosmos_gk/17807) | 17:45 | 2025-07-16 14:45 |
+| 2025-11-19 | [18688](https://t.me/roscosmos_gk/18688) | 16:04 | 2025-11-19 13:04 |
+
+Times above were checked by script: the time string occurs in the post, the burn is not later than the post, and the UTC date is within one day of the NASA row. NASA rows that already carry a time agree with these to the minute (for example 2021-12-03 07:58, 2022-10-25 00:25, 2024-11-19 20:09). Matched NASA rows not in the table (2021-03-12, 2021-04-02, 2021-06-24, 2021-10-12, 2022-02-25) have Roscosmos posts with no burn time. 2021-09-24 and 2021-11-10 have only pre-burn plan posts (17:38 and 23:15 MSK), so they are not listed as times.
 
 ## IDS, QZSS and Fengyun manoeuvre logs (`ids_manoeuvres.csv`, `qzss_manoeuvres.csv`, `fengyun_manoeuvres.csv`)
 
