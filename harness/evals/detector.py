@@ -37,18 +37,17 @@ its setting can move them:
   centre to centre (ties to the earlier event), and to no other. When several detections pick one
   event, the nearest gets it (ties to the earlier detection) and the others match nothing. So a
   second detection of one step is never credited with a neighbouring event (QZSS events have no
-  expected sign; the journal's round 1). Targets are matched first; a leftover detection that
-  matches an attitude line or an unplanned ISS event by the same rule is dropped, neither a hit
-  nor a false alarm.
+  expected sign). Targets are matched first; a leftover detection that matches an attitude line or
+  an unplanned ISS event by the same rule is dropped, neither a hit nor a false alarm.
 * **North-south hits need the inclination channel.** A GEO ``NS`` event is a hit only when the
   detection it is matched to carries the inclination channel (``Detection.channel`` names ``i``).
   A semi-major-axis detection matched to it stays matched for one-to-one purposes (it is neither
   a duplicate nor a false alarm, and no other detection can take the event), but the event is a
   miss in every subset. QZS-3 usually fires an east-west burn about a day after a north-south one,
   and QZSS events carry no expected sign, so a semi-major-axis step of east-west size can sit
-  nearest the north-south burn; such a detection saw the east-west burn, not the north-south one
-  (the journal's decision 5). ``wrong_channel`` counts these events. ``EW+NS`` events keep the old
-  rule: they count toward neither target, and their semi-major-axis step is the east-west part.
+  nearest the north-south burn; such a detection saw the east-west burn, not the north-south one.
+  ``wrong_channel`` counts these events. ``EW+NS`` events keep the old rule: they count toward
+  neither target, and their semi-major-axis step is the east-west part.
 
 Per group and period:
 
@@ -97,9 +96,9 @@ from pathlib import Path
 import numpy as np
 
 from orbit_watch import calibrate, holdout
-from orbit_watch.detect import Detection, merge_channels, pick, score_gaps
-from orbit_watch.generalise import (LATE_DAYS, MAX_GAP_DAYS, MAX_SPAN_DAYS, TOLERANCE_DAYS, Setting,
-                                    covered, load_log_events, load_series, log_coverage)
+from orbit_watch.detect import Detection, Setting, pick_setting, score_gaps
+from orbit_watch.generalise import (LATE_DAYS, MAX_GAP_DAYS, MAX_SPAN_DAYS, TOLERANCE_DAYS, covered,
+                                    load_log_events, load_series, log_coverage)
 from orbit_watch.truth import GROUNDTRUTH, HoldoutError, load_splits, require_allowed
 
 HERE = Path(__file__).resolve().parent
@@ -207,6 +206,12 @@ def match(events, dets: list[Detection], tol_days: float = TOLERANCE_DAYS,
     ``expected_sign``. Each detection takes its nearest such event, centre to centre (ties to the
     earlier event), and no other; an event picked by several detections goes to the nearest (ties
     to the earlier detection), and the others match nothing.
+
+    Two events with identical windows tie on distance and on start, and the one earlier in
+    ``events`` (the loader's order) wins. Every detection eligible for both picks it, so the other
+    can be matched only by a detection whose step sign fits it and not the first, and with the same
+    expected sign it stays unmatched. No train object has such a pair among its target or its
+    excluded events, so the rule has not decided any score; the holdout objects were not checked.
     """
     if not events or not dets:
         return {}
@@ -256,12 +261,8 @@ class Obj:
         return self._scores["ref"]
 
     def detections(self, s: Setting) -> list[Detection]:
-        """The detector at setting ``s``: semi-major axis, plus inclination when ``s`` turns it on."""
-        dets = pick(self.scores(s.k), s.z_min, s.step_min_m, s.nms_days)
-        if s.inc_step_min_deg is None:
-            return dets
-        inc = pick(self.scores(s.k, "i"), s.inc_z_min, s.inc_step_min_deg, s.nms_days)
-        return merge_channels(dets, inc, s.nms_days)
+        """``detect.pick_setting`` at ``s`` on this object's cached scores."""
+        return pick_setting(self.scores(s.k), self.scores(s.k, "i") if s.inc_channel else None, s)
 
 
 def load_object(entry: dict, truth_dir: Path, tle_dir: Path, geo_dir: Path, group: str,
@@ -368,10 +369,11 @@ def score_object(obj: Obj, s: Setting, lo: np.datetime64, hi: np.datetime64) -> 
                         "start_utc": calibrate._iso(e.lo), "kind": getattr(e, "kind", None) or e.category,
                         "delta_a_est_m": getattr(e, "delta_a_est_m", None)}
                        for i, e in enumerate(ev) if cover[i] and i not in hit],
-            "wrong_channel": [{"event_id": e.event_id, "start_utc": calibrate._iso(e.lo), "detection": det_row(dets[m[i]])}
-                              for i, e in enumerate(ev) if i in m and i not in hit],
-            "false_alarms": [det_row(dets[i]) for i in fa],
-            "duplicates": [det_row(dets[i]) for i in dup],
+            "wrong_channel_list": [{"event_id": e.event_id, "start_utc": calibrate._iso(e.lo),
+                                    "detection": det_row(dets[m[i]])}
+                                   for i, e in enumerate(ev) if i in m and i not in hit],
+            "false_alarm_list": [det_row(dets[i]) for i in fa],
+            "duplicate_list": [det_row(dets[i]) for i in dup],
         },
     }
 
@@ -396,7 +398,8 @@ def evaluate(split: str, settings_path: Path, data_dir: Path, truth_dir: Path = 
     period = spec["periods"][split]
     if period.get("requires_final") and not final:
         raise HoldoutError(f"--split {split} scores the holdout objects; it needs --final, and is run "
-                           "once at baseline and once at the final round (.agent/journal.md)")
+                           "once at baseline and once at the final round (README, 'Frozen per-regime "
+                           "evaluation')")
     if final and not period.get("requires_final"):
         raise HoldoutError("--final is only for --split test")
     lo, hi = (np.datetime64(period[k], "us") for k in ("from", "to"))

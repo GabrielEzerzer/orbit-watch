@@ -1,8 +1,9 @@
 """Detector tests. The series here are synthetic, labelled test inputs, never calibration data."""
 
 import numpy as np
+import pytest
 
-from orbit_watch.detect import Detection, merge_channels, pick, score_gaps
+from orbit_watch.detect import Detection, Setting, merge_channels, pick, pick_setting, score_gaps
 from orbit_watch.series import ElementSeries
 
 
@@ -78,3 +79,15 @@ def test_merge_channels_keeps_a_and_drops_an_inclination_detection_within_nms_da
     i_far = Detection(h(30), h(36), 0.02, 50.0, "i")  # 30 h apart
     assert merge_channels(a, [i_near, i_far], nms_days=1.0) == [a[0], i_far]
     assert merge_channels([], [i_near], nms_days=1.0) == [i_near]
+
+
+def test_setting_needs_both_inclination_thresholds_or_neither():
+    with pytest.raises(ValueError, match="inc_step_min_deg=None"):
+        Setting(4, 12, 200, inc_z_min=12)
+    with pytest.raises(ValueError, match="inc_z_min=None"):
+        Setting(4, 12, 200, inc_step_min_deg=0.011)
+    assert not Setting(4, 12, 200).inc_channel
+    on = Setting(4, 12, 200, inc_z_min=12, inc_step_min_deg=0.011)
+    series, _ = synthetic_series()
+    with pytest.raises(ValueError, match="inclination scores"):
+        pick_setting(score_gaps(series, k=4), None, on)

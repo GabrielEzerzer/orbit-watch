@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from harness.evals import detector as ev
-from orbit_watch.detect import Detection, score_gaps
+from orbit_watch.detect import Detection, detect, score_gaps
 from orbit_watch.elements import parse_omm_json
 from orbit_watch.generalise import LATE_DAYS, TOLERANCE_DAYS, LogEvent, Setting, load_series, match_near
 from orbit_watch.series import ElementSeries, to_series
@@ -86,7 +86,7 @@ def test_score_object_counts_matches_and_false_alarms_on_scored_no_burn_time():
     assert r["subsets"]["all"] == {"events": 1, "covered": 1, "matched": 1, "matched_all": 1}
     assert r["subsets"]["EW"]["matched"] == 1
     assert r["false_alarms"] == 1  # the unlogged step on day 40
-    fa_start = t(r["_detail"]["false_alarms"][0]["start_utc"].rstrip("Z"))
+    fa_start = t(r["_detail"]["false_alarm_list"][0]["start_utc"].rstrip("Z"))
     assert abs((fa_start - t("2021-04-10T02:24")) / D) < 1
     # Exposure is scored time minus the burn's match zone: below the 70-day series, above it less
     # the zone and the k-epoch edges at both ends.
@@ -202,7 +202,7 @@ def test_a_north_south_hit_needs_the_inclination_channel():
     r = ev.score_object(obj, s, *YEAR)
     assert r["subsets"]["NS"]["matched"] == 0 and r["subsets"]["all"]["matched_all"] == 0
     assert (r["matched_detections"], r["wrong_channel"], r["false_alarms"], r["duplicates"]) == (1, 1, 0, 0)
-    assert [x["event_id"] for x in r["_detail"]["wrong_channel"]] == ["N"]
+    assert [x["event_id"] for x in r["_detail"]["wrong_channel_list"]] == ["N"]
     # The same detection on the inclination channel, alone or merged with the a channel, is a hit.
     for ch in ("i", "a+i"):
         obj.detections = lambda s, ch=ch: [replace(d, channel=ch)]
@@ -213,6 +213,21 @@ def test_a_north_south_hit_needs_the_inclination_channel():
         obj = _obj(series, [_burn("E", 10.05, kind=kind)], 70)
         r = ev.score_object(obj, s, *YEAR)
         assert r["subsets"][kind]["matched"] == 1 and r["wrong_channel"] == 0
+
+
+def test_the_eval_grades_what_detect_reports_on_both_channels():
+    # a-steps on days 10 and 40; inclination steps on day 10.4 (within nms_days of the a-step, so
+    # merge_channels drops it) and day 25 (kept).
+    rng = np.random.default_rng(2)
+    series = _series(1 / 3, 70, {10.05: 3.0, 40.05: -2.0})
+    day = (series.epochs - T0).astype("int64") / 86_400e6
+    inc = 0.05 + rng.normal(0, 1e-4, len(day)) - 0.02 * (day > 10.4) + 0.03 * (day > 25.05)
+    series = replace(series, inclination=inc)
+    off, on = Setting(4, 12, 200), Setting(4, 12, 200, inc_z_min=12, inc_step_min_deg=0.011)
+    assert [d.channel for d in detect(series, off)] == ["a", "a"]
+    dets = _obj(series, [], 70).detections(on)
+    assert [d.channel for d in dets] == ["a", "i", "a"]
+    assert dets == detect(series, on)
 
 
 # ---- split and loader

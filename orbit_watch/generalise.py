@@ -94,21 +94,10 @@ from pathlib import Path
 import numpy as np
 
 from orbit_watch.calibrate import TOLERANCE_DAYS, Z_GRID, _iso, _ratio
-from orbit_watch.detect import Detection, pick, score_gaps
+from orbit_watch.detect import Detection, Setting, pick, score_gaps
 from orbit_watch.elements import parse_omm_json, parse_tle
 from orbit_watch.series import ElementSeries, to_series
 from orbit_watch.truth import HoldoutError, read_label_rows, require_allowed
-
-
-@dataclass(frozen=True)
-class Setting:
-    k: int
-    z_min: float
-    step_min_m: float
-    nms_days: float = 1.0
-    inc_z_min: float | None = None  # inclination channel (detect.py); off when inc_step_min_deg is None
-    inc_step_min_deg: float | None = None
-
 
 FROZEN = Setting(k=4, z_min=12, step_min_m=200)  # FINDINGS.md, calibration run at 508838a
 MAX_SPAN_DAYS, MAX_GAP_DAYS = 3.0, 2.0  # score_gaps defaults, used by the ISS run

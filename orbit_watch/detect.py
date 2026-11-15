@@ -49,6 +49,12 @@ dropping an inclination detection whose centre lies within ``nms_days`` of a
 semi-major-axis detection's centre (the same non-maximum suppression, with the
 semi-major-axis channel first, since ``z`` is not comparable across channels).
 
+A ``Setting`` holds the thresholds. ``pick_setting`` is the detector at one
+setting: ``pick`` on semi-major axis, plus, when the setting turns the
+inclination channel on, ``pick`` on inclination merged in by ``merge_channels``.
+``detect`` runs it on a series, and the frozen evaluation calls it on its cached
+scores, so both detect the same thing.
+
 Duplicate epochs are already removed by ``to_series``.
 """
 
@@ -64,6 +70,29 @@ from orbit_watch.series import ElementSeries
 
 _DAY_US = 86_400e6
 _MAD_TO_SIGMA = 1.4826
+
+
+@dataclass(frozen=True)
+class Setting:
+    """Detector thresholds. The inclination channel is on when ``inc_z_min`` and ``inc_step_min_deg``
+    are both set, and off when both are None."""
+
+    k: int
+    z_min: float
+    step_min_m: float
+    nms_days: float = 1.0
+    inc_z_min: float | None = None
+    inc_step_min_deg: float | None = None
+
+    def __post_init__(self):
+        if (self.inc_z_min is None) != (self.inc_step_min_deg is None):
+            raise ValueError(
+                "the inclination channel needs both inc_z_min and inc_step_min_deg, or neither; got "
+                f"inc_z_min={self.inc_z_min}, inc_step_min_deg={self.inc_step_min_deg}")
+
+    @property
+    def inc_channel(self) -> bool:
+        return self.inc_step_min_deg is not None
 
 
 @dataclass(frozen=True)
@@ -178,5 +207,23 @@ def merge_channels(a_dets: list[Detection], i_dets: list[Detection], nms_days: f
     return sorted(a_dets + extra, key=lambda d: d.start)
 
 
-def detect(series: ElementSeries, z_min: float, step_min_m: float, k: int = 6) -> list[Detection]:
-    return pick(score_gaps(series, k=k), z_min, step_min_m)
+def pick_setting(a_scores: GapScores, i_scores: GapScores | None, s: Setting) -> list[Detection]:
+    """Detections at setting ``s``: semi-major axis, plus inclination merged in when ``s`` turns it on.
+
+    ``a_scores`` and ``i_scores`` are ``score_gaps`` on each channel at ``s.k``; ``i_scores`` is read
+    only when the channel is on. Both channels are thinned with ``s.nms_days``, and ``merge_channels``
+    keeps every semi-major-axis detection and drops an inclination one within ``s.nms_days`` of one.
+    """
+    if a_scores.channel != "a" or (s.inc_channel and (i_scores is None or i_scores.channel != "i")):
+        raise ValueError("pick_setting needs semi-major-axis scores, and inclination scores when the "
+                         "setting turns the inclination channel on")
+    dets = pick(a_scores, s.z_min, s.step_min_m, s.nms_days)
+    if not s.inc_channel:
+        return dets
+    return merge_channels(dets, pick(i_scores, s.inc_z_min, s.inc_step_min_deg, s.nms_days), s.nms_days)
+
+
+def detect(series: ElementSeries, s: Setting) -> list[Detection]:
+    """``pick_setting`` on ``series``, with ``score_gaps``' default span and gap limits (the evaluation's)."""
+    i_scores = score_gaps(series, k=s.k, channel="i") if s.inc_channel else None
+    return pick_setting(score_gaps(series, k=s.k), i_scores, s)
