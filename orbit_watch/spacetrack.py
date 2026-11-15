@@ -9,6 +9,9 @@ Space-Track's rules, kept here: fewer than 30 requests a minute and 300 an hour,
 downloaded again. Every answer is therefore kept under ``data/spacetrack/`` with no expiry, and
 a query that is already on disk never reaches the network.
 
+``SpaceTrackSource.satcat`` makes one full-catalogue SATCAT query (Space-Track allows SATCAT once a
+day and asks for combined queries, not one per object) and keeps it on disk the same way.
+
 ``SpaceTrackSource.from_env`` returns ``None`` unless both ``SPACETRACK_USER`` and
 ``SPACETRACK_PASSWORD`` are set (they come from the hush vault through ``hush run``).
 """
@@ -16,6 +19,7 @@ a query that is already on disk never reaches the network.
 from __future__ import annotations
 
 import http.cookiejar
+import json
 import os
 import time
 import urllib.error
@@ -127,30 +131,59 @@ class SpaceTrackSource:
             raise PermissionError(f"Space-Track login refused (HTTP {status})")
         self._logged_in = True
 
+    def _get(self, url: str, what: str) -> str:
+        if not self._logged_in:
+            self._login()
+        self.limiter.wait()
+        status, body = self.session.get(url)
+        if status != 200:
+            raise RuntimeError(f"Space-Track {what}: HTTP {status}")
+        return body.decode("utf-8")
+
+    def _store(self, path: Path, text: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        partial = path.with_name(path.name + ".partial")
+        partial.write_text(text, encoding="utf-8")
+        partial.replace(path)
+
     def history(self, norad_id: int) -> list[ElementSet]:
         norad_id = int(norad_id)
         path = self.cache_dir / f"gp_history-{norad_id}-{self.start}--{self.end}.json"
         if path.is_file():
             return parse_omm_json(path.read_text(encoding="utf-8"))
-        if not self._logged_in:
-            self._login()
         url = (
             f"{BASE_URL}/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{norad_id}"
             f"/EPOCH/{self.start}--{self.end}/orderby/EPOCH%20asc/format/json"
         )
-        self.limiter.wait()
-        status, body = self.session.get(url)
-        if status != 200:
-            raise RuntimeError(f"Space-Track gp_history for {norad_id}: HTTP {status}")
-        text = body.decode("utf-8")
+        text = self._get(url, f"gp_history for {norad_id}")
         records = parse_omm_json(text)
         if any(r.norad_id != norad_id for r in records):
             raise ValueError(f"Space-Track gp_history for {norad_id} returned other objects")
-        path.parent.mkdir(parents=True, exist_ok=True)
-        partial = path.with_name(path.name + ".partial")
-        partial.write_text(text, encoding="utf-8")
-        partial.replace(path)
+        self._store(path, text)
         return records
+
+    def satcat(self, fields: Iterable[str]) -> tuple[list[dict], str]:
+        """The whole SATCAT with these fields, and the query URL; one query, kept on disk for good.
+
+        Space-Track allows SATCAT once a day and asks for one combined query rather than one per
+        object. Delete ``satcat-<fields>.json`` under the cache directory to fetch a newer one.
+        """
+        fields = list(fields)
+        url = (
+            f"{BASE_URL}/basicspacedata/query/class/satcat/predicates/{','.join(fields)}"
+            "/orderby/NORAD_CAT_ID%20asc/format/json"
+        )
+        path = self.cache_dir / f"satcat-{'-'.join(f.lower() for f in fields)}.json"
+        if path.is_file():
+            text = path.read_text(encoding="utf-8")
+        else:
+            text = self._get(url, "satcat")
+        rows = json.loads(text)
+        if not isinstance(rows, list) or not rows or not all(isinstance(r, dict) and "NORAD_CAT_ID" in r for r in rows):
+            raise ValueError("Space-Track satcat answer is not a non-empty list of records with NORAD_CAT_ID")
+        if not path.is_file():
+            self._store(path, text)
+        return rows, url
 
     def load(self, norad_ids: Iterable[int]) -> list[ElementSet]:
         return [r for norad in norad_ids for r in self.history(norad)]

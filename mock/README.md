@@ -58,6 +58,12 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
 
 ## `geo/`
 
+- `bundle-sample.txt`: five real TLEs laid out like a full-catalogue yearly bundle (2-line, no
+  names), copied byte for byte from `data/archive/` (the OndroNR/tle-archive extract of CelesTrak's
+  `active.txt`): the first two Luch 5A (37951) sets, the first ISS (25544), Luch-5X / Olymp-K 2
+  (55841) and Luch / Olymp-K 1 (40258) sets of 2021 (2023 for 55841). The rule's edge cases (GTO,
+  a 24-hour orbit with e > 0.2, an object that arrives) are synthetic TLE pairs built inside
+  `tests/test_geo_belt.py`, not files here.
 - `37344_every_2_days.tle`: real element sets of Elektro-L No. 1 (NORAD 37344, 2011-001A),
   cut from `data/geo/37344.tle`, which `orbit_watch.jobs.geo_belt` extracted from the Kaggle
   dataset `vaibhavpandey12382/historical-tle-datasets` (yearly TLE bundles 2021-2025; the

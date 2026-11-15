@@ -11,7 +11,9 @@ each other, and dead objects that move. Built out of interest.
   `ElementSet`, with a UTC epoch, the mean elements, B* and a semi-major axis
   derived the way SGP4 derives it (see the `ElementSet` docstring).
 - `orbit_watch.series`: `to_series` turns element sets into an epoch-sorted,
-  de-duplicated `ElementSeries` of numpy arrays per object.
+  de-duplicated `ElementSeries` of numpy arrays per object. Epochs under 60 s apart collapse to
+  the later one, because their near-zero time spacing gives the detector's slope pairs a near-zero
+  time base and fake steps (issue #11); every caller gets this.
 - `orbit_watch.propagate`: TEME position and velocity at given UTC times through
   the `sgp4` package, raising `PropagationError` on SGP4 error codes.
 - `orbit_watch.sources`: the `ElementSource` protocol and `DirectorySource`,
@@ -69,9 +71,10 @@ it and records its sha256 in `ATTACHED.txt`:
 MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-calibrate --attach data/archive/25544.tle --     python -m orbit_watch.calibrate --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out /kaggle/working/out
 ```
 
-Result of the command above on Kaggle at commit `7df96a6` (the detector and calibration code are
-unchanged since then), with the TLE file at sha256 `e102dc92…7c51` (5,076 TLEs). 45 ground-truth
-rows fall inside the TLE history:
+Result of the command above on Kaggle at commit `7df96a6`, with the TLE file at sha256
+`e102dc92…7c51` (5,076 TLEs). A local rerun after the 60 s collapse (issue #11) and the tuning fix
+(issue #10) uses 5,075 of them (one pair is under 60 s apart, and the later is kept) and chooses the
+same setting with the same scores. 45 ground-truth rows fall inside the TLE history:
 
 **Caveat on 2023:** the thresholds below were chosen on 2021-2022 only, but an earlier version of the method was scored on 2023 once before the method was changed (last note below). The clean holdout is 2024-2025 on Space-Track data; see the next section.
 
@@ -105,8 +108,9 @@ Notes on these numbers:
 ### Clean holdout: Space-Track 2024-2025
 
 `orbit_watch.holdout` scores the frozen setting once on Space-Track `gp_history` for the ISS
-(2021-01-01 to 2025-12-31; 9,855 rows, 9,080 element sets once rows within 1 s are merged and the
-latest-issued one kept), using calibrate.py's matching, coverage and precision rules unchanged.
+(2021-01-01 to 2025-12-31; 9,855 rows, 9,077 element sets: rows whose epochs are under 60 s apart
+are one element set, and the latest issued, by `GP_ID`, is kept whatever its epoch), using
+calibrate.py's matching, coverage and precision rules unchanged.
 Neither the method nor the thresholds had seen 2024-2025.
 
 ```
@@ -132,7 +136,9 @@ pull the measured step from −461 m to about −210 m, and `z` below 12.
 Leave-one-year-out cross-validation over 2021-2025 on Space-Track (tune on four years with the same
 grid and rule, score the fifth): pooled **64/86 = 0.74 precision, 64/69 = 0.93 recall**. Every fold
 chose `k = 4`, `|z| >= 15`; four of five kept `|step| >= 200 m` (the fold leaving out 2021 chose
-300 m). Outputs: `findings/holdout_2024_2025/` and `findings/cv_2021_2025/`.
+300 m). Outputs: `findings/holdout_2024_2025/` and `findings/cv_2021_2025/`. Tuning matches only the
+training years' events and detections, so a held-out label cannot enter a fold's tuning score
+(issue #10); the fix changed no fold's setting or score on this data.
 
 ### With Roscosmos burns
 
@@ -178,13 +184,13 @@ and counts how many the detector recovers. All of it is synthetic and labelled s
 
 | Recall at step size | 100 m | 150 m | 200 m | 300 m | 500 m | 1 km |
 |---|---|---|---|---|---|---|
-| native cadence (about 5.6 TLEs a day), frozen | 0.00 | 0.03 | 0.51 | 0.98 | 1.00 | 1.00 |
-| native, `|z| >= 6`, `|step| >= 50 m` | 0.97 | 0.97 | 0.98 | 1.00 | 1.00 | 1.00 |
-| thinned to about 1 a day, frozen | 0.00 | 0.04 | 0.46 | 0.91 | 0.99 | 1.00 |
+| native cadence (about 5.6 TLEs a day), frozen | 0.01 | 0.01 | 0.52 | 0.98 | 1.00 | 1.00 |
+| native, `|z| >= 6`, `|step| >= 50 m` | 0.95 | 0.98 | 0.98 | 1.00 | 1.00 | 1.00 |
+| thinned to about 1 a day, frozen | 0.01 | 0.06 | 0.48 | 0.92 | 0.97 | 1.00 |
 | thinned to about 1 every 2 days, frozen | 0.02 | 0.07 | 0.34 | 0.72 | 0.89 | 0.98 |
 
 The median TLE scatter is 3.4 m, so the 200 m step floor, not `z`, sets what the frozen detector
-can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 20 a year at
+can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 21 a year at
 `|z| >= 6`, `|step| >= 50 m`, against at most 0.9 a year for the frozen setting (3 detections in
 3.2 years of stretches with no listed burn within 3 days; an upper bound, since unlisted burns
 count). A clean step leaves out the transitional TLEs a real burn produces, so these recalls are
@@ -193,7 +199,7 @@ upper bounds for real burns of the same size.
 These figures come from the run with both truth lists (NASA and Roscosmos). With the NASA list
 alone the frozen setting had 18 such detections, 5.3 a year. The Roscosmos events also remove a few
 gaps (two at the native cadence) from the quiet stretches the injections are drawn from, which reshuffles the random draw, so
-the pooled recall figures in the table moved by up to 0.06 from the NASA-only run, and each new
+the pooled recall figures in the table moved by up to 0.02 from the NASA-only run, and each new
 95% interval overlaps the old one. Single-sign cells in the CSV moved by up to 0.09.
 
 ### Beyond the ISS: IDS (LEO) and QZSS (GEO) manoeuvre logs
@@ -302,6 +308,78 @@ archive's head commit, the last commit that touched the file, commits walked, an
 names it had, its TLE count, epoch range, rejected pairs, epoch conflicts and gaps longer than 3 days). The
 files arrive in `data/kaggle/ow-archive/out/out/`. A run takes about 5 minutes on Kaggle.
 
+## Every object in the GEO region, 2021-2025
+
+`orbit_watch.jobs.geo_belt` collects the TLE history from 2021-01-01 up to 2026-01-01 of every
+object in the GEO region (active satellites, dead ones, rocket bodies and debris), one file per
+object, so the detector can run on all of them.
+
+**Population rule** (ESA's GEO-region definition): an object is in if **any** of its element sets
+with an epoch in the period has mean motion 0.9 to 1.1 rev/day, eccentricity at most 0.2 and
+inclination at most 70 deg (all three bounds inclusive). Every element set it has in the period is
+kept, including ones outside those bounds, such as a transfer orbit before arrival or a graveyard
+orbit after it. An object that was in the region only before 2021 is left out. The manifest
+records the rule and the period.
+
+**Source.** Space-Track's documentation says to use its yearly zip bundles of TLEs, not
+`gp_history`, for many objects. The logged-in documentation links them to a Sync.com share
+(`https://ln5.sync.com/dl/afd354190/c5cd2q72-a5qjzp4q-nbjdiqkr-cenajuqu`). Sync.com encrypts
+shared files end to end and decrypts them in the browser, so a script cannot download them
+without reimplementing Sync's private client. The job therefore runs on Kaggle against the CC0
+mirror `vaibhavpandey12382/historical-tle-datasets`, which describes itself as Space-Track TLE
+history and holds one full-catalogue file per year (`tle2021.txt` to `tle2025.txt`, 2.1 to 2.9 GB
+each). The job reads any local `.txt` or `.zip` bundle, so Space-Track's own zips also work once
+someone downloads them in a browser into `data/bulk/` (run Python on them with `-I`).
+
+```
+MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-geo-belt --dataset vaibhavpandey12382/historical-tle-datasets -- python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '/kaggle/input/**/tle2021.txt' --bundle '/kaggle/input/**/tle2022.txt' --bundle '/kaggle/input/**/tle2023.txt' --bundle '/kaggle/input/**/tle2024.txt' --bundle '/kaggle/input/**/tle2025.txt' --also 36508 --also 41240 --also 54754 --also 27421 --out /kaggle/working/out/geo.zip
+python -I -m zipfile -e data/kaggle/ow-geo-belt/out/out/geo.zip data/geo
+hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out data/geo
+```
+
+`build` streams the bundles twice and never holds a whole bundle in memory, but it holds the
+selected objects' element sets and the output text: about 3 GB at peak for five years (about 5
+million element sets), which a Kaggle CPU kernel handles. The first pass reads
+the mean motion, eccentricity and inclination columns of each pair and checks the rule; a pair
+that passes is checked with `parse_tle`, and its object is selected if the pair is valid and its
+epoch is in the period. The second pass parses every pair of the selected objects, keeps those
+with epochs in the period, and de-duplicates by epoch as `series.to_series` does: when an epoch
+appears again with different lines, the later one is kept and counted under `epoch_conflicts`.
+Selection runs before that de-duplication, so an object can be selected by a pair that a later
+pair at the same epoch replaces; such an object shows `by_rule: true` with `in_region_count: 0`.
+`--bundle` takes paths or recursive globs (the mirror nests some years one folder deeper). `--also <norad>` (repeatable) adds an object
+outside the rule; the run above adds the four LEO satellites that `generalise` uses (CryoSat-2, Jason-3,
+SWOT, SPOT-5), whose Space-Track files are no longer on this machine. The manifest marks each
+object `by_rule` true or false. The
+output is `<norad>.tle` per object (2-line TLEs in epoch order) and `manifest.json`: the source,
+the period, the rule, each bundle's name, size, sha256, line and pair counts and rejected lines
+(non-blank lines that are not part of a line pair or a name line before one), and per object its
+name lines (if the bundle has any), TLE count, how many of those meet the rule, epoch range,
+pairs the parser rejected and epoch conflicts. On Kaggle it writes one `geo.zip`, not thousands
+of files.
+
+The full run (commit 74a831f) took about 16 minutes on Kaggle. It read 177,075,602 lines
+(88,220,159 pairs) from the five files and kept 1,808 objects with 4,957,896 TLEs: 1,804 by the
+rule and the four added with `--also`. That is a 184 MB `geo.zip` holding 694 MB of TLE text. The
+mirror's 2021, 2022 and 2024 files end every line 1 with a backslash, which the job drops. 136
+objects have sets outside the region, such as 65588, which moves from a 5 rev/day transfer orbit to
+GEO. 635,284 lines were rejected; the ones looked at are 68-character lines of analyst objects
+(8xxxx), which `parse_tle` refuses. 785,425 pairs restated an epoch already held with different
+lines, and 8 pairs failed `parse_tle`. 1,766 objects have a last set in December 2025.
+
+**Restated epochs.** The mirror's numbering fields differ from Space-Track's: line 1's element set
+number and checksum are not the ones `gp_history` serves for the same set. The orbital fields
+(line 1 up to column 64 and all of line 2 but the checksum) match. Against the `gp_history` files
+of Fengyun-2H (43491) and QZS-4 (42965), every epoch the mirror holds matches the latest-issued set
+(highest `GP_ID`) on those fields: 4,220 and 1,851 epochs, including all 390 and 718 epochs that
+Space-Track issued more than once with different lines. So keeping the later record matches
+Space-Track's latest issue. The mirror lacks 2 of 43491's 4,222 epochs.
+
+`satcat` adds each object's SATCAT entry (`OBJECT_NAME`, `OBJECT_TYPE`, `INTLDES`, `COUNTRY`,
+`LAUNCH`, `DECAY`) to `data/geo/manifest.json`, or `null` for an object the catalogue lacks. It is
+one Space-Track query for the whole catalogue (Space-Track allows SATCAT once a day and asks for
+combined queries), kept for good under `data/spacetrack/` beside the output folder.
+
 ## Running the tests
 
 ```
@@ -332,6 +410,9 @@ exit code. The default command is `pytest -q`. `--attach PATH` (repeatable) embe
 git-ignored data, at the same relative path next to the source; the kernel writes the sha256 of
 each attached file to `ATTACHED.txt`, and the script checks it against the local file. The kernel has internet access because it runs
 `pip install -e .[dev]`; each push makes a new version of the kernel named by `--slug`.
+`--dataset OWNER/SLUG` (repeatable) mounts a Kaggle dataset read-only under `/kaggle/input`. The
+embedded tree leaves out `findings/` (plots and tables, not code) so the script stays under
+Kaggle's limit of about 1 MB.
 
 On the owner's Windows machine `kaggle datasets create` fails from Git Bash (forward slashes end up
 in the upload's temporary file name); run it from PowerShell if a dataset is ever needed.

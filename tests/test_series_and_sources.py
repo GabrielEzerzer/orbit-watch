@@ -1,9 +1,12 @@
+import json
 from dataclasses import replace
 
 import numpy as np
 import pytest
 
-from orbit_watch import DirectorySource, to_series
+from orbit_watch import DirectorySource, parse_tle, to_series
+from orbit_watch.geo_hunt import hunt
+from orbit_watch.holdout import load_gp_history
 
 
 def test_directory_source_reads_every_format_and_filters(mock_dir):
@@ -48,3 +51,47 @@ def test_later_duplicate_wins(mock_dir):
     restated = replace(rec, inclination=51.0)  # synthetic restatement at the same epoch
     assert to_series([rec, restated])[55123].inclination.tolist() == [51.0]
     assert to_series([restated, rec])[55123].inclination.tolist() == [rec.inclination]
+
+
+def _tle(day: float, mm: float = 1.00273956) -> str:
+    """A synthetic Luch 5A (NORAD 37951) TLE pair with its epoch moved to ``day`` of 2021."""
+    def checksum(line):
+        return str(sum(int(c) if c.isdigit() else c == "-" for c in line) % 10)
+    l1 = f"1 37951U 11074B   {21000 + day:14.8f} -.00000034  00000-0  00000-0 0  999"
+    l2 = f"2 37951   3.7193 109.4207 0001930 192.9377 176.7807 {mm:11.8f} 3321"
+    return f"{l1}{checksum(l1)}\n{l2}{checksum(l2)}\n"
+
+
+# Synthetic epochs (days of 2021): two sets 30 s apart, then two 59 s apart, then one 61 s later.
+NEAR_DAYS = [1.0, 1.0 + 30 / 86400, 1.5, 1.5 + 59 / 86400, 1.5 + 120 / 86400, 2.0]
+
+
+def test_epochs_under_60_s_apart_collapse_to_the_later():
+    recs = parse_tle("".join(_tle(d) for d in NEAR_DAYS))
+    s = to_series(reversed(recs))[37951]
+    assert s.epochs.tolist() == [recs[i].epoch.replace(tzinfo=None) for i in (1, 3, 4, 5)]
+    assert len(s.semi_major_axis_km) == len(s.bstar) == 4
+
+
+def test_a_chain_under_60_s_apart_keeps_only_its_last_epoch():
+    # A, B 40 s after A, C 40 s after B: A-C is 80 s, but the chain collapses to C.
+    recs = parse_tle("".join(_tle(d) for d in (1.0, 1.0 + 40 / 86400, 1.0 + 80 / 86400, 2.0)))
+    s = to_series(recs)[37951]
+    assert s.epochs.tolist() == [recs[i].epoch.replace(tzinfo=None) for i in (2, 3)]
+
+
+def test_every_loader_gets_the_collapse(tmp_path):
+    # geo_hunt reads TLEs itself and must line its longitudes up with the collapsed series.
+    days = sorted(NEAR_DAYS + [3.0 + 0.5 * i for i in range(20)])
+    jitter = [1.00273956 + 1e-8 * (i * 7 % 5) for i in range(len(days))]  # some scatter to score
+    (tmp_path / "37951.tle").write_text("".join(_tle(d, m) for d, m in zip(days, jitter)), encoding="utf-8")
+    r = hunt(tmp_path / "37951.tle")
+    assert r["summary"]["epochs"] == len(days) - 2 == len(r["lon"]) == len(r["series"])
+    # holdout's Space-Track loader: rows 30 s apart are one element set (the latest issued).
+    rows = [{"EPOCH": f"2021-01-01T00:00:{s:02d}.000000", "GP_ID": str(i + 1), "NORAD_CAT_ID": "25544",
+             "MEAN_MOTION": "15.5", "ECCENTRICITY": "0.0003", "INCLINATION": "51.6", "RA_OF_ASC_NODE": "10",
+             "ARG_OF_PERICENTER": "20", "MEAN_ANOMALY": "30", "BSTAR": "0.0001", "MEAN_MOTION_DOT": "0",
+             "MEAN_MOTION_DDOT": "0", "OBJECT_NAME": "ISS"} for i, s in enumerate((0, 30))]
+    (tmp_path / "gp.json").write_text(json.dumps(rows), encoding="utf-8")
+    series, stats = load_gp_history(tmp_path / "gp.json")
+    assert len(series) == 1 and stats["near_epoch_reissues_dropped"] == 1
