@@ -31,7 +31,7 @@ from pathlib import Path
 
 from orbit_watch.elements import parse_tle
 from orbit_watch.modes import MODES, Segment, segments, track
-from orbit_watch.series import to_series
+from orbit_watch.series import distinct_epochs
 from orbit_watch.truth import load_splits
 
 YEARS = range(2021, 2026)
@@ -40,10 +40,8 @@ SEGMENT_FIELDS = ["norad_id", "start", "end", "mode", "windows", "n_sets", "lon_
 
 
 def object_segments(path: Path) -> list[Segment]:
-    records = parse_tle(path.read_text(encoding="utf-8"))
-    by_epoch = {r.epoch: r for r in records}  # same de-duplication as to_series: later wins
-    recs = [by_epoch[e] for e in sorted(by_epoch)]
-    to_series(recs)  # the holdout guard; raises truth.HoldoutError for a holdout object
+    # distinct_epochs keeps what to_series keeps and raises truth.HoldoutError for a holdout object.
+    (recs,) = distinct_epochs(parse_tle(path.read_text(encoding="utf-8"))).values()
     return segments(track(recs))
 
 

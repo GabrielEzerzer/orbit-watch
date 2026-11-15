@@ -190,7 +190,7 @@ def mean_longitude(record: ElementSet) -> float:
 
 
 def track(records: Sequence[ElementSet]) -> Track:
-    """A ``Track`` from one object's element sets (epoch order, one per epoch, as ``to_series`` keeps)."""
+    """A ``Track`` from one object's element sets (epoch order, as ``series.distinct_epochs`` keeps them)."""
     days = np.array([(r.epoch - GRID_START).total_seconds() / 86400.0 for r in records])
     return Track(
         norad_id=records[0].norad_id,
