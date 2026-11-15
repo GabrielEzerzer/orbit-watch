@@ -1,5 +1,6 @@
 # One SGP4 mean element set per object and epoch, parsed from TLE or GP (OMM) text, validated as untrusted input.
-# Angles are degrees, mean motion rev/day (Kozai), bstar 1/Earth radii, epochs timezone-aware UTC.
+# Angles are degrees, mean motion rev/day (Kozai), bstar 1/Earth radii, epochs timezone-aware UTC to the microsecond.
+# mean_motion_dot/ddot are the TLE fields as printed (n-dot/2 rev/day^2, n-ddot/6 rev/day^3); SGP4 does not use them.
 
 from __future__ import annotations
 

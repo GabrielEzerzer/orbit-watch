@@ -89,11 +89,11 @@ rule:
               regex: '^/$'
           - has:
               field: left
-              regex: '__file__|\bREPO\b|\bROOT\b'
+              regex: '\w*(?:REPO|ROOT)\w*|__file__'
     - inside:
         kind: argument_list
         inside:
           kind: call
           has:
             field: function
-            regex: '^(?:pathlib\.)?(?:Path|PurePath|PosixPath|WindowsPath|open)$'
+            regex: '^(?:pathlib\.)?(?:Path|PurePath|PosixPath|WindowsPath|open)$|(?:\w*(?:REPO|ROOT)\w*|__file__).*\.joinpath$'

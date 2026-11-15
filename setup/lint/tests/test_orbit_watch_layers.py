@@ -92,12 +92,19 @@ class Layers(unittest.TestCase):
                 "tests/test_b.py": "T = open(\"mock/elements/iss.tle\").read()\n",
                 "tests/test_c.py": "from pathlib import Path\nT = Path(\"data/spacetrack/x.json\")\n",
                 "tests/test_d.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = REPO / \"data\" / \"x\"\n",
+                "tests/test_h.py": "from pathlib import Path\nREPO_DIR = Path(__file__).parents[1]\nT = REPO_DIR / \"mock\" / \"x.tle\"\n",
+                "tests/test_i.py": "from pathlib import Path\nTEST_ROOT = Path(__file__).parent\nT = TEST_ROOT / \"data\"\n",
+                "tests/test_j.py": "from pathlib import Path\nT = Path(__file__).parents[1].joinpath(\"mock\", \"x.tle\")\n",
+                "tests/test_k.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = REPO.joinpath(\"data\")\n",
             },
             {
                 "tests/test_e.py": "def test_x(mock_dir):\n    return (mock_dir / \"geo\" / \"x.tle\").read_text()\n",
                 "tests/test_f.py": "def test_x(tmp_path):\n    (tmp_path / \"data\").mkdir()\n",
                 "tests/test_g.py": "def test_x():\n    build(\"mock\", [])\n",
                 "tests/conftest.py": "from pathlib import Path\nMOCK = Path(__file__).resolve().parents[1] / \"mock\"\n",
+                "tests/test_l.py": "def test_x(tmp_path):\n    tmp_path.joinpath(\"data\").mkdir()\n",
+                "tests/test_m.py": "def test_x(mock_dir):\n    return mock_dir.joinpath(\"geo\", \"x.tle\").read_text()\n",
+                "tests/test_n.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = REPO / \"orbit_watch\"\n",
             },
         )
 

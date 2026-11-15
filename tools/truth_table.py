@@ -1,5 +1,6 @@
 # Write groundtruth/objects.md, one row per labelled object, from the label files and cached element sets.
 # It never runs the detector, so it may list holdout objects.
+# Burns are log rows (an IDS row can hold several burns); the ISS label files have no norad_id column.
 
 from __future__ import annotations
 

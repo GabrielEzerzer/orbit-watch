@@ -1,4 +1,6 @@
 # Daily space-weather indices (Kp, Ap, F10.7) from CelesTrak's SW-All.csv, fetched at most once per UTC day.
+# kp and ap: 8 three-hour columns from 00-03 UT; kp is NaN on prediction rows.
+# F10.7 is in solar flux units, the adjusted value scaled to 1 AU. Dst is not loaded.
 
 from __future__ import annotations
 

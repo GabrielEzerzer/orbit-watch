@@ -6,8 +6,9 @@ mean semi-major axis (and optionally inclination), scores the detector against c
 logs, and labels the operating mode of every object in the GEO region. Built out of interest.
 
 Results and leads are in `FINDINGS.md` and `findings/`. Ground-truth sources, caveats and the
-train/holdout split are in `groundtruth/README.md`. Each module's docstring gives its rules in
-full; this file says what exists, how to run it and where the numbers are.
+train/holdout split are in `groundtruth/README.md`. This file says what exists, how to run it and
+where the numbers are; "Method notes" at the end gives the rules, thresholds and sources the code
+does not state.
 
 ## Setup and tests
 
@@ -64,7 +65,9 @@ Download rules:
   credentials live in the hush vault, so run anything that uses it as `hush run -- <command>`. It
   keeps under 30 requests a minute and 300 an hour. Space-Track allows each object's `gp_history`
   to be downloaded once, so every answer under `data/spacetrack/` is kept with no expiry and never
-  fetched again. Keep that folder.
+  fetched again. Keep that folder. SATCAT is one full-catalogue query (Space-Track allows it once a
+  day and asks for combined queries, not one per object), kept the same way; delete
+  `data/spacetrack/satcat-<fields>.json` to fetch a newer one.
 
 ## Running each job and tool
 
@@ -88,9 +91,9 @@ Commands that need the ISS TLE file on Kaggle attach it (`--attach`); see "Runni
 Tools:
 
 - `hush run -- python tools/fetch_generalise_tles.py`: Space-Track history for the six generalisation satellites, once each.
-- `hush run -- python tools/fetch_truth_tles.py`: Space-Track history for the other objects in `groundtruth/splits.json`.
+- `hush run -- python tools/fetch_truth_tles.py`: Space-Track history for the other objects in `groundtruth/splits.json`, holdout objects included: fetching their element sets is allowed, running the detector on them is not.
 - `python tools/truth_table.py`: regenerates `groundtruth/objects.md`.
-- `python tools/esa_classification.py i21.txt data/geo_modes/segments.csv`: ESA's 2019 per-object classes beside our first 2021 mode (the docstring gives the `pdftotext` step).
+- `pdftotext -layout -enc UTF-8 Classification_of_Geosynchronous_Objects_I21R0.pdf i21.txt`, then `python tools/esa_classification.py i21.txt data/geo_modes/segments.csv`: ESA's 2019 per-object classes beside our first 2021 mode, as a Markdown table.
 - `python tools/kaggle_run.py`: runs a command on Kaggle CPU (below).
 
 ## Results
@@ -145,8 +148,9 @@ chance recall comes from the logs shifted by 7, 13 and 19 days.
 | LEO | P 36/42 = 0.86, R 36/445 = 0.08 | P 162/260, R 162/199 (k=6, z>=40, step>=0) |
 
 The ISS setting carries over to GEO east-west burns (about 3 km in `a`) and misses routine LEO
-burns (10-50 m). The tuned later part is not a blind holdout: four method changes came after it
-was first scored (`report.json`, `test_part_not_blind`, and the module docstring). The unmatched
+burns (10-50 m). The tuned later part is not a blind holdout: four method changes (the 2-day late
+tolerance, the 60 s epoch collapse, merging burns under 12 h apart and the `|z|` grid beyond 30)
+came after it was first scored (`test_part_not_blind` in `report.json`). The unmatched
 QZS-3 and QZS-6 detections have not been checked against anything else.
 
 ### Frozen per-regime evaluation (`harness/evals/`)
@@ -223,8 +227,8 @@ matches Space-Track's latest issue. The mirror lacks 2 of 43491's 4,222 epochs.
 `orbit_watch.modes` labels each object's mode per 30-day window with ESA's classes (*Classification
 of Geosynchronous Objects*, Issue 21.0, 2019): `controlled_lon_inc` (C1), `controlled_lon` (C2),
 `drifting` (D), `librating_75E` (L1), `librating_105W` (L2), `librating_both` (L3), `inclined`
-(I), `undetermined` (Ind) and `out_of_region`. The rules and their sources are in the module
-docstring. The job skips the four `--also` objects and the 5 holdout objects, so 1,799 objects are
+(I), `undetermined` (Ind) and `out_of_region`. The thresholds and their sources are in "Method
+notes". The job skips the four `--also` objects and the 5 holdout objects, so 1,799 objects are
 classified. Year-end counts, transitions and the summary are in `findings/geo_modes/`; 1,477
 objects keep one mode for the whole period. Known limits are tracked in issues #21, #28, #29,
 #30 and #32.
@@ -248,7 +252,7 @@ nothing was tuned to it.
 | total | 1,578 | p. 3, p. 216 | 1,597 (1,799 less 190 with no data and 12 out of region) |
 
 The populations differ because ESA classifies everything in DISCOS, including 206 objects from
-JSC Vimpel data and 9 from KIAM (p. 216) that mostly have no public TLEs; three years of
+JSC Vimpel data and 9 from KIAM (p. 216), many of which have no public TLEs; three years of
 launches, retirements and re-orbits separate the dates; ESA classifies each object from its whole
 history and corrects some by hand (section 4, p. 50), while we label 30-day windows, so a keeper
 between cycles or a librator at a turning point can be undetermined; and ESA's C4 objects land in
@@ -276,7 +280,8 @@ relocations between the dates would explain them. Seven dead satellites hold sti
 within about half a degree of a stable point and read librating, because one free path fits all
 five years of their longitudes: ATS 3 (3029), NATO 2B (4902), SATCOM C5 (13631), GStar 1
 (15677), GStar 3 (19483) and ACTS (22796) at 105 deg W, and SIRIO (10294) at 75 deg E, with
-swings of 0.2-1.8 deg. ESA lists all seven as L2 or L1. The two L3 objects we call drifting,
+swings of 0.2-1.8 deg. ESA lists all seven as L2 or L1, GStar 1 and ACTS on rows the page check
+drops. The two L3 objects we call drifting,
 Intelsat 804 (25110) and Cosmos 2479 (38101), pass over the high barrier in 2021-2025.
 
 ## Running on Kaggle CPU
@@ -288,7 +293,9 @@ HEAD (it refuses a dirty working tree):
 python tools/kaggle_run.py --slug ow-suite -- pytest -q
 ```
 
-It needs the `kaggle` CLI installed and authenticated. It embeds `git archive HEAD` (without
+It needs the `kaggle` CLI installed and authenticated. The kernel goes to the account in
+`KAGGLE_USERNAME`, else the `username` in `kaggle.json` under `KAGGLE_CONFIG_DIR` or `~/.kaggle`
+(the CLI's own config); with neither it stops and says which to set. It embeds `git archive HEAD` (without
 `findings/`, to stay under Kaggle's limit of about 1 MB) and the commit SHA in a generated script,
 pushes it, polls its status every 30 seconds and downloads the outputs to
 `data/kaggle/<slug>/out/`: `COMMIT.txt`, `run.log`, `exit_code.txt` and `out/` with anything
@@ -302,3 +309,129 @@ with the command's exit code.
 - From Git Bash, set `MSYS_NO_PATHCONV=1` when the command has an absolute path such as
   `/kaggle/working/out`; otherwise Git Bash rewrites it and `kaggle_run.py` refuses the command.
   `kaggle datasets create` fails from Git Bash on Windows; run it from PowerShell.
+- The Kaggle CLI exits 0 on some refusals ("Maximum batch CPU session count"), so a push counts
+  only when it reports "successfully pushed".
+- Right after a push the status can still be the previous version's, so only a terminal status
+  seen after an active one (or 10 minutes after the push) ends the wait; `COMMIT.txt` settles which
+  run the outputs belong to.
+- The kernel has internet on, which `pip install` needs. Slugs are at least 5 characters, because
+  Kaggle needs titles that long.
+
+## Method notes
+
+Rules, thresholds and sources that the code does not state, per module.
+
+### `elements`
+
+- A blank TLE eccentricity field is refused, not read as 0.
+- CelesTrak and Space-Track print the GP `EPOCH` with no offset; it is read as UTC.
+- OMM numbers are kept as their text until parsed, so a JSON value and the same CSV value give
+  the same float.
+
+### `series`
+
+- When two records share an epoch, the later input record wins, so a later source restates an
+  earlier one. A chain of epochs each under 60 s after the previous one collapses to its last
+  epoch.
+
+### `detect`
+
+- The step's standard error is `se = sigma * sqrt(pi/2) * sqrt(2/k)`, the standard error of a
+  difference of two medians; `sigma` is 1.4826 times the pooled median absolute deviation, floored
+  at half the series' median `sigma` so a run of near-identical TLEs does not inflate `z`.
+- `z` ranks steps but is not a calibrated probability: consecutive ISS TLEs come from overlapping,
+  correlated orbit-determination arcs, so the minimum `|step|` does most of the work.
+- `merge_channels` keeps every semi-major-axis detection and drops an inclination detection within
+  `nms_days` of one. Semi-major axis goes first because `z` is not comparable across channels.
+
+### `calibrate`
+
+- Ties in the F1 choice go to the stricter setting: higher `|z|`, then higher `|step|`, then
+  smaller `k`.
+- A row with no time is a US-local date and is widened by one day either side.
+- Step sign: up for reboosts (test burns included), down for deboosts and burns the source calls
+  retrograde, either for the rest.
+
+### `holdout`
+
+- An event's year is its `date_utc`; a detection's year is that of the epoch before its step. The
+  detector runs once per source, so the noise floor (half the median `sigma`) spans all of
+  2021-2025 and uses no labels.
+
+### `inject`
+
+- 300 trials per size and sign. A quiet gap has no truth window and no frozen detection within a
+  margin equal to the scoring window `max_span_days` (3 days at native cadence, wider on thinned
+  series).
+- A thinned series is re-thinned with a random grid phase in every realisation, so the trials
+  spread over many thinned series.
+- `chance_recovery` is the share of quiet gaps that a detection already present with nothing
+  injected would "recover": the floor under small-step recall at a loose setting.
+- The looser settings are a measurement, not a tuning; none of them is chosen.
+
+### `generalise`
+
+- Each satellite's tune/test split falls on the first day of the month holding its
+  60th-percentile logged event, fixed from the log before any scoring.
+- `lag_days` uses only events with `|delta_a|` of at least 50 m (LEO) or 500 m (GEO) whose step
+  reaches 30% of the estimate.
+- A burn/counter-burn pair takes either sign, because its net sign is within the estimate's error.
+
+### `harness.evals.detector`
+
+- An event is covered when the coverage reference scores a gap near it: `score_gaps`' gap rule at
+  `REF_K` = 4 with the 3-day span and 2-day gap limits of `generalise` at 3ca08ab, copied, so no
+  detector change moves it.
+- A detection is assigned to a period, matched and counted by its peak gap (the gap its step and
+  `z` come from), never by its interval.
+- Duplicates are unmatched detections whose peak gap overlaps a logged burn's match zone: neither
+  hits nor false alarms, counted so that lowering `nms_days` or `z_min` near burns does not look
+  free.
+- Exposure is the union of the no-burn time the reference scores and the time the setting scores,
+  so marking noisy gaps unscored cannot lower the false-alarm rate. QZS-4 (about one element set a
+  day, none for 3-5 days after a burn) has only 0.415 (train) and 0.235 (dev) of its no-burn time
+  scored.
+- With `--final` there is no per-event detail: the test score is a count, not a guide.
+
+### `modes`
+
+- Classes and region: ESA Space Debris Office, *Classification of Geosynchronous Objects*, Issue
+  21.0, 19 July 2019, GEN-DB-LOG-00270-OPS-SD, status at 1 January 2019, section 2 and table 1
+  (p. 6). ESA does not host it publicly; the copy read is at
+  <https://astronomer.ru/data/0128/Classification_of_Geosynchronous_Objects_I21R0.pdf>.
+- `out_of_region`: median semi-major axis outside 37,948-46,380 km or eccentricity above 0.25
+  (ESA's GEO, IGO and EGO classes together).
+- Longitude is the mean longitude (node + argument of perigee + mean anomaly - GMST), the quantity
+  ESA tabulates. The sub-satellite longitude adds an inclined orbit's daily figure-eight, about
+  ±1 deg at 15 deg inclination.
+- Held: the 5th-95th percentile longitude spread is at most 0.3 deg. ITU Radio Regulations
+  No. 22.6 sets ±0.1 deg east-west for geostationary stations; 0.3 leaves room for TLE noise and
+  sits in the gap of the spread histogram (150 sampled objects: 2,627 windows below 0.15 deg, 147
+  between 0.15 and 0.5 deg). A held window counts as control only if a 90-day run of three windows
+  that includes it is held too, or it is stiller than a free object could be.
+- `BOX_DEG` 1.5: among 90-day runs with a burn in 250 sampled objects, 933 spread under 1 deg, 10
+  spread 1-3 deg and the rest 3 deg or more.
+- `FREE_RESIDUAL_DEG` 0.02: in a seeded sample of 400 objects the two-window fit leaves 0.42% of
+  2,153 free-librator windows above it, and 99.5% of keeper windows and every relocation above it.
+- The 30-day windows are laid back from 2026-01-01 so every object shares the grid; the first
+  window is 26 days.
+
+### `geo_hunt`
+
+- `K` = 4 epochs each side, because GEO TLEs come about twice a day.
+
+### `jobs.extract_tle_archive` and `jobs.geo_belt`
+
+- `extract_tle_archive` carries each object's line 1 and line 2 across commits, so a commit that
+  changes one line still yields a whole pair. On an epoch conflict it keeps the first pair;
+  `geo_belt` keeps the later one, as `series` does.
+- The Kaggle mirror's 2021, 2022 and 2024 files end every line 1 with a backslash, which
+  `geo_belt` drops.
+- `geo_belt` writes one zip when `--out` ends in `.zip`, because a Kaggle kernel should not write
+  thousands of files.
+
+### `spacetrack` and `spaceweather`
+
+- A Space-Track login answered with `"Login":"Failed"` in the body counts as refused even with
+  HTTP 200, as in the open-source `spacetrack` client.
+- CelesTrak prints Kp times ten; `load_space_weather` divides it back.
