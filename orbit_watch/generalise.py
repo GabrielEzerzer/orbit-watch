@@ -3,8 +3,9 @@
     python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetrack \\
         --out findings/generalise
 
-For each satellite, from its Space-Track gp_history and its operator manoeuvre log
-(``orbit_watch.manoeuvre_logs``):
+For each satellite, from its Space-Track gp_history (or, when there is none, its
+``data/geo/<norad>.tle`` from ``orbit_watch.jobs.geo_belt``; ``load_series``) and its operator
+manoeuvre log (``orbit_watch.manoeuvre_logs``):
 
 1. The frozen ISS setting as-is (``FROZEN``: k=4, |z|>=12, |step|>=200 m, NMS 1 day, gaps
    scored only when each side spans <=3 days and the gap <=2 days, as in the ISS run).
@@ -79,7 +80,7 @@ not count as false alarms.
 
 ``run`` never takes ``final=True``: it tunes over its objects, and tuning on a holdout object
 would spend the holdout. The final scoring runs a frozen setting chosen on train objects
-(not built yet).
+(``python -m harness.evals.detector --split test --final``).
 """
 
 from __future__ import annotations
@@ -93,19 +94,10 @@ from pathlib import Path
 import numpy as np
 
 from orbit_watch.calibrate import TOLERANCE_DAYS, Z_GRID, _iso, _ratio
-from orbit_watch.detect import Detection, pick, score_gaps
-from orbit_watch.elements import parse_omm_json
+from orbit_watch.detect import Detection, Setting, pick_setting, score_gaps
+from orbit_watch.elements import parse_omm_json, parse_tle
 from orbit_watch.series import ElementSeries, to_series
 from orbit_watch.truth import HoldoutError, read_label_rows, require_allowed
-
-
-@dataclass(frozen=True)
-class Setting:
-    k: int
-    z_min: float
-    step_min_m: float
-    nms_days: float = 1.0
-
 
 FROZEN = Setting(k=4, z_min=12, step_min_m=200)  # FINDINGS.md, calibration run at 508838a
 MAX_SPAN_DAYS, MAX_GAP_DAYS = 3.0, 2.0  # score_gaps defaults, used by the ISS run
@@ -296,17 +288,41 @@ def _pool(results: list[dict]) -> dict:
     return p
 
 
+def load_series(norad: int, tle_dir: Path, geo_dir: Path | None = None, *,
+                final: bool = False) -> tuple[ElementSeries, str, int]:
+    """One object's element series, the file it came from, and how many near-duplicate epochs
+    ``to_series`` dropped.
+
+    Reads the Space-Track ``gp_history-<norad>-*.json`` in ``tle_dir``. When there is none, falls
+    back to ``<norad>.tle`` in ``geo_dir`` (default ``tle_dir/../geo``), written by
+    ``orbit_watch.jobs.geo_belt`` from a Space-Track mirror; its later-record-wins rule matches
+    Space-Track's latest-issued set (README, "Every object in the GEO region"). Refuses holdout
+    objects unless ``final`` (through ``to_series``)."""
+    paths = sorted(tle_dir.glob(f"gp_history-{norad}-*.json"))
+    if paths:
+        (path,) = paths
+        records = parse_omm_json(path.read_text(encoding="utf-8"))
+        label = path.name
+    else:
+        path = (tle_dir.parent / "geo" if geo_dir is None else geo_dir) / f"{norad}.tle"
+        if not path.exists():
+            raise FileNotFoundError(f"no gp_history-{norad}-*.json in {tle_dir} and no {path}")
+        records = parse_tle(path.read_text(encoding="utf-8"))
+        label = f"{path.parent.name}/{path.name}"
+    records = [r for r in records if r.norad_id == norad]
+    series = to_series(records, final=final)[norad]
+    return series, label, len({r.epoch for r in records}) - len(series)
+
+
 class Satellite:
     """One object's series, log events, split and cached per-k gap scores."""
 
     def __init__(self, name: str, norad: int, regime: str, truth: Path, tle_dir: Path,
-                 final: bool = False):
+                 final: bool = False, geo_dir: Path | None = None):
         require_allowed(norad, final=final)  # before the element sets are read
-        (path,) = sorted(tle_dir.glob(f"gp_history-{norad}-*.json"))
-        self.name, self.norad, self.regime, self.tle_file = name, norad, regime, path.name
-        records = [r for r in parse_omm_json(path.read_text(encoding="utf-8")) if r.norad_id == norad]
-        self.series: ElementSeries = to_series(records, final=final)[norad]
-        self.near_duplicates_dropped = len({r.epoch for r in records}) - len(self.series)
+        self.name, self.norad, self.regime = name, norad, regime
+        self.series, self.tle_file, self.near_duplicates_dropped = load_series(
+            norad, tle_dir, geo_dir, final=final)
         first, last = self.series.epochs[0], self.series.epochs[-1]
         self.coverage = log_coverage(truth, norad, final=final)
         self.all_events = load_log_events(truth, norad, final=final)
@@ -329,7 +345,7 @@ class Satellite:
         matching an attitude event removed, and their one-to-one match to the target events."""
         sc, cover = self.scores(s.k)
         lo, hi = self.coverage[0] - _tol(TOLERANCE_DAYS), self.coverage[1] + _tol(LATE_DAYS)
-        dets = [d for d in pick(sc, s.z_min, s.step_min_m, s.nms_days) if d.end >= lo and d.start <= hi]
+        dets = [d for d in pick_setting(sc, None, s) if d.end >= lo and d.start <= hi]
         m = match_near(self.events, dets, late_days=LATE_DAYS)
         if self.attitude:
             rest = [i for i in range(len(dets)) if i not in set(m.values())]
@@ -518,7 +534,7 @@ TEST_PART_NOT_BLIND = (
 FINAL_REFUSED = (
     "generalise.run tunes its setting over the objects it scores, so it never runs on the holdout "
     "(final=True): the final path scores a frozen setting chosen on train objects, without "
-    "tuning, and that scorer is not built yet"
+    "tuning: python -m harness.evals.detector --split test --final"
 )
 
 
