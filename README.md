@@ -47,8 +47,9 @@ the series' median `sigma`. The step's `z` is the step divided by the standard e
 difference of two medians. A gap is flagged when `|z|` and `|step|`
 both pass their thresholds, and within one day only the highest `|z|` is kept. Gaps whose
 windows span more than 3 days, or that are longer than 2 days themselves, are not scored, so no
-detection crosses an outage such as 2022-06-15..19. Only `a` is used; eccentricity and
-inclination are not used yet.
+detection crosses an outage such as 2022-06-15..19. The same scoring can run on inclination, for
+north-south burns, when a `detect.Setting` turns that channel on (`detect.pick_setting`, used by
+`detect.detect` and by the frozen evaluation below); eccentricity is not used.
 
 `orbit_watch.calibrate` scores the detector against `groundtruth/iss_manoeuvres.csv`:
 
@@ -299,8 +300,7 @@ How the targets read:
   not checked, because its burn lists are lower bounds, and the ISS recall target (>= 0.95) is a
   guardrail. Fengyun is never checked.
 
-Log loading is `generalise`'s; the module docstring gives every rule. The baseline and the rounds
-are in `.agent/journal.md`.
+Log loading is `generalise`'s; the module docstring gives every rule.
 
 Element sets: an object's Space-Track `gp_history-<norad>-*.json` in `data/spacetrack/` when
 there is one, otherwise `data/geo/<norad>.tle` from the GEO-region job below
@@ -314,6 +314,73 @@ there is one, otherwise `data/geo/<norad>.tle` from the GEO-region job below
 The mirror's later-record-wins rule matched Space-Track's latest-issued sets on Fengyun-2H and
 QZS-4 (below); the six objects above were not compared set by set. The ISS series is read with
 `holdout.load_gp_history` (latest issued wins), as in every ISS score so far.
+
+#### Where the detector hill-climb stands
+
+The hill-climb is paused. Its score is the dev split, and a round must also hold on train:
+
+```
+python -m harness.evals.detector --split dev --data-dir data --settings harness/evals/settings/inc-channel.json
+python -m harness.evals.detector --split train --data-dir data --settings harness/evals/settings/inc-channel.json
+```
+
+`settings/inc-channel.json` is the kept setting. It is FROZEN in every regime, plus the inclination
+channel on GEO with `inc_z_min` 12 and `inc_step_min_deg` 0.011, the loosest step floor on a
+train-only grid at which train GEO false alarms did not rise. Its scores against the targets
+(`harness/evals/results/`) are below; FROZEN gives the same except where noted.
+
+| Target | train | dev |
+|---|---|---|
+| LEO recall on burns of 50 m or more, >= 0.9 | MISS: 4/18 = 0.222 [0.09, 0.45] | MISS: 11/40 = 0.275 [0.16, 0.43] |
+| LEO false alarms <= 1 per object-year | PASS: 0.15 | PASS: 0.00 |
+| GEO recall east-west, >= 0.9 | PASS: 36/39 = 0.923 [0.80, 0.97] | PASS: 33/34 = 0.971 [0.85, 0.99] |
+| GEO recall north-south, >= 0.8 | MISS: 3/17 = 0.176 [0.06, 0.41]; FROZEN 0/17 | MISS: 1/14 = 0.071 [0.01, 0.31]; FROZEN 0/14 |
+| GEO false alarms <= 1 per object-year | MISS: 1.67 | MISS: 3.58 |
+| IGSO false alarms <= 1 per object-year | PASS: 0.00, but no IGSO event is covered | PASS: 0.00, same |
+| ISS recall >= 0.95 (guardrail) | MISS: 45/48 = 0.938 | PASS: 35/35 = 1.000 |
+
+A round is kept only if its target improves, no regime's recall drops on train or dev, no regime's
+false alarms per object-year rise, and the ISS stays at 45/48 on train and 35/35 on dev or better.
+A failed round is reverted with `git revert`, so the history shows it. The rounds so far:
+
+1. Peak-radius non-maximum suppression (#13), where each peak absorbs the flagged gaps fewer than
+   k gaps from it. Reverted. It removed duplicates and two dev GEO false alarms, but lost train GEO
+   north-south and east-west hits and one train ISS burn.
+2. An inclination channel for north-south burns. Kept as `settings/inc-channel.json`. Under the
+   north-south rule it raises train GEO north-south from 0 to 3 of 17 and dev from 0 to 1 of 14,
+   with no new false alarm or duplicate.
+3. Merging the two channels by shared peak gap instead of by time. Reverted. North-south rose to
+   7 of 17 on train and 3 of 14 on dev, but GEO false alarms rose from 4 to 7 on train and from 7
+   to 10 on dev.
+4. Round 1's suppression again, on top of the north-south rule. Reverted. Dev GEO false alarms
+   fell from 7 to 5, but train ISS fell to 44 of 48 and train GEO east-west to 35 of 39.
+5. Round 4 with absorption limited to gaps under 3 x `z_min`. Reverted. Both lost burns came back,
+   and GEO false alarms did not move.
+
+The north-south rule (an `NS` event is a hit only through an inclination-channel detection) was
+added to the eval between rounds 2 and 3, and every number above is on the current eval. Most
+standing GEO false alarms, and round 3's new ones, are excursions: semi-major axis and inclination
+jump by about 500-780 m and 0.03 deg, then jump back within 5-8 days. A rule that reports neither
+step of such a pair is the next candidate. It has not been built.
+
+Open decisions on the measurement rules:
+
+1. Should `LATE_DAYS` (2 days) widen for GEO? Two QZS-3 steps 2.4 and 3.1 days after logged burns
+   count as one train miss with a false alarm and one dev false alarm.
+2. The coverage denominator is settled: `covered` comes from the fixed k=4 reference whatever `k`
+   a setting uses.
+3. ISS false alarms are reported but not checked, because the NASA and Roscosmos lists are lower
+   bounds. This needs a confirmation, or a decision that they count.
+4. The ISS guardrail starts below 0.95 on train (45/48). Should it be judged on dev only, or as no
+   worse than 45/48 on train and 35/35 on dev?
+5. North-south hits from semi-major-axis steps near an east-west burn are settled: a north-south
+   hit needs an inclination-channel detection.
+6. Five of the nine north-south events matched only by a semi-major-axis detection have steps of
+   350-810 m, not an east-west burn's ~3 km. Should a size-aware rule credit them? The rule is
+   unchanged.
+
+The test split was scored once, at the FROZEN baseline (`results/test-frozen.json`, at 3ca08ab,
+before the eval correction at 896ae19). It stays reserved for the end of the climb.
 
 ## First GEO hunt (Luch / Olymp-K)
 
