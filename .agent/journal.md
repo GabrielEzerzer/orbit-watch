@@ -15,8 +15,8 @@ This first lane built the measurement and recorded the baseline; it changed no d
 | ISS | >= 0.95 (guardrail) | reported, not checked (the lists are lower bounds) |
 | GEO Fengyun | exploratory: reported, never counted | reported, never counted |
 
-False alarms are counted on stretches that a log covers, the detector scores, and no logged
-burn's match zone touches (`harness/evals/detector.py` docstring).
+False alarms are counted on stretches that a log covers, the k=4 coverage reference or the
+setting scores, and no logged burn's match zone touches (`harness/evals/detector.py` docstring).
 
 ## Split (`harness/evals/split.json`, committed in 3ca08ab)
 
@@ -26,7 +26,7 @@ burn's match zone touches (`harness/evals/detector.py` docstring).
   (below). Nobody runs it again until the final round.
 
 An event belongs to the period that holds the midpoint of its window, and a detection to the
-period that holds the epoch before its step. The detector runs on each object's whole 2021-2025
+period that holds the first epoch of its peak gap. The detector runs on each object's whole 2021-2025
 series; then each period's events and detections are matched only with each other.
 
 ## Metric command
@@ -42,45 +42,111 @@ settings. The noise floor is therefore the interval width, not run-to-run spread
 beats the baseline only if it moves a recall by more than chance would on this event count;
 quote the Wilson interval with every recall.
 
-## Baseline at commit 3ca08ab
+## Eval correction at 896ae19 (the measurement changed, the detector did not)
 
-Recall is matched / covered events, with a 95% Wilson interval. `hit/ev` is matched / all
-events: `covered` shrinks as k grows, so check that `hit/ev` doesn't fall. FA is false alarms;
-obj-yr is scored no-burn object-years.
+Three things let a detector change move its own score: coverage depended on the setting's k, a
+detection was matched by its whole interval, and two detections of one step could each be
+credited with a different event. 896ae19 fixes the measurement. The detector behaves as before;
+the only production change is two `Detection` fields, `peak_start`/`peak_end`, which `pick` sets
+to the detection's one gap (so they equal `start`/`end`). The rules are in the
+`harness/evals/detector.py` docstring. Every fix that has a test was confirmed by breaking the
+code: 13 breaks, each failing its test.
+
+1. **Coverage reference.** An event is covered when a gap the k=4 reference scores overlaps its
+   window (`REF_K` = 4, `REF_MAX_SPAN_DAYS` = 3, `REF_MAX_GAP_DAYS` = 2, eval constants). A
+   covered event stays in the denominator at every setting and is a miss unless a detection
+   matches it; `hit/ev` (matched / all events) is kept. The brief said to compute the reference
+   with `score_gaps` at k=4. I copied its gap rule into the eval instead (`reference_scored`), so
+   a later change to `score_gaps` or to `generalise`'s constants cannot move the denominator. A
+   test pins the copy to `score_gaps` at k=4 on regular and irregular series, and the two agree
+   on all 13 train objects.
+2. **Exposure** is the no-burn time that the reference or the setting scores (the union). The new
+   `scored` column is exposure over no-burn time: 0.92-0.99 in every regime except IGSO, where
+   it is 0.41 on train and 0.23 on dev. The docstring's QZS-4 example is corrected: QZS-4 has
+   about one element set a day, so four sets often span more than 3 days, and it has none for
+   3-5 days after each burn.
+3. **Peak gap.** A detection is assigned to a period, matched and judged a false alarm by its
+   peak gap, never by its interval. A test pins that a detection whose interval overlaps a burn
+   but whose peak does not is a miss plus a false alarm.
+4. **Label guard.** The label-read scan in `tests/test_truth.py` now covers `harness/` as well as
+   `orbit_watch/`. A new test checks that the `data/geo` fallback refuses a holdout object
+   unless `final` is set.
+5. **README** says that the >=50 m subset uses the merged net `delta_a_est_m`. It says that seven
+   SWOT pairs in 2021-2025 (four train, three dev; holdout not checked) have every row at 50 m
+   or more but a smaller net, so they are left out. It also says that a merged EW+NS event counts
+   toward neither GEO target.
+6. **Duplicates** (`dup`) are unmatched detections, not false alarms, whose peak gap overlaps a
+   logged burn's match zone. They are reported per regime.
+7. **One-to-one matching.** Each detection goes to its nearest eligible event, centre to centre
+   (ties to the earlier event), and to no other. An event that several detections pick goes to
+   the nearest of them (ties to the earlier detection). Under the old rule, a second detection
+   of one step could be credited with a neighbouring event.
+8. **Round 2's eval edit** (`Obj.detections(setting)`) is wiring only. With the inclination
+   channel off it is the old single `pick` call; with it on, it adds `merge_channels`. Kept.
+
+Train and dev were re-run at 896ae19 for FROZEN, generalise's tune and `settings/inc-channel.json`
+(`harness/evals/results/`, committed in cce7ebc). Test was not rerun (see below).
+
+## Baseline (FROZEN at 3ca08ab, re-scored on the corrected eval at 896ae19)
+
+Recall is matched / covered events, with a 95% Wilson interval. Since 896ae19, `covered` comes
+from the k=4 reference whatever the setting. `hit/ev` is matched / all events. FA is false
+alarms. obj-yr is exposure in object-years: no-burn time the reference or the setting scores.
+`scored` is exposure / no-burn time. `dup` counts duplicates. Where a cell changed with the
+correction it reads old → new; the `scored` and `dup` columns are new.
 
 ### FROZEN (k=4, |z|>=12, |step|>=200 m, every regime)
 
-| Split | Group | Subset | Events | Covered | Hit | Recall | 95% CI | Width | hit/ev | FA | obj-yr | FA/yr |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| train | LEO | all | 192 | 174 | 4 | 0.023 | 0.01-0.06 | 0.05 | 0.021 | 2 | 13.18 | 0.15 |
-| train | LEO | >=50 m | 26 | 18 | 4 | 0.222 | 0.09-0.45 | 0.36 | 0.154 | | | |
-| train | GEO | all | 68 | 62 | 48 | 0.774 | 0.66-0.86 | 0.20 | 0.706 | 4 | 2.39 | 1.67 |
-| train | GEO | EW | 43 | 39 | 36 | 0.923 | 0.80-0.97 | 0.18 | 0.837 | | | |
-| train | GEO | NS | 18 | 17 | 6 | 0.353 | 0.17-0.59 | 0.41 | 0.333 | | | |
-| train | GEO | EW+NS | 7 | 6 | 6 | 1.000 | 0.61-1.00 | 0.39 | 0.857 | | | |
-| train | IGSO | all | 7 | 0 | 0 | - | - | - | 0.000 | 0 | 1.22 | 0.00 |
-| train | ISS | all | 49 | 48 | 45 | 0.938 | 0.83-0.98 | 0.15 | 0.918 | 3 | 2.59 | 1.16 |
-| train | Fengyun | EW (= all) | 4 | 3 | 3 | 1.000 | 0.44-1.00 | 0.56 | 0.750 | 0 | 1.00 | 0.00 |
-| dev | LEO | all | 196 | 185 | 11 | 0.059 | 0.03-0.10 | 0.07 | 0.056 | 0 | 10.55 | 0.00 |
-| dev | LEO | >=50 m | 47 | 40 | 11 | 0.275 | 0.16-0.43 | 0.27 | 0.234 | | | |
-| dev | GEO | all | 57 | 51 | 41 | 0.804 | 0.68-0.89 | 0.21 | 0.719 | 7 | 1.96 | 3.58 |
-| dev | GEO | EW | 37 | 34 | 33 | 0.971 | 0.85-0.99 | 0.14 | 0.892 | | | |
-| dev | GEO | NS | 16 | 14 | 5 | 0.357 | 0.16-0.61 | 0.45 | 0.312 | | | |
-| dev | GEO | EW+NS | 4 | 3 | 3 | 1.000 | 0.44-1.00 | 0.56 | 0.750 | | | |
-| dev | IGSO | all | 4 | 0 | 0 | - | - | - | 0.000 | 0 | 0.46 | 0.00 |
-| dev | ISS | all | 36 | 35 | 35 | 1.000 | 0.90-1.00 | 0.10 | 0.972 | 4 | 1.72 | 2.33 |
-| dev | Fengyun | - | 0 | | | | | | | | | |
-| test | LEO | all | 121 | 120 | 0 | 0.000 | 0.00-0.03 | 0.03 | 0.000 | 1 | 13.57 | 0.07 |
-| test | LEO | >=50 m | 19 | 19 | 0 | 0.000 | 0.00-0.17 | 0.17 | 0.000 | | | |
-| test | IGSO | all | 22 | 0 | 0 | - | - | - | 0.000 | 0 | 3.25 | 0.00 |
-| test | Fengyun | all | 27 | 23 | 15 | 0.652 | 0.45-0.81 | 0.36 | 0.556 | 10 | 1.73 | 5.78 |
-| test | Fengyun | EW | 24 | 20 | 15 | 0.750 | 0.53-0.89 | 0.36 | 0.625 | | | |
-| test | Fengyun | NS | 3 | 3 | 0 | 0.000 | 0.00-0.56 | 0.56 | 0.000 | | | |
+| Split | Group | Subset | Events | Covered | Hit | Recall | 95% CI | Width | hit/ev | FA | obj-yr | scored | FA/yr | dup |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| train | LEO | all | 192 | 174 | 4 | 0.023 | 0.01-0.06 | 0.05 | 0.021 | 2 | 13.18 | 0.93 | 0.15 | 0 |
+| train | LEO | >=50 m | 26 | 18 | 4 | 0.222 | 0.09-0.45 | 0.36 | 0.154 | | | | | |
+| train | GEO | all | 68 | 62 | 48 → **46** | 0.774 → 0.742 | 0.66-0.86 → 0.62-0.83 | 0.20 → 0.21 | 0.706 → 0.676 | 4 | 2.39 | 0.92 | 1.67 | 14 |
+| train | GEO | EW | 43 | 39 | 36 | 0.923 | 0.80-0.97 | 0.18 | 0.837 | | | | | |
+| train | GEO | NS | 18 | 17 | 6 → **4** | 0.353 → 0.235 | 0.17-0.59 → 0.10-0.47 | 0.41 → 0.38 | 0.333 → 0.222 | | | | | |
+| train | GEO | EW+NS | 7 | 6 | 6 | 1.000 | 0.61-1.00 | 0.39 | 0.857 | | | | | |
+| train | IGSO | all | 7 | 0 | 0 | - | - | - | 0.000 | 0 | 1.22 | 0.41 | 0.00 | 0 |
+| train | ISS | all | 49 | 48 | 45 | 0.938 | 0.83-0.98 | 0.15 | 0.918 | 3 | 2.59 | 0.99 | 1.16 | 0 |
+| train | Fengyun | EW (= all) | 4 | 3 | 3 | 1.000 | 0.44-1.00 | 0.56 | 0.750 | 0 | 1.00 | 0.98 | 0.00 | 1 |
+| dev | LEO | all | 196 | 185 | 11 | 0.059 | 0.03-0.10 | 0.07 | 0.056 | 0 | 10.55 | 0.98 | 0.00 | 1 |
+| dev | LEO | >=50 m | 47 | 40 | 11 | 0.275 | 0.16-0.43 | 0.27 | 0.234 | | | | | |
+| dev | GEO | all | 57 | 51 | 41 | 0.804 | 0.68-0.89 | 0.21 | 0.719 | 7 | 1.96 | 0.94 | 3.58 | 11 |
+| dev | GEO | EW | 37 | 34 | 33 | 0.971 | 0.85-0.99 | 0.14 | 0.892 | | | | | |
+| dev | GEO | NS | 16 | 14 | 5 | 0.357 | 0.16-0.61 | 0.45 | 0.312 | | | | | |
+| dev | GEO | EW+NS | 4 | 3 | 3 | 1.000 | 0.44-1.00 | 0.56 | 0.750 | | | | | |
+| dev | IGSO | all | 4 | 0 | 0 | - | - | - | 0.000 | 0 | 0.46 | 0.23 | 0.00 | 0 |
+| dev | ISS | all | 36 | 35 | 35 | 1.000 | 0.90-1.00 | 0.10 | 0.972 | 4 | 1.72 | 0.99 | 2.33 | 3 |
+| dev | Fengyun | - | 0 | | | | | | | | | | | |
+| test | LEO | all | 121 | 120 | 0 | 0.000 | 0.00-0.03 | 0.03 | 0.000 | 1 | 13.57 | not run | 0.07 | not run |
+| test | LEO | >=50 m | 19 | 19 | 0 | 0.000 | 0.00-0.17 | 0.17 | 0.000 | | | | | |
+| test | IGSO | all | 22 | 0 | 0 | - | - | - | 0.000 | 0 | 3.25 | not run | 0.00 | not run |
+| test | Fengyun | all | 27 | 23 | 15 | 0.652 | 0.45-0.81 | 0.36 | 0.556 | 10 | 1.73 | not run | 5.78 | not run |
+| test | Fengyun | EW | 24 | 20 | 15 | 0.750 | 0.53-0.89 | 0.36 | 0.625 | | | | | |
+| test | Fengyun | NS | 3 | 3 | 0 | 0.000 | 0.00-0.56 | 0.56 | 0.000 | | | | | |
 
-Test was scored once, at 3ca08ab with `--final`, at FROZEN only. The `generalise` tune below was
-not scored on test, so the holdout stays at one look. There are no QZSS GEO or ISS objects in the
-holdout, so the GEO and ISS targets have no test score. A blind north-south number does not
-exist (`groundtruth/README.md`).
+**Why the FROZEN train and dev numbers changed.** Only train GEO changed: NS 6/17 → 4/17 and
+all 48/62 → 46/62, both from one-to-one matching (item 7). QZS-3-120 and QZS-3-140 were credited
+by a second detection of the east-west step that follows each of them within a day. That
+detection's nearest event is the east-west burn, which the first detection already holds, so it
+is now a duplicate and the north-south burn is a miss. Everything else is identical, object by
+object: coverage, the false-alarm list, exposure, and every other hit, on both splits. That is
+what the rules predict at FROZEN. k=4 is the reference, so coverage (item 1) and exposure
+(item 2) are the same sets. FROZEN's `pick` reports one-gap detections, so the peak gap is the
+interval (item 3). Duplicates (item 6) are a new column, not a change to any count. The 14 train
+GEO duplicates are all QZS-3. The 11 dev GEO duplicates are QZS-3 10 and QZS-6 1; the other
+duplicates are dev ISS 3, dev LEO 1 (CryoSat-2) and train Fengyun 1.
+
+**Why the FROZEN test baseline should be unchanged** (test is not rerun; it stays at one look).
+The same argument holds on the holdout. Coverage, exposure and peak assignment are identities at
+FROZEN, so `covered`, obj-yr and the false-alarm counts stay the same. The false-alarm count does
+not depend on which event a detection is matched to: an unmatched detection inside a burn zone is
+a duplicate, outside one it is a false alarm, under both rules. One-to-one matching can change a
+hit only where some detection is eligible for an event. On test, LEO has 0 hits and IGSO has 0
+covered events, so neither has anything to reassign. Fengyun (15/23, exploratory, never counted)
+is the only test number that could move, and only where two of its burns lie within one
+detection's match zone. There are no QZSS GEO or ISS objects in the holdout, so the GEO and ISS
+targets have no test score. A blind north-south number does not exist (`groundtruth/README.md`).
+The `generalise` tune below was never scored on test.
 
 Target check at FROZEN:
 
@@ -89,7 +155,7 @@ Target check at FROZEN:
 | LEO recall >=50 m >= 0.9 | MISS 0.22 | MISS 0.28 | MISS 0.00 |
 | LEO FA <= 1/obj-yr | PASS 0.15 | PASS 0.00 | PASS 0.07 |
 | GEO EW >= 0.9 | PASS 0.92 | PASS 0.97 | no events |
-| GEO NS >= 0.8 | MISS 0.35 | MISS 0.36 | no events |
+| GEO NS >= 0.8 | MISS 0.24 (0.35 before 896ae19) | MISS 0.36 | no events |
 | GEO FA <= 1/obj-yr | MISS 1.67 | MISS 3.58 | no exposure |
 | IGSO FA <= 1/obj-yr | PASS 0.00 (but nothing is covered, see below) | PASS 0.00 (same) | PASS 0.00 (same) |
 | ISS recall >= 0.95 | **MISS 0.938** (45/48) | PASS 1.00 (35/35) | no events |
@@ -98,20 +164,26 @@ Target check at FROZEN:
 
 That tune was chosen in `generalise.run` on CryoSat-2, Jason-3, SWOT, SPOT-5, QZS-3 and QZS-6
 before each object's 60th-percentile month, so it has seen some train and dev labels here. Treat
-it as a reference point, not a clean score.
+it as a reference point, not a clean score. Old → new is 3ca08ab's eval → 896ae19's.
 
-| Split | Group | Subset | Events | Covered | Hit | Recall | 95% CI | hit/ev | FA | obj-yr | FA/yr |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| train | LEO | all | 192 | 156 | 117 | 0.750 | 0.68-0.81 | 0.609 | 8 | 12.04 | 0.66 |
-| train | LEO | >=50 m | 26 | 16 | 14 | 0.875 | 0.64-0.96 | 0.538 | | | |
-| train | GEO | EW | 43 | 39 | 37 | 0.949 | 0.83-0.99 | 0.861 | 1 | 2.39 | 0.42 |
-| train | GEO | NS | 18 | 17 | 7 | 0.412 | 0.22-0.64 | 0.389 | | | |
-| dev | LEO | all | 196 | 176 | 158 | 0.898 | 0.84-0.93 | 0.806 | 15 | 9.93 | 1.51 |
-| dev | LEO | >=50 m | 47 | 38 | 32 | 0.842 | 0.70-0.93 | 0.681 | | | |
-| dev | GEO | EW | 37 | 34 | 33 | 0.971 | 0.85-0.99 | 0.892 | 1 | 1.96 | 0.51 |
-| dev | GEO | NS | 16 | 14 | 3 | 0.214 | 0.08-0.48 | 0.188 | | | |
+| Split | Group | Subset | Events | Covered | Hit | Recall | 95% CI | hit/ev | FA | obj-yr | FA/yr | dup |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| train | LEO | all | 192 | 156 → 174 | 117 | 0.750 → 0.672 | 0.68-0.81 → 0.60-0.74 | 0.609 | 8 | 12.04 → 13.18 | 0.66 → 0.61 | 53 |
+| train | LEO | >=50 m | 26 | 16 → 18 | 14 | 0.875 → 0.778 | 0.64-0.96 → 0.55-0.91 | 0.538 | | | | |
+| train | GEO | EW | 43 | 39 | 37 | 0.949 | 0.83-0.99 | 0.861 | 1 | 2.39 | 0.42 | 14 |
+| train | GEO | NS | 18 | 17 | 7 → 5 | 0.412 → 0.294 | 0.22-0.64 → 0.13-0.53 | 0.389 → 0.278 | | | | |
+| dev | LEO | all | 196 | 176 → 185 | 158 | 0.898 → 0.854 | 0.84-0.93 → 0.80-0.90 | 0.806 | 15 | 9.93 → 10.55 | 1.51 → 1.42 | 91 |
+| dev | LEO | >=50 m | 47 | 38 → 40 | 32 | 0.842 → 0.800 | 0.70-0.93 → 0.65-0.90 | 0.681 | | | | |
+| dev | GEO | EW | 37 | 34 | 33 | 0.971 | 0.85-0.99 | 0.892 | 1 | 1.96 | 0.51 | 12 |
+| dev | GEO | NS | 16 | 14 | 3 → 1 | 0.214 → 0.071 | 0.08-0.48 → 0.01-0.31 | 0.188 → 0.062 | | | | |
 
-IGSO, ISS and Fengyun come out the same as under FROZEN. The full output is in `harness/evals/results/{train,dev}-generalise-tune.json`.
+This tune shows item 1 at work. Its LEO k=6 used to leave 18 train and 9 dev events out of
+`covered`; they are now misses, so LEO recall falls with no change in hits. Its LEO exposure
+grows to the reference's, so FA/yr falls slightly with the same false alarms. GEO NS loses two
+hits on each split to one-to-one matching (item 7, the only rule that can move GEO at k=4). The
+`dup` column shows what this tune's LEO recall costs: 53 train and 91 dev duplicates, against 0
+and 1 at FROZEN, so it often reports more than one detection at a burn. IGSO, ISS and Fengyun
+come out the same as under FROZEN. The full output is in `harness/evals/results/{train,dev}-generalise-tune.json`.
 
 ### What the interval widths say
 
@@ -128,7 +200,7 @@ target is met.
   element sets for about 3-5 days after each burn (for example 2021-01-09 to 2021-01-14 and
   2023-06-30 onward). No gap within `MAX_GAP_DAYS` = 2 overlaps a burn, so 0 of 7 train, 0 of 4
   dev and 0 of 22 test IGSO events are covered. The IGSO FA "PASS" is on the scored time between
-  burns only. Recovering IGSO needs `max_gap_days` (a `score_gaps` argument, today a constant and
+  burns only, which is 0.41 of QZS-4's no-burn time on train and 0.23 on dev (`scored`). Recovering IGSO needs `max_gap_days` (a `score_gaps` argument, today a constant and
   not part of `Setting`) to be tuned per regime, which belongs to round 3.
 - **The ISS guardrail fails on train at FROZEN.** On Space-Track 2021-2023 the score is 45/48 =
   0.938, which equals `holdout.py`'s Space-Track source check (25/27 + 20/21). The misses are
@@ -145,10 +217,13 @@ target is met.
   2025-09-02, 09-10 and twice on 09-22. Train has the same pattern on QZS-3 (2021-06-20 and
   06-25, plus 2021-12-15). None was checked against any source.
 - **The LEO >=50 m set at FROZEN is limited by the 200 m step floor:** 0/19 on test. The
-  `generalise` tune reaches 0.84-0.88 on train and dev at the cost of 1.5 FA/obj-yr on dev.
+  `generalise` tune reaches 0.78-0.80 on train and dev on the k=4 denominator (0.84-0.88 on its
+  own k=6 one before 896ae19), at the cost of 1.4 FA/obj-yr and 91 duplicates on dev.
 - **Burns without `delta_a_est_m`:** none in the IDS logs. All Fengyun lines lack it; they count
   in the all-events recall and in the EW/NS subsets, and never in the LEO >=50 m subset.
-  Merged burn/counter-burn pairs use their net estimate.
+  Merged burn/counter-burn pairs use their net estimate. Seven SWOT pairs in 2021-2025 (four
+  train, three dev) have every row at 50 m or more but a net under 50 m, so they are outside the
+  >=50 m subset.
 
 ## DECISION FOR GABRIEL
 
@@ -159,23 +234,28 @@ measurement-rule questions came up. None was changed:
 1. **Late tolerance.** Should `LATE_DAYS` (2 days) widen for GEO? The QZS-3 steps above appear
    2.4 and 3.1 days after logged burns. Widening it would turn one train miss and FA into a
    match, and drop one dev FA.
-2. **Coverage denominator.** Recall is over covered events, and `covered` depends on k (k=6
-   covers 156 train LEO events against 174 at k=4). The table now shows `hit/ev` beside it. Do
-   you want the targets judged on a denominator fixed at k=4 instead?
+2. **Coverage denominator.** Settled at 896ae19: `covered` comes from a frozen k=4 reference
+   whatever k a setting uses, and a covered event no detection matches is a miss.
 3. **ISS false alarms** are reported but not checked against the <= 1/obj-yr target, because the
    NASA and Roscosmos lists are lower bounds (FINDINGS.md explains several "false alarms" as
    unlisted Russian burns). Confirm, or say if they should count.
 4. **ISS guardrail on train** starts below 0.95 (0.938). Should it be judged on dev only, or
    "no worse than 45/48 on train and 35/35 on dev"?
 
-5. **Duplicate detections count toward GEO NS recall** (round 1). QZS-3's NS burns usually come
-   less than a day before an EW burn, QZSS events have no expected sign, and `match_near` lets a
-   second detection of the EW step match the NS burn. Five of the six train NS hits at FROZEN are
-   that. Peak-radius NMS (#13) removes the duplicates (dev GEO FA 3.58 -> 2.56/yr, ISS FA down on
-   both splits, no other recall change) but costs those five, so the keep rule reverted it. Should
-   the keep rule exempt NS hits that come from a duplicate of an EW step (for example, require an
-   NS match to be a detection no EW event also matches within its zone), or should #13 come back
-   once an NS channel exists that finds those burns on its own?
+5. **GEO NS hits that rest on a-channel steps near an EW burn.** QZS-3's NS burns usually come
+   less than a day before an EW burn, and QZSS events have no expected sign, so time is the only
+   thing that ties a step to one of the two burns. One-to-one matching (896ae19) stopped a second
+   detection of one EW step from being credited with the NS burn too; that removed QZS-3-120 and
+   -140 from train NS (6 → 4). Three of the four remaining train NS hits at FROZEN (QZS-3-110+111,
+   127, 146) are a-channel steps of 2.7-3.1 km whose peak gap starts within 7 hours of the NS
+   burn. The EW burn comes about a day after the NS one, and a second step of the same size,
+   3-14 hours after it, takes it. A 3 km
+   change in a is EW-sized. I did not check whether these NS burns carry an east-west part or the
+   first steps are element-set artefacts. Should a
+   GEO NS hit require something an NS burn produces, such as an inclination-channel detection
+   (round 2) or a step size an NS burn can explain, rather than any detection nearest in time?
+   On the corrected eval, round 1 (#13) still loses train NS and also one train ISS burn (below),
+   so it stays reverted either way.
 
 Also disclosed: while checking whether any log row lacks `delta_a_est_m`, I read the label CSVs
 directly with a one-off script, outside `orbit_watch.truth`. It printed per-object, per-year row
@@ -200,8 +280,9 @@ unchanged, to count. A round is kept only if:
 - no regime's covered recall or matched/all-events recall (`hit/ev`) drops on dev or train;
 - false alarms per object-year rise in no regime;
 - the ISS stays at or above baseline on both splits (35/35 dev, 45/48 train; pooled 2021-25 >= 0.95);
-- the `covered` denominator does not shrink for the regime being improved. A gain that comes from
-  events leaving the denominator does not count; `hit/ev` is reported beside it.
+- the `covered` denominator does not shrink for the regime being improved. Since 896ae19 it comes
+  from the k=4 reference, so a setting can no longer shrink it; `hit/ev` is still reported beside
+  it. `dup` is reported beside FA so that a gain bought with extra detections at burns shows.
 
 A round's write-up says when its gain rests on a handful of events. A round that fails is reverted
 with `git revert`, so the history shows the attempt.
@@ -278,7 +359,8 @@ step's NMS window and stay unfound: the merge gives the a channel priority.
 centre is more than `nms_days` from every a-detection's centre. `Setting` gains `inc_z_min` and
 `inc_step_min_deg` (off when None); the eval's `Obj.detections` runs the inclination channel only
 when the setting turns it on, so ISS, LEO and IGSO are untouched. Wiring this through is one call
-in `harness/evals/detector.py`; matching and counting are unchanged.
+in `harness/evals/detector.py`; matching and counting are unchanged. (Reviewed with the eval
+correction at 896ae19: wiring only, kept.)
 
 **Threshold, from train only.** Grid on train, GEO only, k=4: inc_z_min in {12, 20},
 inc_step_min_deg in {0.003, 0.005, 0.008, 0.011}. Rule: the loosest setting at which train
@@ -322,6 +404,55 @@ and one QZS-6 detection on 2025-03-17 (+0.034 deg) lies before QZS-6's log cover
 2025-08-02, so it is not scored. The NS
 burns less than a day before an EW burn are still found only through duplicate a detections
 (round 1), as the hypothesis expected.
+
+### Rounds 1 and 2 re-scored on the corrected eval (896ae19)
+
+Round 2 is `settings/inc-channel.json` at 896ae19. Round 1 is 3191d57's `pick` ported into a
+scratch copy of 896ae19 (outside the repo), with its peak fields set to the peak gap, which is the
+gap its step and z come from. Both are against the new FROZEN baseline. "Journalled" is the
+number in the round's own write-up above, on the old eval.
+
+| Split | Group | Metric | FROZEN | Round 1 | R1 journalled | Round 2 | R2 journalled |
+|---|---|---|---|---|---|---|---|
+| train | GEO | EW hit/cov | 36/39 | **35/39** | 36/39 | 36/39 | 36/39 |
+| train | GEO | NS hit/cov | 4/17 | **2/17** | 1/17 | **7/17**, 0.41 [0.22, 0.64] | 9/17 |
+| train | GEO | all hit/cov | 46/62 | 43/62 | 43/62 | 49/62 | 51/62 |
+| train | GEO | FA (FA/yr); dup | 4 (1.67); 14 | 4 (1.67); 2 | 4 (1.67) | 4 (1.67); 14 | 4 (1.67) |
+| train | ISS | hit/cov; FA | 45/48; 3 | **44/48**; 3 | 45/48; 2 | 45/48; 3 | 45/48; 3 |
+| train | LEO, Fengyun | all rows | as baseline | same; Fengyun dup 1 → 0 | same | same | same |
+| dev | GEO | EW hit/cov | 33/34 | 33/34 | 33/34 | 33/34 | 33/34 |
+| dev | GEO | NS hit/cov | 5/14 | **4/14** | 5/14 | **6/14**, 0.43 [0.21, 0.67] | 6/14 |
+| dev | GEO | all hit/cov | 41/51 | 40/51 | 41/51 | 42/51 | 42/51 |
+| dev | GEO | FA (FA/yr); dup | 7 (3.58); 11 | 5 (2.56); 1 | 5 (2.56) | 7 (3.58); 11 | 7 (3.58) |
+| dev | ISS | hit/cov; FA (FA/yr); dup | 35/35; 4 (2.33); 3 | 35/35; 3 (1.75); 0 | 35/35; 3 (1.75) | as FROZEN | as FROZEN |
+| dev | LEO | >=50 m; FA; dup | 11/40; 0; 1 | same; 0; 0 | same | same | same |
+
+`covered` is the same in every column.
+
+**Round 1 stays reverted.** On the corrected eval it loses train GEO NS (4 → 2) and EW (36 → 35),
+train ISS (45 → 44) and dev GEO NS (5 → 4), while it still removes the duplicates it was built
+for (train GEO 14 → 2, dev GEO 11 → 1, dev ISS 3 → 0) and two dev GEO false alarms and one dev ISS
+false alarm. Its numbers differ from the journalled ones in three places, each explained by a
+corrected rule:
+
+- **Train ISS 45 → 44, FA 2 → 3.** Round 1 absorbed the gap at the 2023-03-14 11:54 debris
+  avoidance into a stronger peak (z 90) that starts 2023-03-15 06:14. Its interval covers the
+  burn, but its peak gap starts 18 hours after it, past the ISS's 0.5-day late tolerance. The old
+  eval matched by interval; the new one, by peak gap (item 3). So it is now a miss plus a false
+  alarm, which is the case item 3's test pins. The journalled trade of 2023-11-10 for 2023-11-09
+  is gone: each detection now goes to its nearest event, as at FROZEN.
+- **Train NS 1 → 2, EW 36 → 35** (GEO all 43 either way). Round 1 reports the QZS-3-127/128 step
+  once, and its peak gap is nearer NS 127 than EW 128, so one-to-one matching (item 7) gives it to
+  127. The old rule gave it to 128.
+- **Dev NS 5 → 4.** The journalled gain, QZS-3-194+195, is gone. Round 1's +420 m detection there
+  (peak gap 2024-06-30 03:48 to 12:56) has its centre 17 hours after that NS burn and 8 hours
+  before EW QZS-3-196, so item 7 gives it to 196. The -3,795 m detection of the EW step then
+  becomes a duplicate. The loss of QZS-3-221+222 stands.
+
+**Round 2 stays kept.** On the corrected eval it still gains three train NS burns (4 → 7:
+QZS-3-103, 159, 162+163) and one dev NS burn (5 → 6: QZS-3-235+236). It adds no false alarm or
+duplicate, and `covered` is unchanged. Its journalled train figure (6 → 9) falls to 4 → 7 for the
+same reason as FROZEN's: QZS-3-120 and -140 no longer count. The dev figure is unchanged.
 
 ### ISS holdout guardrail (`orbit_watch.holdout`, NASA + Roscosmos lists; already spent, not a target)
 
