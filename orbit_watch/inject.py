@@ -65,10 +65,9 @@ import numpy as np
 
 from orbit_watch.calibrate import FROZEN as CALIBRATED, TOLERANCE_DAYS, _iso, _overlaps, load_truth
 from orbit_watch.detect import Detection, pick, score_gaps
-from orbit_watch.elements import parse_omm_json
-from orbit_watch.series import ElementSeries, to_series
+from orbit_watch.holdout import load_gp_history
+from orbit_watch.series import ElementSeries
 
-ISS = 25544
 # Frozen setting from calibrate.FROZEN (k=4, |z|>=12, |step|>=200 m), NMS 1 day.
 K = CALIBRATED["k"]
 FROZEN = (float(CALIBRATED["z_min"]), float(CALIBRATED["step_min_m"]))
@@ -93,7 +92,8 @@ class Window:
 
 
 def load_series(path: Path) -> ElementSeries:
-    return to_series(parse_omm_json(path.read_text(encoding="utf-8")))[ISS]
+    """The ISS series, with Space-Track restatements resolved as in holdout.py (latest issued wins)."""
+    return load_gp_history(path)[0]
 
 
 def inject(series: ElementSeries, gaps, steps_m) -> ElementSeries:

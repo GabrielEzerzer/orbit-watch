@@ -20,10 +20,12 @@ scored through masks: an event belongs to the year of its ``date_utc``, a detect
 the epoch before its step. The noise floor (half the median sigma) is therefore taken over the
 whole 2021-2025 Space-Track series; it uses no labels.
 
-Space-Track restates element sets. Records whose epochs lie within ``SAME_EPOCH_S`` of each other
-are one element set, and the latest issued (highest ``GP_ID``) is kept. Exact repeats of an epoch
-and reissues whose epoch differs by a few milliseconds both occur; the closest distinct epochs are
-over 10 s apart.
+Space-Track restates element sets. Records whose epochs are under ``SAME_EPOCH_S``
+(``series.MIN_EPOCH_GAP_S``, 60 s) after the previous one are one element set, and the latest
+issued (highest ``GP_ID``) is kept, whichever epoch it carries. Exact repeats of an epoch and
+reissues whose epoch differs by a few milliseconds both occur, and a few pairs are 10-60 s apart.
+The kept sets are then at least 60 s apart, so ``to_series``' own 60 s collapse (later epoch
+wins) leaves them as they are.
 """
 
 from __future__ import annotations
@@ -55,15 +57,16 @@ from orbit_watch.calibrate import (
 )
 from orbit_watch.detect import pick, score_gaps
 from orbit_watch.elements import _omm_epoch, parse_omm_json, parse_tle
-from orbit_watch.series import to_series
+from orbit_watch.series import MIN_EPOCH_GAP_S, to_series
 
 YEARS = (2021, 2022, 2023, 2024, 2025)
 HOLDOUT_YEARS = (2024, 2025)
-SAME_EPOCH_S = 1.0
+SAME_EPOCH_S = MIN_EPOCH_GAP_S
 
 
 def dedupe_gp_rows(rows: list[dict]) -> tuple[list[dict], dict]:
-    """One row per element set: epochs within ``SAME_EPOCH_S`` collapse to the highest ``GP_ID``."""
+    """One row per element set: a run of epochs each under ``SAME_EPOCH_S`` after the previous one
+    collapses to its highest ``GP_ID`` (issue order wins over epoch order)."""
     for r in rows:
         if not isinstance(r, dict) or not str(r.get("GP_ID", "")).isdigit() or not r.get("EPOCH"):
             raise ValueError(f"GP record without a numeric GP_ID and an EPOCH: {r!r:.200}")
@@ -89,7 +92,7 @@ def load_gp_history(path: Path):
         raise ValueError(f"{path}: gp_history JSON must be a list of records")
     kept, stats = dedupe_gp_rows(rows)
     series = to_series(parse_omm_json(json.dumps(kept)))[ISS]
-    assert len(series) == len(kept)
+    assert len(series) == len(kept)  # kept sets are >= MIN_EPOCH_GAP_S apart: to_series drops none
     return series, stats
 
 
@@ -204,7 +207,8 @@ def run(gp: Path, archive: Path, truth: list[Path], out: Path) -> dict:
         return name, row
 
     source_check = dict([
-        source(ar, "archive", archive, {"duplicates": "no exact repeats; one pair within 1 s (2023-12-23 17:57:06), left as is"}),
+        source(ar, "archive", archive, {"duplicates": "no exact repeats; one pair within 1 s (2023-12-23 17:57:06), "
+                                         "collapsed to the later by to_series"}),
         source(st, "spacetrack", gp, {"duplicates": dedupe}),
     ])
 
@@ -214,7 +218,8 @@ def run(gp: Path, archive: Path, truth: list[Path], out: Path) -> dict:
         "truth_rows": len(all_events),
         "frozen_thresholds": {**FROZEN, "nms_days": 1.0,
                               "chosen_by": "calibrate.py: max F1 on archive 2021-2022, ties to the stricter setting"},
-        "same_epoch_rule": f"epochs within {SAME_EPOCH_S} s are one element set; highest GP_ID kept",
+        "same_epoch_rule": f"epochs under {SAME_EPOCH_S:g} s after the previous one are one element set; "
+                           "the highest GP_ID (latest issued) is kept",
         "holdout_2024_2025": hold,
         "holdout_by_year": {str(y): st.score(FROZEN, (y,))[0] for y in HOLDOUT_YEARS},
         "excluded_for_coverage": st.excluded(hd),

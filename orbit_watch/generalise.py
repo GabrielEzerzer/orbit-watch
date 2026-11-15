@@ -32,11 +32,11 @@ Changes, and why:
   old orbit for a while after a burn: the epoch before the largest step comes a median 0.9-1.1
   days after the logged burn for SPOT-5 and 0.2 days for QZS-3, with 90th percentiles of 1.2-2.8
   days (``lag_days`` in the report). The ISS archive did not show this lag.
-* Input. Element sets less than ``MIN_EPOCH_GAP_S`` apart are collapsed to the later one before
-  scoring. Space-Track history restates element sets at almost the same epoch (562 pairs under
-  1 s for QZS-3, 25-63 for the others; one in the ISS archive). Two epochs microseconds apart
-  give the Theil-Sen slope pairs a near-zero time base, and the detrended values then produce
-  steps of thousands of km. ``detect.py`` is unchanged.
+* Input. Element sets less than ``series.MIN_EPOCH_GAP_S`` (60 s) apart are collapsed to the
+  later one by ``to_series``, as for every caller. Space-Track history restates element sets at
+  almost the same epoch (562 pairs under 1 s for QZS-3, 25-63 for the others; one in the ISS
+  archive). Two epochs microseconds apart give the Theil-Sen slope pairs a near-zero time base,
+  and the detrended values then produce steps of thousands of km.
 * Chance baseline. Every score is reported next to the same score with the logged events shifted
   by ``CHANCE_SHIFTS_DAYS`` (detections unchanged): what matching gives by coincidence.
 
@@ -112,7 +112,6 @@ MAX_SPAN_DAYS, MAX_GAP_DAYS = 3.0, 2.0  # score_gaps defaults, used by the ISS r
 SPLIT_QUANTILE = 0.6
 MERGE_HOURS = 12.0
 LATE_DAYS = 2.0
-MIN_EPOCH_GAP_S = 60.0
 CHANCE_SHIFTS_DAYS = (-19, -13, -7, 7, 13, 19)
 K_GRID = (4, 6, 8)
 Z_GRID_EXT = Z_GRID + (40, 60, 80, 100, 150, 200, 300)
@@ -206,14 +205,6 @@ def log_coverage(path: Path, norad: int, *, final: bool = False) -> tuple[np.dat
     if "burn_times_utc" in rows[0]:  # IDS layout
         hi = max([hi] + [np.datetime64(r["source_revision"], "us") for r in rows])
     return lo, hi
-
-
-def drop_near_duplicates(series: ElementSeries, min_gap_s: float = MIN_EPOCH_GAP_S) -> ElementSeries:
-    """Keep the later of any element sets whose epochs are under ``min_gap_s`` apart."""
-    gaps_s = np.diff(series.epochs).astype("int64") / 1e6
-    keep = np.append(gaps_s >= min_gap_s, True)
-    return replace(series, **{f: getattr(series, f)[keep] for f in (
-        "epochs", "semi_major_axis_km", "inclination", "eccentricity", "raan", "mean_motion", "bstar")})
 
 
 def split_date(events: list[LogEvent]) -> np.datetime64:
@@ -313,9 +304,9 @@ class Satellite:
         require_allowed(norad, final=final)  # before the element sets are read
         (path,) = sorted(tle_dir.glob(f"gp_history-{norad}-*.json"))
         self.name, self.norad, self.regime, self.tle_file = name, norad, regime, path.name
-        raw = to_series(parse_omm_json(path.read_text(encoding="utf-8")), final=final)[norad]
-        self.series: ElementSeries = drop_near_duplicates(raw)
-        self.near_duplicates_dropped = len(raw) - len(self.series)
+        records = [r for r in parse_omm_json(path.read_text(encoding="utf-8")) if r.norad_id == norad]
+        self.series: ElementSeries = to_series(records, final=final)[norad]
+        self.near_duplicates_dropped = len({r.epoch for r in records}) - len(self.series)
         first, last = self.series.epochs[0], self.series.epochs[-1]
         self.coverage = log_coverage(truth, norad, final=final)
         self.all_events = load_log_events(truth, norad, final=final)
