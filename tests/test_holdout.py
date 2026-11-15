@@ -1,9 +1,12 @@
+import json
+
 import numpy as np
 import pytest
 
 from orbit_watch.calibrate import Event
 from orbit_watch.detect import Detection
-from orbit_watch.holdout import Scored, dedupe_gp_rows, loyo_folds, period_masks
+from orbit_watch.holdout import Scored, dedupe_gp_rows, load_gp_history, loyo_folds, period_masks
+from orbit_watch.inject import load_series
 from orbit_watch.series import ElementSeries
 
 
@@ -17,12 +20,27 @@ def test_restated_epochs_keep_the_latest_issue():
         row("2023-05-18T09:40:15.080448", 10, "b"),
         row("2023-05-18T12:00:00.000000", 31, "c"),  # exact repeat of one epoch
         row("2023-05-18T12:00:00.000000", 30, "d"),
-        row("2023-05-18T12:00:10.500000", 40, "e"),  # 10.5 s later: a distinct element set
+        row("2023-05-18T12:01:00.000000", 40, "e"),  # 60 s later: a distinct element set
     ]
     kept, stats = dedupe_gp_rows(rows)
     assert [r["MEAN_MOTION"] for r in kept] == ["a", "c", "e"]
     assert stats == {"rows": 5, "exact_epoch_repeats_dropped": 1, "near_epoch_reissues_dropped": 1,
                      "element_sets_kept": 3}
+
+
+def test_latest_issue_wins_over_later_epoch_under_60_s(tmp_path):
+    # Two synthetic ISS GP rows 58 s apart; the earlier epoch was issued later (higher GP_ID).
+    base = {"NORAD_CAT_ID": "25544", "ECCENTRICITY": "0.0003", "INCLINATION": "51.6",
+            "RA_OF_ASC_NODE": "10", "ARG_OF_PERICENTER": "20", "MEAN_ANOMALY": "30", "BSTAR": "0.0001",
+            "MEAN_MOTION_DOT": "0", "MEAN_MOTION_DDOT": "0", "OBJECT_NAME": "ISS"}
+    rows = [{**base, "EPOCH": "2022-01-13T04:19:37.000000", "GP_ID": "200", "MEAN_MOTION": "15.50"},
+            {**base, "EPOCH": "2022-01-13T04:20:35.000000", "GP_ID": "100", "MEAN_MOTION": "15.51"}]
+    (tmp_path / "gp.json").write_text(json.dumps(rows), encoding="utf-8")
+    series, stats = load_gp_history(tmp_path / "gp.json")
+    assert series.epochs.tolist() == [np.datetime64("2022-01-13T04:19:37", "us").item()]
+    assert series.mean_motion.tolist() == [15.50]
+    assert stats["near_epoch_reissues_dropped"] == 1
+    assert load_series(tmp_path / "gp.json").epochs.tolist() == series.epochs.tolist()  # inject agrees
 
 
 def test_rows_without_gp_id_are_refused():

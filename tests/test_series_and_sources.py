@@ -73,6 +73,13 @@ def test_epochs_under_60_s_apart_collapse_to_the_later():
     assert len(s.semi_major_axis_km) == len(s.bstar) == 4
 
 
+def test_a_chain_under_60_s_apart_keeps_only_its_last_epoch():
+    # A, B 40 s after A, C 40 s after B: A-C is 80 s, but the chain collapses to C.
+    recs = parse_tle("".join(_tle(d) for d in (1.0, 1.0 + 40 / 86400, 1.0 + 80 / 86400, 2.0)))
+    s = to_series(recs)[37951]
+    assert s.epochs.tolist() == [recs[i].epoch.replace(tzinfo=None) for i in (2, 3)]
+
+
 def test_every_loader_gets_the_collapse(tmp_path):
     # geo_hunt reads TLEs itself and must line its longitudes up with the collapsed series.
     days = sorted(NEAR_DAYS + [3.0 + 0.5 * i for i in range(20)])
@@ -80,11 +87,11 @@ def test_every_loader_gets_the_collapse(tmp_path):
     (tmp_path / "37951.tle").write_text("".join(_tle(d, m) for d, m in zip(days, jitter)), encoding="utf-8")
     r = hunt(tmp_path / "37951.tle")
     assert r["summary"]["epochs"] == len(days) - 2 == len(r["lon"]) == len(r["series"])
-    # holdout's Space-Track loader: rows 30 s apart are two GP_IDs, one element set after to_series.
+    # holdout's Space-Track loader: rows 30 s apart are one element set (the latest issued).
     rows = [{"EPOCH": f"2021-01-01T00:00:{s:02d}.000000", "GP_ID": str(i + 1), "NORAD_CAT_ID": "25544",
              "MEAN_MOTION": "15.5", "ECCENTRICITY": "0.0003", "INCLINATION": "51.6", "RA_OF_ASC_NODE": "10",
              "ARG_OF_PERICENTER": "20", "MEAN_ANOMALY": "30", "BSTAR": "0.0001", "MEAN_MOTION_DOT": "0",
              "MEAN_MOTION_DDOT": "0", "OBJECT_NAME": "ISS"} for i, s in enumerate((0, 30))]
     (tmp_path / "gp.json").write_text(json.dumps(rows), encoding="utf-8")
     series, stats = load_gp_history(tmp_path / "gp.json")
-    assert len(series) == 1 and stats["under_60s_apart_collapsed_by_to_series"] == 1
+    assert len(series) == 1 and stats["near_epoch_reissues_dropped"] == 1

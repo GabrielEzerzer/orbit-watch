@@ -40,11 +40,13 @@ def distinct_epochs(records: Iterable[ElementSet], *, final: bool = False) -> di
     When two records for one object share an epoch, the one that comes later in
     ``records`` wins, so a later source can restate an earlier one. Then any
     record whose epoch is under ``MIN_EPOCH_GAP_S`` before the next one is
-    dropped, so near-identical epochs collapse to the latest. Space-Track
-    history restates element sets at almost the same epoch (hundreds of pairs
-    under 1 s for QZS-3), and two epochs that close give the detector's
-    Theil-Sen slope pairs a near-zero time base, which turns into fake steps of
-    thousands of km.
+    dropped, so near-identical epochs collapse to the latest. A chain of
+    epochs each under ``MIN_EPOCH_GAP_S`` after the previous one collapses to
+    its last epoch, so kept epochs are always at least ``MIN_EPOCH_GAP_S``
+    apart. Space-Track history restates element sets at almost the same epoch
+    (hundreds of pairs under 1 s for QZS-3), and two epochs that close give the
+    detector's Theil-Sen slope pairs a near-zero time base, which turns into
+    fake steps of thousands of km.
 
     Raises ``truth.HoldoutError`` if any object is in the holdout of
     ``groundtruth/splits.json``, unless ``final``; objects the file does not list pass.

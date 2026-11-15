@@ -221,6 +221,7 @@ def choose_setting(events, scores_by_k, ev_in, det_in):
             for s in STEP_GRID_M:
                 dets = pick(sc, z, s)
                 dets = [d for d, keep in zip(dets, det_in(dets)) if keep]
+                # All-true masks: events and dets were already filtered to the period above.
                 res, _, _ = evaluate(events, cover, dets, [True] * len(events), [True] * len(dets))
                 sweep.append({"k": k, "z_min": z, "step_min_m": s, "f1": round(_f1(res), 4),
                               "precision": res["precision"], "recall": res["recall"]})
