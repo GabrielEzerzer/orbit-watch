@@ -42,8 +42,13 @@ A gap is not scored when either side's ``k`` epochs span more than
 ``max_span_days`` or the gap itself is longer than ``max_gap_days``, so there
 is no detection across a data outage such as 2022-06-15..19.
 
-The same scoring runs on inclination (``channel="i"``, steps in degrees): a
-north-south burn turns the orbit plane and changes the semi-major axis little.
+The same scoring runs on the inclination vector (``channel="i"``, steps in
+degrees): a north-south burn turns the orbit plane and changes the semi-major
+axis little. A controlled GEO satellite sits near 0.05 deg inclination, where a
+burn swings the node and moves ``(i cos RAAN, i sin RAAN)`` a long way while
+``i`` itself barely changes, so steps 1-3 run on each component and the step is
+the length of the vector change (always positive). ``sigma`` is the root mean
+square of the two components' scatters.
 ``merge_channels`` adds inclination detections to the semi-major-axis ones,
 dropping an inclination detection whose centre lies within ``nms_days`` of a
 semi-major-axis detection's centre (the same non-maximum suppression, with the
@@ -101,10 +106,10 @@ class GapScores:
 
     start: np.ndarray  # datetime64[us], epoch before the gap
     end: np.ndarray  # datetime64[us], epoch after the gap
-    step_m: np.ndarray  # extrapolated after-minus-before: metres, or degrees for channel "i" (NaN when not scored)
+    step_m: np.ndarray  # extrapolated after-minus-before in metres; channel "i": its length in degrees (NaN when not scored)
     z: np.ndarray  # step / standard error (NaN when not scored)
     sigma_m: np.ndarray  # residual scatter used, in step_m's unit
-    channel: str = "a"  # "a" semi-major axis, "i" inclination
+    channel: str = "a"  # "a" semi-major axis, "i" inclination vector
 
     @property
     def valid(self) -> np.ndarray:
@@ -115,7 +120,7 @@ class GapScores:
 class Detection:
     start: np.datetime64  # epoch before the step (first epoch of the detection interval)
     end: np.datetime64  # epoch after the step (last epoch of the detection interval)
-    step_m: float  # metres, or degrees when channel is "i"
+    step_m: float  # metres, or degrees (inclination-vector change, positive) when channel is "i"
     z: float
     channel: str = "a"
     peak_start: np.datetime64 | None = None  # the gap step and z come from; None: start
@@ -140,13 +145,32 @@ def _mad(r: np.ndarray) -> np.ndarray:
     return np.median(np.abs(r - np.median(r, axis=-1, keepdims=True)), axis=-1)
 
 
+def _window_steps(t: np.ndarray, y: np.ndarray, ii: np.ndarray, k: int) -> tuple[np.ndarray, np.ndarray]:
+    """Step and residual scatter of ``y`` at gaps ``ii`` (steps 1-4 of the module docstring)."""
+    off = np.arange(-k + 1, k + 1)  # k epochs before the gap, k after
+    tw, yw = t[ii[:, None] + off], y[ii[:, None] + off]
+    mid = 0.5 * (t[ii] + t[ii + 1])[:, None]
+    p, q = np.triu_indices(k, 1)  # every pair of epochs on one side of the gap
+    p, q = np.concatenate([p, p + k]), np.concatenate([q, q + k])
+    slopes = (yw[:, q] - yw[:, p]) / (tw[:, q] - tw[:, p])
+    r = yw - np.median(slopes, axis=1)[:, None] * (tw - mid)
+    before, after = r[:, :k], r[:, k:]
+    sigma = _MAD_TO_SIGMA * _mad(np.concatenate(
+        [before - np.median(before, axis=1, keepdims=True),
+         after - np.median(after, axis=1, keepdims=True)], axis=1))
+    return np.median(after, axis=1) - np.median(before, axis=1), sigma
+
+
 def score_gaps(
     series: ElementSeries, k: int = 6, max_span_days: float = 3.0, max_gap_days: float = 2.0,
     channel: str = "a",
 ) -> GapScores:
-    """Score every gap on semi-major axis in metres (``channel="a"``) or inclination in degrees ("i")."""
+    """Score every gap on semi-major axis in metres (``channel="a"``) or the inclination vector in
+    degrees ("i")."""
     t = _days(series.epochs)
-    y = {"a": lambda: series.semi_major_axis_km * 1000.0, "i": lambda: series.inclination}[channel]()
+    node = np.radians(series.raan)
+    ys = {"a": lambda: [series.semi_major_axis_km * 1000.0],
+          "i": lambda: [series.inclination * np.cos(node), series.inclination * np.sin(node)]}[channel]()
     n = len(t)
     idx = [i for i in range(k - 1, n - k)
            if t[i + 1] - t[i] <= max_gap_days
@@ -157,18 +181,11 @@ def score_gaps(
     sigma = np.full(n - 1, np.nan)
     if idx:
         ii = np.array(idx)
-        off = np.arange(-k + 1, k + 1)  # k epochs before the gap, k after
-        tw, yw = t[ii[:, None] + off], y[ii[:, None] + off]
-        mid = 0.5 * (t[ii] + t[ii + 1])[:, None]
-        p, q = np.triu_indices(k, 1)  # every pair of epochs on one side of the gap
-        p, q = np.concatenate([p, p + k]), np.concatenate([q, q + k])
-        slopes = (yw[:, q] - yw[:, p]) / (tw[:, q] - tw[:, p])
-        r = yw - np.median(slopes, axis=1)[:, None] * (tw - mid)
-        before, after = r[:, :k], r[:, k:]
-        step[ii] = np.median(after, axis=1) - np.median(before, axis=1)
-        sigma[ii] = _MAD_TO_SIGMA * _mad(np.concatenate(
-            [before - np.median(before, axis=1, keepdims=True),
-             after - np.median(after, axis=1, keepdims=True)], axis=1))
+        steps, sigmas = zip(*(_window_steps(t, y, ii, k) for y in ys))
+        if channel == "a":
+            step[ii], sigma[ii] = steps[0], sigmas[0]
+        else:
+            step[ii], sigma[ii] = np.hypot(*steps), np.sqrt(np.mean(np.square(sigmas), axis=0))
     floor = 0.5 * float(np.nanmedian(sigma)) if idx else 0.0
     sigma = np.maximum(sigma, floor)
     z = step / (sigma * np.sqrt(np.pi / 2) * np.sqrt(2.0 / k))

@@ -67,7 +67,23 @@ def test_inclination_channel_finds_a_plane_change_the_a_channel_misses():
     assert pick(score_gaps(series, k=4), z_min=12, step_min_m=200) == []
     (d,) = pick(score_gaps(series, k=4, channel="i"), z_min=12, step_min_m=0.005)
     day = lambda x: (x - series.epochs[0]).astype("int64") / 86_400e6
-    assert d.channel == "i" and abs(d.step_m + 0.015) < 0.002
+    assert d.channel == "i" and abs(d.step_m - 0.015) < 0.002
+    assert day(d.start) - 0.5 <= 30.2 <= day(d.end) + 0.5
+
+
+def test_inclination_channel_scores_a_node_swing_at_constant_inclination():
+    series, t = synthetic_series()
+    rng = np.random.default_rng(2)
+    node = np.radians(40.0 + 0.05 * t)
+    node[t > 30.2] += np.radians(60.0)  # a burn that turns the plane but leaves i at 0.05 deg
+    ix = 0.05 * np.cos(node) + rng.normal(0, 1e-4, len(t))
+    iy = 0.05 * np.sin(node) + rng.normal(0, 1e-4, len(t))
+    series = ElementSeries(series.norad_id, series.epochs, series.semi_major_axis_km, np.hypot(ix, iy),
+                           series.eccentricity, np.degrees(np.arctan2(iy, ix)) % 360.0,
+                           series.mean_motion, series.bstar)
+    (d,) = pick(score_gaps(series, k=4, channel="i"), z_min=12, step_min_m=0.011)
+    day = lambda x: (x - series.epochs[0]).astype("int64") / 86_400e6
+    assert d.channel == "i" and abs(d.step_m - 0.05) < 0.005
     assert day(d.start) - 0.5 <= 30.2 <= day(d.end) + 0.5
 
 

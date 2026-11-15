@@ -1,0 +1,32 @@
+{
+  "name": "inc-vector",
+  "note": "FROZEN for every regime, plus the inclination channel on GEO scoring the inclination-vector step (i cos RAAN, i sin RAAN): inc_z_min 30, inc_step_min_deg 0.02. Chosen on a train-only grid (inc_z_min 6, 8, 12, 16, 20, 30 by inc_step_min_deg 0.003, 0.005, 0.008, 0.011, 0.015, 0.02): train north-south hits were 6 of 17 at every point, so the rule (most train north-south hits with train GEO false alarms at most 4 and east-west hits at least 36, ties to the strictest) took the strictest point",
+  "regimes": {
+    "ISS": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    },
+    "LEO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    },
+    "GEO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0,
+      "inc_z_min": 30,
+      "inc_step_min_deg": 0.02
+    },
+    "IGSO": {
+      "k": 4,
+      "z_min": 12,
+      "step_min_m": 200,
+      "nms_days": 1.0
+    }
+  }
+}

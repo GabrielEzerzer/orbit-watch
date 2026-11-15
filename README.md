@@ -49,8 +49,8 @@ the series' median `sigma`. The step's `z` is the step divided by the standard e
 difference of two medians. A gap is flagged when `|z|` and `|step|`
 both pass their thresholds, and within one day only the highest `|z|` is kept. Gaps whose
 windows span more than 3 days, or that are longer than 2 days themselves, are not scored, so no
-detection crosses an outage such as 2022-06-15..19. The same scoring can run on inclination, for
-north-south burns, when a `detect.Setting` turns that channel on (`detect.pick_setting`, used by
+detection crosses an outage such as 2022-06-15..19. The same scoring can run on the inclination
+vector `(i cos RAAN, i sin RAAN)`, for north-south burns, when a `detect.Setting` turns that channel on (`detect.pick_setting`, used by
 `detect.detect` and by the frozen evaluation below); eccentricity is not used.
 
 `orbit_watch.calibrate` scores the detector against `groundtruth/iss_manoeuvres.csv`:
@@ -322,24 +322,31 @@ QZS-4 (below); the six objects above were not compared set by set. The ISS serie
 The hill-climb is paused. Its score is the dev split, and a round must also hold on train:
 
 ```
-python -m harness.evals.detector --split dev --data-dir data --settings harness/evals/settings/inc-channel.json
-python -m harness.evals.detector --split train --data-dir data --settings harness/evals/settings/inc-channel.json
+python -m harness.evals.detector --split dev --data-dir data --settings harness/evals/settings/inc-vector.json
+python -m harness.evals.detector --split train --data-dir data --settings harness/evals/settings/inc-vector.json
 ```
 
-`settings/inc-channel.json` is the kept setting. It is FROZEN in every regime, plus the inclination
-channel on GEO with `inc_z_min` 12 and `inc_step_min_deg` 0.011, the loosest step floor on a
+`settings/inc-vector.json` is the kept setting (round 6): FROZEN in every regime, plus the
+inclination channel on GEO scoring the step in the inclination vector, with `inc_z_min` 30 and
+`inc_step_min_deg` 0.02. A train-only grid (`inc_z_min` 6, 8, 12, 16, 20, 30 by
+`inc_step_min_deg` 0.003, 0.005, 0.008, 0.011, 0.015, 0.02) gave 6 of 17 train north-south hits at
+every point, and the strictest point was taken; train GEO false alarms there are 4, as before.
+
+`settings/inc-channel.json` is round 2's setting, which scored the scalar inclination; its results
+were made at the commit they record, and the channel no longer scores the scalar. It is FROZEN in
+every regime, plus the inclination channel on GEO with `inc_z_min` 12 and `inc_step_min_deg` 0.011, the loosest step floor on a
 train-only grid at which train GEO false alarms did not rise. The grid was `inc_z_min` 12 or 20
 by `inc_step_min_deg` 0.003, 0.005, 0.008 and 0.011; train false alarms were 9, 7, 5, 4 at z 12
 and 5, 5, 4, 4 at z 20. It ran before the north-south hit rule, which does not change false
-alarms. Its scores against the targets
-(`harness/evals/results/`) are below; FROZEN gives the same except where noted.
+alarms. The kept setting's scores against the targets
+(`harness/evals/results/`) are below; round 2 and FROZEN give the same except where noted.
 
 | Target | train | dev |
 |---|---|---|
 | LEO recall on burns of 50 m or more, >= 0.9 | MISS: 4/18 = 0.222 [0.09, 0.45] | MISS: 11/40 = 0.275 [0.16, 0.43] |
 | LEO false alarms <= 1 per object-year | PASS: 0.15 | PASS: 0.00 |
 | GEO recall east-west, >= 0.9 | PASS: 36/39 = 0.923 [0.80, 0.97] | PASS: 33/34 = 0.971 [0.85, 0.99] |
-| GEO recall north-south, >= 0.8 | MISS: 3/17 = 0.176 [0.06, 0.41]; FROZEN 0/17 | MISS: 1/14 = 0.071 [0.01, 0.31]; FROZEN 0/14 |
+| GEO recall north-south, >= 0.8 | MISS: 6/17 = 0.353 [0.17, 0.59]; round 2 3/17, FROZEN 0/17 | MISS: 4/14 = 0.286 [0.12, 0.55]; round 2 1/14, FROZEN 0/14 |
 | GEO false alarms <= 1 per object-year | MISS: 1.67 | MISS: 3.58 |
 | IGSO false alarms <= 1 per object-year | PASS: 0.00, but no IGSO event is covered | PASS: 0.00, same |
 | ISS recall >= 0.95 (guardrail) | MISS: 45/48 = 0.938 | PASS: 35/35 = 1.000 |
@@ -361,6 +368,18 @@ A failed round is reverted with `git revert`, so the history shows it. The round
    fell from 7 to 5, but train ISS fell to 44 of 48 and train GEO east-west to 35 of 39.
 5. Round 4 with absorption limited to gaps under 3 x `z_min`. Reverted. Both lost burns came back,
    and GEO false alarms did not move.
+6. The inclination channel scores the inclination vector instead of the scalar inclination. Kept
+   as `settings/inc-vector.json`. QZS-3 and QZS-6 sit near 0.05 deg inclination, where a
+   north-south burn swings the node and moves the vector by 0.10-0.15 deg while `i` changes by
+   0.03 deg or less. North-south rose from 3 to 6 of 17 on train and from 1 to 4 of 14 on dev,
+   with no change to false alarms, east-west, LEO or ISS; duplicates rose by one on each split.
+   One train burn (QZS-3-103) was lost: the vector peak sits on the gap where the elements change,
+   within a day of the next day's east-west detection, so `merge_channels` drops it. Every dev
+   north-south miss left has an inclination-vector detection in its window; five are matched by a
+   semi-major-axis detection on the same or an adjacent gap, three are dropped for an east-west
+   detection within a day, and two sit in a 46-49 h data gap that also holds the east-west burn.
+   With the drop turned off (measured, not kept) dev north-south is 7 of 14 and dev GEO false
+   alarms rise from 7 to 13, all of them inclination steps at the excursions below.
 
 The north-south rule (an `NS` event is a hit only through an inclination-channel detection) was
 added to the eval between rounds 2 and 3, and every number above is on the current eval. Most
