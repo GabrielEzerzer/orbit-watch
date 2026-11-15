@@ -22,8 +22,8 @@ def test_one_to_one_closest_first():
 
 def test_tolerance_widens_detection_interval():
     events = [ev("2022-01-10T12:00", "2022-01-10T12:00")]
-    near = [det("2022-01-10T18:00", "2022-01-10T20:00")]  # 6 h after
-    far = [det("2022-01-11T06:00", "2022-01-11T08:00")]  # 18 h after
+    near = [det("2022-01-10T18:00", "2022-01-10T20:00")]
+    far = [det("2022-01-11T06:00", "2022-01-11T08:00")]
     assert match(events, near, tol_days=0.5) == {0: 0}
     assert match(events, far, tol_days=0.5) == {}
 
@@ -75,12 +75,12 @@ def test_truth_files_join_and_roscosmos_types_score_like_nasa_ones(tmp_path):
 
 def test_an_event_in_two_truth_files_is_refused(tmp_path):
     nasa, ros = tmp_path / "nasa.csv", tmp_path / "ros.csv"
-    nasa.write_text(NASA_HEADER + "2024-11-13,,reboost,P,,u,q\n", encoding="utf-8")  # date only: 12th to 15th
+    nasa.write_text(NASA_HEADER + "2024-11-13,,reboost,P,,u,q\n", encoding="utf-8")
     ros.write_text(ROSCOSMOS_HEADER + "2024-11-15,10:00,reboost,Progress MS-28,,u,q,MSK (UTC+3)\n", encoding="utf-8")
     with pytest.raises(ValueError, match="same event"):
         load_truth([nasa, ros])
     ros.write_text(ROSCOSMOS_HEADER + "2024-11-15,13:00,reboost,Progress MS-28,,u,q,MSK (UTC+3)\n", encoding="utf-8")
-    assert len(load_truth([nasa, ros])) == 2  # 13 h after the window: more than half a day
+    assert len(load_truth([nasa, ros])) == 2
 
 
 def test_real_truth_files_share_no_event():

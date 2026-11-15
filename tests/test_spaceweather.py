@@ -18,13 +18,12 @@ def test_parses_observed_predicted_and_monthly_rows(sample):
         date(1957, 10, 1), date(2024, 5, 10), date(2024, 5, 11),
         date(2026, 11, 13), date(2026, 11, 14), date(2027, 1, 1),
     ]
-    # 2024-05-11, the May 2024 storm: KP1 is printed as 90, i.e. Kp 9.0.
-    np.testing.assert_allclose(sw.kp[2], [9.0, 8.3, 8.3, 9.0, 8.7, 8.3, 7.7, 7.7])
+    np.testing.assert_allclose(sw.kp[2], [9.0, 8.3, 8.3, 9.0, 8.7, 8.3, 7.7, 7.7],
+                               err_msg="2024-05-11, the May 2024 storm: KP1 printed as 90 is Kp 9.0")
     np.testing.assert_allclose(sw.ap[2], [400, 236, 236, 400, 300, 236, 179, 179])
     assert sw.ap_daily[2] == 271
     assert sw.f107_obs[2] == 213.7 and sw.f107_adj[2] == 218.0
     assert sw.data_type.tolist() == ["OBS", "OBS", "OBS", "OBS", "PRD", "PRM"]
-    # Monthly prediction rows carry F10.7 but no Kp or Ap.
     assert np.isnan(sw.kp[5]).all() and math.isnan(sw.ap_daily[5])
     assert sw.f107_obs[5] == 117.5
 

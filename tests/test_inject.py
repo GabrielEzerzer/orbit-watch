@@ -1,4 +1,4 @@
-"""Synthetic injection helpers. The series here are synthetic test inputs, never calibration data."""
+# Synthetic injection helpers. The series here are synthetic test inputs, never calibration data.
 
 import numpy as np
 
@@ -16,7 +16,7 @@ def test_injection_moves_only_samples_after_the_gap_by_exactly_the_step():
     assert np.allclose(diff_m[:21], 0.0)
     assert np.allclose(diff_m[21:], 150.0, atol=1e-6)
     assert np.array_equal(out.epochs, series.epochs)
-    assert np.array_equal(series.semi_major_axis_km, synthetic_series(n=50)[0].semi_major_axis_km)  # input untouched
+    assert np.array_equal(series.semi_major_axis_km, synthetic_series(n=50)[0].semi_major_axis_km)
 
 
 def test_quiet_mask_excludes_gaps_near_a_window():
@@ -42,7 +42,7 @@ def test_injected_step_is_recovered_with_its_sign_only():
 
 
 def test_thinning_keeps_about_one_epoch_per_step():
-    series, t = synthetic_series(n=400)  # about 4.5 epochs a day
+    series, t = synthetic_series(n=400)
     out = thin(series, 1.0)
     assert abs(len(out) - t[-1]) <= 2
     assert np.all(np.diff(out.epochs) > np.timedelta64(0, "us"))

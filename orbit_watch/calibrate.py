@@ -1,30 +1,5 @@
-"""Calibrate the step detector against announced ISS manoeuvres.
-
-    python -m orbit_watch.calibrate --tle data/archive/25544.tle \\
-        --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out out
-
-``--truth`` takes one or more event files; ``load_truth`` joins them and refuses an event that
-appears in two of them. ``--frozen`` skips the choice below and scores ``FROZEN`` as it stands.
-
-Holdout discipline: the window ``k``, the ``|z|`` threshold and the minimum
-``|step|`` are chosen by F1 on 2021-2022 events only (ties go to the stricter
-setting). The chosen setting is then frozen and 2023 is scored once with it;
-2023 is the honest number.
-
-An event matches a detection when the event's time (a point when ``time_utc``
-is given, otherwise its date widened by one day either side) overlaps the
-detection's interval (epoch before to epoch after the step) widened by
-``TOLERANCE_DAYS``, and the step has the sign the burn implies: up for a
-reboost (test burns included), down for a deboost or a burn the source calls
-retrograde, either for the rest. Matching is one-to-one, closest centres first.
-
-Recall counts events the detector could score: at least one scored gap overlaps
-the event's window. Other events are listed as excluded for coverage. Precision
-counts every detection in the period; a detection that matches no listed event
-is a false positive, even though the list is a lower bound (announcements that were not
-found are missing). The two unplanned attitude events are scored apart: a detection
-matching one is reported with them and left out of the main precision.
-"""
+# Calibrate the step detector against announced ISS manoeuvres: choose a setting by F1 on 2021-2022
+# events, freeze it and score 2023 once.
 
 from __future__ import annotations
 
@@ -49,7 +24,7 @@ K_GRID = (4, 6, 8)
 Z_GRID = (3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30)
 STEP_GRID_M = (0, 50, 100, 150, 200, 300, 400)
 UNPLANNED = "unplanned"
-FROZEN = {"k": 4, "z_min": 12, "step_min_m": 200}  # run's choice on the archive, 2021-2022, NASA truth
+FROZEN = {"k": 4, "z_min": 12, "step_min_m": 200}
 
 
 @dataclass(frozen=True)
@@ -76,7 +51,6 @@ class Event:
 
     @property
     def expected_sign(self) -> int:
-        """+1 if the step must go up, -1 if down, 0 if either."""
         if "retrograde" in self.type or "deboost" in self.type:
             return -1
         if self.type.startswith("reboost"):
@@ -91,7 +65,7 @@ def load_events(path: Path) -> list[Event]:
         if row["time_utc"]:
             hh, mm = map(int, row["time_utc"].split(":"))
             lo = hi = day + timedelta(hours=hh, minutes=mm)
-        else:  # US-local date: plus or minus one day
+        else:
             lo, hi = day - timedelta(days=1), day + timedelta(days=2)
         events.append(Event(row["date_utc"], row["time_utc"], row["type"], row["delta_v_m_s"],
                             np.datetime64(lo, "us"), np.datetime64(hi, "us")))
@@ -99,13 +73,6 @@ def load_events(path: Path) -> list[Event]:
 
 
 def load_truth(paths: list[Path]) -> list[Event]:
-    """Events from one or more truth files. Raises when files list the same event twice.
-
-    Two events from different files are the same event when their windows overlap within
-    ``TOLERANCE_DAYS``: a timed row's point, or a date-only row's date plus or minus one day.
-    shortcut: two genuinely different burns within that window in different files would be
-    refused too; add an explicit allow-list if that ever happens.
-    """
     per_file = [load_events(p) for p in paths]
     for i in range(len(per_file)):
         for j in range(i + 1, len(per_file)):
@@ -118,7 +85,6 @@ def load_truth(paths: list[Path]) -> list[Event]:
 
 
 def _sign_ok(ev, d: Detection) -> bool:
-    """``ev`` is any event with ``expected_sign`` (+1, -1, or 0 for either)."""
     return ev.expected_sign == 0 or ev.expected_sign * d.step_m > 0
 
 
@@ -128,7 +94,6 @@ def _overlaps(ev: Event, start: np.datetime64, end: np.datetime64, tol_days: flo
 
 
 def match(events: list[Event], detections: list[Detection], tol_days: float = TOLERANCE_DAYS) -> dict[int, int]:
-    """One-to-one event index -> detection index, closest centres first."""
     pairs = []
     for ei, ev in enumerate(events):
         ec = ev.lo + (ev.hi - ev.lo) / 2
@@ -156,7 +121,6 @@ def _ratio(a: int, b: int) -> float | None:
 
 
 def evaluate(events, cover, detections, in_period_ev, in_period_det):
-    """Scores for one period. Main events exclude the unplanned attitude events."""
     main = [i for i, e in enumerate(events) if e.category != UNPLANNED]
     unpl = [i for i, e in enumerate(events) if e.category == UNPLANNED]
     m_main = match([events[i] for i in main], detections)
@@ -205,14 +169,6 @@ def _iso(t: np.datetime64) -> str:
 
 
 def choose_setting(events, scores_by_k, ev_in, det_in):
-    """Sweep the grid scored on one period; ``det_in(dets)`` gives that period's detection mask.
-
-    Only the period's events and detections are matched, so a detection outside the period can
-    never take an event inside it, nor an event outside it (a label the choice must not see)
-    a detection inside it.
-
-    Returns the setting with the highest F1 (ties to the stricter setting) and the whole sweep.
-    """
     events = [e for e, keep in zip(events, ev_in) if keep]
     sweep = []
     for k, sc in scores_by_k.items():
@@ -221,7 +177,6 @@ def choose_setting(events, scores_by_k, ev_in, det_in):
             for s in STEP_GRID_M:
                 dets = pick(sc, z, s)
                 dets = [d for d, keep in zip(dets, det_in(dets)) if keep]
-                # All-true masks: events and dets were already filtered to the period above.
                 res, _, _ = evaluate(events, cover, dets, [True] * len(events), [True] * len(dets))
                 sweep.append({"k": k, "z_min": z, "step_min_m": s, "f1": round(_f1(res), 4),
                               "precision": res["precision"], "recall": res["recall"]})
@@ -268,7 +223,6 @@ def run(tle: Path, truth: list[Path], out: Path, frozen: bool = False) -> dict:
     def det_hold(dets):
         return [d.start >= HOLDOUT_START for d in dets]
 
-    # Tuning: 2021-2022 only, unless the frozen setting is scored as it stands.
     scores_by_k = {k: score_gaps(series, k=k) for k in K_GRID}
     if frozen:
         best, sweep = FROZEN, []
@@ -277,7 +231,6 @@ def run(tle: Path, truth: list[Path], out: Path, frozen: bool = False) -> dict:
                                      lambda dets: [not x for x in det_hold(dets)])
     k, z_min, step_min = best["k"], best["z_min"], best["step_min_m"]
 
-    # Frozen setting on both periods.
     sc = scores_by_k[k]
     cover = covered(events, sc)
     dets = pick(sc, z_min, step_min)
@@ -363,7 +316,7 @@ def plot(series, events, cover, m_main, m_unpl, dets, path: Path, years=(2021, 2
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Calibrate the step detector against announced ISS manoeuvres.")
     p.add_argument("--tle", type=Path, required=True)
     p.add_argument("--truth", type=Path, nargs="+", required=True)
     p.add_argument("--out", type=Path, required=True)

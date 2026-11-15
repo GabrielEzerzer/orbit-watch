@@ -1,9 +1,5 @@
-"""Parsed element sets: one immutable record from TLE or GP (OMM) input.
-
-TLE and OMM text is untrusted input. Every parser here validates what it reads
-(checksums, field formats, physical ranges) and raises ``ValueError`` naming the
-problem rather than passing a malformed record on.
-"""
+# One SGP4 mean element set per object and epoch, parsed from TLE or GP (OMM) text, validated as untrusted input.
+# Angles are degrees, mean motion rev/day (Kozai), bstar 1/Earth radii, epochs timezone-aware UTC.
 
 from __future__ import annotations
 
@@ -25,40 +21,21 @@ _SGP4_EPOCH_ZERO = datetime(1949, 12, 31, tzinfo=timezone.utc)
 
 @dataclass(frozen=True, slots=True)
 class ElementSet:
-    """One SGP4 mean element set for one object at one epoch.
-
-    Angles are degrees, mean motion is revolutions per day, as printed in a TLE
-    or a CelesTrak/Space-Track GP record. ``mean_motion_dot`` and
-    ``mean_motion_ddot`` are the TLE fields as printed (n-dot / 2 in rev/day^2
-    and n-ddot / 6 in rev/day^3); SGP4 does not use them for propagation.
-
-    ``semi_major_axis_km`` is derived, not read. TLE and GP mean motion is the
-    Kozai mean motion. SGP4 initialisation converts it to the Brouwer mean motion
-    (removing the J2 secular term, which depends on inclination and
-    eccentricity) and computes the Brouwer mean semi-major axis
-    ``a = (ke / n_brouwer) ** (2/3)`` in Earth radii. This field is that value
-    (``Satrec.a``) times the WGS72 equatorial radius, 6378.135 km, so it is the
-    same semi-major axis SGP4 itself propagates from. It is a mean element: it
-    differs from the osculating semi-major axis by short-period terms of several
-    kilometres, and from ``(mu / n_kozai**2) ** (1/3)`` by a few kilometres.
-    """
-
     norad_id: int
     name: str | None
-    epoch: datetime  # timezone-aware UTC
-    mean_motion: float  # rev/day, Kozai
+    epoch: datetime
+    mean_motion: float
     eccentricity: float
-    inclination: float  # deg
-    raan: float  # deg, right ascension of the ascending node
-    arg_perigee: float  # deg
-    mean_anomaly: float  # deg
-    bstar: float  # 1 / Earth radii
+    inclination: float
+    raan: float
+    arg_perigee: float
+    mean_anomaly: float
+    bstar: float
     mean_motion_dot: float
     mean_motion_ddot: float
     semi_major_axis_km: float
 
     def satrec(self) -> Satrec:
-        """An initialised ``sgp4`` satellite record for these elements (WGS72)."""
         return _satrec(
             self.norad_id,
             self.epoch,
@@ -78,7 +55,6 @@ def _satrec(
     norad_id, epoch, mean_motion, ecc, inc, raan, argp, ma, bstar, ndot, nddot
 ) -> Satrec:
     sat = Satrec()
-    # Unit conversions mirror sgp4's own twoline2rv.
     sat.sgp4init(
         WGS72,
         "i",
@@ -144,15 +120,11 @@ def _build(
     )
 
 
-# --- TLE -------------------------------------------------------------------
-
-
 def _tle_checksum(line: str) -> int:
     return sum(int(c) if c.isdigit() else c == "-" for c in line[:68]) % 10
 
 
 def _implied_decimal(field: str) -> float:
-    """Decode a TLE ' 38792-4' style field: sign, five mantissa digits, exponent."""
     sign, mantissa, exponent = field[0], field[1:6], field[6:8]
     if sign not in " +-" or not mantissa.isdigit() or exponent[0] not in "+-" or not exponent[1].isdigit():
         raise ValueError(f"bad implied-decimal field {field!r}")
@@ -160,7 +132,6 @@ def _implied_decimal(field: str) -> float:
 
 
 def _tle_epoch(field: str) -> datetime:
-    """'19343.69339541' -> UTC datetime, exact to the microsecond (1e-8 day = 864 us)."""
     yy, day = int(field[:2]), Decimal(field[2:].strip())
     if not 1 <= day < 367:
         raise ValueError(f"bad epoch day {field!r}")
@@ -175,10 +146,8 @@ def _parse_tle_pair(line1: str, line2: str, name: str | None) -> ElementSet:
             raise ValueError(f"TLE line {n} malformed: {line!r}")
         if not line[68].isdigit() or _tle_checksum(line) != int(line[68]):
             raise ValueError(f"TLE line {n} checksum mismatch: {line!r}")
-    # shortcut: numeric catalog numbers only; decode Alpha-5 (e.g. 'A0001') once objects pass 99999.
     if not line1[2:7].strip().isdigit() or line1[2:7] != line2[2:7]:
         raise ValueError(f"TLE catalog numbers missing or differ: {line1[2:7]!r} vs {line2[2:7]!r}")
-    # Eccentricity is seven digits with an implied leading decimal point; a blank field is not 0.
     if not line2[26:33].isdigit():
         raise ValueError(f"TLE eccentricity field is not seven digits: {line2[26:33]!r}")
     try:
@@ -201,10 +170,6 @@ def _parse_tle_pair(line1: str, line2: str, name: str | None) -> ElementSet:
 
 
 def parse_tle(text: str) -> list[ElementSet]:
-    """Parse 2-line or 3-line (name line first) TLE text, possibly mixed.
-
-    A Space-Track style ``0 NAME`` name line has its ``0 `` prefix removed.
-    """
     lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
     records: list[ElementSet] = []
     name: str | None = None
@@ -227,8 +192,6 @@ def parse_tle(text: str) -> list[ElementSet]:
     return records
 
 
-# --- GP / OMM --------------------------------------------------------------
-
 _OMM_REQUIRED = (
     "NORAD_CAT_ID",
     "EPOCH",
@@ -246,7 +209,6 @@ _OMM_REQUIRED = (
 
 def _omm_epoch(value: str) -> datetime:
     epoch = datetime.fromisoformat(value)
-    # CelesTrak and Space-Track print EPOCH without an offset; it is UTC.
     if epoch.tzinfo is None:
         return epoch.replace(tzinfo=timezone.utc)
     return epoch.astimezone(timezone.utc)
@@ -285,8 +247,6 @@ def _from_omm_fields(fields: dict[str, str]) -> ElementSet:
 
 
 def parse_omm_json(text: str) -> list[ElementSet]:
-    """Parse CelesTrak / Space-Track GP JSON: a list of OMM objects (or one object)."""
-    # Numbers stay as their text so a JSON value and the same CSV value give the same float.
     data = json.loads(text, parse_float=str, parse_int=str)
     if isinstance(data, dict):
         data = [data]
@@ -296,7 +256,6 @@ def parse_omm_json(text: str) -> list[ElementSet]:
 
 
 def parse_omm_csv(text: str) -> list[ElementSet]:
-    """Parse CelesTrak / Space-Track GP CSV with a header row of OMM field names."""
     reader = csv.DictReader(io.StringIO(text))
     try:
         if reader.fieldnames is None or "NORAD_CAT_ID" not in reader.fieldnames:

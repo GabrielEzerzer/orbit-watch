@@ -1,52 +1,5 @@
-"""Build ground-truth manoeuvre lists from published logs (IDS, QZSS and the Fengyun set).
-
-    python -m orbit_watch.manoeuvre_logs --ids-dir data/sources/ids \\
-        --qzss-dir data/sources/qzss --fengyun-dir data/sources/fengyun --out groundtruth
-
-Every output row comes from one source row (or, for IDS, one row holding several burns) and
-carries the source file name, the file's revision date and its URL. The raw files are not
-committed; fetch them from the URLs in ``SOURCES`` and rerun this to reproduce the CSVs.
-
-IDS (``*man.txt``, format in ``man.readme`` in the same directory): one fixed-width row per
-manoeuvre with start and end to the minute and, for each burn, its median time and Delta-v per
-axis. The along-track axis is DV(2) for every parameter type (005: T, R, L with R along-track;
-006: radial, along, cross; 007: Q, S, W with S along-track). Burn Delta-v is summed per row.
-The time scale is not stated in the readme; it is read as UTC (at TLE cadence a few tens of
-seconds do not matter). The last row of a file is first published before the burn and later
-restated with executed values (seen in every archive revision checked), so rows starting on or
-after the file's revision date are dropped as predictions. Rows repeated verbatim are kept once.
-
-QZSS (``ohi-qzs*.txt``, Cabinet Office "Operational History Information"): CSV sections; only
-the ``#+SATELLITE/MANEUVER`` section is read. The GEO files (QZS-3, QZS-6) have an ``NS/EW``
-column; the inclined (IGSO) files (QZS-1, QZS-1R, QZS-2, QZS-4) have none, so their ``ns_ew`` is
-empty and ``kind`` is ``unspecified``. Times are UTC to the second. The Delta-v is the planned value (the source's own footnote) and
-the frame of DVX/DVY/DVZ is not documented; EW burns load DVX, NS burns DVY. An ``NS-1`` row and
-the ``NS-2`` row after it share an ``event_group``, because they are one pair of burns an hour
-apart that no TLE cadence separates.
-
-Fengyun (``manFY*.txt.fy`` in the dpshorten/TLE_observation_benchmark_dataset repository, the
-data set of Shorten et al., "Wide-scale Monitoring of Satellite Lifetimes: Pitfalls and a
-Benchmark Dataset"): one line per manoeuvre, ``TYPE COSPAR "start CST" "end CST"``, with no
-Delta-v. The repository does not say where the lines come from, and the time zone is ambiguous:
-the lines say ``CST`` (China Standard Time is UTC+8), while the repository's README calls its
-processed timestamps UTC and its YAML files keep the same clock times. Neither reading is
-assumed: ``start_utc`` is the start read as UTC+8 and ``end_utc`` the end read as UTC, a window
-of the logged duration plus 8 h that holds the manoeuvre under either reading. The clock times are kept verbatim in
-``source_start`` and ``source_end``. ``delta_a_est_m`` is empty.
-
-``delta_a_est_m`` is an estimate, not a source value: the Gauss relation for a circular orbit,
-2 * Delta-v_along / n, with n from the satellite's nominal semi-major axis in ``SOURCES``
-(the median of ``ElementSet.semi_major_axis_km``, SGP4's Brouwer mean semi-major axis, over the
-log span; not Space-Track's ``SEMIMAJOR_AXIS`` field, which is (mu / n_Kozai^2)^(1/3) and sits
-1.5-3 km higher in LEO). For QZSS it assumes DVX is the along-track component, which the
-source does not confirm.
-"""
-
-# shortcut: nominal semi-major axes are medians of ElementSet.semi_major_axis_km (SGP4 Brouwer
-# mean a, from each Space-Track TLE's mean motion) over the object's log span (2021-2025 only
-# for the objects added with splits.json; one constant per satellite); SWOT
-# changed orbit by ~35 km in 2023, a 2% error in its early estimates, and the IGSO orbits are
-# eccentric (e ~ 0.075). Use the TLE nearest each burn if estimates are ever compared tightly.
+# Build ground-truth manoeuvre lists from published logs (IDS, QZSS and the Fengyun set).
+# Every output row carries its source file, the file's revision date and its URL.
 
 from __future__ import annotations
 
@@ -61,7 +14,7 @@ from pathlib import Path
 MU_KM3_S2 = 398600.4418
 IDS_URL = "ftp://ftp.ids-doris.org/pub/ids/satellites/"
 QZSS_URL = "https://qzss.go.jp/en/technical/qzssinfo/khp0mf0000000wuf-att/"
-FENGYUN_COMMIT = "4cf0b15600658a486eff9e6a967ebd520e2354d1"  # last commit touching manFY*.txt.fy
+FENGYUN_COMMIT = "4cf0b15600658a486eff9e6a967ebd520e2354d1"
 FENGYUN_URL = ("https://github.com/dpshorten/TLE_observation_benchmark_dataset/blob/"
                f"{FENGYUN_COMMIT}/raw_data/manoeuvres/")
 
@@ -71,9 +24,9 @@ class Source:
     file: str
     satellite: str
     norad_id: int
-    revision: date  # IDS: file date in the listing; QZSS: date on the index page; Fengyun: commit
-    nominal_a_km: float  # median ElementSet.semi_major_axis_km over the log span (0: no Delta-v)
-    cospar_id: str = ""  # Fengyun only: the international designator the source lines carry
+    revision: date
+    nominal_a_km: float
+    cospar_id: str = ""
 
     @property
     def url(self) -> str:
@@ -89,7 +42,6 @@ IDS_SOURCES = (
     Source("ja3man.txt", "Jason-3", 41240, date(2026, 11, 14), 7714.4),
     Source("swoman.txt", "SWOT", 54754, date(2026, 11, 14), 7268.7),
     Source("sp5man.txt", "SPOT-5", 27421, date(2015, 12, 10), 7200.5),
-    # Added with groundtruth/splits.json; nominal a is the median over 2021-2025 TLEs.
     Source("s3aman.txt", "Sentinel-3A", 41335, date(2026, 11, 10), 7177.9),
     Source("s3bman.txt", "Sentinel-3B", 43437, date(2026, 11, 12), 7177.9),
     Source("s6aman.txt", "Sentinel-6A", 46984, date(2026, 8, 26), 7714.4),
@@ -101,14 +53,12 @@ IDS_SOURCES = (
 QZSS_SOURCES = (
     Source("ohi-qzs3.txt", "QZS-3", 42917, date(2026, 11, 4), 42165.9),
     Source("ohi-qzs6.txt", "QZS-6", 62876, date(2026, 11, 4), 42165.9),
-    # IGSO, added with groundtruth/splits.json; nominal a is the median over the log span within
-    # 2021-2025 (QZS-1 up to 2022-02-28, its last logged burn).
     Source("ohi-qzs1.txt", "QZS-1", 37158, date(2026, 11, 4), 42164.8),
     Source("ohi-qzs1r.txt", "QZS-1R", 49336, date(2026, 11, 4), 42165.1),
     Source("ohi-qzs2.txt", "QZS-2", 42738, date(2026, 11, 4), 42165.7),
     Source("ohi-qzs4.txt", "QZS-4", 42965, date(2026, 11, 4), 42165.0),
 )
-FENGYUN_SOURCES = (  # only the satellites with lines in 2021-2025
+FENGYUN_SOURCES = (
     Source("manFY2F.txt.fy", "Fengyun-2F", 38049, date(2022, 11, 22), 0.0, "2012-002A"),
     Source("manFY2H.txt.fy", "Fengyun-2H", 43491, date(2022, 11, 22), 0.0, "2018-050A"),
     Source("manFY4A.txt.fy", "Fengyun-4A", 41882, date(2022, 11, 22), 0.0, "2016-077A"),
@@ -131,8 +81,7 @@ CHINA_STANDARD_TIME = timedelta(hours=8)
 
 
 def delta_a_m(dv_along_m_s: float, a_km: float) -> float:
-    """Gauss estimate of the semi-major-axis change (m) from an along-track Delta-v (m/s)."""
-    n = math.sqrt(MU_KM3_S2 / a_km**3)  # rad/s
+    n = math.sqrt(MU_KM3_S2 / a_km**3)
     return 2.0 * dv_along_m_s / n
 
 
@@ -159,7 +108,6 @@ class IdsRow:
 
 
 def parse_ids_line(line: str) -> IdsRow:
-    """One IDS manoeuvre row. Header columns are fixed width (readme), burn fields whitespace-split."""
     if len(line) < 46 or not line[44].isdigit():
         raise ValueError(f"not an IDS manoeuvre row: {line[:60]!r}")
     start = _doy(line[6:10], line[11:14], line[15:17], line[18:20])
@@ -176,15 +124,14 @@ def parse_ids_line(line: str) -> IdsRow:
         times.append(_doy(*f[0:5]))
         dv = [float(x) for x in f[6:9]]
         along += dv[1]
-        if ptype == "005":  # T (cross-track), R (along-track), L (radial)
+        if ptype == "005":
             cross, radial = cross + dv[0], radial + dv[2]
-        else:  # 006: radial, along, cross; 007: Q (radial), S (along), W (cross)
+        else:
             radial, cross = radial + dv[0], cross + dv[2]
     return IdsRow(line[0:5], start, end, tuple(times), radial, along, cross)
 
 
 def parse_ids(text: str, src: Source) -> tuple[list[dict], dict]:
-    """Rows of one IDS file as output dicts, plus counts of what was dropped and why."""
     lines = [ln for ln in text.splitlines() if ln.strip()]
     seen, rows, dropped = set(), [], {"duplicate_rows": 0, "on_or_after_revision": 0}
     revision = datetime.combine(src.revision, datetime.min.time())
@@ -215,7 +162,6 @@ def parse_ids(text: str, src: Source) -> tuple[list[dict], dict]:
 
 
 def parse_qzss(text: str, src: Source) -> tuple[list[dict], dict]:
-    """The MANEUVER section of one OHI file (GEO or IGSO layout) as output dicts, plus drop counts."""
     lines = text.splitlines()
     try:
         i = lines.index("#+SATELLITE/MANEUVER")
@@ -232,7 +178,7 @@ def parse_qzss(text: str, src: Source) -> tuple[list[dict], dict]:
     for ln in body:
         f = ln.strip().split(",")
         if not geo:
-            f.insert(3, "")  # IGSO rows have no NS/EW column
+            f.insert(3, "")
         if len(f) != 7:
             raise ValueError(f"{src.file}: expected {7 if geo else 6} fields: {ln!r}")
         start = datetime.strptime(f[0], "%Y-%m-%d %H:%M:%S")
@@ -266,7 +212,6 @@ def parse_qzss(text: str, src: Source) -> tuple[list[dict], dict]:
 
 
 def parse_fengyun(text: str, src: Source) -> tuple[list[dict], dict]:
-    """One Fengyun file as output dicts in time order, plus drop counts."""
     seen, parsed, dropped = set(), [], {"duplicate_rows": 0}
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     for ln in lines:
@@ -333,7 +278,7 @@ def build(ids_dir: Path, qzss_dir: Path, fengyun_dir: Path, out: Path) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Build ground-truth manoeuvre lists from published logs (IDS, QZSS and the Fengyun set).")
     p.add_argument("--ids-dir", type=Path, required=True)
     p.add_argument("--qzss-dir", type=Path, required=True)
     p.add_argument("--fengyun-dir", type=Path, required=True)

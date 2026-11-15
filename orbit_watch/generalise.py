@@ -1,87 +1,5 @@
-"""Does the ISS-tuned step detector generalise? Score it against IDS (LEO) and QZSS (GEO) logs.
-
-    python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetrack \\
-        --out findings/generalise
-
-For each satellite, from its Space-Track gp_history (or, when there is none, its
-``data/geo/<norad>.tle`` from ``orbit_watch.jobs.geo_belt``; ``load_series``) and its operator
-manoeuvre log (``orbit_watch.manoeuvre_logs``):
-
-1. The frozen ISS setting as-is (``FROZEN``: k=4, |z|>=12, |step|>=200 m, NMS 1 day, gaps
-   scored only when each side spans <=3 days and the gap <=2 days, as in the ISS run).
-2. A per-regime tune with a time split. Each satellite's history is split at the first day of
-   the month holding its 60th-percentile logged event (fixed from the log alone, before any
-   scoring). ``k``, ``|z|`` and ``|step|`` are chosen by F1 pooled over the regime's satellites
-   on the earlier part (ties go to the stricter setting, as in calibrate.py); the later part is
-   scored once with that setting.
-
-**The test part is not a blind holdout.** The late tolerance, the epoch collapse, burn merging
-and the |z| grid beyond 30 (all below) were added after a first scoring of the test part had been
-seen, and the lag figures that justify the late tolerance include test-part burns. Measured at
-review: with the 0.5-day tolerance instead of 2 days, the tuned test part drops from P 162/260,
-R 162/199 to P 138/260, R 138/196 at LEO, and from P 70/92, R 70/93 to P 60/88, R 60/90 at GEO
-(the tune re-picks |z|>=7). Without merging, LEO is P 167/266, R 167/211 and GEO precision falls
-to 74/110, so merging does not inflate the numbers. ``TEST_PART_NOT_BLIND`` carries this into the
-report.
-
-Matching follows calibrate.py: an event's window (start to end of the logged burn) must overlap
-the detection's interval widened by ``TOLERANCE_DAYS``, one-to-one, closest centres first.
-Changes, and why:
-
-* Late tolerance. A detection may start up to ``LATE_DAYS`` after the burn ends (calibrate.py
-  allows 0.5 day either side; 0.5 day before is kept). Space-Track element sets keep showing the
-  old orbit for a while after a burn: the epoch before the largest step comes a median 0.9-1.1
-  days after the logged burn for SPOT-5 and 0.2 days for QZS-3, with 90th percentiles of 1.2-2.8
-  days (``lag_days`` in the report). The ISS archive did not show this lag.
-* Input. Element sets less than ``series.MIN_EPOCH_GAP_S`` (60 s) apart are collapsed to the
-  later one by ``to_series``, as for every caller. Space-Track history restates element sets at
-  almost the same epoch (562 pairs under 1 s for QZS-3, 25-63 for the others; one in the ISS
-  archive). Two epochs microseconds apart give the Theil-Sen slope pairs a near-zero time base,
-  and the detrended values then produce steps of thousands of km.
-* Chance baseline. Every score is reported next to the same score with the logged events shifted
-  by ``CHANCE_SHIFTS_DAYS`` (detections unchanged): what matching gives by coincidence.
-
-* Sign. IDS along-track rows must step the way their along-track Delta-v points (the readme
-  defines the axis "in the velocity direction"); IDS cross-track rows take either sign. QZSS
-  rows take either sign, because the source does not define the DVX frame; the agreement of
-  detected steps with the DVX sign is reported instead of assumed.
-* Merging. Logged burns that start less than ``MERGE_HOURS`` after the previous one ends are one
-  event with their Delta-a summed: at two to three TLEs a day no gap separates them. This covers
-  the QZSS NS-1/NS-2 pairs (an hour apart) and the IDS burn/counter-burn pairs (SWOT, Jason-3:
-  e.g. +364 m then -346 m four hours later), whose net change is what a TLE can see. A merged
-  event whose rows push a in opposite directions takes either sign.
-* Nothing is scored apart: every logged burn is an event, so a detection that matches any
-  logged burn is a true positive, and every other detection counts against precision (and is
-  listed, since a log can miss burns).
-
-The |z| grid extends calibrate.py's to 300: LEO TLE scatter here is about 0.1 m (against 3 m for
-the ISS), so z runs into the hundreds and a grid capped at 30 pinned the first tune to its edge.
-
-Recall counts covered events (at least one scored gap overlaps the event window), by the
-estimated |Delta-a| bin and by kind. Delta-a is the log parser's Gauss estimate, not measured.
-An event without an estimate (the Fengyun logs carry no Delta-v) still counts for matching and
-recall, and is left out of the size bins.
-
-Attitude-only log rows (Fengyun ``kind`` ``attitude``) change no orbit, so they are not scoring
-targets, as calibrate.py does with the ISS's unplanned attitude events: they are not in recall,
-and a detection that matches one (after the targets are matched) is dropped from the detection
-list, so it is neither a true nor a false positive.
-
-Coverage. A log only vouches for the period it covers (``log_coverage``): from its first row's
-start to, for IDS, the file's revision date (each file is the operator's live record, updated
-with every burn, so it is complete up to its last update), and for QZSS and Fengyun, the last
-row's end (their revision dates are a web page's date and a repository commit date, which say
-nothing about when the log was last kept: QZS-1 was retired in 2022 and its log ends on
-2022-02-28, while the page is dated 2026; the Fengyun lines end in January and February 2022).
-Element sets outside the coverage are still scored, so gaps near its edges keep their context,
-but detections that could not match an event inside it (ending more than ``TOLERANCE_DAYS``
-before it starts, or starting more than ``LATE_DAYS`` after it ends) are dropped, so they do
-not count as false alarms.
-
-``run`` never takes ``final=True``: it tunes over its objects, and tuning on a holdout object
-would spend the holdout. The final scoring runs a frozen setting chosen on train objects
-(``python -m harness.evals.detector --split test --final``).
-"""
+# Score the ISS-tuned step detector against IDS (LEO) and QZSS (GEO) operator logs, frozen and with
+# a per-regime tune on a time split, each next to a chance baseline.
 
 from __future__ import annotations
 
@@ -99,8 +17,8 @@ from orbit_watch.elements import parse_omm_json, parse_tle
 from orbit_watch.series import ElementSeries, to_series
 from orbit_watch.truth import HoldoutError, read_label_rows, require_allowed
 
-FROZEN = Setting(k=4, z_min=12, step_min_m=200)  # FINDINGS.md, calibration run at 508838a
-MAX_SPAN_DAYS, MAX_GAP_DAYS = 3.0, 2.0  # score_gaps defaults, used by the ISS run
+FROZEN = Setting(k=4, z_min=12, step_min_m=200)
+MAX_SPAN_DAYS, MAX_GAP_DAYS = 3.0, 2.0
 SPLIT_QUANTILE = 0.6
 MERGE_HOURS = 12.0
 LATE_DAYS = 2.0
@@ -114,7 +32,7 @@ STEP_GRID_M = {
 BIN_EDGES_M = (0, 50, 100, 200, 500, 1000, 2000, 5000, float("inf"))
 BIN_LABELS = ("<50 m", "50-100 m", "100-200 m", "200-500 m", "500 m-1 km", "1-2 km", "2-5 km",
               ">5 km")
-SATELLITES = (  # (name, NORAD id, regime, ground-truth file)
+SATELLITES = (
     ("CryoSat-2", 36508, "LEO", "ids_manoeuvres.csv"),
     ("Jason-3", 41240, "LEO", "ids_manoeuvres.csv"),
     ("SWOT", 54754, "LEO", "ids_manoeuvres.csv"),
@@ -128,8 +46,8 @@ SATELLITES = (  # (name, NORAD id, regime, ground-truth file)
 class LogEvent:
     event_id: str
     kind: str
-    delta_a_est_m: float | None  # None: the log gives no Delta-v (Fengyun)
-    expected_sign: int  # +1 up, -1 down, 0 either (same rule as calibrate._sign_ok)
+    delta_a_est_m: float | None
+    expected_sign: int
     lo: np.datetime64
     hi: np.datetime64
     n_rows: int = 1
@@ -150,11 +68,6 @@ def _t(s: str) -> np.datetime64:
 
 
 def load_log_events(path: Path, norad: int, *, final: bool = False) -> list[LogEvent]:
-    """Events for one satellite: one per log row, then merged when under ``MERGE_HOURS`` apart.
-
-    Attitude-only rows (kind ``attitude``) are merged only with each other and keep kind
-    ``attitude``; ``Satellite`` keeps them out of the targets. Refuses holdout and unassigned
-    objects unless ``final`` (``orbit_watch.truth``)."""
     rows = read_label_rows(path, norad, final=final)
     rows.sort(key=lambda r: r["start_utc"])
     merge_gap = np.timedelta64(int(MERGE_HOURS * 3600e6), "us")
@@ -173,12 +86,9 @@ def load_log_events(path: Path, norad: int, *, final: bool = False) -> list[LogE
     for rs in clusters:
         das = [float(r["delta_a_est_m"]) if r["delta_a_est_m"] else None for r in rs]
         kinds = sorted({r["kind"] for r in rs})
-        if "dvx_m_s" in rs[0] or kinds != ["along-track"] or None in das:
-            sign = 0  # QZSS: DVX frame undocumented; IDS cross-track: no direction in a
-        elif all(d > 0 for d in das) or all(d < 0 for d in das):
-            sign = int(np.sign(das[0]))
-        else:
-            sign = 0  # burn and counter-burn: the net sign is within the estimate's error
+        direction_unknown = "dvx_m_s" in rs[0] or kinds != ["along-track"] or None in das
+        one_direction = not direction_unknown and (all(d > 0 for d in das) or all(d < 0 for d in das))
+        sign = int(np.sign(das[0])) if one_direction else 0
         events.append(LogEvent("+".join(r["event_id"] for r in rs), "+".join(kinds),
                                None if None in das else round(sum(das), 1), sign,
                                _t(rs[0]["start_utc"]), max(_t(r["end_utc"]) for r in rs), len(rs)))
@@ -187,20 +97,17 @@ def load_log_events(path: Path, norad: int, *, final: bool = False) -> list[LogE
 
 
 def log_coverage(path: Path, norad: int, *, final: bool = False) -> tuple[np.datetime64, np.datetime64]:
-    """The period one object's log vouches for (see the module docstring): first row's start to
-    the IDS file's revision date, or to the last row's end for QZSS and Fengyun."""
     rows = read_label_rows(path, norad, final=final)
     if not rows:
         raise ValueError(f"{path}: no log rows for NORAD {norad}")
     lo = min(_t(r["start_utc"]) for r in rows)
     hi = max(_t(r["end_utc"]) for r in rows)
-    if "burn_times_utc" in rows[0]:  # IDS layout
+    if "burn_times_utc" in rows[0]:
         hi = max([hi] + [np.datetime64(r["source_revision"], "us") for r in rows])
     return lo, hi
 
 
 def split_date(events: list[LogEvent]) -> np.datetime64:
-    """First day of the month holding the ``SPLIT_QUANTILE`` event (by start time)."""
     lo = sorted(e.lo for e in events)
     t = lo[int(SPLIT_QUANTILE * (len(lo) - 1))]
     return t.astype("datetime64[M]").astype("datetime64[us]")
@@ -212,26 +119,18 @@ def _tol(tol_days: float) -> np.timedelta64:
 
 def covered(events, scores, tol_days: float = TOLERANCE_DAYS,
             late_days: float | None = None) -> list[bool]:
-    """``calibrate.covered``, vectorised, with an optional longer tolerance after the burn."""
     v = scores.valid
-    starts, ends = scores.start[v], scores.end[v]  # both increasing, gaps are consecutive
+    starts, ends = scores.start[v], scores.end[v]
     tol, late = _tol(tol_days), _tol(tol_days if late_days is None else late_days)
     out = []
     for ev in events:
-        i = np.searchsorted(ends, ev.lo - tol)  # first gap ending at or after the window opens
+        i = np.searchsorted(ends, ev.lo - tol)
         out.append(bool(i < len(starts) and starts[i] <= ev.hi + late))
     return out
 
 
 def match_near(events, dets: list[Detection], tol_days: float = TOLERANCE_DAYS,
                late_days: float | None = None) -> dict[int, int]:
-    """``calibrate.match`` with the candidate pairs found by array operations (same result when
-    ``late_days`` is None).
-
-    One-to-one event index -> detection index: the detection interval, widened by ``tol_days``
-    before and ``late_days`` after the event, overlaps its window; the step sign fits
-    ``expected_sign``; closest centres first.
-    """
     if not dets or not events:
         return {}
     tol, late = _tol(tol_days), _tol(tol_days if late_days is None else late_days)
@@ -256,7 +155,6 @@ def match_near(events, dets: list[Detection], tol_days: float = TOLERANCE_DAYS,
 
 
 def evaluate(events, cover, dets, m, ev_in, det_in) -> dict:
-    """Counts for one period: precision over detections, recall over covered events by bin and kind."""
     matched_dets = set(m.values())
     d_idx = [i for i in range(len(dets)) if det_in[i]]
     tp = sum(i in matched_dets for i in d_idx)
@@ -290,14 +188,6 @@ def _pool(results: list[dict]) -> dict:
 
 def load_series(norad: int, tle_dir: Path, geo_dir: Path | None = None, *,
                 final: bool = False) -> tuple[ElementSeries, str, int]:
-    """One object's element series, the file it came from, and how many near-duplicate epochs
-    ``to_series`` dropped.
-
-    Reads the Space-Track ``gp_history-<norad>-*.json`` in ``tle_dir``. When there is none, falls
-    back to ``<norad>.tle`` in ``geo_dir`` (default ``tle_dir/../geo``), written by
-    ``orbit_watch.jobs.geo_belt`` from a Space-Track mirror; its later-record-wins rule matches
-    Space-Track's latest-issued set (README, "Every object in the GEO region"). Refuses holdout
-    objects unless ``final`` (through ``to_series``)."""
     paths = sorted(tle_dir.glob(f"gp_history-{norad}-*.json"))
     if paths:
         (path,) = paths
@@ -315,11 +205,9 @@ def load_series(norad: int, tle_dir: Path, geo_dir: Path | None = None, *,
 
 
 class Satellite:
-    """One object's series, log events, split and cached per-k gap scores."""
-
     def __init__(self, name: str, norad: int, regime: str, truth: Path, tle_dir: Path,
                  final: bool = False, geo_dir: Path | None = None):
-        require_allowed(norad, final=final)  # before the element sets are read
+        require_allowed(norad, final=final)
         self.name, self.norad, self.regime = name, norad, regime
         self.series, self.tle_file, self.near_duplicates_dropped = load_series(
             norad, tle_dir, geo_dir, final=final)
@@ -341,8 +229,6 @@ class Satellite:
         return self._scores[k], self._cover[k]
 
     def run(self, s: Setting):
-        """Detections inside the log's coverage (widened by the match tolerances), with those
-        matching an attitude event removed, and their one-to-one match to the target events."""
         sc, cover = self.scores(s.k)
         lo, hi = self.coverage[0] - _tol(TOLERANCE_DAYS), self.coverage[1] + _tol(LATE_DAYS)
         dets = [d for d in pick_setting(sc, None, s) if d.end >= lo and d.start <= hi]
@@ -358,7 +244,6 @@ class Satellite:
         return sc, cover, dets, m, det_test
 
     def chance(self, s: Setting, which: str) -> dict:
-        """Mean recall and precision with the events shifted in time (detections unchanged)."""
         sc, _, dets, _, det_test = self.run(s)
         want = which == "test"
         rec, prec = [], []
@@ -376,8 +261,6 @@ class Satellite:
                 "precision_mean": round(float(np.mean(prec)), 3)}
 
     def lag_days(self, which: str) -> dict:
-        """Burn end to the epoch before the largest same-sign step (k=4 gaps), for events of
-        |Delta-a| >= 50 m (LEO) or 500 m (GEO) whose step reaches 30% of the estimate."""
         sc, _ = self.scores(4)
         day = _tol(1.0)
         floor = 50 if self.regime == "LEO" else 500
@@ -436,7 +319,6 @@ def tune(sats: list[Satellite], regime: str) -> tuple[Setting, list[dict]]:
 
 
 def _sign_and_ratio(sat: Satellite, s: Setting) -> dict:
-    """For matched events: does the step sign agree with the estimate, and step / estimate."""
     _, _, dets, m, _ = sat.run(s)
     pairs = [(sat.events[e].delta_a_est_m, dets[d].step_m) for e, d in m.items()
              if sat.events[e].delta_a_est_m is not None and abs(sat.events[e].delta_a_est_m) >= 100]
@@ -478,7 +360,7 @@ def plot(regime: str, sats: list[Satellite], tuned: Setting, path: Path) -> None
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    colours = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100")  # dataviz reference slots 1-4
+    colours = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100")
     markers = ("o", "s", "^", "D")
     x = np.arange(len(BIN_LABELS))
     fig, axes = plt.subplots(1, 3, figsize=(18, 5.5))
@@ -604,7 +486,7 @@ def run(truth_dir: Path, tle_dir: Path, out: Path, final: bool = False) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Does the ISS-tuned step detector generalise? Score it against IDS (LEO) and QZSS (GEO) logs.")
     p.add_argument("--truth-dir", type=Path, required=True)
     p.add_argument("--tle-dir", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)

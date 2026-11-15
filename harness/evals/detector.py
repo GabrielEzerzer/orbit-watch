@@ -1,86 +1,5 @@
-"""The frozen evaluation of the step detector, per regime: the score every hill-climb round reports.
-
-    python -m harness.evals.detector --split dev --data-dir <data> [--settings <json>] [--out <json>]
-    python -m harness.evals.detector --split test --final --data-dir <data>   # final round only
-
-``split.json`` (beside this file) fixes the periods and objects: ``train`` and ``dev`` are the
-train objects of ``groundtruth/splits.json`` in 2021-2023 and 2024-2025, ``test`` is the holdout
-objects over 2021-2025 and needs ``--final``, which is passed to the holdout guard
-(``orbit_watch.truth``). The detector setting per regime (ISS, LEO, GEO, IGSO) comes from a
-settings JSON (``settings/frozen.json`` by default); the Fengyun objects take the GEO setting.
-
-Log loading is ``orbit_watch.generalise``'s: ``load_log_events`` (12 h merging) and ``log_coverage``,
-with ``TOLERANCE_DAYS`` before a burn and ``LATE_DAYS`` after it. The ISS keeps calibrate.py's
-inputs: its events come from ``calibrate.load_truth`` (NASA and Roscosmos lists), its tolerance is
-``TOLERANCE_DAYS`` either side, its unplanned attitude events are excluded like attitude lines, and
-its element sets come from ``holdout.load_gp_history`` (latest issued wins), as in every ISS score
-so far. The detector runs once on each object's whole 2021-2025 series (``score_gaps`` and its
-noise floor use no labels); a period's events and detections are then matched only with each
-other, as ``calibrate.choose_setting`` does, so no label outside the period reaches its score.
-
-Coverage, exposure, matching and counting are decided here, so that no change to the detector or
-its setting can move them:
-
-* **The coverage reference.** ``reference_scored`` marks the gaps the reference scores: the
-  ``score_gaps`` rule at ``REF_K`` = 4 (the 4 epochs on each side span at most
-  ``REF_MAX_SPAN_DAYS`` and the gap is at most ``REF_MAX_GAP_DAYS``), copied here, not imported or
-  called, so a change to ``score_gaps`` or to a setting's ``k`` leaves it where it is. An event is
-  covered when a reference gap overlaps its window widened by the match tolerances (the overlap
-  test is ``generalise.covered``'s).
-* **The peak gap.** A detection is assigned to a period, matched and counted by its peak gap
-  (``Detection.peak_start``/``peak_end``, the gap its step and ``z`` come from), never by its
-  interval, so a rule that widens intervals neither matches more burns nor hides false alarms. The
-  peak must be one gap of the series (two consecutive epochs); anything else raises.
-* **One-to-one matching** (``match``). A detection can match an event when its peak gap, widened by
-  ``TOLERANCE_DAYS`` before the event and the late tolerance after it, overlaps the event's window
-  and its step fits the event's ``expected_sign``. Each detection goes to its nearest such event,
-  centre to centre (ties to the earlier event), and to no other. When several detections pick one
-  event, the nearest gets it (ties to the earlier detection) and the others match nothing. So a
-  second detection of one step is never credited with a neighbouring event (QZSS events have no
-  expected sign). Targets are matched first; a leftover detection that matches an attitude line or
-  an unplanned ISS event by the same rule is dropped, neither a hit nor a false alarm.
-* **North-south hits need the inclination channel.** A GEO ``NS`` event is a hit only when the
-  detection it is matched to carries the inclination channel (``Detection.channel`` names ``i``).
-  A semi-major-axis detection matched to it stays matched for one-to-one purposes (it is neither
-  a duplicate nor a false alarm, and no other detection can take the event), but the event is a
-  miss in every subset. QZS-3 usually fires an east-west burn about a day after a north-south one,
-  and QZSS events carry no expected sign, so a semi-major-axis step of east-west size can sit
-  nearest the north-south burn; such a detection saw the east-west burn, not the north-south one.
-  ``wrong_channel`` counts these events. ``EW+NS`` events keep the old rule: they count toward
-  neither target, and their semi-major-axis step is the east-west part.
-
-Per group and period:
-
-* Recall = matched / covered events, with a 95% Wilson interval. An event the reference covers
-  stays in the denominator whatever the setting scores, and is a miss unless a detection matches
-  it. ``recall_all_events`` is every matched event, covered or not, over all events; it shows gains
-  on events the reference cannot cover (no IGSO event is covered). LEO also reports recall on
-  events whose merged ``|delta_a_est_m|`` is at least 50 m. A burn/counter-burn pair is judged by
-  its net estimate, which is what a TLE sees, so a pair whose rows are each 50 m or more but whose
-  net is smaller is left out; an event without an estimate (none in the IDS logs; every Fengyun
-  line) is in the all-events recall and left out of that subset. GEO splits events by kind; an
-  east-west and a north-south burn merged under 12 h apart (``EW+NS``) is its own subset and counts
-  toward neither the EW nor the NS target.
-* False alarms per object-year on log-covered time with no logged burn. The covered span is the
-  log's coverage (``log_coverage``) clipped to the period. Every logged event, attitude lines and
-  other periods' events included, removes the zone in which a detection could match it,
-  ``[start - TOLERANCE_DAYS, end + late]``; what is left is the no-burn time. Exposure is the part
-  of it that the reference or the setting scores (the union of the two). Time neither scores
-  cannot hold a detection, so it is left out. QZS-4 is the large case: it has about one element
-  set a day, so 4 sets often span more than 3 days, and none for 3-5 days after each burn, so
-  only 0.41 (train) and 0.23 (dev) of its no-burn time is scored. Time the reference scores stays
-  in when a setting declines to score it, so marking noisy gaps unscored cannot lower the rate,
-  and time only the setting scores is added, so its detections there are counted. ``scored_fraction`` is
-  exposure over no-burn time. A false alarm is an unmatched detection whose peak gap lies wholly
-  inside one exposure stretch. Pooled over the group: false alarms / object-years of exposure.
-* Duplicates: unmatched detections, not false alarms, whose peak gap overlaps a logged burn's
-  match zone. A burn is there, so they are not false alarms, and the one-to-one rule gives the
-  burn to another detection or to none, so they are not hits. They are counted per group so that
-  lowering ``nms_days`` or ``z_min`` near burns does not look free.
-
-The ISS lists are lower bounds, not operator logs, so the ISS false-alarm rate is reported but
-not checked against the target. Fengyun is reported and never checked (``groundtruth/README.md``).
-"""
+# The frozen evaluation of the step detector per regime, the score every hill-climb round reports.
+# Coverage, exposure, matching and counting live here so no detector or setting change can move them.
 
 from __future__ import annotations
 
@@ -111,24 +30,17 @@ LEO_MIN_DELTA_A_M = 50.0
 FA_MAX_PER_OBJECT_YEAR = 1.0
 GROUP_ORDER = ("LEO", "GEO", "IGSO", "ISS", "GEO-Fengyun")
 SETTING_KEY = {"LEO": "LEO", "GEO": "GEO", "IGSO": "IGSO", "ISS": "ISS", "GEO-Fengyun": "GEO"}
-# (group, subset) -> minimum recall. FA <= 1 per object-year is checked for every group in FA_CHECKED.
 RECALL_TARGETS = {("LEO", ">=50 m"): 0.9, ("GEO", "EW"): 0.9, ("GEO", "NS"): 0.8, ("ISS", "all"): 0.95}
 FA_CHECKED = ("LEO", "GEO", "IGSO")
-# Subsets whose events only an inclination-channel detection can hit (module docstring).
 INC_ONLY_SUBSETS = ("NS",)
-# The coverage reference: score_gaps' gap rule at k=4 with the limits FROZEN was calibrated with
-# (generalise.MAX_SPAN_DAYS / MAX_GAP_DAYS at 3ca08ab), copied so that no detector change moves it.
 REF_K = 4
 REF_MAX_SPAN_DAYS = 3.0
 REF_MAX_GAP_DAYS = 2.0
 _DAY = np.timedelta64(86_400_000_000, "us")
-_Gaps = namedtuple("_Gaps", "start end valid")  # what generalise.covered reads
+_Gaps = namedtuple("_Gaps", "start end valid")
 
-
-# ---------------------------------------------------------------- arithmetic
 
 def wilson(k: int, n: int, z: float = Z95) -> tuple[float, float] | None:
-    """95% Wilson score interval for k successes in n trials (None when n == 0)."""
     if n == 0:
         return None
     p = k / n
@@ -139,7 +51,6 @@ def wilson(k: int, n: int, z: float = Z95) -> tuple[float, float] | None:
 
 
 def recall(matched: int, covered_n: int, events: int, matched_all: int | None = None) -> dict:
-    """``matched`` counts covered events only; ``matched_all`` (default ``matched``) every event."""
     matched_all = matched if matched_all is None else matched_all
     ci = wilson(matched, covered_n)
     return {"events": events, "covered": covered_n, "matched": matched, "matched_all": matched_all,
@@ -154,7 +65,6 @@ def fa_rate(false_alarms: int, object_years: float) -> float | None:
 
 
 def subtract(span: tuple, zones: list[tuple]) -> list[tuple]:
-    """``span`` (lo, hi) minus the union of ``zones``, as sorted disjoint (lo, hi) stretches."""
     lo, hi = span
     out, cur = [], lo
     for zl, zh in sorted(zones):
@@ -174,13 +84,7 @@ def years(stretches: list[tuple]) -> float:
     return sum((b - a) / _DAY for a, b in stretches) / YEAR_DAYS
 
 
-# ---------------------------------------------------------------- reference and matching
-
 def reference_scored(epochs: np.ndarray) -> np.ndarray:
-    """Per gap (index ``i``: epochs ``i`` to ``i + 1``), whether the coverage reference scores it:
-    the ``REF_K`` epochs on each side span at most ``REF_MAX_SPAN_DAYS`` and the gap is at most
-    ``REF_MAX_GAP_DAYS`` long. Same arithmetic as ``score_gaps``, so it equals
-    ``score_gaps(series, REF_K, REF_MAX_SPAN_DAYS, REF_MAX_GAP_DAYS).valid`` while that rule holds."""
     n, k = len(epochs), REF_K
     out = np.zeros(max(n - 1, 0), dtype=bool)
     if n < 2 * k:
@@ -199,20 +103,6 @@ def _us(t) -> np.ndarray:
 
 def match(events, dets: list[Detection], tol_days: float = TOLERANCE_DAYS,
           late_days: float | None = None) -> dict[int, int]:
-    """One-to-one event index -> detection index, by each detection's peak gap (module docstring).
-
-    A detection can match an event when its peak gap, widened by ``tol_days`` before the event and
-    ``late_days`` (default ``tol_days``) after it, overlaps the event's window and its step fits
-    ``expected_sign``. Each detection takes its nearest such event, centre to centre (ties to the
-    earlier event), and no other; an event picked by several detections goes to the nearest (ties
-    to the earlier detection), and the others match nothing.
-
-    Two events with identical windows tie on distance and on start, and the one earlier in
-    ``events`` (the loader's order) wins. Every detection eligible for both picks it, so the other
-    can be matched only by a detection whose step sign fits it and not the first, and with the same
-    expected sign it stays unmatched. No train object has such a pair among its target or its
-    excluded events, so the rule has not decided any score; the holdout objects were not checked.
-    """
     if not events or not dets:
         return {}
     tol = int(tol_days * 86_400e6)
@@ -234,8 +124,6 @@ def match(events, dets: list[Detection], tol_days: float = TOLERANCE_DAYS,
     return out
 
 
-# ---------------------------------------------------------------- objects
-
 @dataclass
 class Obj:
     norad: int
@@ -243,8 +131,8 @@ class Obj:
     group: str
     source: str
     series: object
-    events: list  # scoring targets
-    excluded: list  # attitude lines and unplanned ISS events: not targets, their matches dropped
+    events: list
+    excluded: list
     coverage: tuple
     late_days: float | None
     _scores: dict = field(default_factory=dict)
@@ -261,7 +149,6 @@ class Obj:
         return self._scores["ref"]
 
     def detections(self, s: Setting) -> list[Detection]:
-        """``detect.pick_setting`` at ``s`` on this object's cached scores."""
         return pick_setting(self.scores(s.k), self.scores(s.k, "i") if s.inc_channel else None, s)
 
 
@@ -295,21 +182,18 @@ def _tol(days: float) -> np.timedelta64:
 
 
 def subset_of(obj: Obj, e) -> list[str]:
-    """The table subsets an event counts in, besides 'all'."""
     if obj.group == "LEO":
         return [">=50 m"] if e.delta_a_est_m is not None and abs(e.delta_a_est_m) >= LEO_MIN_DELTA_A_M else []
     if obj.group in ("GEO", "GEO-Fengyun"):
-        return [e.kind] if e.kind in ("EW", "NS", "EW+NS") else []  # EW+NS: merged under 12 h
+        return [e.kind] if e.kind in ("EW", "NS", "EW+NS") else []
     return []
 
 
 def counts_as_hit(obj: Obj, e, d: Detection) -> bool:
-    """Whether matching ``d`` to ``e`` is a hit: an NS event needs a detection on the inclination channel."""
     return "i" in d.channel.split("+") or not set(subset_of(obj, e)) & set(INC_ONLY_SUBSETS)
 
 
 def _check_peaks(obj: Obj, dets: list[Detection]) -> None:
-    """Every peak must be one gap of the series: two consecutive epochs."""
     ep = obj.series.epochs
     for d in dets:
         i = int(np.searchsorted(ep, d.peak_start))
@@ -318,8 +202,7 @@ def _check_peaks(obj: Obj, dets: list[Detection]) -> None:
 
 
 def score_object(obj: Obj, s: Setting, lo: np.datetime64, hi: np.datetime64) -> dict:
-    """One object in one period [lo, hi)."""
-    in_p = lambda t: lo <= t < hi  # noqa: E731
+    in_p = lambda t: lo <= t < hi
     ev = [e for e in obj.events if in_p(_mid(e))]
     exc = [e for e in obj.excluded if in_p(_mid(e))]
     dets: list[Detection] = [d for d in obj.detections(s) if in_p(d.peak_start)]
@@ -335,7 +218,7 @@ def score_object(obj: Obj, s: Setting, lo: np.datetime64, hi: np.datetime64) -> 
     tol, late = _tol(TOLERANCE_DAYS), _tol(TOLERANCE_DAYS if obj.late_days is None else obj.late_days)
     span = (max(lo, obj.coverage[0]), min(hi, obj.coverage[1]))
     zones = [(e.lo - tol, e.hi + late) for e in obj.events + obj.excluded]
-    scored = ref.valid | obj.scores(s.k).valid  # exposure: the reference's scored time and the setting's
+    scored = ref.valid | obj.scores(s.k).valid
     if span[0] < span[1]:
         no_burn = subtract(span, zones)
         unscored = subtract(span, list(zip(ref.start[scored], ref.end[scored])))
@@ -378,8 +261,6 @@ def score_object(obj: Obj, s: Setting, lo: np.datetime64, hi: np.datetime64) -> 
     }
 
 
-# ---------------------------------------------------------------- run
-
 def _commit() -> dict:
     def git(*a):
         return subprocess.run(["git", *a], cwd=HERE, capture_output=True, text=True).stdout.strip()
@@ -418,7 +299,7 @@ def evaluate(split: str, settings_path: Path, data_dir: Path, truth_dir: Path = 
                              "element_sets": len(obj.series), **r,
                              "object_years": round(r["object_years"], 4),
                              "no_burn_years": round(r["no_burn_years"], 4)}
-        if not final:  # no per-event detail for the holdout: the test score is a count, not a guide
+        if not final:
             per_obj[obj.name].update(detail)
         g = pooled.setdefault(obj.group, {"objects": [], "subsets": {}, "false_alarms": 0, "duplicates": 0,
                                           "wrong_channel": 0, "object_years": 0.0, "no_burn_years": 0.0})
@@ -495,7 +376,7 @@ def table(res: dict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="The frozen evaluation of the step detector, per regime: the score every hill-climb round reports.")
     p.add_argument("--split", choices=("train", "dev", "test"), default="dev")
     p.add_argument("--final", action="store_true", help="required for --split test (holdout objects)")
     p.add_argument("--settings", type=Path, default=DEFAULT_SETTINGS)

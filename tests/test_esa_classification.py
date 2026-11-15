@@ -8,7 +8,6 @@ _spec = importlib.util.spec_from_file_location("esa_classification", _PATH)
 esa = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(esa)
 
-# Laid out like pdftotext -layout output of ESA's issue 21, section 3.
 SECTION_3 = """\
 3  CLASSIFICATION SUMMARY
 1963-031A Syncom 2 (in the text before the table)    I        1.    p. 191
@@ -25,9 +24,6 @@ COSPAR Name                                          Status   nn    Page
 
 
 def test_section_3_rows_count_only_when_the_page_lies_in_their_class_chapter():
-    # 1966-053A says C1 but points at page 165, inside chapter D (97-167): the right-hand columns
-    # were shifted by a line, so the row is dropped. Rows split over two lines and rows outside
-    # the table are not read.
     assert esa.esa_classes(SECTION_3) == {"1963-031A": "I", "1964-047A": "D", "1965-028A": "L2"}
 
 
@@ -35,10 +31,10 @@ def test_main_sets_each_esa_class_beside_the_first_mode_of_2021(tmp_path, capsys
     (tmp_path / "i21.txt").write_text(SECTION_3, encoding="utf-8")
     (tmp_path / "segments.csv").write_text(
         "norad_id,start,end,mode\n"
-        "613,2021-01-01,2021-03-01,undetermined\n"  # Syncom 2: first determined segment counts
+        "613,2021-01-01,2021-03-01,undetermined\n"
         "613,2021-03-01,2026-01-01,inclined\n"
-        "858,2021-01-01,2026-01-01,librating_both\n"  # Syncom 3: ESA D
-        "1317,2021-08-01,2026-01-01,librating_105W\n",  # Early Bird: starts after 1 July 2021
+        "858,2021-01-01,2026-01-01,librating_both\n"
+        "1317,2021-08-01,2026-01-01,librating_105W\n",
         encoding="utf-8")
     manifest = {"objects": {"613": {"satcat": {"INTLDES": "1963-031A"}}, "858": {"satcat": {"INTLDES": "1964-047A"}},
                             "1317": {"satcat": {"INTLDES": "1965-028A"}}, "999": {}}}

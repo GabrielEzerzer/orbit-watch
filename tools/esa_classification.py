@@ -1,18 +1,5 @@
-"""ESA's per-object classes for 1 January 2019 beside our first mode of 2021.
-
-    pdftotext -layout -enc UTF-8 Classification_of_Geosynchronous_Objects_I21R0.pdf i21.txt
-    python tools/esa_classification.py i21.txt data/geo_modes/segments.csv
-
-The PDF is ESA Space Debris Office, *Classification of Geosynchronous Objects*, Issue 21.0
-(copy at https://astronomer.ru/data/0128/Classification_of_Geosynchronous_Objects_I21R0.pdf).
-Section 3 lists each object's COSPAR id, name, class (status), reference number and the page of
-its entry in section 4. A row counts only when all five sit on one line and the page falls inside
-the section 4 chapter of its class: in places pdftotext shifts the right-hand columns by a line,
-and the page check drops those rows instead of pairing an object with its neighbour's class.
-
-Objects are matched by COSPAR id to ``INTLDES`` in ``data/geo/manifest.json``. Our mode is the first
-determined (not undetermined) segment that starts before 1 July 2021. Prints a Markdown table.
-"""
+# ESA's per-object classes for 1 January 2019 beside our first mode of 2021, read from pdftotext -layout
+# output of ESA's Classification of Geosynchronous Objects, issue 21.
 
 from __future__ import annotations
 
@@ -23,7 +10,6 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
-# Section 4 chapter of each class: first page and the page after its last (ESA I21, contents).
 CHAPTERS = {"C1": (51, 83), "C2": (83, 96), "C4": (96, 97), "D": (97, 167), "L1": (167, 178),
             "L2": (178, 182), "L3": (182, 191), "I": (191, 193), "Ind": (193, 194)}
 OURS = {"C1": "controlled_lon_inc", "C2": "controlled_lon", "C4": "drifting", "D": "drifting",
@@ -33,7 +19,6 @@ _ROW = re.compile(r"^(\d{4}-\d{3}[A-Z]{1,3}) .*\s(C1|C2|C4|D|L1|L2|L3|I|Ind)\s+\
 
 
 def esa_classes(text: str) -> dict[str, str]:
-    """COSPAR id -> ESA class, from section 3 rows whose page lies in their class's chapter."""
     lines = text.splitlines()
     start = next(i for i, line in enumerate(lines) if line.startswith("COSPAR Name") and "Status" in line)
     end = next(i for i in range(start, len(lines)) if re.match(r"^\s*4\s+OBJECTS WITH EPHEMERIS", lines[i]))
@@ -46,7 +31,6 @@ def esa_classes(text: str) -> dict[str, str]:
 
 
 def first_modes(segments_csv: Path) -> dict[int, str]:
-    """NORAD id -> mode of the first determined segment that starts before 1 July 2021."""
     out: dict[int, str] = {}
     with open(segments_csv, encoding="utf-8") as f:
         for r in csv.DictReader(f):
@@ -66,7 +50,7 @@ def agreement(esa: dict[str, str], cospar_to_norad: dict[str, int], ours: dict[i
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="ESA's per-object classes for 1 January 2019 beside our first mode of 2021.")
     p.add_argument("esa_text", type=Path, help="pdftotext -layout -enc UTF-8 output of the Issue 21 PDF")
     p.add_argument("segments", type=Path, help="segments.csv from orbit_watch.jobs.geo_modes")
     p.add_argument("--manifest", type=Path, default=Path("data/geo/manifest.json"))

@@ -21,9 +21,9 @@ def test_three_line_name_and_mixed_two_line(mock_dir):
 
 
 def test_day_366_of_a_non_leap_year_rolls_into_next_year(mock_dir):
-    # Same case and expected epoch as sgp4's own test_december_32.
     second = parse_tle((mock_dir / "elements" / "iss.tle").read_text())[1]
-    assert second.epoch == datetime(2020, 1, 1, 19, 42, 47, 134368, tzinfo=timezone.utc)
+    assert second.epoch == datetime(2020, 1, 1, 19, 42, 47, 134368, tzinfo=timezone.utc), (
+        "same case and expected epoch as sgp4's own test_december_32")
 
 
 def test_space_track_zero_prefixed_name_line():
@@ -49,7 +49,6 @@ def test_blank_eccentricity_is_rejected_not_read_as_zero():
 
 
 def test_catalog_number_mismatch_is_rejected():
-    # Line 2 of a different object, with a valid checksum.
     other = "2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667"
     with pytest.raises(ValueError, match="catalog numbers"):
         parse_tle(f"{ISS_L1}\n{other}\n")
@@ -78,6 +77,5 @@ def test_fields_match_sgp4s_own_tle_reader(mock_dir):
 
 def test_iss_semi_major_axis():
     (rec,) = parse_tle(f"{ISS_L1}\n{ISS_L2}\n")
-    # ISS at ~410 km altitude; Brouwer mean a from SGP4 init, WGS72 radius.
     assert 6780 < rec.semi_major_axis_km < 6810
     assert rec.semi_major_axis_km == pytest.approx(Satrec.twoline2rv(ISS_L1, ISS_L2).a * 6378.135)

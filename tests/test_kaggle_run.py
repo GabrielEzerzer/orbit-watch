@@ -16,7 +16,7 @@ def test_kernel_embeds_the_archive_commit_and_command():
     archive = bytes(range(256)) * 3
     script, metadata = kaggle_run.build_kernel(archive, SHA, ["pytest", "-q"], "ow-suite")
     namespace = {"__name__": "not_main"}
-    exec(compile(script, "kernel.py", "exec"), namespace)  # defines, does not run
+    exec(compile(script, "kernel.py", "exec"), namespace)
     assert namespace["COMMIT"] == SHA
     assert namespace["COMMAND"] == ["pytest", "-q"]
     assert base64.b64decode(namespace["ARCHIVE_B64"]) == archive

@@ -1,23 +1,4 @@
-"""Run a command on Kaggle CPU against the exact commit at HEAD, and fetch what it wrote.
-
-    python tools/kaggle_run.py [--slug ow-suite] [--attach PATH ...] [--dataset OWNER/SLUG ...]
-                               [-- <command...>]
-                                                                    (default: pytest -q)
-
-The committed tree (``git archive HEAD``, without ``findings/``) is embedded in a private Kaggle script kernel with its
-commit SHA. On Kaggle the kernel unpacks it, runs ``pip install -e .[dev]`` and the command, and
-writes COMMIT.txt, run.log (stdout and stderr together), exit_code.txt and anything the command
-put under /kaggle/working/out. This script waits for the kernel, downloads those files to
-data/kaggle/<slug>/out, checks COMMIT.txt against the pushed SHA, prints the end of run.log and
-exits with the command's exit code.
-
-``--attach PATH`` (repeatable) embeds a local file that is not committed, such as git-ignored data,
-at the same relative path next to the source. The kernel writes ATTACHED.txt with the sha256 of
-each attached file as it unpacked it, and this script checks those hashes against the local files.
-
-``--dataset OWNER/SLUG`` (repeatable) mounts a Kaggle dataset read-only under /kaggle/input, so a
-job can read data too big to attach.
-"""
+# Run a command on Kaggle CPU against the exact commit at HEAD, and fetch what it wrote.
 
 from __future__ import annotations
 
@@ -32,15 +13,12 @@ import sys
 import time
 from pathlib import Path
 
-OWNER = "gabrielezerzer"  # the Kaggle account the authenticated CLI pushes to
+OWNER = "gabrielezerzer"
 REPO = Path(__file__).resolve().parents[1]
-SLUG_RE = re.compile(r"[a-z0-9][a-z0-9-]{4,49}")  # Kaggle wants titles of at least 5 characters
+SLUG_RE = re.compile(r"[a-z0-9][a-z0-9-]{4,49}")
 POLL_SECONDS = 30
-# shortcut: one fixed limit, under Kaggle's 12 h session cap so the outputs still get written; make
-# it an argument if a job ever needs a different one.
 COMMAND_TIMEOUT_SECONDS = 11 * 3600
 WAIT_LIMIT_SECONDS = 13 * 3600
-# findings/ holds result plots and tables, not code; leaving it out keeps the kernel under Kaggle's ~1 MB limit.
 ARCHIVE_PATHSPEC = (".", ":(exclude)findings")
 ACTIVE = {"queued", "running"}
 TERMINAL = {"complete", "error", "cancelacknowledged"}
@@ -118,11 +96,6 @@ def build_kernel(
     attach: dict[str, bytes] | None = None,
     datasets: list[str] | None = None,
 ) -> tuple[str, dict]:
-    """The kernel script and its kernel-metadata.json for a gzipped tar of the tree at ``sha``.
-
-    ``attach`` maps repo-relative POSIX paths to the contents of extra files to place there;
-    ``datasets`` are Kaggle ``owner/slug`` datasets to mount under /kaggle/input.
-    """
     attach = attach or {}
     datasets = datasets or []
     for ref in datasets:
@@ -138,7 +111,6 @@ def build_kernel(
         raise ValueError(f"not a full commit SHA: {sha!r}")
     if not command:
         raise ValueError("empty command")
-    # Git Bash turns a '/kaggle/working/out' argument into 'C:/Program Files/Git/kaggle/...'.
     converted = [a for a in command if re.match(r"[A-Za-z]:[/\\]", a)]
     if converted:
         raise ValueError(
@@ -160,7 +132,7 @@ def build_kernel(
         "is_private": True,
         "enable_gpu": False,
         "enable_tpu": False,
-        "enable_internet": True,  # pip install needs PyPI
+        "enable_internet": True,
         "dataset_sources": list(datasets),
         "competition_sources": [],
         "kernel_sources": [],
@@ -181,7 +153,6 @@ def kaggle(*args: str) -> str:
 
 
 def status(ref: str) -> str:
-    """'queued', 'running', 'complete', 'error', ... from `kaggle kernels status`."""
     out = kaggle("kernels", "status", ref)
     match = re.search(r'status "(?:KernelWorkerStatus\.)?(\w+)"', out)
     if not match:
@@ -190,7 +161,7 @@ def status(ref: str) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser = argparse.ArgumentParser(description="Run a command on Kaggle CPU against the exact commit at HEAD, and fetch what it wrote.")
     parser.add_argument("--slug", default="ow-suite")
     parser.add_argument("--attach", action="append", default=[], metavar="PATH",
                         help="an uncommitted file to place at the same relative path (repeatable)")
@@ -224,13 +195,10 @@ def main() -> int:
     print(f"pushing {sha[:12]} to {ref}: {' '.join(command)}")
     pushed = kaggle("kernels", "push", "-p", str(push)).strip()
     print(pushed)
-    # The CLI exits 0 on some refusals, e.g. "Kernel push error: Maximum batch CPU session count".
     if "successfully pushed" not in pushed:
         sys.exit("kaggle kernels push did not report a successful push; nothing was run")
     print(f"https://www.kaggle.com/code/{ref}")
 
-    # Right after a push the status can still be the previous version's; only a terminal status
-    # seen after an active one (or long after the push) belongs to this run. COMMIT.txt confirms it.
     started, seen_active, last = time.monotonic(), False, None
     while True:
         state = status(ref)

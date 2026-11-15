@@ -1,32 +1,5 @@
-"""Score the frozen ISS detector on Space-Track gp_history, then retune it with every label.
-
-    python -m orbit_watch.holdout \\
-        --gp data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json \\
-        --archive data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out findings
-
-``--truth`` takes one or more event files (``calibrate.load_truth``).
-
-Three runs, all with calibrate.py's matching, coverage and precision rules (``match``,
-``covered``, ``evaluate``) and its grid and choice rule (``choose_setting``):
-
-1. Holdout. The setting calibrate.py froze on the archive's 2021-2022 (k=4, |z|>=12,
-   |step|>=200 m, NMS 1 day) scores Space-Track 2024-2025 once. Nothing was tuned on 2024-2025.
-2. Source check. The same setting on Space-Track 2021-2022 and 2023, next to the archive.
-3. Leave-one-year-out cross-validation over 2021-2025 on Space-Track: choose the setting on four
-   years, score the fifth. Then the setting chosen on all five years, which is in-sample.
-
-As in calibrate.py, the detector runs once over the whole series of a source and each period is
-scored through masks: an event belongs to the year of its ``date_utc``, a detection to the year of
-the epoch before its step. The noise floor (half the median sigma) is therefore taken over the
-whole 2021-2025 Space-Track series; it uses no labels.
-
-Space-Track restates element sets. Records whose epochs are under ``SAME_EPOCH_S``
-(``series.MIN_EPOCH_GAP_S``, 60 s) after the previous one are one element set, and the latest
-issued (highest ``GP_ID``) is kept, whichever epoch it carries. Exact repeats of an epoch and
-reissues whose epoch differs by a few milliseconds both occur, and a few pairs are 10-60 s apart.
-The kept sets are then at least 60 s apart, so ``to_series``' own 60 s collapse (later epoch
-wins) leaves them as they are.
-"""
+# Score the frozen ISS detector on Space-Track gp_history 2024-2025, check it against the archive
+# source, and run leave-one-year-out cross-validation over 2021-2025.
 
 from __future__ import annotations
 
@@ -65,8 +38,6 @@ SAME_EPOCH_S = MIN_EPOCH_GAP_S
 
 
 def dedupe_gp_rows(rows: list[dict]) -> tuple[list[dict], dict]:
-    """One row per element set: a run of epochs each under ``SAME_EPOCH_S`` after the previous one
-    collapses to its highest ``GP_ID`` (issue order wins over epoch order)."""
     for r in rows:
         if not isinstance(r, dict) or not str(r.get("GP_ID", "")).isdigit() or not r.get("EPOCH"):
             raise ValueError(f"GP record without a numeric GP_ID and an EPOCH: {r!r:.200}")
@@ -92,7 +63,7 @@ def load_gp_history(path: Path):
         raise ValueError(f"{path}: gp_history JSON must be a list of records")
     kept, stats = dedupe_gp_rows(rows)
     series = to_series(parse_omm_json(json.dumps(kept)))[ISS]
-    assert len(series) == len(kept)  # kept sets are >= MIN_EPOCH_GAP_S apart: to_series drops none
+    assert len(series) == len(kept)
     return series, stats
 
 
@@ -101,13 +72,11 @@ def year_of(t: np.datetime64) -> int:
 
 
 def period_masks(events, dets, years):
-    """calibrate.py's period rule: event by ``date_utc``, detection by the epoch before the step."""
     ys = set(years)
     return [int(e.date_utc[:4]) in ys for e in events], [year_of(d.start) in ys for d in dets]
 
 
 def loyo_folds(years):
-    """Leave-one-year-out: (training years, held-out year) for each year."""
     return [(tuple(y for y in years if y != test), test) for test in years]
 
 
@@ -117,7 +86,6 @@ def per_year_counts(series, years):
 
 
 def _counts(res):
-    """The numbers that pool across folds: true positives, scored detections, matched, covered."""
     return {"tp": res["true_positives"], "scored_detections": res["true_positives"] + res["false_positives"],
             "matched": res["matched"], "covered": res["covered"], "events": res["events"]}
 
@@ -130,8 +98,6 @@ def _pool(rows):
 
 
 class Scored:
-    """One source: the series, its events and the per-k gap scores, scored by setting and period."""
-
     def __init__(self, series, all_events):
         self.series = series
         first, last = series.epochs[0], series.epochs[-1]
@@ -177,9 +143,7 @@ def run(gp: Path, archive: Path, truth: list[Path], out: Path) -> dict:
     ar = Scored(to_series(parse_tle(archive.read_text(encoding="utf-8")))[ISS], all_events)
     k = FROZEN["k"]
 
-    # 1. Holdout, scored once.
     hold, hd = st.score(FROZEN, HOLDOUT_YEARS)
-    # The frozen setting over every year, for the committed tables and the source check.
     periods = ((2021, 2022), (2023,), (2024,), (2025,))
     labels = {y: _label(p) for p in periods for y in p}
     _, alld = st.score(FROZEN, YEARS)
@@ -194,7 +158,6 @@ def run(gp: Path, archive: Path, truth: list[Path], out: Path) -> dict:
     plot(st.series, st.events, alld["cover"], alld["m_main"], alld["m_unpl"], alld["dets"],
          hout / "iss_sma_2024_2025.png", years=HOLDOUT_YEARS)
 
-    # 2. Source check: the frozen setting on both sources, 2021-2022 and 2023.
     def source(sc: Scored, name, path, extra):
         row = {"file": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), **extra,
                "element_sets_used": len(sc.series), "first_epoch": _iso(sc.series.epochs[0]),
@@ -228,7 +191,6 @@ def run(gp: Path, archive: Path, truth: list[Path], out: Path) -> dict:
     }
     (hout / "report.json").write_text(json.dumps(holdout_report, indent=2) + "\n", encoding="utf-8")
 
-    # 3. Leave-one-year-out CV, then the in-sample choice on all five years.
     folds, rows, ev_rows_all, det_rows_all = [], [], [], []
     for train, test in loyo_folds(YEARS):
         setting = st.choose(train)
@@ -293,7 +255,7 @@ def plot_cv(folds, pooled, insample, path: Path) -> None:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Score the frozen ISS detector on Space-Track gp_history, then retune it with every label.")
     p.add_argument("--gp", type=Path, required=True)
     p.add_argument("--archive", type=Path, required=True)
     p.add_argument("--truth", type=Path, nargs="+", required=True)

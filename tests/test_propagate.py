@@ -11,7 +11,6 @@ ISS_L2 = "2 25544  51.6439 211.2001 0007417  17.6667  85.6398 15.50103472202482"
 
 
 def _tcppver(path):
-    """{norad id: [(tsince min, r km, v km/s), ...]} from Vallado's tcppver.out format."""
     blocks, current = {}, None
     for line in path.read_text().splitlines():
         fields = line.split()
@@ -32,14 +31,13 @@ def test_matches_vallado_verification_vectors(mock_dir):
         rec = records[norad_id]
         times = [rec.epoch + timedelta(minutes=tsince) for tsince, _, _ in rows]
         r, v = propagate(rec, times)
-        # Same tolerance sgp4's own test suite uses against this file.
-        np.testing.assert_allclose(r, [row[1] for row in rows], rtol=0, atol=2e-7)
+        np.testing.assert_allclose(r, [row[1] for row in rows], rtol=0, atol=2e-7,
+                                   err_msg="sgp4's own test suite uses this tolerance against this file")
         np.testing.assert_allclose(v, [row[2] for row in rows], rtol=0, atol=2e-7)
 
 
 def test_matches_sgp4_readme_example():
     (rec,) = parse_tle(f"{ISS_L1}\n{ISS_L2}\n")
-    # README: jd 2458826.5 + fr 0.8625 is 2019-12-09 20:42:00 UTC.
     r, v = propagate(rec, [datetime(2019, 12, 9, 20, 42, tzinfo=timezone.utc)])
     np.testing.assert_allclose(r[0], [-6088.92, -936.13, -2866.44], atol=0.01)
     np.testing.assert_allclose(v[0], [-1.525, -5.538, 5.068], atol=0.001)
@@ -47,7 +45,6 @@ def test_matches_sgp4_readme_example():
 
 def test_sgp4_error_raises():
     (rec,) = parse_tle(f"{ISS_L1}\n{ISS_L2}\n")
-    # Synthetic: an absurd drag term makes the orbit decay inside SGP4.
     doomed = replace(rec, bstar=0.5)
     with pytest.raises(PropagationError, match="SGP4 error"):
         propagate(doomed, [rec.epoch + timedelta(days=30)])

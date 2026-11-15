@@ -1,21 +1,5 @@
-"""TLE history of every object in the GEO region, from yearly full-catalogue TLE bundles.
-
-    python -m orbit_watch.jobs.geo_belt build --source TEXT --bundle PATH_OR_GLOB [...] --out DIR_OR_ZIP
-    hush run -- python -m orbit_watch.jobs.geo_belt satcat --out DIR
-
-``build`` streams the bundles (TLE text, 2-line or 3-line, as ``.txt`` files or inside ``.zip``
-files) twice, never holding a whole bundle in memory. The first pass picks the objects that meet
-``RULE`` in the period; the second keeps every element set those objects have in the period,
-including ones outside the region (a transfer orbit before arrival, a graveyard orbit after it).
-Each pair is checked with ``elements.parse_tle`` and de-duplicated by epoch the way
-``series.to_series`` does it (a later record with the same epoch wins). It writes ``<norad>.tle``
-per object (2-line TLEs in epoch order) and ``manifest.json``, into a directory, or into one zip
-when ``--out`` ends in ``.zip`` (a Kaggle kernel should not write thousands of output files).
-
-``satcat`` adds each object's Space-Track SATCAT entry (type, launch, decay) to an existing
-``manifest.json`` in a directory, with one full-catalogue SATCAT query cached under
-``data/spacetrack`` beside the output directory.
-"""
+# TLE history of every object in the GEO region, streamed from yearly full-catalogue TLE bundles
+# in two passes, plus the SATCAT fields of the selected objects.
 
 from __future__ import annotations
 
@@ -35,7 +19,7 @@ from orbit_watch.elements import parse_tle
 from orbit_watch.jobs.extract_tle_archive import _catnr, _iso
 
 START = datetime(2021, 1, 1, tzinfo=timezone.utc)
-END = datetime(2026, 1, 1, tzinfo=timezone.utc)  # exclusive
+END = datetime(2026, 1, 1, tzinfo=timezone.utc)
 RULE = {
     "text": (
         "An object is in the GEO region if any of its element sets with an epoch in the period has "
@@ -51,7 +35,6 @@ SATCAT_FIELDS = ("OBJECT_NAME", "OBJECT_TYPE", "INTLDES", "COUNTRY", "LAUNCH", "
 
 
 def in_geo_region(mean_motion: float, eccentricity: float, inclination: float) -> bool:
-    """``RULE`` for one element set (rev/day, dimensionless, degrees)."""
     low, high = RULE["mean_motion_rev_per_day"]
     return (
         low <= mean_motion <= high
@@ -61,7 +44,6 @@ def in_geo_region(mean_motion: float, eccentricity: float, inclination: float) -
 
 
 def bundle_paths(patterns: Iterable[str]) -> list[Path]:
-    """Files named by paths or recursive globs, in the order given; each must match something."""
     paths: list[Path] = []
     for pattern in patterns:
         if glob.has_magic(pattern):
@@ -75,7 +57,6 @@ def bundle_paths(patterns: Iterable[str]) -> list[Path]:
 
 
 def bundle_lines(path: Path) -> Iterator[str]:
-    """The text lines of a ``.txt`` bundle, or of every ``.txt`` member of a ``.zip``, streamed."""
     if path.suffix.lower() != ".zip":
         with open(path, encoding="ascii", errors="replace") as f:
             yield from f
@@ -91,25 +72,18 @@ def bundle_lines(path: Path) -> Iterator[str]:
 
 @dataclass
 class LineCount:
-    lines: int = 0  # non-blank lines read
-    pairs: int = 0  # line 1 / line 2 pairs found by layout (not yet checked by the parser)
-    rejected_lines: int = 0  # non-blank lines that are not part of a pair or a name line before one
+    lines: int = 0
+    pairs: int = 0
+    rejected_lines: int = 0
 
 
 def tle_pairs(lines: Iterable[str], count: LineCount) -> Iterator[tuple[str | None, str, str]]:
-    """(name or None, line 1, line 2) for each pair laid out as in ``parse_tle``; counts the rest.
-
-    A line 1 and line 2 are 69 characters starting ``1 `` and ``2 ``. A line directly before a
-    line 1 that does not start with ``1 `` or ``2 `` is its name (a leading ``0 `` removed). Every
-    other non-blank line is rejected, such as the 68-character analyst-object lines (catalog
-    numbers 8xxxx) in the Kaggle mirror's 2025 file. One trailing backslash on a line 1 is dropped.
-    """
-    name: str | None = None  # a candidate name line, not yet followed by a line 1
+    name: str | None = None
     line1: str | None = None
     for raw in lines:
         line = raw.rstrip()
         if len(line) == 70 and line.startswith("1 ") and line.endswith("\\"):
-            line = line[:-1]  # the mirror's 2021, 2022 and 2024 files end every line 1 with a backslash
+            line = line[:-1]
         if not line:
             continue
         count.lines += 1
@@ -121,11 +95,11 @@ def tle_pairs(lines: Iterable[str], count: LineCount) -> Iterator[tuple[str | No
                 yield name, line1, line
                 name, line1 = None, None
                 continue
-            count.rejected_lines += 1 + (name is not None)  # the orphan line 1 and its name
+            count.rejected_lines += 1 + (name is not None)
             name, line1 = None, None
         if is_line1:
             line1 = line
-        elif line.startswith(("1 ", "2 ")):  # a stray or malformed element line is never a name
+        elif line.startswith(("1 ", "2 ")):
             count.rejected_lines += 1 + (name is not None)
             name = None
         else:
@@ -135,13 +109,11 @@ def tle_pairs(lines: Iterable[str], count: LineCount) -> Iterator[tuple[str | No
 
 
 def select(paths: Iterable[Path], start: datetime = START, end: datetime = END) -> tuple[set[int], dict[Path, LineCount]]:
-    """Pass 1: the catalog numbers with at least one valid element set in the period inside ``RULE``."""
     selected: set[int] = set()
     counts: dict[Path, LineCount] = {}
     for path in paths:
         count = counts[path] = LineCount()
         for _name, line1, line2 in tle_pairs(bundle_lines(path), count):
-            # Same columns parse_tle reads, so this pre-check never drops a set the parser keeps.
             try:
                 inside = in_geo_region(float(line2[52:63]), float("0." + line2[26:33]), float(line2[8:16]))
             except ValueError:
@@ -160,17 +132,16 @@ def select(paths: Iterable[Path], start: datetime = START, end: datetime = END) 
 
 @dataclass
 class ObjectHistory:
-    lines: dict[datetime, tuple[str, str]] = field(default_factory=dict)  # epoch -> (line 1, line 2)
-    names: list[str] = field(default_factory=list)  # distinct name lines, first seen first
-    in_region: set[datetime] = field(default_factory=set)  # epochs whose kept set meets RULE
-    invalid: int = 0  # pairs the parser rejected
-    conflicts: int = 0  # pairs restating a held epoch with different lines (the later one kept)
+    lines: dict[datetime, tuple[str, str]] = field(default_factory=dict)
+    names: list[str] = field(default_factory=list)
+    in_region: set[datetime] = field(default_factory=set)
+    invalid: int = 0
+    conflicts: int = 0
 
 
 def collect(
     paths: Iterable[Path], selected: set[int], start: datetime = START, end: datetime = END
 ) -> dict[int, ObjectHistory]:
-    """Pass 2: every valid element set of the selected objects with an epoch in the period."""
     histories = {norad: ObjectHistory() for norad in selected}
     for path in paths:
         for name, line1, line2 in tle_pairs(bundle_lines(path), LineCount()):
@@ -205,11 +176,6 @@ def _sha256(path: Path) -> str:
 def build(
     source: str, paths: list[Path], start: datetime = START, end: datetime = END, also: Iterable[int] = ()
 ) -> dict[str, str]:
-    """Output file name -> contents: ``<norad>.tle`` per selected object and ``manifest.json``.
-
-    ``also`` adds objects outside the rule (e.g. LEO calibration satellites); each object's
-    ``by_rule`` says whether the rule selected it.
-    """
     by_rule, counts = select(paths, start, end)
     selected = by_rule | set(also)
     histories = collect(paths, selected, start, end)
@@ -259,7 +225,6 @@ def build(
 
 
 def write(files: dict[str, str], out: Path) -> None:
-    """Into directory ``out``, or into the zip ``out`` when it ends in ``.zip``."""
     if out.suffix.lower() == ".zip":
         out.parent.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -272,7 +237,6 @@ def write(files: dict[str, str], out: Path) -> None:
 
 
 def add_satcat(manifest: dict, rows: Iterable[dict], query: str) -> dict:
-    """``manifest`` with each object's SATCAT fields under ``satcat`` (None if the catalogue lacks it)."""
     by_norad = {str(int(r["NORAD_CAT_ID"])): r for r in rows}
     missing = 0
     for norad, entry in manifest["objects"].items():
@@ -284,7 +248,7 @@ def add_satcat(manifest: dict, rows: Iterable[dict], query: str) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser = argparse.ArgumentParser(description="TLE history of every object in the GEO region, from yearly full-catalogue TLE bundles.")
     commands = parser.add_subparsers(dest="command", required=True)
     build_cmd = commands.add_parser("build", help="select GEO-region objects from bundles and write their TLEs")
     build_cmd.add_argument("--source", required=True, help="where the bundles came from (a URL), for the manifest")

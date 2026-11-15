@@ -22,6 +22,14 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Comment-ban lint
+        env:
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          git fetch --no-tags --depth=1 origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"
+          python3 -m venv "$RUNNER_TEMP/lint"
+          "$RUNNER_TEMP/lint/bin/pip" install --quiet ast-grep-cli==0.51.1
+          PATH="$RUNNER_TEMP/lint/bin:$PATH" python3 setup/lint/ratchet --base "origin/$BASE"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

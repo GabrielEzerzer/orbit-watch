@@ -1,21 +1,5 @@
-"""Operating modes of every GEO-region object, 2021-2025 (``orbit_watch.modes`` over the belt).
-
-    python -m orbit_watch.jobs.geo_modes --geo-dir data/geo --out data/geo_modes
-
-Reads ``<geo-dir>/manifest.json`` and one ``<norad>.tle`` per object. Objects the manifest marks
-``by_rule: false`` (LEO calibration satellites) are skipped, and so are holdout objects of
-``groundtruth/splits.json``, taken from ``truth.load_splits`` before any file is opened.
-
-Writes ``<out>/segments.csv`` (one row per mode segment; big, keep it under the git-ignored
-``data/``) and, under ``--summary-dir`` (default ``findings/geo_modes``):
-
-* ``year_end_counts.csv``: objects per mode in the segment that holds 31 December 12:00 UTC of
-  each year 2021-2025; ``no_data`` counts objects whose history does not reach that instant;
-* ``transitions_per_object.csv``: how many objects have 0, 1, 2, ... mode changes, counted over
-  all segments and again with undetermined segments dropped (neighbours then merge);
-* ``transition_types.csv``: mode changes by (from, to), both ways of counting;
-* ``summary.json``: object counts, skips and the run time.
-"""
+# Operating modes of every GEO-region object, 2021-2025, from orbit_watch.modes over the belt.
+# Holdout objects and objects outside the rule are skipped before any file is opened.
 
 from __future__ import annotations
 
@@ -40,7 +24,6 @@ SEGMENT_FIELDS = ["norad_id", "start", "end", "mode", "windows", "n_sets", "lon_
 
 
 def object_segments(path: Path) -> list[Segment]:
-    # distinct_epochs keeps what to_series keeps and raises truth.HoldoutError for a holdout object.
     (recs,) = distinct_epochs(parse_tle(path.read_text(encoding="utf-8"))).values()
     return segments(track(recs))
 
@@ -57,7 +40,6 @@ def year_end_counts(by_object: dict[int, list[Segment]]) -> dict[int, Counter]:
 
 
 def without_undetermined(modes: list[str]) -> list[str]:
-    """The mode sequence with undetermined segments dropped and equal neighbours merged."""
     out: list[str] = []
     for m in modes:
         if m != "undetermined" and (not out or out[-1] != m):
@@ -82,7 +64,7 @@ def _fmt(x: float) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Operating modes of every GEO-region object, 2021-2025 (``orbit_watch.modes`` over the belt).")
     p.add_argument("--geo-dir", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True, help="directory for segments.csv (git-ignored)")
     p.add_argument("--summary-dir", type=Path, default=Path("findings/geo_modes"))

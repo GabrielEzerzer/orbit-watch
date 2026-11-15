@@ -1,20 +1,5 @@
-"""Element-set history from Space-Track's ``gp_history`` class. Off unless credentials are set.
-
-Written from Space-Track's public documentation and never run against the live API: log in with
-``POST /ajaxauth/login`` (form fields ``identity`` and ``password``), then query
-``/basicspacedata/query/class/gp_history/NORAD_CAT_ID/<id>/EPOCH/<a>--<b>/orderby/EPOCH asc/format/json``.
-
-Space-Track's rules, kept here: fewer than 30 requests a minute and 300 an hour, and
-``gp_history`` is "1 / lifetime": once an object's history is downloaded it is stored and never
-downloaded again. Every answer is therefore kept under ``data/spacetrack/`` with no expiry, and
-a query that is already on disk never reaches the network.
-
-``SpaceTrackSource.satcat`` makes one full-catalogue SATCAT query (Space-Track allows SATCAT once a
-day and asks for combined queries, not one per object) and keeps it on disk the same way.
-
-``SpaceTrackSource.from_env`` returns ``None`` unless both ``SPACETRACK_USER`` and
-``SPACETRACK_PASSWORD`` are set (they come from the hush vault through ``hush run``).
-"""
+# Element-set history from Space-Track's gp_history class, off unless credentials are set.
+# Under 30 requests a minute and 300 an hour; every answer is kept on disk and never fetched again.
 
 from __future__ import annotations
 
@@ -36,20 +21,16 @@ from orbit_watch.elements import ElementSet, parse_omm_json
 
 BASE_URL = "https://www.space-track.org"
 CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "spacetrack"
-LIMITS = ((60.0, 29), (3600.0, 299))  # (window seconds, most requests in it): under 30/min, 300/h
+LIMITS = ((60.0, 29), (3600.0, 299))
 
 
 class Session(Protocol):
-    """The two HTTP calls Space-Track needs. Implementations keep the login cookie."""
-
     def post(self, url: str, form: dict[str, str]) -> tuple[int, bytes]: ...
 
     def get(self, url: str) -> tuple[int, bytes]: ...
 
 
 class UrllibSession:
-    """``Session`` over urllib with a cookie jar; non-2xx answers come back as their status."""
-
     def __init__(self) -> None:
         self._opener = urllib.request.build_opener(
             urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
@@ -71,8 +52,6 @@ class UrllibSession:
 
 
 class RateLimiter:
-    """Sleeps before a request that would break any of ``LIMITS``."""
-
     def __init__(
         self,
         clock: Callable[[], float] = time.monotonic,
@@ -92,8 +71,6 @@ class RateLimiter:
 
 
 class SpaceTrackSource:
-    """``gp_history`` element sets with epochs from ``start`` to ``end`` (UTC dates, Space-Track's ``a--b`` range)."""
-
     def __init__(
         self,
         user: str,
@@ -115,7 +92,6 @@ class SpaceTrackSource:
 
     @classmethod
     def from_env(cls, start: date, end: date, **kwargs) -> SpaceTrackSource | None:
-        """A source using ``SPACETRACK_USER``/``SPACETRACK_PASSWORD``, or ``None`` if either is unset."""
         user, password = os.environ.get("SPACETRACK_USER"), os.environ.get("SPACETRACK_PASSWORD")
         if not user or not password:
             return None
@@ -126,7 +102,6 @@ class SpaceTrackSource:
         status, body = self.session.post(
             f"{BASE_URL}/ajaxauth/login", {"identity": self._user, "password": self._password}
         )
-        # The open-source `spacetrack` client treats this body as a refused login.
         if status != 200 or b'"Login":"Failed"' in body:
             raise PermissionError(f"Space-Track login refused (HTTP {status})")
         self._logged_in = True
@@ -163,11 +138,6 @@ class SpaceTrackSource:
         return records
 
     def satcat(self, fields: Iterable[str]) -> tuple[list[dict], str]:
-        """The whole SATCAT with these fields, and the query URL; one query, kept on disk for good.
-
-        Space-Track allows SATCAT once a day and asks for one combined query rather than one per
-        object. Delete ``satcat-<fields>.json`` under the cache directory to fetch a newer one.
-        """
         fields = list(fields)
         url = (
             f"{BASE_URL}/basicspacedata/query/class/satcat/predicates/{','.join(fields)}"

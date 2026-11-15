@@ -25,7 +25,6 @@ def test_directory_source_names_the_bad_file(tmp_path):
 
 
 def test_directory_source_turns_a_csv_error_into_value_error(tmp_path):
-    # A field over the csv module's size limit raises csv.Error inside the reader.
     (tmp_path / "huge.csv").write_text("NORAD_CAT_ID,OBJECT_NAME\n25544," + "x" * 200_000 + "\n")
     with pytest.raises(ValueError, match="huge.csv"):
         DirectorySource(tmp_path).load([25544])
@@ -40,7 +39,7 @@ def test_series_sorted_and_deduplicated(mock_dir):
     records = DirectorySource(mock_dir / "elements").load([55123, 25544])
     series = to_series(reversed(records))
     iss, mario = series[25544], series[55123]
-    assert len(iss) == 2 and len(mario) == 1  # three MARIO files restate one element set
+    assert len(iss) == 2 and len(mario) == 1
     assert iss.epochs[0] < iss.epochs[1]
     assert iss.epochs[0] == np.datetime64("2019-12-09T16:38:29.363424")
     assert iss.semi_major_axis_km.shape == iss.inclination.shape == iss.eccentricity.shape == (2,)
@@ -48,13 +47,12 @@ def test_series_sorted_and_deduplicated(mock_dir):
 
 def test_later_duplicate_wins(mock_dir):
     rec = DirectorySource(mock_dir / "elements").load([55123])[0]
-    restated = replace(rec, inclination=51.0)  # synthetic restatement at the same epoch
+    restated = replace(rec, inclination=51.0)
     assert to_series([rec, restated])[55123].inclination.tolist() == [51.0]
     assert to_series([restated, rec])[55123].inclination.tolist() == [rec.inclination]
 
 
 def _tle(day: float, mm: float = 1.00273956) -> str:
-    """A synthetic Luch 5A (NORAD 37951) TLE pair with its epoch moved to ``day`` of 2021."""
     def checksum(line):
         return str(sum(int(c) if c.isdigit() else c == "-" for c in line) % 10)
     l1 = f"1 37951U 11074B   {21000 + day:14.8f} -.00000034  00000-0  00000-0 0  999"
@@ -62,7 +60,6 @@ def _tle(day: float, mm: float = 1.00273956) -> str:
     return f"{l1}{checksum(l1)}\n{l2}{checksum(l2)}\n"
 
 
-# Synthetic epochs (days of 2021): two sets 30 s apart, then two 59 s apart, then one 61 s later.
 NEAR_DAYS = [1.0, 1.0 + 30 / 86400, 1.5, 1.5 + 59 / 86400, 1.5 + 120 / 86400, 2.0]
 
 
@@ -74,20 +71,17 @@ def test_epochs_under_60_s_apart_collapse_to_the_later():
 
 
 def test_a_chain_under_60_s_apart_keeps_only_its_last_epoch():
-    # A, B 40 s after A, C 40 s after B: A-C is 80 s, but the chain collapses to C.
     recs = parse_tle("".join(_tle(d) for d in (1.0, 1.0 + 40 / 86400, 1.0 + 80 / 86400, 2.0)))
     s = to_series(recs)[37951]
     assert s.epochs.tolist() == [recs[i].epoch.replace(tzinfo=None) for i in (2, 3)]
 
 
 def test_every_loader_gets_the_collapse(tmp_path):
-    # geo_hunt reads TLEs itself and must line its longitudes up with the collapsed series.
     days = sorted(NEAR_DAYS + [3.0 + 0.5 * i for i in range(20)])
-    jitter = [1.00273956 + 1e-8 * (i * 7 % 5) for i in range(len(days))]  # some scatter to score
+    jitter = [1.00273956 + 1e-8 * (i * 7 % 5) for i in range(len(days))]
     (tmp_path / "37951.tle").write_text("".join(_tle(d, m) for d, m in zip(days, jitter)), encoding="utf-8")
     r = hunt(tmp_path / "37951.tle")
     assert r["summary"]["epochs"] == len(days) - 2 == len(r["lon"]) == len(r["series"])
-    # holdout's Space-Track loader: rows 30 s apart are one element set (the latest issued).
     rows = [{"EPOCH": f"2021-01-01T00:00:{s:02d}.000000", "GP_ID": str(i + 1), "NORAD_CAT_ID": "25544",
              "MEAN_MOTION": "15.5", "ECCENTRICITY": "0.0003", "INCLINATION": "51.6", "RA_OF_ASC_NODE": "10",
              "ARG_OF_PERICENTER": "20", "MEAN_ANOMALY": "30", "BSTAR": "0.0001", "MEAN_MOTION_DOT": "0",

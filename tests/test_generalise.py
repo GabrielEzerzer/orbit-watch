@@ -34,8 +34,8 @@ def test_match_near_keeps_original_indices():
 
 def test_late_tolerance_only_widens_after_the_burn():
     e = [ev("2024-03-01T00:00", "2024-03-01T00:10")]
-    late = [det("2024-03-02T12:00", "2024-03-02T20:00", 300.0)]  # starts 1.5 days after
-    early = [det("2024-02-27T12:00", "2024-02-28T00:00", 300.0)]  # ends 1 day before
+    late = [det("2024-03-02T12:00", "2024-03-02T20:00", 300.0)]
+    early = [det("2024-02-27T12:00", "2024-02-28T00:00", 300.0)]
     assert match_near(e, late) == {}
     assert match_near(e, late, late_days=2.0) == {0: 0}
     assert match_near(e, early, late_days=2.0) == {}
@@ -50,7 +50,7 @@ def test_delta_a_bins():
 
 def test_split_is_month_start_of_the_quantile_event():
     events = [ev(f"2024-{m:02d}-15", f"2024-{m:02d}-15") for m in range(1, 11)]
-    assert split_date(events) == np.datetime64("2024-06-01", "us")  # 6th of 10 events
+    assert split_date(events) == np.datetime64("2024-06-01", "us")
 
 
 def test_match_and_cover_agree_with_calibrate():
@@ -110,10 +110,8 @@ def test_ids_along_track_sign_follows_delta_v(tmp_path):
     assert [x.expected_sign for x in load_log_events(p, 36508)] == [-1, 0]
 
 
-# --- Fengyun labels: no Delta-v, attitude rows, coverage ------------------------------------
-
 GROUNDTRUTH = Path(__file__).resolve().parents[1] / "groundtruth"
-FY2H = 43491  # train in splits.json
+FY2H = 43491
 FY_HEADER = ("event_id,satellite,norad_id,cospar_id,start_utc,end_utc,source_start,source_end,"
              "source_time_zone,source_type,kind,delta_a_est_m,source_file,source_revision,source_url\n")
 
@@ -126,7 +124,7 @@ def test_committed_fengyun_log_loads_with_no_estimates():
     events = load_log_events(GROUNDTRUTH / "fengyun_manoeuvres.csv", FY2H)
     assert events and all(e.delta_a_est_m is None and e.bin is None for e in events)
     assert all(e.expected_sign == 0 for e in events)
-    assert sum(e.kind == "attitude" for e in events) == 1  # one GEO-ATTITUDE-CONTROL line
+    assert sum(e.kind == "attitude" for e in events) == 1
     assert all("attitude" not in e.kind or e.kind == "attitude" for e in events)
 
 
@@ -162,8 +160,6 @@ def test_log_coverage_ends_at_ids_revision_or_last_row(tmp_path):
 
 
 def _geo_omm(t0, days, steps, seed=3):
-    """GP records every 8 h for ``days`` days, a near-GEO orbit with 20 m scatter in a and a
-    ``+km`` step after each day in ``steps``."""
     rng = np.random.default_rng(seed)
     mu, out = 398600.4418, []
     for i in range(days * 3):
@@ -179,7 +175,6 @@ def _geo_omm(t0, days, steps, seed=3):
 
 def test_satellite_drops_attitude_matches_and_detections_outside_coverage(tmp_path):
     t0 = np.datetime64("2021-03-01T00:00", "s")
-    # Steps on day 10 (the logged EW burn), 20 (the attitude line) and 50 (after the log ends).
     records = _geo_omm(t0, 70, {10.1: 3.0, 20.1: 3.0, 50.1: 3.0})
     (tmp_path / f"gp_history-{FY2H}-x.json").write_text(json.dumps(records), encoding="utf-8")
     log = tmp_path / "fy.csv"
@@ -190,6 +185,6 @@ def test_satellite_drops_attitude_matches_and_detections_outside_coverage(tmp_pa
     sat = Satellite("Fengyun-2H", FY2H, "GEO", log, tmp_path)
     assert [e.event_id for e in sat.events] == ["EW"] and [e.event_id for e in sat.attitude] == ["ATT"]
     raw = pick(sat.scores(FROZEN.k)[0], FROZEN.z_min, FROZEN.step_min_m, FROZEN.nms_days)
-    assert len(raw) == 3  # the detector sees all three steps
+    assert len(raw) == 3
     res = sat.period(FROZEN, "all")
     assert (res["detections"], res["true_positives"], res["false_positives"]) == (1, 1, 0)

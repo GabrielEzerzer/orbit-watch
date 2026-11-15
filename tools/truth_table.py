@@ -1,12 +1,5 @@
-"""Write groundtruth/objects.md: one row per labelled object, generated from the files.
-
-    python tools/truth_table.py --tle-dir D:/code/orbit-watch/data/spacetrack
-
-Burns 2021-2025 counts the object's log rows starting in 2021-2025 (an IDS row can hold several
-burns; a QZSS NS-1/NS-2 pair is two rows). Element sets counts the records in the object's cached
-Space-Track gp_history files for 2021-01-01..2026-01-01. It reads labels and file sizes only, never
-runs the detector, so it may list holdout objects.
-"""
+# Write groundtruth/objects.md, one row per labelled object, from the label files and cached element sets.
+# It never runs the detector, so it may list holdout objects.
 
 from __future__ import annotations
 
@@ -27,7 +20,7 @@ def burns_2021_2025(norad: int, files: list[str]) -> int:
         with open(GROUNDTRUTH / name, encoding="utf-8", newline="") as f:
             for r in csv.DictReader(f):
                 if "norad_id" in r and int(r["norad_id"]) != norad:
-                    continue  # the ISS files have no norad_id column: every row is the ISS
+                    continue
                 day = r.get("start_utc") or r["date_utc"]
                 n += "2021" <= day[:4] <= "2025"
     return n
@@ -48,7 +41,7 @@ def table(tle_dir: Path) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="Write groundtruth/objects.md: one row per labelled object, generated from the files.")
     p.add_argument("--tle-dir", type=Path, default=CACHE_DIR)
     args = p.parse_args(argv)
     text = table(args.tle_dir)

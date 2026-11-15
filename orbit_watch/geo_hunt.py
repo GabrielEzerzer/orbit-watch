@@ -1,23 +1,5 @@
-"""First GEO manoeuvre hunt: semi-major-axis steps and longitude for a few objects.
-
-    python -m orbit_watch.geo_hunt --tle-dir data/archive --norad 37951 38977 --out out
-
-For each object it reads ``<tle-dir>/<norad>.tle``, computes the sub-satellite longitude at every
-TLE epoch (``orbit_watch.geo``), runs the existing step detector (``orbit_watch.detect``) on
-semi-major axis and writes
-
-* ``steps.csv``: one row per detected step, with the longitude and the longitude drift rate
-  (least-squares over the ``K`` epochs on each side) before and after it;
-* ``<norad>.png``: longitude and semi-major axis against time, steps marked;
-* ``summary.json``: per object, the epoch count, the scatter and the thresholds used.
-
-The thresholds are NOT calibrated. There is no GEO ground truth, so they are set from each object's
-own TLE scatter: ``|z| >= Z_MIN`` and ``|step| >= STEP_SIGMAS`` x the median per-gap scatter of
-that object's semi-major axis. A flagged step is a lead to look at, not a confirmed burn.
-"""
-
-# shortcut: thresholds are per-object multiples of scatter, not calibrated against known GEO
-# manoeuvres; calibrate once a GEO ground-truth list (operator notices) exists.
+# First GEO manoeuvre hunt: semi-major-axis steps and longitude for a few objects.
+# Thresholds come from each object's own TLE scatter and are not calibrated against GEO truth.
 
 from __future__ import annotations
 
@@ -33,7 +15,7 @@ from orbit_watch.elements import parse_tle
 from orbit_watch.geo import drift_rate, longitudes
 from orbit_watch.series import distinct_epochs, to_series
 
-K = 4  # epochs each side of a gap; GEO TLEs come about twice a day
+K = 4
 MAX_SPAN_DAYS = 4.0
 MAX_GAP_DAYS = 3.0
 NMS_DAYS = 2.0
@@ -43,7 +25,7 @@ STEP_SIGMAS = 10.0
 
 def hunt(path: Path) -> dict:
     (recs,) = distinct_epochs(parse_tle(path.read_text(encoding="utf-8"))).values()
-    (series,) = to_series(recs).values()  # the same records, so lon lines up with series
+    (series,) = to_series(recs).values()
     lon = longitudes(recs)
     t = _days(series.epochs)
     scores = score_gaps(series, k=K, max_span_days=MAX_SPAN_DAYS, max_gap_days=MAX_GAP_DAYS)
@@ -103,7 +85,7 @@ def plot(result: dict, path: Path) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p = argparse.ArgumentParser(description="First GEO manoeuvre hunt: semi-major-axis steps and longitude for a few objects.")
     p.add_argument("--tle-dir", type=Path, required=True)
     p.add_argument("--norad", type=int, nargs="+", required=True)
     p.add_argument("--out", type=Path, required=True)

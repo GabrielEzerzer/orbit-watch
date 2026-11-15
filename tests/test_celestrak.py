@@ -6,8 +6,6 @@ from orbit_watch.celestrak import USER_AGENT, CelesTrakSource
 
 
 class FakeFetch:
-    """Serves fixed bodies by URL and counts calls; no network."""
-
     def __init__(self, bodies: dict[str, bytes]):
         self.bodies, self.calls = bodies, []
 
