@@ -562,3 +562,19 @@ keep rule's "gain on dev, or on both" as well; not tried as a round. What would 
 mechanism through is a way to reject the opposite-sign excursions (a run of offset element sets
 that returns within about a week, in both a and i). That is a new detector rule, outside this
 lane; it is proposed in the return, not built.
+
+### Round 4: #13 peak-radius NMS again, on top of Step A
+
+**Hypothesis.** Round 1's change (3191d57) removed the duplicates it was built for (train GEO dup
+14 → 2, dev 11 → 1, dev ISS 3 → 0) and two dev GEO false alarms, and was reverted for its NS loss,
+which came from semi-major-axis duplicates credited to NS burns. Under Step A those detections no
+longer count as NS hits, so re-applying it should cut GEO false alarms and duplicates and leave NS
+recall alone. Round 3 was reverted, so this goes on top of Step A only. Its known cost is the ISS:
+on the fixed eval it absorbed the 2023-03-14 debris avoidance into the peak 18 h later (train ISS
+45 → 44/48). If that remains, the round fails the ISS guardrail.
+
+**Change.** 3191d57's `pick` and its two tests, re-applied by hand (the code has moved since), with
+the mock ISS slice restored. `peak_start`/`peak_end` are the peak gap, and the interval is the union
+of the absorbed gaps. `merge_channels` now measures centres from the peak gap, not the interval, so
+wider intervals do not change which inclination detections it keeps. While peak = interval this is
+a no-op; a test pins it.
