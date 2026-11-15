@@ -261,7 +261,7 @@ class Obj:
         if s.inc_step_min_deg is None:
             return dets
         inc = pick(self.scores(s.k, "i"), s.inc_z_min, s.inc_step_min_deg, s.nms_days)
-        return merge_channels(dets, inc)
+        return merge_channels(dets, inc, s.nms_days)
 
 
 def load_object(entry: dict, truth_dir: Path, tle_dir: Path, geo_dir: Path, group: str,

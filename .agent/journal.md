@@ -525,3 +525,40 @@ inclination steps of about 0.03 deg a few days apart, next to the ±500-700 m a-
 counted as false alarms. Kept, they are new false alarms, which would fail the keep rule.
 
 **Target.** GEO NS hit/cov up on dev and train; GEO FA/obj-yr and `dup` not up.
+
+**Result at e6f2901 (`settings/inc-channel.json`, against Step A's inc-channel baseline).** REVERTED:
+GEO false alarms rose on both splits.
+
+| Split | Group | Metric | Baseline (bda5807) | Round 3 |
+|---|---|---|---|---|
+| train | GEO | NS hit/cov | 3/17, 0.18 [0.06, 0.41] | **7/17**, 0.41 [0.22, 0.64] |
+| train | GEO | EW; EW+NS; all | 36/39; 6/6; 45/62 | 36/39; 6/6; 49/62 |
+| train | GEO | FA (FA/yr); dup; wch | 4 (1.67); 14; 4 | **7 (2.93)**; 18; 1 |
+| train | LEO, IGSO, ISS, Fengyun | every row | as baseline | unchanged (ISS 45/48, FA 3) |
+| dev | GEO | NS hit/cov | 1/14, 0.07 [0.01, 0.31] | **3/14**, 0.21 [0.08, 0.48] |
+| dev | GEO | EW; EW+NS; all | 33/34; 3/3; 37/51 | 33/34; 3/3; 39/51 |
+| dev | GEO | FA (FA/yr); dup; wch | 7 (3.58); 11; 5 | **10 (5.11)**; 15; 5 |
+| dev | LEO, IGSO, ISS | every row | as baseline | unchanged (ISS 35/35, FA 4, dup 3) |
+
+`covered` is unchanged everywhere. The NS gains come from two mechanisms:
+
+- **Folding on a shared peak gap** (`a+i`): train QZS-3-110+111, 127 and 146, which Step A had
+  made misses (the a-step and the inclination step peak on the same gap). Dev gains nothing this
+  way: its two shared-gap detections near NS burns (2024-11-09, 2025-09-05) are nearer the EW
+  burn that follows.
+- **Keeping an inclination detection on another gap within a day of an a-detection:** train
+  QZS-3-140, dev QZS-3-184 and 194+195.
+
+The six new false alarms are all of the second kind and are the ones listed under Risk: train
+QZS-3 2021-06-19, 06-25, 12-14 and dev QZS-3 2025-12-21, QZS-6 2025-09-03, 09-10. Each is an
+inclination step of 0.02-0.04 deg that, with an opposite-sign step 5-8 days away, brackets the
+±500-780 m a-steps already counted as false alarms. The four new duplicates per split are kept
+inclination detections at burns whose event a nearer detection holds (train 2021-10-16, 12-20,
+2022-06-28 and the EW step 2022-04-03 they displaced), or EW a-steps an inclination detection
+displaced (dev 2024-04-03, 2025-10-18, QZS-6 2025-11-19).
+
+The fold alone (shared gap, old time rule otherwise) would gain train 3 and dev 0, so it fails the
+keep rule's "gain on dev, or on both" as well; not tried as a round. What would let the second
+mechanism through is a way to reject the opposite-sign excursions (a run of offset element sets
+that returns within about a week, in both a and i). That is a new detector rule, outside this
+lane; it is proposed in the return, not built.

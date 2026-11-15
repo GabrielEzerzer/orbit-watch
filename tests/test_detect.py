@@ -1,7 +1,5 @@
 """Detector tests. The series here are synthetic, labelled test inputs, never calibration data."""
 
-from dataclasses import replace
-
 import numpy as np
 
 from orbit_watch.detect import Detection, merge_channels, pick, score_gaps
@@ -72,15 +70,11 @@ def test_inclination_channel_finds_a_plane_change_the_a_channel_misses():
     assert day(d.start) - 0.5 <= 30.2 <= day(d.end) + 0.5
 
 
-def test_merge_channels_folds_a_shared_peak_gap_and_keeps_a_nearby_inclination_step():
+def test_merge_channels_keeps_a_and_drops_an_inclination_detection_within_nms_days():
     t0 = np.datetime64("2025-01-01T00:00", "us")
     h = lambda x: t0 + np.timedelta64(int(x * 3_600e6), "us")
     a = [Detection(h(0), h(6), -3000.0, -300.0)]
-    i_same = Detection(h(0), h(6), -0.01, -40.0, "i")  # the a detection's own peak gap
-    i_near = Detection(h(20), h(26), -0.01, -40.0, "i")  # centres 20 h apart, another gap
-    merged, kept = merge_channels(a, [i_same, i_near])
-    assert merged == replace(a[0], channel="a+i") and kept == i_near
-    # Overlap, not only identity: a widened a interval does not matter, its peak gap does.
-    wide = Detection(h(-12), h(30), -3000.0, -300.0, "a", h(0), h(6))
-    assert [d.channel for d in merge_channels([wide], [i_same, i_near])] == ["a+i", "i"]
-    assert merge_channels([], [i_near]) == [i_near]
+    i_near = Detection(h(20), h(26), -0.01, -40.0, "i")  # centres 20 h apart
+    i_far = Detection(h(30), h(36), 0.02, 50.0, "i")  # 30 h apart
+    assert merge_channels(a, [i_near, i_far], nms_days=1.0) == [a[0], i_far]
+    assert merge_channels([], [i_near], nms_days=1.0) == [i_near]
