@@ -109,7 +109,7 @@ def tle_pairs(lines: Iterable[str], count: LineCount) -> Iterator[tuple[str | No
     for raw in lines:
         line = raw.rstrip()
         if len(line) == 70 and line.startswith("1 ") and line.endswith("\\"):
-            line = line[:-1]  # the mirror's 2020-2022 and 2024 files end every line 1 with a backslash
+            line = line[:-1]  # the mirror's 2021, 2022 and 2024 files end every line 1 with a backslash
         if not line:
             continue
         count.lines += 1

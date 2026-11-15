@@ -354,7 +354,7 @@ of files.
 
 The full run (commit 74a831f) took about 16 minutes on Kaggle. It read 177,075,602 lines
 (88,220,159 pairs) from the five files and kept 1,808 objects with 4,957,896 TLEs: 1,804 by the
-rule and the four added with `--also`. That is a 184 MB `geo.zip` holding 666 MB of TLE text. The
+rule and the four added with `--also`. That is a 184 MB `geo.zip` holding 694 MB of TLE text. The
 mirror's 2021, 2022 and 2024 files end every line 1 with a backslash, which the job drops. 136
 objects have sets outside the region, such as 65588, which moves from a 5 rev/day transfer orbit to
 GEO. 635,284 lines were rejected; the ones looked at are 68-character lines of analyst objects
