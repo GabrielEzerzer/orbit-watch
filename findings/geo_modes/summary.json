@@ -1,0 +1,21 @@
+{
+  "geo_dir_object_count": 1808,
+  "skipped_not_by_rule": [
+    27421,
+    36508,
+    41240,
+    54754
+  ],
+  "skipped_holdout": [
+    37158,
+    38049,
+    41882,
+    42738,
+    49336
+  ],
+  "objects_classified": 1799,
+  "segments": 4546,
+  "transitions_all_segments": 2747,
+  "transitions_ignoring_undetermined": 763,
+  "run_seconds": 127.8
+}
