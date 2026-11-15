@@ -652,3 +652,29 @@ weak gaps to absorb (train QZS-3 2021-10-17 and 2022-08-08 a-steps, 2023-10-07 i
 2024-08-15 and 2025-02-04), so 2 duplicates go per split, and no false alarm. Peak-radius NMS is
 done as a lever on this eval: the duplicates it removes and the burns it loses have the same |z|,
 the same peak ratio and the same gap distance.
+
+### Where Step A and rounds 3-5 leave the lane
+
+The detector at the head is the one at bda5807: rounds 3, 4 and 5 are reverted, and Step A changed
+only the eval. The scores are Step A's inc-channel baseline:
+
+| Target | train | dev |
+|---|---|---|
+| GEO NS >= 0.8 | MISS 3/17 = 0.18 [0.06, 0.41] | MISS 1/14 = 0.07 [0.01, 0.31] |
+| GEO EW >= 0.9 | PASS 36/39 = 0.92 | PASS 33/34 = 0.97 |
+| GEO FA <= 1/obj-yr | MISS 1.67 | MISS 3.58 |
+| LEO >=50 m >= 0.9 | MISS 4/18 | MISS 11/40 |
+| ISS >= 0.95 | 45/48 (pooled with dev 80/83 = 0.96) | PASS 35/35 |
+
+ISS guardrail: no round was kept, so the detector's ISS output is unchanged from the committed
+findings and `orbit_watch.holdout` was not rerun. Round 4 would have pooled 79/83 = 0.95, but it
+dropped below the baseline counts, which the keep rule forbids.
+
+What the rounds showed: GEO false alarms and the NS burns rounds 3 and 4 could reach sit in the same
+places. Round 3's six new false alarms and most standing GEO false alarms are opposite-sign
+excursions: a and i jump by ±500-780 m and ±0.03 deg, then jump back within 5-8 days (QZS-3
+2021-06-19/25, 2021-12-14/20, 2025-12-15/21; QZS-6 2025-03, 2025-09-03/10/22). A rule that
+recognises an excursion and returns to it (for example: a step followed within about a week by an
+opposite step of similar size, in the same channel, reports neither) is the next candidate. It
+would cut GEO FA directly and would let round 3's mechanism through. Not built here: it is a new
+detector rule and needs its own round.
