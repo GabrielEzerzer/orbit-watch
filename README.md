@@ -71,9 +71,10 @@ it and records its sha256 in `ATTACHED.txt`:
 MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-calibrate --attach data/archive/25544.tle --     python -m orbit_watch.calibrate --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out /kaggle/working/out
 ```
 
-Result of the command above on Kaggle at commit `7df96a6` (the detector and calibration code are
-unchanged since then), with the TLE file at sha256 `e102dc92…7c51` (5,076 TLEs). 45 ground-truth
-rows fall inside the TLE history:
+Result of the command above on Kaggle at commit `7df96a6`, with the TLE file at sha256
+`e102dc92…7c51` (5,076 TLEs). A local rerun after the 60 s collapse (issue #11) and the tuning fix
+(issue #10) uses 5,075 of them (one pair is under 60 s apart, and the later is kept) and chooses the
+same setting with the same scores. 45 ground-truth rows fall inside the TLE history:
 
 **Caveat on 2023:** the thresholds below were chosen on 2021-2022 only, but an earlier version of the method was scored on 2023 once before the method was changed (last note below). The clean holdout is 2024-2025 on Space-Track data; see the next section.
 
@@ -107,8 +108,9 @@ Notes on these numbers:
 ### Clean holdout: Space-Track 2024-2025
 
 `orbit_watch.holdout` scores the frozen setting once on Space-Track `gp_history` for the ISS
-(2021-01-01 to 2025-12-31; 9,855 rows, 9,080 element sets once rows within 1 s are merged (9,077 once epochs under 60 s apart also collapse) and the
-latest-issued one kept), using calibrate.py's matching, coverage and precision rules unchanged.
+(2021-01-01 to 2025-12-31; 9,855 rows, 9,077 element sets: rows whose epochs are under 60 s apart
+are one element set, and the latest issued, by `GP_ID`, is kept whatever its epoch), using
+calibrate.py's matching, coverage and precision rules unchanged.
 Neither the method nor the thresholds had seen 2024-2025.
 
 ```
@@ -182,13 +184,13 @@ and counts how many the detector recovers. All of it is synthetic and labelled s
 
 | Recall at step size | 100 m | 150 m | 200 m | 300 m | 500 m | 1 km |
 |---|---|---|---|---|---|---|
-| native cadence (about 5.6 TLEs a day), frozen | 0.00 | 0.03 | 0.51 | 0.98 | 1.00 | 1.00 |
-| native, `|z| >= 6`, `|step| >= 50 m` | 0.97 | 0.97 | 0.98 | 1.00 | 1.00 | 1.00 |
-| thinned to about 1 a day, frozen | 0.00 | 0.04 | 0.46 | 0.91 | 0.99 | 1.00 |
+| native cadence (about 5.6 TLEs a day), frozen | 0.01 | 0.01 | 0.52 | 0.98 | 1.00 | 1.00 |
+| native, `|z| >= 6`, `|step| >= 50 m` | 0.95 | 0.98 | 0.98 | 1.00 | 1.00 | 1.00 |
+| thinned to about 1 a day, frozen | 0.01 | 0.06 | 0.48 | 0.92 | 0.97 | 1.00 |
 | thinned to about 1 every 2 days, frozen | 0.02 | 0.07 | 0.34 | 0.72 | 0.89 | 0.98 |
 
 The median TLE scatter is 3.4 m, so the 200 m step floor, not `z`, sets what the frozen detector
-can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 20 a year at
+can see. A looser floor reaches 100 m steps but adds false alarms: about 19 to 21 a year at
 `|z| >= 6`, `|step| >= 50 m`, against at most 0.9 a year for the frozen setting (3 detections in
 3.2 years of stretches with no listed burn within 3 days; an upper bound, since unlisted burns
 count). A clean step leaves out the transitional TLEs a real burn produces, so these recalls are
@@ -197,7 +199,7 @@ upper bounds for real burns of the same size.
 These figures come from the run with both truth lists (NASA and Roscosmos). With the NASA list
 alone the frozen setting had 18 such detections, 5.3 a year. The Roscosmos events also remove a few
 gaps (two at the native cadence) from the quiet stretches the injections are drawn from, which reshuffles the random draw, so
-the pooled recall figures in the table moved by up to 0.06 from the NASA-only run, and each new
+the pooled recall figures in the table moved by up to 0.02 from the NASA-only run, and each new
 95% interval overlaps the old one. Single-sign cells in the CSV moved by up to 0.09.
 
 ### Beyond the ISS: IDS (LEO) and QZSS (GEO) manoeuvre logs

@@ -4,7 +4,7 @@ Nothing here is claimed as a discovery. These are leads from the calibration run
 
 ## ISS steps with no announced manoeuvre (2021-01 to 2023-12)
 
-Source: the calibration run at commit 508838a on Kaggle (`ow-calibrate`), on 5,076 ISS TLEs from the public OndroNR/tle-archive (sha256 `e102dc92…7c51`), with the frozen detector settings `k = 4`, `|z| >= 12`, `|step| >= 200 m`. The plot is `findings/iss_sma.png`; these are the orange markers.
+Source: the calibration run at commit 508838a on Kaggle (`ow-calibrate`), on 5,076 ISS TLEs from the public OndroNR/tle-archive (sha256 `e102dc92…7c51`), with the frozen detector settings `k = 4`, `|z| >= 12`, `|step| >= 200 m`. The plot is `findings/iss_sma.png`; these are the orange markers. A local rerun after the 60 s collapse (issue #11), on 5,075 TLEs, gives the same leads; only the 2023-12-22 row changed (it was +3,262 m at z 254.5), because two TLEs 0.02 s apart, two epochs after the step (2023-12-23 17:57), are now one.
 
 The detector found these steps in semi-major axis, and none of them matches an event in `groundtruth/iss_manoeuvres.csv`. That list comes from NASA pages only, so an unmatched step may be a real burn that NASA did not write up, or a detector error.
 
@@ -19,13 +19,13 @@ The last column gives the burn from `groundtruth/iss_roscosmos_manoeuvres.csv` (
 | 2023-03-14 08:46 to 03-15 06:14 | +509 m | 72.4 | step up | NASA, 2023-03-14: "At 7:54 a.m. the ISS Progress 83 thrusters performed a 2-minute, 35-second burn to provide extra distance from a fragment of Russian Cosmos 1408 satellite debris." Kept out of the ground truth because the page gives no time zone or burn date beyond the post date. | 2023-03-14 11:54 UTC, debris avoidance ([post 8766](https://t.me/roscosmos_gk/8766)) |
 | 2023-04-30 05:31 to 07:19 | +1,978 m | 124.8 | clear step up | none found | 2023-04-30 00:31 UTC, reboost ([post 9345](https://t.me/roscosmos_gk/9345)) |
 | 2023-05-04 16:43 to 05-05 04:38 | +313 m | 12.4 | no clear step; likely a detector false positive | none | no |
-| 2023-12-22 19:10 to 12-23 15:09 | +3,262 m | 254.5 | clear step up | none found | 2023-12-23 01:55 UTC, reboost ([post 11900](https://t.me/roscosmos_gk/11900)) |
+| 2023-12-22 19:10 to 12-23 15:09 | +3,234 m | 736.2 | clear step up | none found | 2023-12-23 01:55 UTC, reboost ([post 11900](https://t.me/roscosmos_gk/11900)) |
 
 For the two remaining leads, the next check is a TASS or roscosmos.ru announcement, neither of which could be read for the Roscosmos list. On Space-Track's gp_history the same setting finds the same 2021-09-12 and 2023-05-04 steps and one more unmatched step in 2023, from 2023-03-15 06:14 to 09:18 (+489 m). It lies a day after the 2023-03-14 debris avoidance, which on Space-Track matches a +483 m step from 05:27 to 08:46 that day. Whether it is a second burn or the same burn seen twice in the element sets has not been checked.
 
 ## ISS steps with no announced manoeuvre (2024-01 to 2025-12, clean holdout)
 
-Source: `python -m orbit_watch.holdout` on Space-Track gp_history for the ISS (9,080 element sets after merging rows within 1 s), frozen setting `k = 4`, `|z| >= 12`, `|step| >= 200 m`. Full table: `findings/holdout_2024_2025/detections.csv`; plot: `findings/holdout_2024_2025/iss_sma_2024_2025.png`.
+Source: `python -m orbit_watch.holdout` on Space-Track gp_history for the ISS (9,077 element sets after merging rows under 60 s apart and keeping the latest issued), frozen setting `k = 4`, `|z| >= 12`, `|step| >= 200 m`. Full table: `findings/holdout_2024_2025/detections.csv`; plot: `findings/holdout_2024_2025/iss_sma_2024_2025.png`.
 
 The detector matched all 27 covered NASA-listed events in this period and made 15 detections that match none of them. Most are steps up of 1.7 to 4.9 km with `z` in the hundreds, the size of a typical reboost.
 
@@ -55,19 +55,19 @@ Seven remain unexplained. Four of them lie about a day from a burn in the NASA l
 
 Source: `python -m orbit_watch.geo_hunt` at commit 02dfab5 on Kaggle, one kernel per object (`ow-geo-37951`, `ow-geo-38977`, `ow-geo-39727`, `ow-geo-hunt-c` for 40258, `ow-geo-55841`), on TLEs from the public OndroNR/tle-archive. The step table and plots were regenerated locally at commit 8d80171, after element sets under 60 s apart began to be collapsed for every caller (issue #11); main's code run the same way reproduces the original table exactly. The inputs as unpacked on Kaggle (sha256):
 
-| NORAD | Archive names | TLEs used | sha256 |
-|---|---|---|---|
-| 37951 | LUCH 5A | 2,275 | `1defac97…5824` |
-| 38977 | LUCH 5B | 1,798 | `7bad758c…d4bc` |
-| 39727 | LUCH 5V | 2,499 | `dd00f4d1…5cb1` |
-| 40258 | LUCH (OLYMP-K 1) | 2,217 | `cdb3ef4e…1d71` |
-| 55841 | LUCH-5X (OLYMP-K 2), from 2023-03-13 | 513 | `d4f1cf06…21ab` |
+| NORAD | Archive names | TLEs in file | Element sets used (after the 60 s collapse) | sha256 |
+|---|---|---|---|---|
+| 37951 | LUCH 5A | 2,275 | 2,274 | `1defac97…5824` |
+| 38977 | LUCH 5B | 1,798 | 1,798 | `7bad758c…d4bc` |
+| 39727 | LUCH 5V | 2,499 | 2,498 | `dd00f4d1…5cb1` |
+| 40258 | LUCH (OLYMP-K 1) | 2,217 | 2,217 | `cdb3ef4e…1d71` |
+| 55841 | LUCH-5X (OLYMP-K 2), from 2023-03-13 | 513 | 507 | `d4f1cf06…21ab` |
 
-**These are not calibrated detections.** There is no GEO ground truth in this repo. The detector is the ISS one (`orbit_watch/detect.py`, `k = 4`), and each object's thresholds come from its own scatter: `|z| >= 8` and `|step| >= 10 x` the median per-gap scatter of its semi-major axis, which gives step thresholds of 31 m for 37951, 38 m for 38977, 24 m for 39727, 1,597 m for 40258 and 815 m for 55841. Gaps of more than 3 days are not scored. Many flagged steps on the station-keeping objects are probably not burns (see each object). The longitude is the sub-satellite longitude at each TLE epoch (SGP4 to TEME, rotated by GMST; `orbit_watch/geo.py`). It carries a daily wobble of up to about ±0.2° from inclination and eccentricity, because the epochs fall at different times of day, so the drift rates in the table (a least-squares fit over 4 epochs) mean something only during a relocation, where they reach 1 to 4°/day.
+**These are not calibrated detections.** There is no GEO ground truth in this repo. The detector is the ISS one (`orbit_watch/detect.py`, `k = 4`), and each object's thresholds come from its own scatter: `|z| >= 8` and `|step| >= 10 x` the median per-gap scatter of its semi-major axis, which gives step thresholds of 31 m for 37951, 38 m for 38977, 24 m for 39727, 1,597 m for 40258 and 828 m for 55841. Gaps of more than 3 days are not scored. Many flagged steps on the station-keeping objects are probably not burns (see each object). The longitude is the sub-satellite longitude at each TLE epoch (SGP4 to TEME, rotated by GMST; `orbit_watch/geo.py`). It carries a daily wobble of up to about ±0.2° from inclination and eccentricity, because the epochs fall at different times of day, so the drift rates in the table (a least-squares fit over 4 epochs) mean something only during a relocation, where they reach 1 to 4°/day.
 
 The full step table, 284 rows (283 before the collapse), is `findings/geo_steps.csv` (columns: object, interval, step in a, z, longitude before and after, drift rate before and after). The plots are `findings/geo_<norad>.png`: longitude on top, mean semi-major axis below, a vertical line at every flagged step.
 
-What the collapse changed: the 37951 step of −57 m (z −20.6) at 2022-02-09 15:38 to 21:01, a day after a pair of element sets under 60 s apart (2022-02-08 15:33), does not survive; its `z` had been inflated by the near-zero time base, and it is now −26.8 m at z −7.0, under the threshold. The neighbouring gap, 2022-02-08 20:54 to 02-09 15:38, is listed instead at −35 m (z −8.8); it scored −33 m (z −9.6) before and was suppressed by the inflated step next to it. One step is new: 55841, +34.4 km on 2023-03-21 13:37 to 17:50, during the arrival drift. Other rows changed `z` in the first decimal, and none of the counts quoted below changed.
+What the collapse changed: the 37951 step of −57 m (z −20.6) at 2022-02-09 15:38 to 21:01, a day after a pair of element sets under 60 s apart (2022-02-08 15:33), does not survive; its `z` had been inflated by the near-zero time base, and it is now −26.8 m at z −7.0, under the threshold. The neighbouring gap, 2022-02-08 20:54 to 02-09 15:38, is listed instead at −35 m (z −8.8); it scored −33 m (z −9.6) before and was suppressed by the inflated step next to it. One step is new: 55841, +34.4 km on 2023-03-21 13:37 to 17:50, during the arrival drift. Thirty-two other rows changed `z` and nothing else: 17 rows of 37951 and 6 of 39727 rose in `|z|` by 0.1 to 1.6 (under 0.5%), and 9 rows of 55841 fell by 0.4 to 16.0 (1.5 to 1.8%). None of the counts quoted below changed.
 
 ### 40258, Luch (Olymp-K 1): six relocations, then stationary at about 18.1°W
 

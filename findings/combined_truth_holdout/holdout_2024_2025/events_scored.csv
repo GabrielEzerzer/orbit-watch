@@ -11,7 +11,7 @@ date_utc,time_utc,type,category,delta_v_m_s,period,covered,matched,det_start_utc
 2021-10-15,09:02,other (unplanned attitude/thruster event),unplanned,,2021-2022,True,False,,,,
 2021-11-10,,reboost (planned as PDAM),reboost,,2021-2022,True,True,2021-11-11T02:09:54Z,2021-11-11T03:46:11Z,1449.3,35.68
 2021-12-03,07:58,debris avoidance (retrograde),debris/collision avoidance,0.3,2021-2022,True,False,,,,
-2022-01-12,,reboost,reboost,0.73,2021-2022,True,True,2022-01-13T04:20:35Z,2022-01-13T07:48:56Z,1261.5,289.68
+2022-01-12,,reboost,reboost,0.73,2021-2022,True,True,2022-01-13T04:19:37Z,2022-01-13T07:48:56Z,1261.5,289.68
 2022-02-08,,reboost,reboost,,2021-2022,True,True,2022-02-08T07:28:33Z,2022-02-08T13:20:00Z,720.3,43.56
 2022-02-25,,reboost,reboost,,2021-2022,True,True,2022-02-26T01:04:21Z,2022-02-26T05:18:44Z,1439.2,434.93
 2022-04-23,13:25,reboost (planned as PDAM),reboost,1.0,2021-2022,True,True,2022-04-23T09:06:56Z,2022-04-23T12:35:50Z,1727.2,517.29

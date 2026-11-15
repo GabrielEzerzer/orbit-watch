@@ -5,9 +5,8 @@
     "duplicates": {
       "rows": 9855,
       "exact_epoch_repeats_dropped": 703,
-      "near_epoch_reissues_dropped": 72,
-      "element_sets_kept": 9080,
-      "under_60s_apart_collapsed_by_to_series": 3
+      "near_epoch_reissues_dropped": 75,
+      "element_sets_kept": 9077
     },
     "element_sets_used": 9077,
     "first_epoch": "2021-01-01T05:19:37Z",
@@ -34,7 +33,7 @@
     "nms_days": 1.0,
     "chosen_by": "calibrate.py: max F1 on archive 2021-2022, ties to the stricter setting"
   },
-  "same_epoch_rule": "epochs within 1.0 s are one element set; highest GP_ID kept",
+  "same_epoch_rule": "epochs under 60 s after the previous one are one element set; the highest GP_ID (latest issued) is kept",
   "holdout_2024_2025": {
     "detections": 42,
     "detections_matching_unplanned_events": 0,
@@ -335,9 +334,8 @@
       "duplicates": {
         "rows": 9855,
         "exact_epoch_repeats_dropped": 703,
-        "near_epoch_reissues_dropped": 72,
-        "element_sets_kept": 9080,
-        "under_60s_apart_collapsed_by_to_series": 3
+        "near_epoch_reissues_dropped": 75,
+        "element_sets_kept": 9077
       },
       "element_sets_used": 9077,
       "first_epoch": "2021-01-01T05:19:37Z",
