@@ -1,0 +1,990 @@
+{
+  "split": "train",
+  "period": {
+    "objects": "train",
+    "from": "2021-01-01",
+    "to": "2024-01-01"
+  },
+  "settings": "generalise-tune",
+  "commit": "3ca08ab624b39b295ef62187569db0b25eb625c6",
+  "dirty": false,
+  "tolerance_days": {
+    "before": 0.5,
+    "after": 2.0,
+    "after_iss": 0.5
+  },
+  "targets": [
+    {
+      "check": "LEO recall >=50 m",
+      "target": ">= 0.9",
+      "value": 0.875,
+      "ci95": [
+        0.6398,
+        0.965
+      ],
+      "status": "MISS"
+    },
+    {
+      "check": "GEO recall EW",
+      "target": ">= 0.9",
+      "value": 0.9487,
+      "ci95": [
+        0.8311,
+        0.9858
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "GEO recall NS",
+      "target": ">= 0.8",
+      "value": 0.4118,
+      "ci95": [
+        0.2161,
+        0.6399
+      ],
+      "status": "MISS"
+    },
+    {
+      "check": "ISS recall all",
+      "target": ">= 0.95",
+      "value": 0.9375,
+      "ci95": [
+        0.8316,
+        0.9785
+      ],
+      "status": "MISS"
+    },
+    {
+      "check": "LEO false alarms / object-year (12.04 obj-yr)",
+      "target": "<= 1.0",
+      "value": 0.6644,
+      "object_years": 12.042,
+      "status": "PASS"
+    },
+    {
+      "check": "GEO false alarms / object-year (2.39 obj-yr)",
+      "target": "<= 1.0",
+      "value": 0.4187,
+      "object_years": 2.388,
+      "status": "PASS"
+    },
+    {
+      "check": "IGSO false alarms / object-year (1.22 obj-yr)",
+      "target": "<= 1.0",
+      "value": 0.0,
+      "object_years": 1.222,
+      "status": "PASS"
+    }
+  ],
+  "groups": {
+    "LEO": {
+      "objects": [
+        "SPOT-5",
+        "CryoSat-2",
+        "Jason-3",
+        "Sentinel-3B",
+        "HY-2C",
+        "HY-2D",
+        "SWOT",
+        "Sentinel-6B"
+      ],
+      "setting": {
+        "k": 6,
+        "z_min": 40,
+        "step_min_m": 0,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 192,
+          "covered": 156,
+          "matched": 117,
+          "recall": 0.75,
+          "recall_all_events": 0.6094,
+          "ci95": [
+            0.6766,
+            0.8114
+          ],
+          "ci95_width": 0.1348
+        },
+        ">=50 m": {
+          "events": 26,
+          "covered": 16,
+          "matched": 14,
+          "recall": 0.875,
+          "recall_all_events": 0.5385,
+          "ci95": [
+            0.6398,
+            0.965
+          ],
+          "ci95_width": 0.3253
+        }
+      },
+      "false_alarms": 8,
+      "object_years": 12.042,
+      "fa_per_object_year": 0.6644
+    },
+    "GEO": {
+      "objects": [
+        "QZS-3",
+        "QZS-6"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 3,
+        "step_min_m": 1000,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 68,
+          "covered": 62,
+          "matched": 50,
+          "recall": 0.8065,
+          "recall_all_events": 0.7353,
+          "ci95": [
+            0.6915,
+            0.8857
+          ],
+          "ci95_width": 0.1942
+        },
+        "EW": {
+          "events": 43,
+          "covered": 39,
+          "matched": 37,
+          "recall": 0.9487,
+          "recall_all_events": 0.8605,
+          "ci95": [
+            0.8311,
+            0.9858
+          ],
+          "ci95_width": 0.1547
+        },
+        "EW+NS": {
+          "events": 7,
+          "covered": 6,
+          "matched": 6,
+          "recall": 1.0,
+          "recall_all_events": 0.8571,
+          "ci95": [
+            0.6097,
+            1.0
+          ],
+          "ci95_width": 0.3903
+        },
+        "NS": {
+          "events": 18,
+          "covered": 17,
+          "matched": 7,
+          "recall": 0.4118,
+          "recall_all_events": 0.3889,
+          "ci95": [
+            0.2161,
+            0.6399
+          ],
+          "ci95_width": 0.4238
+        }
+      },
+      "false_alarms": 1,
+      "object_years": 2.388,
+      "fa_per_object_year": 0.4187
+    },
+    "IGSO": {
+      "objects": [
+        "QZS-4"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 3,
+        "step_min_m": 1000,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 7,
+          "covered": 0,
+          "matched": 0,
+          "recall": null,
+          "recall_all_events": 0.0,
+          "ci95": null,
+          "ci95_width": null
+        }
+      },
+      "false_alarms": 0,
+      "object_years": 1.222,
+      "fa_per_object_year": 0.0
+    },
+    "ISS": {
+      "objects": [
+        "ISS"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 49,
+          "covered": 48,
+          "matched": 45,
+          "recall": 0.9375,
+          "recall_all_events": 0.9184,
+          "ci95": [
+            0.8316,
+            0.9785
+          ],
+          "ci95_width": 0.1469
+        }
+      },
+      "false_alarms": 3,
+      "object_years": 2.59,
+      "fa_per_object_year": 1.1585
+    },
+    "GEO-Fengyun": {
+      "objects": [
+        "Fengyun-2H"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 3,
+        "step_min_m": 1000,
+        "nms_days": 1.0
+      },
+      "subsets": {
+        "all": {
+          "events": 4,
+          "covered": 3,
+          "matched": 3,
+          "recall": 1.0,
+          "recall_all_events": 0.75,
+          "ci95": [
+            0.4385,
+            1.0
+          ],
+          "ci95_width": 0.5615
+        },
+        "EW": {
+          "events": 4,
+          "covered": 3,
+          "matched": 3,
+          "recall": 1.0,
+          "recall_all_events": 0.75,
+          "ci95": [
+            0.4385,
+            1.0
+          ],
+          "ci95_width": 0.5615
+        }
+      },
+      "false_alarms": 0,
+      "object_years": 0.998,
+      "fa_per_object_year": 0.0
+    }
+  },
+  "objects": {
+    "ISS": {
+      "norad_id": 25544,
+      "group": "ISS",
+      "element_source": "gp_history-25544-2021-01-01--2026-01-01.json",
+      "element_sets": 9077,
+      "subsets": {
+        "all": {
+          "events": 49,
+          "covered": 48,
+          "matched": 45
+        }
+      },
+      "detections": 48,
+      "matched_detections": 45,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [
+        {
+          "start_utc": "2021-09-12T00:22:44Z",
+          "end_utc": "2021-09-12T01:57:53Z",
+          "step_m": 965.8,
+          "z": 52.51
+        },
+        {
+          "start_utc": "2023-03-15T06:14:18Z",
+          "end_utc": "2023-03-15T09:18:31Z",
+          "step_m": 488.7,
+          "z": 90.44
+        },
+        {
+          "start_utc": "2023-05-04T16:43:50Z",
+          "end_utc": "2023-05-05T04:38:59Z",
+          "step_m": 312.5,
+          "z": 12.38
+        }
+      ],
+      "object_years": 2.5897,
+      "missed": [
+        {
+          "event_id": "2021-12-03 07:58",
+          "start_utc": "2021-12-03T07:58:00Z",
+          "kind": "debris/collision avoidance",
+          "delta_a_est_m": null
+        },
+        {
+          "event_id": "2022-06-20",
+          "start_utc": "2022-06-19T00:00:00Z",
+          "kind": "test/aborted burn",
+          "delta_a_est_m": null
+        },
+        {
+          "event_id": "2023-11-09",
+          "start_utc": "2023-11-08T00:00:00Z",
+          "kind": "reboost",
+          "delta_a_est_m": null
+        }
+      ]
+    },
+    "SPOT-5": {
+      "norad_id": 27421,
+      "group": "LEO",
+      "element_source": "geo/27421.tle",
+      "element_sets": 5305,
+      "subsets": {
+        "all": {
+          "events": 0,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [],
+      "object_years": 0.0,
+      "missed": []
+    },
+    "CryoSat-2": {
+      "norad_id": 36508,
+      "group": "LEO",
+      "element_source": "geo/36508.tle",
+      "element_sets": 4490,
+      "subsets": {
+        "all": {
+          "events": 52,
+          "covered": 48,
+          "matched": 47
+        },
+        ">=50 m": {
+          "events": 10,
+          "covered": 10,
+          "matched": 10
+        }
+      },
+      "detections": 76,
+      "matched_detections": 47,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [
+        {
+          "start_utc": "2021-12-21T20:30:09Z",
+          "end_utc": "2021-12-21T22:09:23Z",
+          "step_m": 18.2,
+          "z": 360.94
+        },
+        {
+          "start_utc": "2023-11-04T22:03:25Z",
+          "end_utc": "2023-11-05T12:56:37Z",
+          "step_m": -4.1,
+          "z": -40.2
+        }
+      ],
+      "object_years": 2.349,
+      "missed": [
+        {
+          "event_id": "CryoSat-2-153",
+          "start_utc": "2022-04-28T11:18:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 1.0
+        }
+      ]
+    },
+    "Jason-3": {
+      "norad_id": 41240,
+      "group": "LEO",
+      "element_source": "geo/41240.tle",
+      "element_sets": 4729,
+      "subsets": {
+        "all": {
+          "events": 22,
+          "covered": 19,
+          "matched": 16
+        },
+        ">=50 m": {
+          "events": 5,
+          "covered": 3,
+          "matched": 3
+        }
+      },
+      "detections": 22,
+      "matched_detections": 16,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [],
+      "object_years": 2.535,
+      "missed": [
+        {
+          "event_id": "Jason-3-031",
+          "start_utc": "2021-05-05T18:07:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 5.0
+        },
+        {
+          "event_id": "Jason-3-042",
+          "start_utc": "2022-08-21T22:36:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 5.3
+        },
+        {
+          "event_id": "Jason-3-046",
+          "start_utc": "2023-02-01T00:27:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 13.4
+        }
+      ]
+    },
+    "QZS-3": {
+      "norad_id": 42917,
+      "group": "GEO",
+      "element_source": "geo/42917.tle",
+      "element_sets": 4305,
+      "subsets": {
+        "all": {
+          "events": 68,
+          "covered": 62,
+          "matched": 50
+        },
+        "EW": {
+          "events": 43,
+          "covered": 39,
+          "matched": 37
+        },
+        "EW+NS": {
+          "events": 7,
+          "covered": 6,
+          "matched": 6
+        },
+        "NS": {
+          "events": 18,
+          "covered": 17,
+          "matched": 7
+        }
+      },
+      "detections": 63,
+      "matched_detections": 50,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [
+        {
+          "start_utc": "2023-04-18T23:02:52Z",
+          "end_utc": "2023-04-19T14:08:01Z",
+          "step_m": -3238.0,
+          "z": -3325.44
+        }
+      ],
+      "object_years": 2.3881,
+      "missed": [
+        {
+          "event_id": "QZS-3-096+QZS-3-097",
+          "start_utc": "2021-01-20T01:30:36Z",
+          "kind": "NS",
+          "delta_a_est_m": 548.6
+        },
+        {
+          "event_id": "QZS-3-100",
+          "start_utc": "2021-03-04T11:11:48Z",
+          "kind": "NS",
+          "delta_a_est_m": -27.4
+        },
+        {
+          "event_id": "QZS-3-103",
+          "start_utc": "2021-04-20T08:07:12Z",
+          "kind": "NS",
+          "delta_a_est_m": -548.6
+        },
+        {
+          "event_id": "QZS-3-117",
+          "start_utc": "2021-10-15T20:20:50Z",
+          "kind": "NS",
+          "delta_a_est_m": -384.0
+        },
+        {
+          "event_id": "QZS-3-123+QZS-3-124",
+          "start_utc": "2022-01-08T14:11:51Z",
+          "kind": "NS",
+          "delta_a_est_m": 301.7
+        },
+        {
+          "event_id": "QZS-3-136+QZS-3-137",
+          "start_utc": "2022-06-28T14:53:43Z",
+          "kind": "NS",
+          "delta_a_est_m": 493.7
+        },
+        {
+          "event_id": "QZS-3-143",
+          "start_utc": "2022-09-17T10:06:40Z",
+          "kind": "NS",
+          "delta_a_est_m": 685.7
+        },
+        {
+          "event_id": "QZS-3-155",
+          "start_utc": "2023-02-12T13:59:39Z",
+          "kind": "EW",
+          "delta_a_est_m": -3346.3
+        },
+        {
+          "event_id": "QZS-3-156",
+          "start_utc": "2023-03-04T10:59:53Z",
+          "kind": "NS",
+          "delta_a_est_m": 27.4
+        },
+        {
+          "event_id": "QZS-3-159",
+          "start_utc": "2023-04-15T08:15:22Z",
+          "kind": "NS",
+          "delta_a_est_m": -466.3
+        },
+        {
+          "event_id": "QZS-3-160",
+          "start_utc": "2023-04-16T13:59:39Z",
+          "kind": "EW",
+          "delta_a_est_m": -3318.9
+        },
+        {
+          "event_id": "QZS-3-170",
+          "start_utc": "2023-08-24T23:31:04Z",
+          "kind": "NS",
+          "delta_a_est_m": -137.1
+        }
+      ]
+    },
+    "QZS-4": {
+      "norad_id": 42965,
+      "group": "IGSO",
+      "element_source": "gp_history-42965-2021-01-01--2026-01-01.json",
+      "element_sets": 1827,
+      "subsets": {
+        "all": {
+          "events": 7,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [],
+      "object_years": 1.2216,
+      "missed": []
+    },
+    "Sentinel-3B": {
+      "norad_id": 43437,
+      "group": "LEO",
+      "element_source": "gp_history-43437-2021-01-01--2026-01-01.json",
+      "element_sets": 3707,
+      "subsets": {
+        "all": {
+          "events": 44,
+          "covered": 34,
+          "matched": 29
+        },
+        ">=50 m": {
+          "events": 1,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 43,
+      "matched_detections": 29,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [
+        {
+          "start_utc": "2022-03-15T01:25:12Z",
+          "end_utc": "2022-03-15T18:15:04Z",
+          "step_m": 18.9,
+          "z": 176.15
+        },
+        {
+          "start_utc": "2022-10-08T10:23:58Z",
+          "end_utc": "2022-10-08T18:48:55Z",
+          "step_m": 29.0,
+          "z": 83.16
+        },
+        {
+          "start_utc": "2023-03-16T15:04:33Z",
+          "end_utc": "2023-03-16T21:48:29Z",
+          "step_m": 3.5,
+          "z": 59.88
+        }
+      ],
+      "object_years": 1.7978,
+      "missed": [
+        {
+          "event_id": "Sentinel-3B-044",
+          "start_utc": "2021-09-29T08:40:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 6.3
+        },
+        {
+          "event_id": "Sentinel-3B-064",
+          "start_utc": "2023-03-13T15:57:00Z",
+          "kind": "cross-track",
+          "delta_a_est_m": 1.3
+        },
+        {
+          "event_id": "Sentinel-3B-076",
+          "start_utc": "2023-09-28T08:40:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 26.0
+        },
+        {
+          "event_id": "Sentinel-3B-079",
+          "start_utc": "2023-11-03T20:33:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -2.1
+        },
+        {
+          "event_id": "Sentinel-3B-080",
+          "start_utc": "2023-11-15T09:44:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 34.8
+        }
+      ]
+    },
+    "Fengyun-2H": {
+      "norad_id": 43491,
+      "group": "GEO-Fengyun",
+      "element_source": "gp_history-43491-2021-01-01--2026-01-01.json",
+      "element_sets": 4218,
+      "subsets": {
+        "all": {
+          "events": 4,
+          "covered": 3,
+          "matched": 3
+        },
+        "EW": {
+          "events": 4,
+          "covered": 3,
+          "matched": 3
+        }
+      },
+      "detections": 12,
+      "matched_detections": 3,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [],
+      "object_years": 0.9982,
+      "missed": []
+    },
+    "HY-2C": {
+      "norad_id": 46469,
+      "group": "LEO",
+      "element_source": "gp_history-46469-2021-01-01--2026-01-01.json",
+      "element_sets": 6710,
+      "subsets": {
+        "all": {
+          "events": 22,
+          "covered": 20,
+          "matched": 5
+        }
+      },
+      "detections": 5,
+      "matched_detections": 5,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [],
+      "object_years": 2.6301,
+      "missed": [
+        {
+          "event_id": "HY-2C-003",
+          "start_utc": "2021-03-12T03:01:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 14.5
+        },
+        {
+          "event_id": "HY-2C-004",
+          "start_utc": "2021-05-11T01:56:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 10.0
+        },
+        {
+          "event_id": "HY-2C-005",
+          "start_utc": "2021-06-11T07:00:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 9.0
+        },
+        {
+          "event_id": "HY-2C-006",
+          "start_utc": "2021-09-02T10:15:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 12.0
+        },
+        {
+          "event_id": "HY-2C-007",
+          "start_utc": "2021-10-14T01:40:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 9.0
+        },
+        {
+          "event_id": "HY-2C-008",
+          "start_utc": "2022-01-05T06:43:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 18.0
+        },
+        {
+          "event_id": "HY-2C-009",
+          "start_utc": "2022-02-22T02:07:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 11.0
+        },
+        {
+          "event_id": "HY-2C-011",
+          "start_utc": "2022-05-24T09:33:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 14.7
+        },
+        {
+          "event_id": "HY-2C-012",
+          "start_utc": "2022-07-08T11:35:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 15.7
+        },
+        {
+          "event_id": "HY-2C-013",
+          "start_utc": "2022-09-20T04:07:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 18.0
+        },
+        {
+          "event_id": "HY-2C-014",
+          "start_utc": "2022-10-19T00:25:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 19.2
+        },
+        {
+          "event_id": "HY-2C-015",
+          "start_utc": "2022-12-01T03:25:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 18.0
+        },
+        {
+          "event_id": "HY-2C-016",
+          "start_utc": "2023-01-31T01:20:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 38.0
+        },
+        {
+          "event_id": "HY-2C-017",
+          "start_utc": "2023-03-09T02:50:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 26.2
+        },
+        {
+          "event_id": "HY-2C-020",
+          "start_utc": "2023-07-25T03:15:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 21.0
+        }
+      ]
+    },
+    "HY-2D": {
+      "norad_id": 48621,
+      "group": "LEO",
+      "element_source": "gp_history-48621-2021-01-01--2026-01-01.json",
+      "element_sets": 6071,
+      "subsets": {
+        "all": {
+          "events": 21,
+          "covered": 20,
+          "matched": 8
+        },
+        ">=50 m": {
+          "events": 3,
+          "covered": 3,
+          "matched": 1
+        }
+      },
+      "detections": 13,
+      "matched_detections": 8,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [
+        {
+          "start_utc": "2022-01-24T18:45:49Z",
+          "end_utc": "2022-01-25T06:54:33Z",
+          "step_m": -2.1,
+          "z": -61.42
+        }
+      ],
+      "object_years": 2.2393,
+      "missed": [
+        {
+          "event_id": "HY-2D-002",
+          "start_utc": "2021-07-21T04:18:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 8.5
+        },
+        {
+          "event_id": "HY-2D-003",
+          "start_utc": "2021-10-26T04:42:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 19.0
+        },
+        {
+          "event_id": "HY-2D-004",
+          "start_utc": "2022-01-14T10:00:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 16.5
+        },
+        {
+          "event_id": "HY-2D-005",
+          "start_utc": "2022-03-18T07:03:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 14.5
+        },
+        {
+          "event_id": "HY-2D-006",
+          "start_utc": "2022-04-19T12:16:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 16.7
+        },
+        {
+          "event_id": "HY-2D-007",
+          "start_utc": "2022-05-08T07:23:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 55.0
+        },
+        {
+          "event_id": "HY-2D-009",
+          "start_utc": "2022-07-19T02:45:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 130.0
+        },
+        {
+          "event_id": "HY-2D-010",
+          "start_utc": "2022-08-16T08:30:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 17.0
+        },
+        {
+          "event_id": "HY-2D-011",
+          "start_utc": "2022-10-14T02:09:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 20.8
+        },
+        {
+          "event_id": "HY-2D-012",
+          "start_utc": "2022-12-07T08:30:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 26.3
+        },
+        {
+          "event_id": "HY-2D-013",
+          "start_utc": "2023-01-29T03:45:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 30.8
+        },
+        {
+          "event_id": "HY-2D-014",
+          "start_utc": "2023-03-01T10:35:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 20.6
+        }
+      ]
+    },
+    "SWOT": {
+      "norad_id": 54754,
+      "group": "LEO",
+      "element_source": "geo/54754.tle",
+      "element_sets": 2725,
+      "subsets": {
+        "all": {
+          "events": 31,
+          "covered": 15,
+          "matched": 12
+        },
+        ">=50 m": {
+          "events": 7,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 20,
+      "matched_detections": 12,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [
+        {
+          "start_utc": "2023-05-16T13:06:23Z",
+          "end_utc": "2023-05-16T21:37:19Z",
+          "step_m": 31.0,
+          "z": 101.4
+        },
+        {
+          "start_utc": "2023-10-30T22:17:51Z",
+          "end_utc": "2023-10-31T13:43:54Z",
+          "step_m": -1.5,
+          "z": -46.87
+        }
+      ],
+      "object_years": 0.4907,
+      "missed": [
+        {
+          "event_id": "SWOT-021+SWOT-022",
+          "start_utc": "2023-03-30T08:09:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 1.9
+        },
+        {
+          "event_id": "SWOT-026+SWOT-027",
+          "start_utc": "2023-05-13T20:50:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": 0.3
+        },
+        {
+          "event_id": "SWOT-044+SWOT-045",
+          "start_utc": "2023-12-23T03:07:00Z",
+          "kind": "along-track",
+          "delta_a_est_m": -0.2
+        }
+      ]
+    },
+    "QZS-6": {
+      "norad_id": 62876,
+      "group": "GEO",
+      "element_source": "geo/62876.tle",
+      "element_sets": 577,
+      "subsets": {
+        "all": {
+          "events": 0,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [],
+      "object_years": 0.0,
+      "missed": []
+    },
+    "Sentinel-6B": {
+      "norad_id": 66514,
+      "group": "LEO",
+      "element_source": "gp_history-66514-2021-01-01--2026-01-01.json",
+      "element_sets": 90,
+      "subsets": {
+        "all": {
+          "events": 0,
+          "covered": 0,
+          "matched": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": [],
+      "object_years": 0.0,
+      "missed": []
+    }
+  }
+}

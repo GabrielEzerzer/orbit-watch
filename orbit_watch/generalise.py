@@ -3,8 +3,9 @@
     python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetrack \\
         --out findings/generalise
 
-For each satellite, from its Space-Track gp_history and its operator manoeuvre log
-(``orbit_watch.manoeuvre_logs``):
+For each satellite, from its Space-Track gp_history (or, when there is none, its
+``data/geo/<norad>.tle`` from ``orbit_watch.jobs.geo_belt``; ``load_series``) and its operator
+manoeuvre log (``orbit_watch.manoeuvre_logs``):
 
 1. The frozen ISS setting as-is (``FROZEN``: k=4, |z|>=12, |step|>=200 m, NMS 1 day, gaps
    scored only when each side spans <=3 days and the gap <=2 days, as in the ISS run).
@@ -79,7 +80,7 @@ not count as false alarms.
 
 ``run`` never takes ``final=True``: it tunes over its objects, and tuning on a holdout object
 would spend the holdout. The final scoring runs a frozen setting chosen on train objects
-(not built yet).
+(``python -m harness.evals.detector --split test --final``).
 """
 
 from __future__ import annotations
@@ -542,7 +543,7 @@ TEST_PART_NOT_BLIND = (
 FINAL_REFUSED = (
     "generalise.run tunes its setting over the objects it scores, so it never runs on the holdout "
     "(final=True): the final path scores a frozen setting chosen on train objects, without "
-    "tuning, and that scorer is not built yet"
+    "tuning: python -m harness.evals.detector --split test --final"
 )
 
 
