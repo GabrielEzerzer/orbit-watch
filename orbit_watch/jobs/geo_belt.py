@@ -275,7 +275,7 @@ def main(argv: list[str] | None = None) -> int:
     manifest = json.loads(path.read_text(encoding="utf-8"))
     st = SpaceTrackSource.from_env(START.date(), END.date(), cache_dir=args.out.resolve().parent / "spacetrack")
     if st is None:
-        sys.exit("SPACETRACK_USER and SPACETRACK_PASSWORD are not set; run it as `hush run -- ...`")
+        sys.exit("SPACETRACK_USER and SPACETRACK_PASSWORD are not set; set them to your Space-Track login")
     rows, query = st.satcat(("NORAD_CAT_ID", *SATCAT_FIELDS))
     path.write_text(json.dumps(add_satcat(manifest, rows, query), indent=2) + "\n", encoding="utf-8")
     print(f"SATCAT added to {path}; objects missing from the catalogue: {manifest['satcat']['objects_missing']}")

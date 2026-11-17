@@ -70,9 +70,9 @@ Download rules:
 - **CelesTrak** blocks clients that download the same data again and again. A query already
   cached today is read from disk; a response is cached only after it parses, and any non-200
   answer raises. Requests send the User-Agent `orbit-watch/0.1 (research prototype)`.
-- **Space-Track** is off unless `SPACETRACK_USER` and `SPACETRACK_PASSWORD` are set; the
-  credentials live in the hush vault, so run anything that uses it as `hush run -- <command>`. It
-  keeps under 30 requests a minute and 300 an hour. Space-Track allows each object's `gp_history`
+- **Space-Track** is off unless the environment variables `SPACETRACK_USER` and
+  `SPACETRACK_PASSWORD` hold a Space-Track account's login; set them before running anything that
+  uses it. It keeps under 30 requests a minute and 300 an hour. Space-Track allows each object's `gp_history`
   to be downloaded once, so every answer under `$ORBIT_WATCH_DATA/spacetrack/` is kept with no expiry and never
   fetched again. Keep that folder. SATCAT is one full-catalogue query (Space-Track allows it once a
   day and asks for combined queries, not one per object), kept the same way; delete
@@ -96,7 +96,7 @@ Download rules:
 
 Tools:
 
-- `hush run -- python tools/fetch_truth_tles.py`: Space-Track history for the objects added with `groundtruth/splits.json`, holdout objects included: fetching their element sets is allowed, running the detector on them is not.
+- `python tools/fetch_truth_tles.py` (needs the Space-Track variables): Space-Track history for the objects added with `groundtruth/splits.json`, holdout objects included: fetching their element sets is allowed, running the detector on them is not.
 - `python tools/truth_table.py`: regenerates `groundtruth/objects.md`.
 - `pdftotext -layout -enc UTF-8 Classification_of_Geosynchronous_Objects_I21R0.pdf i21.txt`, then `python tools/esa_classification.py i21.txt $ORBIT_WATCH_DATA/geo_modes/segments.csv`: ESA's 2019 per-object classes beside our first 2021 mode, as a Markdown table.
 
@@ -104,8 +104,8 @@ Tools:
 
 ### ISS regression bench (`FINDINGS.md`, `findings/`)
 
-The ISS is the regression bench: every detector change must keep these numbers, and no further
-ISS work is planned. Frozen setting: `k = 4`, `|z| >= 12`, `|step| >= 200 m`, non-maximum suppression over 1 day,
+The ISS is the regression bench: every detector change must keep these numbers, and the ISS
+setting is not tuned further. Frozen setting: `k = 4`, `|z| >= 12`, `|step| >= 200 m`, non-maximum suppression over 1 day,
 chosen by F1 on 2021-2022 only. An event matches a detection when its time overlaps the
 detection's interval widened by 0.5 day, one to one. Both burn lists are lower bounds, so an
 unmatched detection is a lead, not a false alarm proven.
@@ -174,7 +174,7 @@ The kept setting is `harness/evals/settings/inc-vector.json`: the ISS setting in
 plus the inclination channel on GEO, which scores the step of the inclination vector
 (i cos RAAN, i sin RAAN) with `inc_z_min` 30 and `inc_step_min_deg` 0.02.
 
-Tuning the detector burn by burn against these scores is stopped. Its GEO labels are the logs of
+The detector is no longer tuned burn by burn against these scores. The evaluation's GEO labels are the logs of
 two QZSS satellites (QZS-3 and QZS-6), which are kept far more cleanly than most of the belt, so a
 better score here says little about the belt the dataset covers. A detector change now has to pass
 these gates instead:
@@ -209,10 +209,11 @@ latest-issued sets on the two objects compared (Fengyun-2H, QZS-4). It reads any
 
 ```
 python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '<bundles>/**/tle2021.txt' --bundle '<bundles>/**/tle2022.txt' --bundle '<bundles>/**/tle2023.txt' --bundle '<bundles>/**/tle2024.txt' --bundle '<bundles>/**/tle2025.txt' --out $ORBIT_WATCH_DATA/geo
-hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out $ORBIT_WATCH_DATA/geo
+python -I -m orbit_watch.jobs.geo_belt satcat --out $ORBIT_WATCH_DATA/geo
 ```
 
-The manifest records the rule, each bundle's sha256 and per-object counts.
+The `satcat` step needs the Space-Track variables. The manifest records the rule, each bundle's
+sha256 and per-object counts.
 
 The full run (commit 74a831f, about 16 minutes) read 177,075,602 lines (88,220,159 pairs) and
 kept 1,808 objects with 4,957,896 TLEs, 1,804 of them by the rule. The other four were LEO objects

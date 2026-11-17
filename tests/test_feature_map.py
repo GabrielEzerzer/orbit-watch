@@ -17,7 +17,7 @@ FIELDS = ("name", "kind", "description", "command", "inputs", "outputs", "test")
 
 
 def target(command: str) -> tuple[str, list[str]]:
-    words = command.removeprefix("hush run -- ").split()
+    words = command.split()
     assert words[0] == "python", command
     if words[1] == "-m":
         name, rest, run = words[2], words[3:], ["-m", words[2]]

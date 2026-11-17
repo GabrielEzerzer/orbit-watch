@@ -23,8 +23,8 @@
       "name": "Add SATCAT entries to the GEO-region set",
       "kind": "job",
       "description": "Adds each object's Space-Track SATCAT entry (type, launch, decay) to the GEO-region manifest.",
-      "command": "hush run -- python -m orbit_watch.jobs.geo_belt satcat --out DIR",
-      "inputs": ["DIR/manifest.json from the build command", "Space-Track credentials through hush"],
+      "command": "python -m orbit_watch.jobs.geo_belt satcat --out DIR",
+      "inputs": ["DIR/manifest.json from the build command", "Space-Track login in SPACETRACK_USER and SPACETRACK_PASSWORD"],
       "outputs": ["DIR/manifest.json with SATCAT entries", "the SATCAT query cached under spacetrack/ beside DIR"],
       "test": "tests/test_geo_belt.py"
     },
@@ -50,8 +50,8 @@
       "name": "Fetch element sets for the labelled objects",
       "kind": "tool",
       "description": "Fetches Space-Track gp_history for 2021-2025 for each object added in groundtruth/splits.json.",
-      "command": "hush run -- python tools/fetch_truth_tles.py [--cache-dir DIR]",
-      "inputs": ["Space-Track credentials through hush", "groundtruth/splits.json"],
+      "command": "python tools/fetch_truth_tles.py [--cache-dir DIR]",
+      "inputs": ["Space-Track login in SPACETRACK_USER and SPACETRACK_PASSWORD", "groundtruth/splits.json"],
       "outputs": ["CACHE-DIR/gp_history-<norad>-2021-01-01--2026-01-01.json", "counts and file sizes on stdout"],
       "test": "tests/test_feature_map.py"
     },
