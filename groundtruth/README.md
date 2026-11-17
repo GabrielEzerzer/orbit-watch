@@ -115,6 +115,26 @@ Credits and citations, as the sources ask:
 - QZSS: "The user shall indicate proper credit and describe as reference document in any publication of the user the analysis result obtained by using this data." Reference document: Cabinet Office, Government of Japan, QZSS Operational History Information (QZS-1, QZS-1R, QZS-2, QZS-3, QZS-4, QZS-6), `https://qzss.go.jp/en/technical/qzssinfo/index.html`, page dated 2026-11-04.
 - Fengyun: the repository asks for no particular credit and states no licence. Its README points to the paper *Wide-scale Monitoring of Satellite Lifetimes: Pitfalls and a Benchmark Dataset* for a description of the data set; cite that paper and `https://github.com/dpshorten/TLE_observation_benchmark_dataset` (commit `4cf0b15`). The labels are used here only to tune and score the detector.
 
+## Known GEO events (`geo_events.csv`)
+
+33 dated changes of station-keeping state on 24 GEO-region objects in 2021-2025, used by `harness/evals/mode_events.py` to score the mode layer. Each row holds the object's NORAD number, the event type (`relocation_start`, `relocation_end`, `graveyard`, `keeping_stop`, `ns_keeping_stop`), the date, its precision (`day`, or `month`, scored as the 15th), the longitudes when the source gives them, the source URL and a quote copied from that page from which the date can be read. A quote may join a page's dateline and a sentence with ` | ` when the sentence gives the day and the dateline the year, or join two passages of the same page with `...`.
+
+How the rows were collected and checked:
+
+- Candidates came from web searches of operator and agency news pages, space news sites and published tracker analyses. Only events that happened are kept; planned or expected dates are not.
+- Every quote was checked by downloading the page and testing that each quoted passage appears in its text (whitespace, typographic quotes and dashes normalised, case ignored). Rows whose quote did not appear, or whose page could not be downloaded, were dropped.
+- NORAD numbers come from the Space-Track SATCAT names in the GEO-region manifest, or from the source when it states them.
+- `event_id` is `<norad_id>-<event_type>-<date>`, and `split` is `dev` when the last hex digit of the sha256 of `event_id` is even, else `test`. `tests/test_mode_events.py` checks both rules on this file.
+
+Sources: Wikipedia (8 rows), Advanced Television (7), KeepTrack (4), EUMETSAT (3), ISR University (3), the SatTrackCam blog (2), ISRO (2), NOAA NESDIS (1), Eutelsat's newsroom (1), Payload (1) and Kayhan Space (1).
+
+Caveats:
+
+- Some dates mark the end of a step rather than its start: INSAT-4B's is its decommissioning after disposal, GSAT-12's the end of passivation, Express-AM33's the day it was ready for operation at its new slot, and Meteosat-9's arrival is the month of the page that reports the move complete. Meteosat-8's is the start of re-orbiting.
+- The Luch (Olymp) rows in 2021 and 2025 and the SJ-17 rows rest on tracker and hobbyist analyses of public element sets, not on operator statements.
+- No source with a stated date was found for an end of north-south keeping, so that type has no rows.
+- Dropped during checking: Intelsat 33e (the source dates its breakup, not an end of keeping), GOES-19 (the date is when it became operational, not its arrival), Thaicom-9A (its catalogue object could not be identified), Eutelsat 113 West A and the SJ-21 tow of Compass G2 (the quotes did not appear on the pages).
+
 ## Train and holdout (`splits.json`, `objects.md`)
 
 `splits.json` assigns every labelled object to `train` or `holdout`. It is written by `python -m orbit_watch.truth --write`, and `tests/test_truth.py` checks that the committed file still follows the rule, which was fixed before any detector output existed for the new objects:
