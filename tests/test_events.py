@@ -136,6 +136,19 @@ def test_holds_less_than_half_a_degree_apart_are_one_slot(monkeypatch):
     assert E.events_from_track(M.track(element_sets(days, lon, rate))) == []
 
 
+def test_a_move_out_and_back_to_the_same_slot_is_a_start_and_an_end(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    out = (days >= 65.0) & (days < 75.0)
+    back = (days >= 75.0) & (days < 85.0)
+    rate = rate + np.where(out, -0.5, 0.0) + np.where(back, 0.5, 0.0)
+    lon = lon + np.cumsum(np.where(out, -0.5, 0.0) + np.where(back, 0.5, 0.0)) * 0.25
+    segs = [held(0, 60, 9.98, 10.02), held(60, 90, 5.0, 10.02, "drifting"), held(90, 150, 9.98, 10.03)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [e.event_type for e in found] == ["relocation_start", "relocation_end"]
+
+
 def test_an_arrival_is_never_dated_before_its_departure(monkeypatch):
     days = np.arange(0.0, 150.0, 0.25)
     lon, rate = quiet_keeper(days)

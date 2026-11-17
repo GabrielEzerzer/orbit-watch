@@ -99,6 +99,10 @@ def _sustained(tr: Track, flags: np.ndarray, lo: float, hi: float) -> int | None
     return None
 
 
+def _moved(tr: Track, a: Segment, nxt: Segment) -> bool:
+    return _sustained(tr, np.abs(tr.rate) >= FAST_RATE, _day(a.end), _day(nxt.start)) is not None
+
+
 def _departure_date(tr: Track, held: Segment, b: Segment, limit: float) -> int | None:
     lo = max(_day(held.start), _day(b.start) - REACH_DAYS)
     return _sustained(tr, ~_in_hold(tr, held), lo, min(_day(b.start) + REACH_DAYS, limit))
@@ -266,7 +270,7 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _days_of(tr, j), "rate_entry"))
         elif a.mode in HELD:
             nxt = next((s for s in rest if s.mode in HELD), None)
-            if nxt is not None and _arcs_overlap(a, nxt):
+            if nxt is not None and _arcs_overlap(a, nxt) and not _moved(tr, a, nxt):
                 same_slot = nxt
                 continue
             kind, rise = _departure_type(tr, a, rest)
