@@ -1,6 +1,6 @@
 {
-  "commit": "ab28f95a5fdd9d75c36dc12f24849f86e10ef90f",
-  "dirty": true,
+  "commit": "5e8f2e5cecbafb4935123e87658027ec9c6e2233",
+  "dirty": false,
   "events_file": "geo_events.csv",
   "window_days": 45,
   "dev": {
