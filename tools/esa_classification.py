@@ -10,6 +10,8 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from orbit_watch.sources import data_dir
+
 CHAPTERS = {"C1": (51, 83), "C2": (83, 96), "C4": (96, 97), "D": (97, 167), "L1": (167, 178),
             "L2": (178, 182), "L3": (182, 191), "I": (191, 193), "Ind": (193, 194)}
 OURS = {"C1": "controlled_lon_inc", "C2": "controlled_lon", "C4": "drifting", "D": "drifting",
@@ -53,10 +55,10 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="ESA's per-object classes for 1 January 2019 beside our first mode of 2021.")
     p.add_argument("esa_text", type=Path, help="pdftotext -layout -enc UTF-8 output of the Issue 21 PDF")
     p.add_argument("segments", type=Path, help="segments.csv from orbit_watch.jobs.geo_modes")
-    p.add_argument("--manifest", type=Path, default=Path("data/geo/manifest.json"))
+    p.add_argument("--manifest", type=Path, help="default: $ORBIT_WATCH_DATA/geo/manifest.json")
     args = p.parse_args(argv)
     esa = esa_classes(args.esa_text.read_text(encoding="utf-8"))
-    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    manifest = json.loads((args.manifest or data_dir() / "geo" / "manifest.json").read_text(encoding="utf-8"))
     cospar_to_norad = {o["satcat"]["INTLDES"]: int(n) for n, o in manifest["objects"].items() if o.get("satcat")}
     by_class = agreement(esa, cospar_to_norad, first_modes(args.segments))
     print(f"{len(esa)} ESA rows kept, {sum(sum(c.values()) for c in by_class.values())} matched to a mode\n")

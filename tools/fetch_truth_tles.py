@@ -7,7 +7,7 @@ import argparse
 from datetime import date
 from pathlib import Path
 
-from orbit_watch.spacetrack import CACHE_DIR, RateLimiter, SpaceTrackSource
+from orbit_watch.spacetrack import RateLimiter, SpaceTrackSource
 from orbit_watch.truth import load_splits
 
 START, END = date(2021, 1, 1), date(2026, 1, 1)
@@ -15,7 +15,7 @@ START, END = date(2021, 1, 1), date(2026, 1, 1)
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Fetch Space-Track gp_history 2021-01-01..2026-01-01 for the objects added in splits.json.")
-    p.add_argument("--cache-dir", type=Path, default=CACHE_DIR)
+    p.add_argument("--cache-dir", type=Path, help="default: $ORBIT_WATCH_DATA/spacetrack")
     args = p.parse_args(argv)
     source = SpaceTrackSource.from_env(START, END, cache_dir=args.cache_dir, limiter=RateLimiter())
     if source is None:

@@ -51,16 +51,19 @@ from.
 
 ## Data
 
-`data/` is git-ignored. Inputs live there:
+Data lives outside the repo, in the folder named by the `ORBIT_WATCH_DATA` environment variable
+(written `$ORBIT_WATCH_DATA` below). The fetchers, the tools and the eval read it from there and stop
+with a message naming the variable when it is unset; the jobs take their folders as arguments. The
+tests need no data.
 
 | Path | Contents | Made by |
 |---|---|---|
-| `data/archive/<norad>.tle` | OndroNR/tle-archive history, 2021-01-01 to 2023-12-28 | `jobs.extract_tle_archive` |
-| `data/spacetrack/` | Space-Track `gp_history` and SATCAT answers, kept for good | `SpaceTrackSource`, `tools/fetch_truth_tles.py`, `geo_belt satcat` |
-| `data/geo/` | `<norad>.tle` and `manifest.json` for every GEO-region object, 2021-2025 | `jobs.geo_belt` |
-| `data/geo_modes/segments.csv` | One row per mode segment | `jobs.geo_modes` |
-| `data/sources/{qzss,fengyun}/` | Operator manoeuvre logs as published (QZSS, Fengyun) | downloaded by hand |
-| `data/celestrak/<UTC date>/` | CelesTrak downloads, cached per UTC day | `celestrak` |
+| `$ORBIT_WATCH_DATA/archive/<norad>.tle` | OndroNR/tle-archive history, 2021-01-01 to 2023-12-28 | `jobs.extract_tle_archive` |
+| `$ORBIT_WATCH_DATA/spacetrack/` | Space-Track `gp_history` and SATCAT answers, kept for good | `SpaceTrackSource`, `tools/fetch_truth_tles.py`, `geo_belt satcat` |
+| `$ORBIT_WATCH_DATA/geo/` | `<norad>.tle` and `manifest.json` for every GEO-region object, 2021-2025 | `jobs.geo_belt` |
+| `$ORBIT_WATCH_DATA/geo_modes/segments.csv` | One row per mode segment | `jobs.geo_modes` |
+| `$ORBIT_WATCH_DATA/sources/{qzss,fengyun}/` | Operator manoeuvre logs as published (QZSS, Fengyun) | downloaded by hand |
+| `$ORBIT_WATCH_DATA/celestrak/<UTC date>/` | CelesTrak downloads, cached per UTC day | `celestrak` |
 
 Download rules:
 
@@ -70,32 +73,32 @@ Download rules:
 - **Space-Track** is off unless `SPACETRACK_USER` and `SPACETRACK_PASSWORD` are set; the
   credentials live in the hush vault, so run anything that uses it as `hush run -- <command>`. It
   keeps under 30 requests a minute and 300 an hour. Space-Track allows each object's `gp_history`
-  to be downloaded once, so every answer under `data/spacetrack/` is kept with no expiry and never
+  to be downloaded once, so every answer under `$ORBIT_WATCH_DATA/spacetrack/` is kept with no expiry and never
   fetched again. Keep that folder. SATCAT is one full-catalogue query (Space-Track allows it once a
   day and asks for combined queries, not one per object), kept the same way; delete
-  `data/spacetrack/satcat-<fields>.json` to fetch a newer one.
+  `$ORBIT_WATCH_DATA/spacetrack/satcat-<fields>.json` to fetch a newer one.
 
 ## Running each job and tool
 
 | Job | Command | Output |
 |---|---|---|
-| ISS calibration (tune on 2021-2022, score 2023) | `python -m orbit_watch.calibrate --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out <dir>` | `calibration.json`, `detections.csv`, `events_scored.csv`, `iss_sma.png` |
-| ISS, frozen setting, both truth lists | `python -m orbit_watch.calibrate --frozen --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/combined_truth` | `findings/combined_truth/` |
-| ISS holdout 2024-2025 and CV | `python -m orbit_watch.holdout --gp data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json --archive data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out findings` | `findings/holdout_2024_2025/`, `findings/cv_2021_2025/` |
+| ISS calibration (tune on 2021-2022, score 2023) | `python -m orbit_watch.calibrate --tle $ORBIT_WATCH_DATA/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out <dir>` | `calibration.json`, `detections.csv`, `events_scored.csv`, `iss_sma.png` |
+| ISS, frozen setting, both truth lists | `python -m orbit_watch.calibrate --frozen --tle $ORBIT_WATCH_DATA/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/combined_truth` | `findings/combined_truth/` |
+| ISS holdout 2024-2025 and CV | `python -m orbit_watch.holdout --gp $ORBIT_WATCH_DATA/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json --archive $ORBIT_WATCH_DATA/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out findings` | `findings/holdout_2024_2025/`, `findings/cv_2021_2025/` |
 | ISS holdout, both truth lists | the same with `--truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/combined_truth_holdout` | `findings/combined_truth_holdout/` |
-| Injection-recovery | `python -m orbit_watch.inject --spacetrack data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/injection` | `findings/injection/` |
-| Label CSVs from operator logs | `python -m orbit_watch.manoeuvre_logs --qzss-dir data/sources/qzss --fengyun-dir data/sources/fengyun --out groundtruth` | `groundtruth/*_manoeuvres.csv` |
-| Generalisation (QZSS GEO) | `python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetrack --out findings/generalise` | `findings/generalise/` |
+| Injection-recovery | `python -m orbit_watch.inject --spacetrack $ORBIT_WATCH_DATA/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/injection` | `findings/injection/` |
+| Label CSVs from operator logs | `python -m orbit_watch.manoeuvre_logs --qzss-dir $ORBIT_WATCH_DATA/sources/qzss --fengyun-dir $ORBIT_WATCH_DATA/sources/fengyun --out groundtruth` | `groundtruth/*_manoeuvres.csv` |
+| Generalisation (QZSS GEO) | `python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir $ORBIT_WATCH_DATA/spacetrack --out findings/generalise` | `findings/generalise/` |
 | Frozen per-regime eval | `python -m harness.evals.detector --split dev --data-dir data [--settings harness/evals/settings/inc-vector.json]` | `harness/evals/results/<split>-<settings>.json` |
-| TLE archive extraction (about 5 min, a 2 GB clone) | `python -m orbit_watch.jobs.extract_tle_archive --out data/archive --norad 25544` | `<norad>.tle`, `manifest.json` |
-| GEO-region history (about 16 min) | see "Every object in the GEO region" | `data/geo/` |
-| GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir data/geo --out data/geo_modes` | `data/geo_modes/segments.csv`, `findings/geo_modes/` |
+| TLE archive extraction (about 5 min, a 2 GB clone) | `python -m orbit_watch.jobs.extract_tle_archive --out $ORBIT_WATCH_DATA/archive --norad 25544` | `<norad>.tle`, `manifest.json` |
+| GEO-region history (about 16 min) | see "Every object in the GEO region" | `$ORBIT_WATCH_DATA/geo/` |
+| GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir $ORBIT_WATCH_DATA/geo --out $ORBIT_WATCH_DATA/geo_modes` | `$ORBIT_WATCH_DATA/geo_modes/segments.csv`, `findings/geo_modes/` |
 
 Tools:
 
 - `hush run -- python tools/fetch_truth_tles.py`: Space-Track history for the objects added with `groundtruth/splits.json`, holdout objects included: fetching their element sets is allowed, running the detector on them is not.
 - `python tools/truth_table.py`: regenerates `groundtruth/objects.md`.
-- `pdftotext -layout -enc UTF-8 Classification_of_Geosynchronous_Objects_I21R0.pdf i21.txt`, then `python tools/esa_classification.py i21.txt data/geo_modes/segments.csv`: ESA's 2019 per-object classes beside our first 2021 mode, as a Markdown table.
+- `pdftotext -layout -enc UTF-8 Classification_of_Geosynchronous_Objects_I21R0.pdf i21.txt`, then `python tools/esa_classification.py i21.txt $ORBIT_WATCH_DATA/geo_modes/segments.csv`: ESA's 2019 per-object classes beside our first 2021 mode, as a Markdown table.
 
 ## Results
 
@@ -205,15 +208,15 @@ latest-issued sets on the two objects compared (Fengyun-2H, QZS-4). It reads any
 `.zip` bundle, so Space-Track's zips also work.
 
 ```
-python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '<bundles>/**/tle2021.txt' --bundle '<bundles>/**/tle2022.txt' --bundle '<bundles>/**/tle2023.txt' --bundle '<bundles>/**/tle2024.txt' --bundle '<bundles>/**/tle2025.txt' --out data/geo
-hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out data/geo
+python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '<bundles>/**/tle2021.txt' --bundle '<bundles>/**/tle2022.txt' --bundle '<bundles>/**/tle2023.txt' --bundle '<bundles>/**/tle2024.txt' --bundle '<bundles>/**/tle2025.txt' --out $ORBIT_WATCH_DATA/geo
+hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out $ORBIT_WATCH_DATA/geo
 ```
 
 The manifest records the rule, each bundle's sha256 and per-object counts.
 
 The full run (commit 74a831f, about 16 minutes) read 177,075,602 lines (88,220,159 pairs) and
-kept 1,808 objects with 4,957,896 TLEs, 1,804 of them by the rule (the other four were added with
-`--also` and nothing reads them): a 184 MB `geo.zip`. 136
+kept 1,808 objects with 4,957,896 TLEs, 1,804 of them by the rule. The other four were LEO objects
+added with `--also` and have since been deleted, so the set holds 1,804 objects and 4,940,529 TLEs. 136
 objects have sets outside the region, such as a transfer orbit before arrival. 635,284 lines were
 rejected (the ones looked at are 68-character lines of analyst objects, 8xxxx), 785,425 pairs
 restated an epoch already held with different lines, and 8 pairs failed `parse_tle`.

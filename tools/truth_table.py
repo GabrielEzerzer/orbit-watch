@@ -9,7 +9,7 @@ import csv
 import json
 from pathlib import Path
 
-from orbit_watch.spacetrack import CACHE_DIR
+from orbit_watch.sources import data_dir
 from orbit_watch.truth import GROUNDTRUTH, load_splits
 
 SPAN = "2021-01-01--2026-01-01"
@@ -43,9 +43,9 @@ def table(tle_dir: Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Write groundtruth/objects.md: one row per labelled object, generated from the files.")
-    p.add_argument("--tle-dir", type=Path, default=CACHE_DIR)
+    p.add_argument("--tle-dir", type=Path, help="default: $ORBIT_WATCH_DATA/spacetrack")
     args = p.parse_args(argv)
-    text = table(args.tle_dir)
+    text = table(args.tle_dir or data_dir() / "spacetrack")
     (GROUNDTRUTH / "objects.md").write_text(text, encoding="utf-8", newline="\n")
     print(text)
     return 0

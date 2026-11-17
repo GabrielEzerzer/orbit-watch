@@ -7,6 +7,15 @@ import pytest
 from orbit_watch import DirectorySource, parse_tle, to_series
 from orbit_watch.generalise import load_series
 from orbit_watch.holdout import load_gp_history
+from orbit_watch.sources import data_dir
+
+
+def test_data_dir_comes_from_orbit_watch_data(monkeypatch, tmp_path):
+    monkeypatch.setenv("ORBIT_WATCH_DATA", str(tmp_path))
+    assert data_dir() == tmp_path
+    monkeypatch.delenv("ORBIT_WATCH_DATA")
+    with pytest.raises(RuntimeError, match="ORBIT_WATCH_DATA"):
+        data_dir()
 
 
 def test_directory_source_reads_every_format_and_filters(mock_dir):
