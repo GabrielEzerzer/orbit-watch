@@ -17,7 +17,8 @@ MAX_BLOCK_DAYS = 10.0
 END_TRIES = 3
 SIDE_SETS = 6
 SIDE_DAYS = 5.0
-MIN_SIDE_SETS = 1
+SOLID_SIDE_SETS = 3
+SOLID_SIDE_DAYS = 1.0
 JUMP_Z = 6.0
 EXCURSION_Z = 12.0
 RETURN_SHARE = 0.4
@@ -71,7 +72,7 @@ def noise(days: np.ndarray, y: np.ndarray, floor: float) -> float:
     return max(float(1.4826 * np.median(np.abs(d2)) / np.sqrt(2.0)) if len(d2) else floor, floor)
 
 
-def _sides(days: np.ndarray, jumps: np.ndarray, s: int, e: int) -> tuple[np.ndarray, np.ndarray] | None:
+def _sides(days: np.ndarray, jumps: np.ndarray, s: int, e: int) -> tuple[np.ndarray, np.ndarray, bool] | None:
     left: list[int] = []
     for i in range(s - 1, max(s - 1 - SIDE_SETS, -1), -1):
         if days[s] - days[i] > SIDE_DAYS or (left and jumps[i]):
@@ -82,17 +83,18 @@ def _sides(days: np.ndarray, jumps: np.ndarray, s: int, e: int) -> tuple[np.ndar
         if days[i] - days[e] > SIDE_DAYS or (right and jumps[i - 1]):
             break
         right.append(i)
-    if len(left) < MIN_SIDE_SETS or len(right) < MIN_SIDE_SETS:
+    if not left or not right:
         return None
-    return np.array(left[::-1]), np.array(right)
+    solid = all(len(x) >= SOLID_SIDE_SETS and abs(days[x[-1]] - days[x[0]]) >= SOLID_SIDE_DAYS for x in (left, right))
+    return np.array(left[::-1]), np.array(right), solid
 
 
 def block_scores(days: np.ndarray, ys: dict[str, np.ndarray], jumps: np.ndarray, s: int, e: int
-                 ) -> tuple[dict[str, float], dict[str, float], float] | None:
+                 ) -> tuple[dict[str, float], dict[str, float], float, bool] | None:
     sides = _sides(days, jumps, s, e)
     if sides is None:
         return None
-    left, right = sides
+    left, right, solid = sides
     block = np.arange(s, e + 1)
     both = np.concatenate([left, right])
     mid = 0.5 * (days[s] + days[e])
@@ -104,17 +106,19 @@ def block_scores(days: np.ndarray, ys: dict[str, np.ndarray], jumps: np.ndarray,
         gap[k] = float(c_left - c_right)
     exc = {"a": abs(off["a"]), "i": float(np.hypot(off["ix"], off["iy"]))}
     ret = {"a": abs(gap["a"]), "i": float(np.hypot(gap["ix"], gap["iy"]))}
-    return exc, ret, abs(gap["lon"])
+    return exc, ret, abs(gap["lon"]), solid
 
 
-def is_snapback(exc: dict[str, float], ret: dict[str, float], lon_gap: float, sigma: dict[str, float]) -> bool:
+def is_snapback(exc: dict[str, float], ret: dict[str, float], lon_gap: float, solid: bool,
+                sigma: dict[str, float]) -> bool:
     share = {c: ret[c] / max(exc[c], MIN_EXCURSION[c]) for c in exc}
-    evidence = any(exc[c] >= max(EXCURSION_Z * sigma[c], MIN_EXCURSION[c]) and share[c] <= RETURN_SHARE for c in exc)
+    judged = exc if solid else ("i",)
+    evidence = any(exc[c] >= max(EXCURSION_Z * sigma[c], MIN_EXCURSION[c]) and share[c] <= RETURN_SHARE for c in judged)
     return evidence and max(share.values()) <= LOOSE_RETURN_SHARE and lon_gap <= LON_RETURN_DEG
 
 
 def snapback_blocks(records: Sequence[ElementSet]) -> list[tuple[int, int, Block]]:
-    if len(records) < 2 * MIN_SIDE_SETS + 1:
+    if len(records) < 3:
         return []
     days, ys = channels(records)
     sig = {k: noise(days, y, NOISE_FLOOR[k]) for k, y in ys.items()}
@@ -136,7 +140,7 @@ def snapback_blocks(records: Sequence[ElementSet]) -> list[tuple[int, int, Block
             sc = block_scores(days, ys, jumps, s, e)
             if sc is None or not is_snapback(*sc, sigma):
                 continue
-            exc, ret, _ = sc
+            exc, ret, _, _ = sc
             worst = max(exc, key=lambda c: exc[c] / max(sigma[c], MIN_EXCURSION[c] / EXCURSION_Z))
             out.append((s, e, Block(records[s].epoch, records[e].epoch, e - s + 1, round(exc[worst], 4),
                                     round(ret[worst], 4), worst)))

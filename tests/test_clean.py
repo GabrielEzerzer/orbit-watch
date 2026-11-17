@@ -3,6 +3,7 @@ from datetime import timedelta
 import numpy as np
 
 from orbit_watch import modes as M
+from orbit_watch import clean as C
 from orbit_watch.clean import drop_snapback_blocks
 from orbit_watch.elements import _build
 from orbit_watch.geo import gmst_deg
@@ -75,3 +76,17 @@ def test_north_south_burn_followed_by_an_east_west_burn_is_kept():
     lon = lon + np.cumsum(np.where(DAYS >= 21.0, -0.01, 0.0) * 0.25)
     kept, blocks = drop_snapback_blocks(sets(DAYS, lon, rate, inc, raan))
     assert blocks == []
+
+
+def test_a_thin_side_is_judged_on_the_inclination_vector_only():
+    sigma = {"a": 0.005, "i": 0.0007}
+    a_only = ({"a": 1.0, "i": 0.001}, {"a": 0.1, "i": 0.0005}, 0.01)
+    inc = ({"a": 0.05, "i": 0.03}, {"a": 0.01, "i": 0.003}, 0.01)
+    assert C.is_snapback(*a_only, True, sigma) and not C.is_snapback(*a_only, False, sigma)
+    assert C.is_snapback(*inc, False, sigma)
+    days = np.array([0.0, 1.0, 1.2, 1.4, 1.6, 2.6, 2.8, 3.0, 3.2])
+    jumps = np.array([True, False, False, False, True, False, False, False])
+    _, _, solid = C._sides(days, jumps, 1, 4)
+    assert solid is False
+    _, _, solid = C._sides(np.arange(12) * 0.5, np.zeros(11, bool), 5, 6)
+    assert solid is True
