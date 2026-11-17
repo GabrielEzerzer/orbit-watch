@@ -46,7 +46,9 @@ from.
 | `orbit_watch.generalise` | Scores the ISS setting and a GEO tune on the QZSS (GEO) logs |
 | `orbit_watch.geo` | Sub-satellite longitude |
 | `orbit_watch.modes` | ESA operating mode of a GEO-region object per 30-day window |
-| `orbit_watch.jobs.*` | Long jobs: `extract_tle_archive`, `geo_belt`, `geo_modes` |
+| `orbit_watch.clean` | Drops snap-back blocks: runs of element sets whose semi-major axis or inclination vector jumps away and returns while the longitude does not |
+| `orbit_watch.events` | Dated station-keeping state changes of a GEO-region object, one per change, with the signal that dated it |
+| `orbit_watch.jobs.*` | Long jobs: `extract_tle_archive`, `geo_belt`, `geo_modes`, `state_changes` |
 | `harness.evals.detector` | The frozen per-regime evaluation; nothing in `orbit_watch` imports `harness` |
 
 ## Data
@@ -62,6 +64,7 @@ tests need no data.
 | `$ORBIT_WATCH_DATA/spacetrack/` | Space-Track `gp_history` and SATCAT answers, kept for good | `SpaceTrackSource`, `tools/fetch_truth_tles.py`, `geo_belt satcat` |
 | `$ORBIT_WATCH_DATA/geo/` | `<norad>.tle` and `manifest.json` for every GEO-region object, 2021-2025 | `jobs.geo_belt` |
 | `$ORBIT_WATCH_DATA/geo_modes/segments.csv` | One row per mode segment | `jobs.geo_modes` |
+| `$ORBIT_WATCH_DATA/state_changes/events.csv` | One row per dated state change | `jobs.state_changes` |
 | `$ORBIT_WATCH_DATA/sources/{qzss,fengyun}/` | Operator manoeuvre logs as published (QZSS, Fengyun) | downloaded by hand |
 | `$ORBIT_WATCH_DATA/celestrak/<UTC date>/` | CelesTrak downloads, cached per UTC day | `celestrak` |
 
@@ -93,6 +96,8 @@ Download rules:
 | TLE archive extraction (about 5 min, a 2 GB clone) | `python -m orbit_watch.jobs.extract_tle_archive --out $ORBIT_WATCH_DATA/archive --norad 25544` | `<norad>.tle`, `manifest.json` |
 | GEO-region history (about 16 min) | see "Every object in the GEO region" | `$ORBIT_WATCH_DATA/geo/` |
 | GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir $ORBIT_WATCH_DATA/geo --out $ORBIT_WATCH_DATA/geo_modes` | `$ORBIT_WATCH_DATA/geo_modes/segments.csv`, `findings/geo_modes/` |
+| GEO state changes (2 to 18 min; measured runs took 145 to 1,083 s) | `python -m orbit_watch.jobs.state_changes` | `$ORBIT_WATCH_DATA/state_changes/events.csv`, `findings/state_changes/` |
+| GEO state changes evaluation | `python -m harness.evals.state_changes [--split dev\|all]` | `findings/state_changes/eval_<split>.json` and `.csv` |
 
 Tools:
 
@@ -183,8 +188,8 @@ these gates instead:
 |---|---|
 | Guardrail: GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
 | Guardrail: ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
-| At most 0.2 false events per object-year, counted on state-change events | not measured: the event unit is not built |
-| Recall and dating error on a cited list of known GEO events | measured for the mode layer, not yet for dated state changes: 26 of 33 events caught, median date error 11.5 days |
+| At most 0.2 false events per object-year, counted on state-change events | met on QZS-3 and QZS-6, the only objects with burn logs and the objects the snap-back filter was tuned on: 0 events over 5.412 object-years of log coverage. They keep station throughout, so the check sees false departures, arrivals and keeping stops on a held object; it does not see extra or mistyped events around a real change, or false free burns on objects that are not held |
+| Recall and dating error on a cited list of known GEO events | dated state changes: dev 13/13, median date error 2 days; test 17/20, median 3 days (scored once). The mode layer alone: 26/33, median 11.5 days |
 | A hand audit of about 50 events from across the belt | not done |
 
 GEO north-south recall is reported, not gated: train 6/17 = 0.353, dev 4/14 = 0.286. The
@@ -330,6 +335,91 @@ swings of 0.2-1.8 deg. ESA lists all seven as L2 or L1; the comparison table cou
 GStar 1, whose row cites a page outside the L2 chapter, nor ACTS, whose status row has no
 class. The two L3 objects we call drifting, Intelsat 804 (25110) and Cosmos 2479 (38101), pass
 over the high barrier in 2021-2025.
+
+### Dated state changes (`orbit_watch.events`, `findings/state_changes/`)
+
+The event unit is one change of an object's station-keeping state, dated to the day, with the
+signal that dated it and its size. `jobs.state_changes` writes one row per event for every
+GEO-region object except the 5 holdout objects: `norad_id`, `event_type`, `date`, `signal`,
+`size`, `lon_before`, `lon_after`, `mode_before`, `mode_after` and `mode_change` (the date of the
+mode-layer boundary the event came from). On an arrival from a stretch that is not held,
+`lon_before` is the median longitude of the 10 days before it. The event types are:
+
+| type | what it is | dated by (`signal`) | `size` |
+|---|---|---|---|
+| `relocation_start` | a held object leaves its slot and is held again later | `rate_exit`: the first set that leaves the held drift band or longitude box and stays out 5 days | rise of the semi-major axis, km (0 when the next mode segment is already held) |
+| `relocation_end` | a moving object starts to hold a slot | `rate_entry`: the first set that stays inside the new slot's band | 0 |
+| `graveyard` | a held object leaves and its semi-major axis rises at least 150 km, with no later hold | `rate_exit` | rise, km |
+| `keeping_stop` | a held object leaves with no climb and no later hold | `burn_gap`: the last east-west burn plus half the burn interval; `rate_exit` when fewer than 3 burns are seen | rise, km |
+| `ns_keeping_stop` | `controlled_lon_inc` to `controlled_lon` at the same slot | `mode_change`: the 30-day window boundary | largest inclination after, deg |
+| `free_burn` | a semi-major-axis step of at least 1 km by an object that is never held again | `a_step`: the step detector's peak | step, m |
+
+The steps behind it. Step 1 was measured on the detector evaluation's QZS-3 and QZS-6 false
+alarms; the others on the dev split of `groundtruth/geo_events.csv`:
+
+1. **Snap-back blocks** (`orbit_watch.clean`). Runs of up to 10 days where the semi-major axis or
+   the inclination vector jumps away and comes back while the mean longitude carries on are
+   alternate orbit solutions, not burns. They are about 1.6% of sets on a 100-object sample, and
+   on QZS-3 and QZS-6 they caused 6 of the 7 detector dev false alarms that were not near a logged
+   burn. They are dropped before anything else, with none of the logged QZS burns lost. When the
+   sets on either side of a block are fewer than 3 or span less than a day, only the inclination
+   vector is judged, so a block that is the start of a new orbit is kept.
+2. **Dating from the drift rate.** The mode layer dates a change at a 30-day window boundary; the
+   per-set drift rate leaves the held band within a day of a real departure (dev median error 10
+   to 6 days).
+3. **Short holds.** Inside stretches that are not held, a run of sets with drift at most 0.02
+   deg/day inside a 0.3 deg box for at least 10 days, entered by a set moving at 0.05 deg/day or
+   more within 5 days, is a hold. This catches stops the windows cannot see, such as SJ-17's
+   13-day move in November 2024 and Luch (Olymp)'s stops in 2021 and 2025. The entry burn keeps
+   librating objects out (dev recall 11 to 13 of 13, median 6 to 3 days).
+4. **Burn gap.** When keeping simply stops, the longitude leaves the box weeks after the last
+   burn; the midpoint between the last burn and the one that never came dates it (one dev event,
+   14 to 0 days). If the object climbs later, the climb is a second event.
+5. **One slot.** Two holds whose longitude ranges come within 0.5 deg of each other are the same
+   slot, so a re-centred box or a hold split by a short drift is not a relocation. Across a
+   stretch that is not held, this applies only when nothing in the stretch drifts at 0.05
+   deg/day or more for 5 days; a move out and back to the same slot is a start and an end. An
+   arrival is dated no earlier than the departure it follows.
+
+| split | events | caught | median \|error\| (days) | 90th percentile (days) | same type |
+|---|---|---|---|---|---|
+| dev, mode layer (baseline) | 13 | 11 | 10 | 33 | 9 |
+| dev, state changes | 13 | 13 | 2 | 12.4 | 13 |
+| test, mode layer (baseline) | 20 | 15 | 14 | 30.8 | 14 |
+| test, state changes (scored once) | 20 | 17 | 3 | 12.2 | 16 |
+
+Matching is rung 1's (one event per change, closest first, within 45 days; a departure of any
+kind matches a relocation start, graveyard move or end of keeping). False events are counted on
+QZS-3 and QZS-6 over the span their logs cover: 0 over 5.412 object-years (target at most 0.2 per
+object-year). Graveyard moves are still the worst dated (dev median 6 days, mostly early), because
+sources variously date the start of the climb, its end or the decommissioning; three of the 13 dev
+events are dated only to the month and scored as the 15th.
+
+The belt run (`findings/state_changes/summary.json` records its commit) covers 1,799 objects and
+finds 825 events on 305 of them; the full list is `findings/state_changes/events.csv`:
+
+| type | 2021 | 2022 | 2023 | 2024 | 2025 | total |
+|---|---|---|---|---|---|---|
+| relocation_start | 36 | 35 | 53 | 43 | 47 | 214 |
+| relocation_end | 61 | 56 | 82 | 58 | 68 | 325 |
+| graveyard | 17 | 12 | 20 | 15 | 19 | 83 |
+| keeping_stop | 3 | 7 | 2 | 3 | 16 | 31 |
+| ns_keeping_stop | 10 | 9 | 16 | 18 | 23 | 76 |
+| free_burn | 11 | 4 | 20 | 26 | 35 | 96 |
+
+Known limits. Arrivals outnumber relocation starts because 111 objects' first relocation event
+is an arrival: 90 were launched in 2021-2025, 11 were already moving at the start of 2021 and 10
+are older objects that settled later. A departure in the last weeks of 2025 has no arrival inside
+the data, so it is typed `keeping_stop`: 11 of the 16 in 2025 fall in November and December. A
+slow keeping stop followed by a move gives two departures for one physical move, a
+`keeping_stop` and then a `relocation_start`, and the scorer matches only one of them: on dev
+event 28884 the keeping stop is matched by exact type and the relocation start, 48 days later,
+is left over. A move made entirely inside a gap in the element sets is dated to the end of
+the gap at both ends, as Meteosat-11 (40732) is in April 2023. A satellite that
+arrives in the last 10 days of the data is not seen as held, so its first trim burn can read as a
+`free_burn`. A climb by an object that was already free is a `free_burn`, not a `graveyard` move.
+North-south keeping stops are still dated at the window boundary. No hand audit of belt events
+has been done.
 
 ## Method notes
 

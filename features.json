@@ -38,6 +38,15 @@
       "test": "tests/test_modes.py"
     },
     {
+      "name": "List GEO station-keeping state changes",
+      "kind": "job",
+      "description": "Writes one row per dated state change (relocation start and end, graveyard move, end of keeping, end of north-south keeping, burn while free) for every GEO-region object, 2021-2025.",
+      "command": "python -m orbit_watch.jobs.state_changes [--geo-dir DIR] [--out DIR] [--summary-dir DIR]",
+      "inputs": ["GEO-DIR/manifest.json and GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "groundtruth/splits.json, to skip holdout objects"],
+      "outputs": ["OUT/events.csv (default $ORBIT_WATCH_DATA/state_changes)", "SUMMARY-DIR/summary.json with counts per type and year (default findings/state_changes)", "SUMMARY-DIR/events.csv when it is under 2 MB"],
+      "test": "tests/test_state_changes_job.py"
+    },
+    {
       "name": "Compare GEO modes with ESA's classification",
       "kind": "tool",
       "description": "Prints, per ESA 2019 class, how many objects have the matching mode in early 2021.",
@@ -81,6 +90,15 @@
       "inputs": ["an events CSV (default groundtruth/geo_events.csv)", "GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "groundtruth/splits.json, to skip holdout objects"],
       "outputs": ["OUT/summary.json (default findings/geo_events)", "OUT/events.csv", "a score table on stdout"],
       "test": "tests/test_mode_events.py"
+    },
+    {
+      "name": "GEO state changes evaluation",
+      "kind": "eval",
+      "description": "Scores dated state changes against the cited list of real GEO events (recall and date error per split and type) and counts false events on QZS-3 and QZS-6 over their log coverage.",
+      "command": "python -m harness.evals.state_changes [--split dev|all] [--events CSV] [--geo-dir DIR] [--out DIR]",
+      "inputs": ["an events CSV (default groundtruth/geo_events.csv)", "GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "groundtruth/qzss_manoeuvres.csv for the log coverage", "groundtruth/splits.json, to skip holdout objects"],
+      "outputs": ["OUT/eval_<split>.json (default findings/state_changes)", "OUT/eval_<split>.csv", "a score table on stdout"],
+      "test": "tests/test_state_changes_eval.py"
     },
     {
       "name": "Calibrate the detector on the ISS",
