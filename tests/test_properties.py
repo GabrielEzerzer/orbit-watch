@@ -242,13 +242,14 @@ def test_a_large_injected_burn_is_recovered_with_its_sign(seed, gap, size_m, sig
 
 @SLOW
 @given(st.integers(0, 2**32 - 1), st.sampled_from(("a", "i")))
-def test_negating_a_series_negates_every_step_and_keeps_z(seed, channel):
+def test_negating_a_series_negates_axis_steps_and_keeps_inclination_vector_steps(seed, channel):
     s = synthetic_series(seed, n=60)
     s = replace(s, inclination=51.6 + s.semi_major_axis_km % 0.01)
     flipped = replace(s, semi_major_axis_km=-s.semi_major_axis_km, inclination=-s.inclination)
     a, b = score_gaps(s, k=4, channel=channel), score_gaps(flipped, k=4, channel=channel)
-    np.testing.assert_array_equal(b.step_m, -a.step_m)
-    np.testing.assert_array_equal(b.z, -a.z)
+    sign = -1.0 if channel == "a" else 1.0
+    np.testing.assert_array_equal(b.step_m, sign * a.step_m)
+    np.testing.assert_array_equal(b.z, sign * a.z)
 
 
 def _centre(d):
