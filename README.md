@@ -342,7 +342,8 @@ The event unit is one change of an object's station-keeping state, dated to the 
 signal that dated it and its size. `jobs.state_changes` writes one row per event for every
 GEO-region object except the 5 holdout objects: `norad_id`, `event_type`, `date`, `signal`,
 `size`, `lon_before`, `lon_after`, `mode_before`, `mode_after` and `mode_change` (the date of the
-mode-layer boundary the event came from). The event types are:
+mode-layer boundary the event came from). On an arrival from a stretch that is not held,
+`lon_before` is the median longitude of the 10 days before it. The event types are:
 
 | type | what it is | dated by (`signal`) | `size` |
 |---|---|---|---|
@@ -393,20 +394,25 @@ sources variously date the start of the climb, its end or the decommissioning; t
 events are dated only to the month and scored as the 15th.
 
 The belt run (`findings/state_changes/summary.json` records its commit) covers 1,799 objects and
-finds 863 events on 308 of them; the full list is `findings/state_changes/events.csv`:
+finds 819 events on 304 of them; the full list is `findings/state_changes/events.csv`:
 
 | type | 2021 | 2022 | 2023 | 2024 | 2025 | total |
 |---|---|---|---|---|---|---|
-| relocation_start | 42 | 38 | 57 | 45 | 49 | 231 |
-| relocation_end | 66 | 60 | 86 | 60 | 70 | 342 |
+| relocation_start | 36 | 35 | 51 | 42 | 47 | 211 |
+| relocation_end | 61 | 56 | 80 | 57 | 68 | 322 |
 | graveyard | 17 | 12 | 20 | 15 | 19 | 83 |
-| keeping_stop | 4 | 7 | 2 | 4 | 17 | 34 |
+| keeping_stop | 3 | 7 | 2 | 3 | 16 | 31 |
 | ns_keeping_stop | 10 | 9 | 16 | 18 | 23 | 76 |
-| free_burn | 11 | 4 | 18 | 26 | 38 | 97 |
+| free_burn | 11 | 4 | 20 | 26 | 35 | 96 |
 
-Known limits. Arrivals outnumber departures because a newly launched satellite's first arrival
-has no departure. A departure in the last weeks of 2025 has no arrival inside the data, so it is
-typed `keeping_stop`: 11 of the 17 in 2025 fall in November and December. A satellite that
+Known limits. Arrivals outnumber relocation starts because 111 objects' first relocation event
+is an arrival: 90 were launched in 2021-2025, 11 were already moving at the start of 2021 and 10
+are older objects that settled later. A departure in the last weeks of 2025 has no arrival inside
+the data, so it is typed `keeping_stop`: 11 of the 16 in 2025 fall in November and December. A
+slow keeping stop followed by a move gives two departures for one physical move, a
+`keeping_stop` and then a `relocation_start`, and the scorer matches the closer one (this happens
+on one test event). A move made entirely inside a gap in the element sets is dated to the end of
+the gap at both ends, as Meteosat-11 (40732) is in April 2023. A satellite that
 arrives in the last 10 days of the data is not seen as held, so its first trim burn can read as a
 `free_burn`. A climb by an object that was already free is a `free_burn`, not a `graveyard` move.
 North-south keeping stops are still dated at the window boundary. No hand audit of belt events
