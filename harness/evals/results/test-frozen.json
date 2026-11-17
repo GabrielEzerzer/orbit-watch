@@ -16,16 +16,6 @@
   },
   "targets": [
     {
-      "check": "LEO recall >=50 m",
-      "target": ">= 0.9",
-      "value": 0.0,
-      "ci95": [
-        0.0,
-        0.1682
-      ],
-      "status": "MISS"
-    },
-    {
       "check": "GEO recall EW",
       "target": ">= 0.9",
       "value": null,
@@ -47,13 +37,6 @@
       "status": "no events"
     },
     {
-      "check": "LEO false alarms / object-year (13.57 obj-yr)",
-      "target": "<= 1.0",
-      "value": 0.0737,
-      "object_years": 13.574,
-      "status": "PASS"
-    },
-    {
       "check": "GEO false alarms / object-year (0.00 obj-yr)",
       "target": "<= 1.0",
       "value": null,
@@ -69,48 +52,6 @@
     }
   ],
   "groups": {
-    "LEO": {
-      "objects": [
-        "SARAL",
-        "Sentinel-3A",
-        "Sentinel-6A"
-      ],
-      "setting": {
-        "k": 4,
-        "z_min": 12,
-        "step_min_m": 200,
-        "nms_days": 1.0
-      },
-      "subsets": {
-        "all": {
-          "events": 121,
-          "covered": 120,
-          "matched": 0,
-          "recall": 0.0,
-          "recall_all_events": 0.0,
-          "ci95": [
-            0.0,
-            0.031
-          ],
-          "ci95_width": 0.031
-        },
-        ">=50 m": {
-          "events": 19,
-          "covered": 19,
-          "matched": 0,
-          "recall": 0.0,
-          "recall_all_events": 0.0,
-          "ci95": [
-            0.0,
-            0.1682
-          ],
-          "ci95_width": 0.1682
-        }
-      },
-      "false_alarms": 1,
-      "object_years": 13.574,
-      "fa_per_object_year": 0.0737
-    },
     "IGSO": {
       "objects": [
         "QZS-1",
@@ -234,52 +175,6 @@
       "false_alarms": 5,
       "object_years": 0.7861
     },
-    "SARAL": {
-      "norad_id": 39086,
-      "group": "LEO",
-      "element_source": "gp_history-39086-2021-01-01--2026-01-01.json",
-      "element_sets": 4616,
-      "subsets": {
-        "all": {
-          "events": 7,
-          "covered": 7,
-          "matched": 0
-        },
-        ">=50 m": {
-          "events": 7,
-          "covered": 7,
-          "matched": 0
-        }
-      },
-      "detections": 1,
-      "matched_detections": 0,
-      "dropped_attitude_or_unplanned": 0,
-      "false_alarms": 1,
-      "object_years": 4.71
-    },
-    "Sentinel-3A": {
-      "norad_id": 41335,
-      "group": "LEO",
-      "element_source": "gp_history-41335-2021-01-01--2026-01-01.json",
-      "element_sets": 7678,
-      "subsets": {
-        "all": {
-          "events": 93,
-          "covered": 93,
-          "matched": 0
-        },
-        ">=50 m": {
-          "events": 9,
-          "covered": 9,
-          "matched": 0
-        }
-      },
-      "detections": 0,
-      "matched_detections": 0,
-      "dropped_attitude_or_unplanned": 0,
-      "false_alarms": 0,
-      "object_years": 4.2909
-    },
     "Fengyun-4A": {
       "norad_id": 41882,
       "group": "GEO-Fengyun",
@@ -325,29 +220,6 @@
       "dropped_attitude_or_unplanned": 0,
       "false_alarms": 0,
       "object_years": 1.3388
-    },
-    "Sentinel-6A": {
-      "norad_id": 46984,
-      "group": "LEO",
-      "element_source": "gp_history-46984-2021-01-01--2026-01-01.json",
-      "element_sets": 3723,
-      "subsets": {
-        "all": {
-          "events": 21,
-          "covered": 20,
-          "matched": 0
-        },
-        ">=50 m": {
-          "events": 3,
-          "covered": 3,
-          "matched": 0
-        }
-      },
-      "detections": 0,
-      "matched_detections": 0,
-      "dropped_attitude_or_unplanned": 0,
-      "false_alarms": 0,
-      "object_years": 4.5733
     },
     "QZS-1R": {
       "norad_id": 49336,
