@@ -40,7 +40,8 @@ def test_relocation_gives_a_start_and_an_end_near_the_move():
     kinds = [f.event_type for f in found]
     assert kinds == ["relocation_start", "relocation_end"]
     first, second = found
-    assert abs(E._day(first.date) - start) <= 31 and abs(E._day(second.date) - (start + 20.0)) <= 31
+    assert abs(E._day(first.date) - start) <= 1 and abs(E._day(second.date) - (start + 20.0)) <= 1
+    assert (first.signal, second.signal) == ("rate_exit", "rate_entry")
     assert abs(first.lon_before - 10.0) < 0.2 and abs(first.lon_after - 16.0) < 0.3
 
 
@@ -53,4 +54,4 @@ def test_climb_of_a_kept_object_is_a_graveyard_move():
     lon = lon + np.cumsum(drift) * 0.25
     found = E.state_changes(element_sets(days, lon, rate + drift))
     assert [f.event_type for f in found] == ["graveyard"]
-    assert found[0].size > 250
+    assert found[0].size > 250 and abs(E._day(found[0].date) - start) <= 1
