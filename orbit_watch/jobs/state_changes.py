@@ -58,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--summary-dir", type=Path, default=Path("findings/state_changes"))
     args = p.parse_args(argv)
     t0 = time.monotonic()
+    source = commit()
     geo_dir = args.geo_dir or data_dir() / "geo"
     out = args.out or data_dir() / "state_changes"
 
@@ -79,7 +80,7 @@ def main(argv: list[str] | None = None) -> int:
     if committed:
         write_events(found, sd / "events.csv")
     summary = {
-        **commit(),
+        **source,
         "geo_dir_object_count": manifest["object_count"],
         "skipped_not_by_rule": not_by_rule,
         "skipped_holdout": skipped_holdout,
