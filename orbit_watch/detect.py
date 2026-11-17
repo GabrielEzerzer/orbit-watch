@@ -1,4 +1,4 @@
-# Step detection in a TLE semi-major-axis or inclination series: Theil-Sen detrending on k epochs
+# Step detection in a TLE semi-major-axis or inclination-vector series: Theil-Sen detrending on k epochs
 # each side of a gap, a median step scored against the TLE scatter, then non-maximum suppression.
 
 from __future__ import annotations
@@ -76,12 +76,29 @@ def _mad(r: np.ndarray) -> np.ndarray:
     return np.median(np.abs(r - np.median(r, axis=-1, keepdims=True)), axis=-1)
 
 
+def _window_steps(t: np.ndarray, y: np.ndarray, ii: np.ndarray, k: int) -> tuple[np.ndarray, np.ndarray]:
+    off = np.arange(-k + 1, k + 1)
+    tw, yw = t[ii[:, None] + off], y[ii[:, None] + off]
+    mid = 0.5 * (t[ii] + t[ii + 1])[:, None]
+    p, q = np.triu_indices(k, 1)
+    p, q = np.concatenate([p, p + k]), np.concatenate([q, q + k])
+    slopes = (yw[:, q] - yw[:, p]) / (tw[:, q] - tw[:, p])
+    r = yw - np.median(slopes, axis=1)[:, None] * (tw - mid)
+    before, after = r[:, :k], r[:, k:]
+    sigma = _MAD_TO_SIGMA * _mad(np.concatenate(
+        [before - np.median(before, axis=1, keepdims=True),
+         after - np.median(after, axis=1, keepdims=True)], axis=1))
+    return np.median(after, axis=1) - np.median(before, axis=1), sigma
+
+
 def score_gaps(
     series: ElementSeries, k: int = 6, max_span_days: float = 3.0, max_gap_days: float = 2.0,
     channel: str = "a",
 ) -> GapScores:
     t = _days(series.epochs)
-    y = {"a": lambda: series.semi_major_axis_km * 1000.0, "i": lambda: series.inclination}[channel]()
+    node = np.radians(series.raan)
+    ys = {"a": lambda: [series.semi_major_axis_km * 1000.0],
+          "i": lambda: [series.inclination * np.cos(node), series.inclination * np.sin(node)]}[channel]()
     n = len(t)
     idx = [i for i in range(k - 1, n - k)
            if t[i + 1] - t[i] <= max_gap_days
@@ -92,18 +109,11 @@ def score_gaps(
     sigma = np.full(n - 1, np.nan)
     if idx:
         ii = np.array(idx)
-        off = np.arange(-k + 1, k + 1)
-        tw, yw = t[ii[:, None] + off], y[ii[:, None] + off]
-        mid = 0.5 * (t[ii] + t[ii + 1])[:, None]
-        p, q = np.triu_indices(k, 1)
-        p, q = np.concatenate([p, p + k]), np.concatenate([q, q + k])
-        slopes = (yw[:, q] - yw[:, p]) / (tw[:, q] - tw[:, p])
-        r = yw - np.median(slopes, axis=1)[:, None] * (tw - mid)
-        before, after = r[:, :k], r[:, k:]
-        step[ii] = np.median(after, axis=1) - np.median(before, axis=1)
-        sigma[ii] = _MAD_TO_SIGMA * _mad(np.concatenate(
-            [before - np.median(before, axis=1, keepdims=True),
-             after - np.median(after, axis=1, keepdims=True)], axis=1))
+        steps, sigmas = zip(*(_window_steps(t, y, ii, k) for y in ys))
+        if channel == "a":
+            step[ii], sigma[ii] = steps[0], sigmas[0]
+        else:
+            step[ii], sigma[ii] = np.hypot(*steps), np.sqrt(np.mean(np.square(sigmas), axis=0))
     floor = 0.5 * float(np.nanmedian(sigma)) if idx else 0.0
     sigma = np.maximum(sigma, floor)
     z = step / (sigma * np.sqrt(np.pi / 2) * np.sqrt(2.0 / k))

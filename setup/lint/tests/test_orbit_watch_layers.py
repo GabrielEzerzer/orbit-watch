@@ -24,12 +24,12 @@ class Layers(unittest.TestCase):
             {
                 "orbit_watch/a.py": "from tests.test_detect import ramp\n",
                 "orbit_watch/b.py": "import harness.evals.detector\n",
-                "orbit_watch/jobs/c.py": "import os, tools.kaggle_run\n",
+                "orbit_watch/jobs/c.py": "import os, tools.truth_table\n",
             },
             {
                 "orbit_watch/d.py": "from orbit_watch.detect import detect\nimport toolz\n",
                 "tests/test_e.py": "from harness.evals import detector\n",
-                "harness/f.py": "from tools import kaggle_run\n",
+                "harness/f.py": "from tools import truth_table\n",
             },
         )
 
@@ -39,15 +39,14 @@ class Layers(unittest.TestCase):
             {
                 "orbit_watch/calibrate.py": "from orbit_watch import spacetrack\n",
                 "orbit_watch/generalise.py": "from orbit_watch.celestrak import cached_fetch\n",
-                "orbit_watch/holdout.py": "import orbit_watch.spaceweather as sw\n",
+                "orbit_watch/holdout.py": "import orbit_watch.spacetrack as st\n",
                 "orbit_watch/inject.py": "from . import (\n    detect,\n    spacetrack,\n)\n",
             },
             {
                 "orbit_watch/jobs/geo_belt.py": "from orbit_watch.spacetrack import SpaceTrackSource\n",
-                "orbit_watch/spaceweather.py": "from orbit_watch.celestrak import cached_fetch\n",
                 "orbit_watch/spacetrack.py": "from orbit_watch import celestrak\n",
                 "tools/fetch_truth_tles.py": "from orbit_watch.spacetrack import SpaceTrackSource\n",
-                "orbit_watch/geo_hunt.py": "from orbit_watch.series import to_series\n",
+                "orbit_watch/generalise.py": "from orbit_watch.series import to_series\n",
             },
         )
 
@@ -72,7 +71,7 @@ class Layers(unittest.TestCase):
             {
                 "orbit_watch/detect.py": "from orbit_watch.calibrate import FROZEN\n",
                 "orbit_watch/series.py": "from orbit_watch import sources\n",
-                "orbit_watch/modes.py": "import orbit_watch.geo_hunt\n",
+                "orbit_watch/modes.py": "import orbit_watch.generalise\n",
                 "orbit_watch/geo.py": "from .manoeuvre_logs import SOURCES\n",
                 "orbit_watch/truth.py": "from orbit_watch.spacetrack import SpaceTrackSource\n",
             },

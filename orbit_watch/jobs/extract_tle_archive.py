@@ -1,5 +1,5 @@
 # Pull per-object TLE history out of the OndroNR/tle-archive git history of CelesTrak's active.txt.
-# Run it on Kaggle: the bare clone is about 2 GB.
+# The bare clone is about 2 GB.
 
 from __future__ import annotations
 

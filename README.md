@@ -2,8 +2,16 @@
 
 Change-point detection on public satellite orbital-element history (TLE/GP data) to find
 unannounced manoeuvres. It parses element sets, propagates them with SGP4, detects steps in the
-mean semi-major axis (and optionally inclination), scores the detector against cited manoeuvre
+mean semi-major axis and the inclination vector, scores the detector against cited manoeuvre
 logs, and labels the operating mode of every object in the GEO region. Built out of interest.
+
+**Goal.** A dataset of off-routine GEO manoeuvres in 2021-2025 for the whole belt, and a ranking
+of the objects that have no real routine. The unit of the dataset is a change of station-keeping
+state: a relocation, the start or end of station keeping, the end of north-south keeping, or a
+burn by an object that otherwise drifts. Changes come from the per-window operating modes of
+`orbit_watch.modes`, and the step detector dates each one to the day. This is not built yet;
+"Detector state and gates" says what the detector does now and what it must pass. Objects outside
+the GEO region are out of scope, apart from the ISS, which stays as a regression bench.
 
 Results and leads are in `FINDINGS.md` and `findings/`. Ground-truth sources, caveats and the
 train/holdout split are in `groundtruth/README.md`. This file says what exists, how to run it and
@@ -30,14 +38,13 @@ from.
 | `orbit_watch.series` | `to_series`: an epoch-sorted `ElementSeries` per object; epochs under 60 s apart collapse to the later one; refuses holdout objects unless `final=True` |
 | `orbit_watch.propagate` | TEME position and velocity through `sgp4`; raises `PropagationError` on SGP4 error codes |
 | `orbit_watch.sources`, `celestrak`, `spacetrack` | `ElementSource` implementations: a local directory, CelesTrak current GP, Space-Track `gp_history` |
-| `orbit_watch.spaceweather` | `load_space_weather()`: CelesTrak `SW-All.csv` (Kp, Ap, F10.7) as numpy arrays |
-| `orbit_watch.detect` | The step detector: Theil-Sen detrend per side, median step, robust `z`, optional inclination channel |
+| `orbit_watch.detect` | The step detector: Theil-Sen detrend per side, median step, robust `z`, optional inclination-vector channel |
 | `orbit_watch.calibrate` | Chooses and scores the ISS setting against the NASA (and Roscosmos) lists |
 | `orbit_watch.holdout` | Scores the frozen setting on Space-Track ISS history, plus leave-one-year-out CV |
 | `orbit_watch.inject` | Synthetic injection-recovery on the real ISS series |
-| `orbit_watch.manoeuvre_logs`, `truth` | Build the IDS, QZSS and Fengyun label CSVs; the only reader of label files, with the holdout guard |
-| `orbit_watch.generalise` | Scores the detector on IDS (LEO) and QZSS (GEO) logs |
-| `orbit_watch.geo`, `geo_hunt` | Sub-satellite longitude; the first uncalibrated GEO step hunt |
+| `orbit_watch.manoeuvre_logs`, `truth` | Build the QZSS and Fengyun label CSVs; the only reader of label files, with the holdout guard |
+| `orbit_watch.generalise` | Scores the ISS setting and a GEO tune on the QZSS (GEO) logs |
+| `orbit_watch.geo` | Sub-satellite longitude |
 | `orbit_watch.modes` | ESA operating mode of a GEO-region object per 30-day window |
 | `orbit_watch.jobs.*` | Long jobs: `extract_tle_archive`, `geo_belt`, `geo_modes` |
 | `harness.evals.detector` | The frozen per-regime evaluation; nothing in `orbit_watch` imports `harness` |
@@ -49,12 +56,11 @@ from.
 | Path | Contents | Made by |
 |---|---|---|
 | `data/archive/<norad>.tle` | OndroNR/tle-archive history, 2021-01-01 to 2023-12-28 | `jobs.extract_tle_archive` |
-| `data/spacetrack/` | Space-Track `gp_history` and SATCAT answers, kept for good | `SpaceTrackSource`, `tools/fetch_*_tles.py`, `geo_belt satcat` |
+| `data/spacetrack/` | Space-Track `gp_history` and SATCAT answers, kept for good | `SpaceTrackSource`, `tools/fetch_truth_tles.py`, `geo_belt satcat` |
 | `data/geo/` | `<norad>.tle` and `manifest.json` for every GEO-region object, 2021-2025 | `jobs.geo_belt` |
 | `data/geo_modes/segments.csv` | One row per mode segment | `jobs.geo_modes` |
-| `data/sources/{ids,qzss,fengyun}/` | Operator manoeuvre logs as published (IDS, QZSS, Fengyun) | downloaded by hand |
-| `data/celestrak/<UTC date>/` | CelesTrak downloads, cached per UTC day | `celestrak`, `spaceweather` |
-| `data/kaggle/<slug>/` | Kaggle kernel pushes and outputs | `tools/kaggle_run.py` |
+| `data/sources/{qzss,fengyun}/` | Operator manoeuvre logs as published (QZSS, Fengyun) | downloaded by hand |
+| `data/celestrak/<UTC date>/` | CelesTrak downloads, cached per UTC day | `celestrak` |
 
 Download rules:
 
@@ -71,8 +77,6 @@ Download rules:
 
 ## Running each job and tool
 
-Commands that need the ISS TLE file on Kaggle attach it (`--attach`); see "Running on Kaggle CPU".
-
 | Job | Command | Output |
 |---|---|---|
 | ISS calibration (tune on 2021-2022, score 2023) | `python -m orbit_watch.calibrate --tle data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out <dir>` | `calibration.json`, `detections.csv`, `events_scored.csv`, `iss_sma.png` |
@@ -80,27 +84,25 @@ Commands that need the ISS TLE file on Kaggle attach it (`--attach`); see "Runni
 | ISS holdout 2024-2025 and CV | `python -m orbit_watch.holdout --gp data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json --archive data/archive/25544.tle --truth groundtruth/iss_manoeuvres.csv --out findings` | `findings/holdout_2024_2025/`, `findings/cv_2021_2025/` |
 | ISS holdout, both truth lists | the same with `--truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/combined_truth_holdout` | `findings/combined_truth_holdout/` |
 | Injection-recovery | `python -m orbit_watch.inject --spacetrack data/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/injection` | `findings/injection/` |
-| Label CSVs from operator logs | `python -m orbit_watch.manoeuvre_logs --ids-dir data/sources/ids --qzss-dir data/sources/qzss --fengyun-dir data/sources/fengyun --out groundtruth` | `groundtruth/*_manoeuvres.csv` |
-| Generalisation (IDS, QZSS) | `python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetrack --out findings/generalise` | `findings/generalise/` |
-| Frozen per-regime eval | `python -m harness.evals.detector --split dev --data-dir data [--settings harness/evals/settings/inc-channel.json]` | `harness/evals/results/<split>-<settings>.json` |
-| GEO hunt (Luch / Olymp-K) | `python -m orbit_watch.geo_hunt --tle-dir data/archive --norad 39727 --out out` | `steps.csv`, `summary.json`, one plot per object |
-| TLE archive extraction (Kaggle, about 5 min) | `python -m orbit_watch.jobs.extract_tle_archive --out /kaggle/working/out --norad 25544 --name-regex 'LUCH\|OLYMP'` | `<norad>.tle`, `manifest.json` |
-| GEO-region history (Kaggle, about 16 min) | see "Every object in the GEO region" | `data/geo/` |
+| Label CSVs from operator logs | `python -m orbit_watch.manoeuvre_logs --qzss-dir data/sources/qzss --fengyun-dir data/sources/fengyun --out groundtruth` | `groundtruth/*_manoeuvres.csv` |
+| Generalisation (QZSS GEO) | `python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir data/spacetrack --out findings/generalise` | `findings/generalise/` |
+| Frozen per-regime eval | `python -m harness.evals.detector --split dev --data-dir data [--settings harness/evals/settings/inc-vector.json]` | `harness/evals/results/<split>-<settings>.json` |
+| TLE archive extraction (about 5 min, a 2 GB clone) | `python -m orbit_watch.jobs.extract_tle_archive --out data/archive --norad 25544` | `<norad>.tle`, `manifest.json` |
+| GEO-region history (about 16 min) | see "Every object in the GEO region" | `data/geo/` |
 | GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir data/geo --out data/geo_modes` | `data/geo_modes/segments.csv`, `findings/geo_modes/` |
 
 Tools:
 
-- `hush run -- python tools/fetch_generalise_tles.py`: Space-Track history for the six generalisation satellites, once each.
-- `hush run -- python tools/fetch_truth_tles.py`: Space-Track history for the other objects in `groundtruth/splits.json`, holdout objects included: fetching their element sets is allowed, running the detector on them is not.
+- `hush run -- python tools/fetch_truth_tles.py`: Space-Track history for the objects added with `groundtruth/splits.json`, holdout objects included: fetching their element sets is allowed, running the detector on them is not.
 - `python tools/truth_table.py`: regenerates `groundtruth/objects.md`.
 - `pdftotext -layout -enc UTF-8 Classification_of_Geosynchronous_Objects_I21R0.pdf i21.txt`, then `python tools/esa_classification.py i21.txt data/geo_modes/segments.csv`: ESA's 2019 per-object classes beside our first 2021 mode, as a Markdown table.
-- `python tools/kaggle_run.py`: runs a command on Kaggle CPU (below).
 
 ## Results
 
-### ISS (`FINDINGS.md`, `findings/`)
+### ISS regression bench (`FINDINGS.md`, `findings/`)
 
-Frozen setting: `k = 4`, `|z| >= 12`, `|step| >= 200 m`, non-maximum suppression over 1 day,
+The ISS is the regression bench: every detector change must keep these numbers, and no further
+ISS work is planned. Frozen setting: `k = 4`, `|z| >= 12`, `|step| >= 200 m`, non-maximum suppression over 1 day,
 chosen by F1 on 2021-2022 only. An event matches a detection when its time overlaps the
 detection's interval widened by 0.5 day, one to one. Both burn lists are lower bounds, so an
 unmatched detection is a lead, not a false alarm proven.
@@ -137,80 +139,81 @@ The 200 m floor, not `z`, sets what the frozen setting sees. The looser setting 
 21 false alarms a year against at most 0.9 for the frozen one. A clean step leaves out a real
 burn's transitional TLEs, so these recalls are upper bounds.
 
-### Beyond the ISS: IDS (LEO) and QZSS (GEO)
+### Beyond the ISS: QZSS (GEO)
 
-`findings/generalise/`, on CryoSat-2, Jason-3, SWOT and SPOT-5 (LEO) and QZS-3 and QZS-6 (GEO);
-chance recall comes from the logs shifted by 7, 13 and 19 days.
+`findings/generalise/`, on QZS-3 and QZS-6; chance recall comes from the logs shifted by 7, 13 and
+19 days either way.
 
-| Regime | Frozen ISS setting, whole history | Per-regime tune, later part (not blind) |
+| Setting | Precision | Recall |
 |---|---|---|
-| GEO | P 179/253 = 0.71, R 179/232 = 0.77 (chance recall about 0.10) | P 70/92, R 70/93 (k=4, z>=3, step>=1000 m) |
-| LEO | P 36/42 = 0.86, R 36/445 = 0.08 | P 162/260, R 162/199 (k=6, z>=40, step>=0) |
+| Frozen ISS setting, whole history | 179/253 = 0.71 | 179/232 = 0.77 (chance about 0.10) |
+| GEO tune (k=4, z>=3, step>=1000 m), later part (not blind) | 70/92 | 70/93 |
 
-The ISS setting carries over to GEO east-west burns (about 3 km in `a`) and misses routine LEO
-burns (10-50 m). The tuned later part is not a blind holdout: four method changes (the 2-day late
-tolerance, the 60 s epoch collapse, merging burns under 12 h apart and the `|z|` grid beyond 30)
-came after it was first scored (`test_part_not_blind` in `report.json`). The unmatched
-QZS-3 and QZS-6 detections have not been checked against anything else.
+The ISS setting carries over to GEO east-west burns (about 3 km in `a`). The tuned later part is
+not a blind holdout: four method changes (the 2-day late tolerance, the 60 s epoch collapse,
+merging burns under 12 h apart and the `|z|` grid beyond 30) came after it was first scored
+(`test_part_not_blind` in `report.json`). The unmatched QZS-3 and QZS-6 detections have not been
+checked against anything else.
 
-### Frozen per-regime evaluation (`harness/evals/`)
+### Detector evaluation (`harness/evals/`)
 
 `harness/evals/split.json` fixes `train` (train objects of `groundtruth/splits.json`, 2021-2023),
 `dev` (the same objects, 2024-2025) and `test` (holdout objects, 2021-2025, refused without
-`--final`). The settings JSON gives the detector setting per regime (ISS, LEO, GEO, IGSO). Its
+`--final`). The settings JSON gives the detector setting per regime (ISS, GEO, IGSO). Its
 coverage, matching and counting rules are fixed in `harness/evals/detector.py`, so no detector
 change can move them. Label files are read only through `orbit_watch.truth.read_label_rows` and
 series built only through `to_series`, both of which refuse holdout objects unless
 `final=True`; that is a code-path guard against tuning on the holdout by accident, not a wall.
 
-#### Where the detector hill-climb stands
+#### Detector state and gates
 
-Paused. Issue #22 holds the rounds tried, the next rounds and the open measurement decisions. The kept
-setting is `harness/evals/settings/inc-channel.json`: the ISS setting in every regime plus the
-inclination channel on GEO (`inc_z_min` 12, `inc_step_min_deg` 0.011). Scores
-(`harness/evals/results/`):
+The kept setting is `harness/evals/settings/inc-vector.json`: the ISS setting in every regime,
+plus the inclination channel on GEO, which scores the step of the inclination vector
+(i cos RAAN, i sin RAAN) with `inc_z_min` 30 and `inc_step_min_deg` 0.02.
 
-| Target | train | dev |
-|---|---|---|
-| LEO recall on burns of 50 m or more, >= 0.9 | MISS: 4/18 = 0.222 | MISS: 11/40 = 0.275 |
-| LEO false alarms <= 1 per object-year | PASS: 0.15 | PASS: 0.00 |
-| GEO recall east-west, >= 0.9 | PASS: 36/39 = 0.923 | PASS: 33/34 = 0.971 |
-| GEO recall north-south, >= 0.8 | MISS: 3/17 = 0.176 | MISS: 1/14 = 0.071 |
-| GEO false alarms <= 1 per object-year | MISS: 1.67 | MISS: 3.58 |
-| IGSO false alarms <= 1 per object-year | PASS: 0.00 (no IGSO event covered) | PASS: 0.00 |
-| ISS recall >= 0.95 (guardrail) | MISS: 45/48 = 0.938 | PASS: 35/35 = 1.000 |
+Tuning the detector burn by burn against these scores is stopped. Its GEO labels are the logs of
+two QZSS satellites (QZS-3 and QZS-6), which are kept far more cleanly than most of the belt, so a
+better score here says little about the belt the dataset covers. A detector change now has to pass
+these gates instead:
 
-A round is kept only if its target improves, no regime's recall drops on train or dev, no
-regime's false alarms rise, and the ISS stays at 45/48 on train and 35/35 on dev or better. Failed rounds are reverted with `git revert`. The
-test split was scored once, at the FROZEN baseline (`results/test-frozen.json`), and stays
-reserved for the end of the climb.
+| Gate | Status |
+|---|---|
+| Guardrail: GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
+| Guardrail: ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
+| At most 0.2 false events per object-year, counted on state-change events | not measured: the event unit is not built |
+| Recall and dating error on a cited list of known GEO events | not measured: the list is not assembled |
+| A hand audit of about 50 events from across the belt | not done |
 
-### GEO hunt (Luch / Olymp-K)
+GEO north-south recall is reported, not gated: train 6/17 = 0.353, dev 4/14 = 0.286. The
+inclination vector's job is to date when north-south keeping stops, not to catch each burn. Scores are in `harness/evals/results/` (`<split>-inc-vector.json`, with
+`<split>-frozen.json` as the baseline). At the detection level, GEO has 4 false alarms
+(unmatched detections away from any logged burn) over 2.388 object-years on train (1.67 a year)
+and 7 over 1.956 on dev (3.58 a year). Another 15 on train and 12 on dev fall in a burn's match
+zone and count as duplicates.
 
-Uncalibrated leads for five objects, in `FINDINGS.md` and `findings/geo_*.png`,
-`findings/geo_steps.csv`.
+The test split has been scored once, at the FROZEN setting (`results/test-frozen.json`), and the
+kept setting has never been scored on it.
 
 ### Every object in the GEO region, 2021-2025
 
 `orbit_watch.jobs.geo_belt` collects every element set from 2021 to 2025 of every object that was
 in the GEO region (ESA's definition: mean motion 0.9-1.1 rev/day, eccentricity at most 0.2,
 inclination at most 70 deg) at any epoch in the period. Space-Track's own yearly bundles are
-behind an end-to-end encrypted share, so it runs on Kaggle against the CC0 mirror
+behind an end-to-end encrypted share, so it reads the yearly bundles of the CC0 Kaggle dataset
 `vaibhavpandey12382/historical-tle-datasets`, whose orbital fields match Space-Track's
 latest-issued sets on the two objects compared (Fengyun-2H, QZS-4). It reads any local `.txt` or
 `.zip` bundle, so Space-Track's zips also work.
 
 ```
-MSYS_NO_PATHCONV=1 python tools/kaggle_run.py --slug ow-geo-belt --dataset vaibhavpandey12382/historical-tle-datasets -- python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '/kaggle/input/**/tle2021.txt' --bundle '/kaggle/input/**/tle2022.txt' --bundle '/kaggle/input/**/tle2023.txt' --bundle '/kaggle/input/**/tle2024.txt' --bundle '/kaggle/input/**/tle2025.txt' --also 36508 --also 41240 --also 54754 --also 27421 --out /kaggle/working/out/geo.zip
-python -I -m zipfile -e data/kaggle/ow-geo-belt/out/out/geo.zip data/geo
+python -m orbit_watch.jobs.geo_belt build --source https://www.kaggle.com/datasets/vaibhavpandey12382/historical-tle-datasets --bundle '<bundles>/**/tle2021.txt' --bundle '<bundles>/**/tle2022.txt' --bundle '<bundles>/**/tle2023.txt' --bundle '<bundles>/**/tle2024.txt' --bundle '<bundles>/**/tle2025.txt' --out data/geo
 hush run -- python -I -m orbit_watch.jobs.geo_belt satcat --out data/geo
 ```
 
-The `--also` objects are the four LEO satellites `generalise` reads from `data/geo/`. The
-manifest records the rule, each bundle's sha256 and per-object counts.
+The manifest records the rule, each bundle's sha256 and per-object counts.
 
 The full run (commit 74a831f, about 16 minutes) read 177,075,602 lines (88,220,159 pairs) and
-kept 1,808 objects with 4,957,896 TLEs, 1,804 of them by the rule: a 184 MB `geo.zip`. 136
+kept 1,808 objects with 4,957,896 TLEs, 1,804 of them by the rule (the other four were added with
+`--also` and nothing reads them): a 184 MB `geo.zip`. 136
 objects have sets outside the region, such as a transfer orbit before arrival. 635,284 lines were
 rejected (the ones looked at are 68-character lines of analyst objects, 8xxxx), 785,425 pairs
 restated an epoch already held with different lines, and 8 pairs failed `parse_tle`.
@@ -228,7 +231,7 @@ matches Space-Track's latest issue. The mirror lacks 2 of 43491's 4,222 epochs.
 of Geosynchronous Objects*, Issue 21.0, 2019): `controlled_lon_inc` (C1), `controlled_lon` (C2),
 `drifting` (D), `librating_75E` (L1), `librating_105W` (L2), `librating_both` (L3), `inclined`
 (I), `undetermined` (Ind) and `out_of_region`. The thresholds and their sources are in "Method
-notes". The job skips the four `--also` objects and the 5 holdout objects, so 1,799 objects are
+notes". The job skips objects outside the rule and the 5 holdout objects, so 1,799 objects are
 classified. Year-end counts, transitions and the summary are in `findings/geo_modes/`; 1,477
 objects keep one mode for the whole period. Known limits are tracked in issues #21, #28, #29,
 #30 and #32.
@@ -284,39 +287,6 @@ swings of 0.2-1.8 deg. ESA lists all seven as L2 or L1; the comparison table cou
 GStar 1, whose row cites a page outside the L2 chapter, nor ACTS, whose status row has no
 class. The two L3 objects we call drifting, Intelsat 804 (25110) and Cosmos 2479 (38101), pass
 over the high barrier in 2021-2025.
-
-## Running on Kaggle CPU
-
-`tools/kaggle_run.py` runs a command on a private Kaggle CPU kernel against the exact commit at
-HEAD (it refuses a dirty working tree):
-
-```
-python tools/kaggle_run.py --slug ow-suite -- pytest -q
-```
-
-It needs the `kaggle` CLI installed and authenticated. The kernel goes to the account in
-`KAGGLE_USERNAME`, else the `username` in `kaggle.json` under `KAGGLE_CONFIG_DIR` or `~/.kaggle`
-(the CLI's own config); with neither it stops and says which to set. It embeds `git archive HEAD` (without
-`findings/`, to stay under Kaggle's limit of about 1 MB) and the commit SHA in a generated script,
-pushes it, polls its status every 30 seconds and downloads the outputs to
-`data/kaggle/<slug>/out/`: `COMMIT.txt`, `run.log`, `exit_code.txt` and `out/` with anything
-written under `/kaggle/working/out`. It checks `COMMIT.txt` against the pushed commit and exits
-with the command's exit code.
-
-- `--attach PATH` (repeatable) embeds an uncommitted file, such as git-ignored data, at the same
-  relative path; the kernel records each file's sha256 in `ATTACHED.txt`, which is checked
-  against the local file. Kaggle rejects a script above about 1 MB, so attach one TLE file per run.
-- `--dataset OWNER/SLUG` (repeatable) mounts a Kaggle dataset under `/kaggle/input`.
-- From Git Bash, set `MSYS_NO_PATHCONV=1` when the command has an absolute path such as
-  `/kaggle/working/out`; otherwise Git Bash rewrites it and `kaggle_run.py` refuses the command.
-  `kaggle datasets create` fails from Git Bash on Windows; run it from PowerShell.
-- The Kaggle CLI exits 0 on some refusals ("Maximum batch CPU session count"), so a push counts
-  only when it reports "successfully pushed".
-- Right after a push the status can still be the previous version's, so only a terminal status
-  seen after an active one (or 10 minutes after the push) ends the wait; `COMMIT.txt` settles which
-  run the outputs belong to.
-- The kernel has internet on, which `pip install` needs. Slugs are at least 5 characters, because
-  Kaggle needs titles that long.
 
 ## Method notes
 
@@ -374,8 +344,8 @@ Rules, thresholds and sources that the code does not state, per module.
 
 - Each satellite's tune/test split falls on the first day of the month holding its
   60th-percentile logged event, fixed from the log before any scoring.
-- `lag_days` uses only events with `|delta_a|` of at least 50 m (LEO) or 500 m (GEO) whose step
-  reaches 30% of the estimate.
+- `lag_days` uses only events with `|delta_a|` of at least 500 m whose step reaches 30% of the
+  estimate.
 - A burn/counter-burn pair takes either sign, because its net sign is within the estimate's error.
 
 ### `harness.evals.detector`
@@ -417,22 +387,17 @@ Rules, thresholds and sources that the code does not state, per module.
 - The 30-day windows are laid back from 2026-01-01 so every object shares the grid; the first
   window is 26 days.
 
-### `geo_hunt`
-
-- `K` = 4 epochs each side, because GEO TLEs come about twice a day.
-
 ### `jobs.extract_tle_archive` and `jobs.geo_belt`
 
 - `extract_tle_archive` carries each object's line 1 and line 2 across commits, so a commit that
   changes one line still yields a whole pair. On an epoch conflict it keeps the first pair;
   `geo_belt` keeps the later one, as `series` does.
-- The Kaggle mirror's 2021, 2022 and 2024 files end every line 1 with a backslash, which
+- The Kaggle dataset's 2021, 2022 and 2024 files end every line 1 with a backslash, which
   `geo_belt` drops.
-- `geo_belt` writes one zip when `--out` ends in `.zip`, because a Kaggle kernel should not write
-  thousands of files.
+- `geo_belt` writes one zip when `--out` ends in `.zip`, for hosts that should not write thousands
+  of files.
 
-### `spacetrack` and `spaceweather`
+### `spacetrack`
 
 - A Space-Track login answered with `"Login":"Failed"` in the body counts as refused even with
   HTTP 200, as in the open-source `spacetrack` client.
-- CelesTrak prints Kp times ten; `load_space_weather` divides it back.

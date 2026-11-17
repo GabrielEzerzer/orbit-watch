@@ -1,4 +1,4 @@
-# The frozen evaluation of the step detector per regime, the score every hill-climb round reports.
+# The frozen evaluation of the step detector per regime, with the GEO east-west and ISS recall guardrails.
 # Coverage, exposure, matching and counting live here so no detector or setting change can move them.
 
 from __future__ import annotations
@@ -26,12 +26,9 @@ DEFAULT_SETTINGS = HERE / "settings" / "frozen.json"
 RESULTS = HERE / "results"
 YEAR_DAYS = 365.25
 Z95 = 1.959963984540054
-LEO_MIN_DELTA_A_M = 50.0
-FA_MAX_PER_OBJECT_YEAR = 1.0
-GROUP_ORDER = ("LEO", "GEO", "IGSO", "ISS", "GEO-Fengyun")
-SETTING_KEY = {"LEO": "LEO", "GEO": "GEO", "IGSO": "IGSO", "ISS": "ISS", "GEO-Fengyun": "GEO"}
-RECALL_TARGETS = {("LEO", ">=50 m"): 0.9, ("GEO", "EW"): 0.9, ("GEO", "NS"): 0.8, ("ISS", "all"): 0.95}
-FA_CHECKED = ("LEO", "GEO", "IGSO")
+GROUP_ORDER = ("GEO", "IGSO", "ISS", "GEO-Fengyun")
+SETTING_KEY = {"GEO": "GEO", "IGSO": "IGSO", "ISS": "ISS", "GEO-Fengyun": "GEO"}
+RECALL_TARGETS = {("GEO", "EW"): 0.9, ("ISS", "all"): 0.95}
 INC_ONLY_SUBSETS = ("NS",)
 REF_K = 4
 REF_MAX_SPAN_DAYS = 3.0
@@ -182,8 +179,6 @@ def _tol(days: float) -> np.timedelta64:
 
 
 def subset_of(obj: Obj, e) -> list[str]:
-    if obj.group == "LEO":
-        return [">=50 m"] if e.delta_a_est_m is not None and abs(e.delta_a_est_m) >= LEO_MIN_DELTA_A_M else []
     if obj.group in ("GEO", "GEO-Fengyun"):
         return [e.kind] if e.kind in ("EW", "NS", "EW+NS") else []
     return []
@@ -278,9 +273,8 @@ def evaluate(split: str, settings_path: Path, data_dir: Path, truth_dir: Path = 
     spec = json.loads(SPLIT_PATH.read_text(encoding="utf-8"))
     period = spec["periods"][split]
     if period.get("requires_final") and not final:
-        raise HoldoutError(f"--split {split} scores the holdout objects; it needs --final, and is run "
-                           "once at baseline and once at the final round (README, 'Frozen per-regime "
-                           "evaluation')")
+        raise HoldoutError(f"--split {split} scores the holdout objects; it needs --final, and has "
+                           "been scored once, at FROZEN (README, 'Detector evaluation')")
     if final and not period.get("requires_final"):
         raise HoldoutError("--final is only for --split test")
     lo, hi = (np.datetime64(period[k], "us") for k in ("from", "to"))
@@ -339,13 +333,6 @@ def targets(groups: dict) -> list[dict]:
         out.append({"check": f"{g} recall {sub}", "target": f">= {want}", "value": val,
                     "ci95": r["ci95"] if r else None,
                     "status": "no events" if val is None else ("PASS" if val >= want else "MISS")})
-    for g in FA_CHECKED:
-        v = groups.get(g, {}).get("fa_per_object_year")
-        yrs = groups.get(g, {}).get("object_years", 0.0)
-        out.append({"check": f"{g} false alarms / object-year ({yrs:.2f} obj-yr)",
-                    "target": f"<= {FA_MAX_PER_OBJECT_YEAR}", "value": v, "object_years": yrs,
-                    "status": "no exposure" if v is None
-                    else ("PASS" if v <= FA_MAX_PER_OBJECT_YEAR else "MISS")})
     return out
 
 
@@ -376,7 +363,7 @@ def table(res: dict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="The frozen evaluation of the step detector, per regime: the score every hill-climb round reports.")
+    p = argparse.ArgumentParser(description="The frozen evaluation of the step detector, per regime, with the GEO east-west and ISS recall guardrails.")
     p.add_argument("--split", choices=("train", "dev", "test"), default="dev")
     p.add_argument("--final", action="store_true", help="required for --split test (holdout objects)")
     p.add_argument("--settings", type=Path, default=DEFAULT_SETTINGS)

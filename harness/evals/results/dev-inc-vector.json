@@ -1,0 +1,693 @@
+{
+  "split": "dev",
+  "period": {
+    "objects": "train",
+    "from": "2024-01-01",
+    "to": "2026-01-01"
+  },
+  "settings": "inc-vector",
+  "commit": "f8cbb538842376acebf04dc4480bd6a7ee1f1c05",
+  "dirty": false,
+  "tolerance_days": {
+    "before": 0.5,
+    "after": 2.0,
+    "after_iss": 0.5
+  },
+  "coverage_reference": {
+    "k": 4,
+    "max_span_days": 3.0,
+    "max_gap_days": 2.0
+  },
+  "targets": [
+    {
+      "check": "GEO recall EW",
+      "target": ">= 0.9",
+      "value": 0.9706,
+      "ci95": [
+        0.8508,
+        0.9948
+      ],
+      "status": "PASS"
+    },
+    {
+      "check": "ISS recall all",
+      "target": ">= 0.95",
+      "value": 1.0,
+      "ci95": [
+        0.9011,
+        1.0
+      ],
+      "status": "PASS"
+    }
+  ],
+  "groups": {
+    "GEO": {
+      "objects": [
+        "QZS-3",
+        "QZS-6"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0,
+        "inc_z_min": 30,
+        "inc_step_min_deg": 0.02
+      },
+      "subsets": {
+        "all": {
+          "events": 57,
+          "covered": 51,
+          "matched": 40,
+          "matched_all": 40,
+          "recall": 0.7843,
+          "recall_all_events": 0.7018,
+          "ci95": [
+            0.6537,
+            0.8751
+          ],
+          "ci95_width": 0.2213
+        },
+        "EW": {
+          "events": 37,
+          "covered": 34,
+          "matched": 33,
+          "matched_all": 33,
+          "recall": 0.9706,
+          "recall_all_events": 0.8919,
+          "ci95": [
+            0.8508,
+            0.9948
+          ],
+          "ci95_width": 0.1439
+        },
+        "EW+NS": {
+          "events": 4,
+          "covered": 3,
+          "matched": 3,
+          "matched_all": 3,
+          "recall": 1.0,
+          "recall_all_events": 0.75,
+          "ci95": [
+            0.4385,
+            1.0
+          ],
+          "ci95_width": 0.5615
+        },
+        "NS": {
+          "events": 16,
+          "covered": 14,
+          "matched": 4,
+          "matched_all": 4,
+          "recall": 0.2857,
+          "recall_all_events": 0.25,
+          "ci95": [
+            0.1172,
+            0.5465
+          ],
+          "ci95_width": 0.4293
+        }
+      },
+      "false_alarms": 7,
+      "duplicates": 12,
+      "wrong_channel": 5,
+      "object_years": 1.956,
+      "no_burn_years": 2.087,
+      "scored_fraction": 0.937,
+      "fa_per_object_year": 3.5792
+    },
+    "IGSO": {
+      "objects": [
+        "QZS-4"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
+      },
+      "subsets": {
+        "all": {
+          "events": 4,
+          "covered": 0,
+          "matched": 0,
+          "matched_all": 0,
+          "recall": null,
+          "recall_all_events": 0.0,
+          "ci95": null,
+          "ci95_width": null
+        }
+      },
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
+      "object_years": 0.462,
+      "no_burn_years": 1.964,
+      "scored_fraction": 0.235,
+      "fa_per_object_year": 0.0
+    },
+    "ISS": {
+      "objects": [
+        "ISS"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0,
+        "inc_z_min": null,
+        "inc_step_min_deg": null
+      },
+      "subsets": {
+        "all": {
+          "events": 36,
+          "covered": 35,
+          "matched": 35,
+          "matched_all": 35,
+          "recall": 1.0,
+          "recall_all_events": 0.9722,
+          "ci95": [
+            0.9011,
+            1.0
+          ],
+          "ci95_width": 0.0989
+        }
+      },
+      "false_alarms": 4,
+      "duplicates": 3,
+      "wrong_channel": 0,
+      "object_years": 1.719,
+      "no_burn_years": 1.739,
+      "scored_fraction": 0.989,
+      "fa_per_object_year": 2.3272
+    },
+    "GEO-Fengyun": {
+      "objects": [
+        "Fengyun-2H"
+      ],
+      "setting": {
+        "k": 4,
+        "z_min": 12,
+        "step_min_m": 200,
+        "nms_days": 1.0,
+        "inc_z_min": 30,
+        "inc_step_min_deg": 0.02
+      },
+      "subsets": {
+        "all": {
+          "events": 0,
+          "covered": 0,
+          "matched": 0,
+          "matched_all": 0,
+          "recall": null,
+          "recall_all_events": null,
+          "ci95": null,
+          "ci95_width": null
+        }
+      },
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
+      "object_years": 0.0,
+      "no_burn_years": 0.0,
+      "scored_fraction": null,
+      "fa_per_object_year": null
+    }
+  },
+  "objects": {
+    "ISS": {
+      "norad_id": 25544,
+      "group": "ISS",
+      "element_source": "gp_history-25544-2021-01-01--2026-01-01.json",
+      "element_sets": 9077,
+      "subsets": {
+        "all": {
+          "events": 36,
+          "covered": 35,
+          "matched": 35,
+          "matched_all": 35
+        }
+      },
+      "detections": 42,
+      "matched_detections": 35,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 4,
+      "duplicates": 3,
+      "wrong_channel": 0,
+      "object_years": 1.7188,
+      "no_burn_years": 1.7385,
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
+        {
+          "start_utc": "2024-09-09T01:02:11Z",
+          "end_utc": "2024-09-09T05:39:02Z",
+          "step_m": -257.1,
+          "z": -27.42,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-09-29T04:02:20Z",
+          "end_utc": "2024-09-29T09:41:16Z",
+          "step_m": 231.0,
+          "z": 60.43,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-04-28T16:46:37Z",
+          "end_utc": "2025-04-29T04:34:06Z",
+          "step_m": 462.1,
+          "z": 12.0,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-11-20T05:19:55Z",
+          "end_utc": "2025-11-20T13:04:27Z",
+          "step_m": 2729.8,
+          "z": 1042.2,
+          "channel": "a"
+        }
+      ],
+      "duplicate_list": [
+        {
+          "start_utc": "2024-06-14T11:46:04Z",
+          "end_utc": "2024-06-14T19:30:07Z",
+          "step_m": 3464.6,
+          "z": 188.53,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-04T02:26:37Z",
+          "end_utc": "2025-09-04T21:00:39Z",
+          "step_m": 945.4,
+          "z": 220.24,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-10-15T07:11:07Z",
+          "end_utc": "2025-10-15T19:34:16Z",
+          "step_m": 2393.7,
+          "z": 652.66,
+          "channel": "a"
+        }
+      ]
+    },
+    "QZS-3": {
+      "norad_id": 42917,
+      "group": "GEO",
+      "element_source": "geo/42917.tle",
+      "element_sets": 4305,
+      "subsets": {
+        "all": {
+          "events": 47,
+          "covered": 44,
+          "matched": 34,
+          "matched_all": 34
+        },
+        "EW": {
+          "events": 30,
+          "covered": 29,
+          "matched": 28,
+          "matched_all": 28
+        },
+        "EW+NS": {
+          "events": 4,
+          "covered": 3,
+          "matched": 3,
+          "matched_all": 3
+        },
+        "NS": {
+          "events": 13,
+          "covered": 12,
+          "matched": 3,
+          "matched_all": 3
+        }
+      },
+      "detections": 53,
+      "matched_detections": 39,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 3,
+      "duplicates": 11,
+      "wrong_channel": 5,
+      "object_years": 1.6617,
+      "no_burn_years": 1.7277,
+      "missed": [
+        {
+          "event_id": "QZS-3-180+QZS-3-181",
+          "start_utc": "2024-01-05T14:08:07Z",
+          "kind": "NS",
+          "delta_a_est_m": 329.2
+        },
+        {
+          "event_id": "QZS-3-184",
+          "start_utc": "2024-02-15T23:56:49Z",
+          "kind": "NS",
+          "delta_a_est_m": 685.7
+        },
+        {
+          "event_id": "QZS-3-187",
+          "start_utc": "2024-04-02T20:51:33Z",
+          "kind": "NS",
+          "delta_a_est_m": 219.4
+        },
+        {
+          "event_id": "QZS-3-189",
+          "start_utc": "2024-04-26T15:59:40Z",
+          "kind": "EW",
+          "delta_a_est_m": -3264.0
+        },
+        {
+          "event_id": "QZS-3-194+QZS-3-195",
+          "start_utc": "2024-06-29T14:29:50Z",
+          "kind": "NS",
+          "delta_a_est_m": 493.7
+        },
+        {
+          "event_id": "QZS-3-198",
+          "start_utc": "2024-08-13T12:03:07Z",
+          "kind": "NS",
+          "delta_a_est_m": 768.0
+        },
+        {
+          "event_id": "QZS-3-204",
+          "start_utc": "2024-11-08T06:20:23Z",
+          "kind": "NS",
+          "delta_a_est_m": 164.6
+        },
+        {
+          "event_id": "QZS-3-211+QZS-3-212",
+          "start_utc": "2025-02-03T12:00:25Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
+        },
+        {
+          "event_id": "QZS-3-221+QZS-3-222",
+          "start_utc": "2025-06-10T03:37:54Z",
+          "kind": "NS",
+          "delta_a_est_m": 54.9
+        },
+        {
+          "event_id": "QZS-3-225+QZS-3-226",
+          "start_utc": "2025-07-23T00:46:53Z",
+          "kind": "NS",
+          "delta_a_est_m": -164.6
+        }
+      ],
+      "wrong_channel_list": [
+        {
+          "event_id": "QZS-3-180+QZS-3-181",
+          "start_utc": "2024-01-05T14:08:07Z",
+          "detection": {
+            "start_utc": "2024-01-05T13:31:38Z",
+            "end_utc": "2024-01-05T16:54:42Z",
+            "step_m": -354.4,
+            "z": -72.28,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-187",
+          "start_utc": "2024-04-02T20:51:33Z",
+          "detection": {
+            "start_utc": "2024-04-02T16:32:38Z",
+            "end_utc": "2024-04-02T21:08:58Z",
+            "step_m": 360.7,
+            "z": 69.89,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-211+QZS-3-212",
+          "start_utc": "2025-02-03T12:00:25Z",
+          "detection": {
+            "start_utc": "2025-02-02T22:09:03Z",
+            "end_utc": "2025-02-03T11:52:00Z",
+            "step_m": -810.7,
+            "z": -20.46,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-221+QZS-3-222",
+          "start_utc": "2025-06-10T03:37:54Z",
+          "detection": {
+            "start_utc": "2025-06-10T00:48:28Z",
+            "end_utc": "2025-06-10T20:18:38Z",
+            "step_m": -2979.7,
+            "z": -509.53,
+            "channel": "a"
+          }
+        },
+        {
+          "event_id": "QZS-3-225+QZS-3-226",
+          "start_utc": "2025-07-23T00:46:53Z",
+          "detection": {
+            "start_utc": "2025-07-22T13:54:09Z",
+            "end_utc": "2025-07-23T02:08:38Z",
+            "step_m": -780.8,
+            "z": -112.25,
+            "channel": "a"
+          }
+        }
+      ],
+      "false_alarm_list": [
+        {
+          "start_utc": "2025-02-27T20:29:12Z",
+          "end_utc": "2025-02-28T14:03:38Z",
+          "step_m": -3042.6,
+          "z": -224.27,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-15T20:50:23Z",
+          "end_utc": "2025-12-16T07:06:43Z",
+          "step_m": 680.3,
+          "z": 698.83,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-21T12:37:21Z",
+          "end_utc": "2025-12-21T13:48:06Z",
+          "step_m": -705.4,
+          "z": -365.42,
+          "channel": "a"
+        }
+      ],
+      "duplicate_list": [
+        {
+          "start_utc": "2024-01-08T07:27:36Z",
+          "end_utc": "2024-01-08T12:37:00Z",
+          "step_m": -2934.9,
+          "z": -328.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-06-08T05:38:11Z",
+          "end_utc": "2024-06-08T13:38:54Z",
+          "step_m": -3192.3,
+          "z": -1409.34,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-01T20:41:45Z",
+          "end_utc": "2024-07-02T14:58:26Z",
+          "step_m": -3794.6,
+          "z": -455.38,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-07-24T04:10:42Z",
+          "end_utc": "2024-07-24T13:15:13Z",
+          "step_m": -3313.5,
+          "z": -1396.83,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-08-15T21:19:07Z",
+          "end_utc": "2024-08-16T13:57:26Z",
+          "step_m": -3574.0,
+          "z": -14.04,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2024-10-20T18:28:44Z",
+          "end_utc": "2024-10-20T19:34:42Z",
+          "step_m": -3078.6,
+          "z": -1252.36,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-05T04:35:38Z",
+          "end_utc": "2025-02-06T14:06:38Z",
+          "step_m": -2444.5,
+          "z": -52.03,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-02-26T12:56:38Z",
+          "end_utc": "2025-02-27T20:29:12Z",
+          "step_m": -3183.3,
+          "z": -168.69,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-07-25T00:10:38Z",
+          "end_utc": "2025-07-25T10:32:21Z",
+          "step_m": -2237.3,
+          "z": -247.81,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-08-15T22:04:03Z",
+          "end_utc": "2025-08-16T08:20:48Z",
+          "step_m": -3198.9,
+          "z": -534.92,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-12-27T01:00:38Z",
+          "end_utc": "2025-12-27T06:45:26Z",
+          "step_m": -3396.2,
+          "z": -830.14,
+          "channel": "a"
+        }
+      ]
+    },
+    "QZS-4": {
+      "norad_id": 42965,
+      "group": "IGSO",
+      "element_source": "gp_history-42965-2021-01-01--2026-01-01.json",
+      "element_sets": 1827,
+      "subsets": {
+        "all": {
+          "events": 4,
+          "covered": 0,
+          "matched": 0,
+          "matched_all": 0
+        }
+      },
+      "detections": 0,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
+      "object_years": 0.4621,
+      "no_burn_years": 1.9641,
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
+    },
+    "Fengyun-2H": {
+      "norad_id": 43491,
+      "group": "GEO-Fengyun",
+      "element_source": "gp_history-43491-2021-01-01--2026-01-01.json",
+      "element_sets": 4218,
+      "subsets": {
+        "all": {
+          "events": 0,
+          "covered": 0,
+          "matched": 0,
+          "matched_all": 0
+        }
+      },
+      "detections": 9,
+      "matched_detections": 0,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 0,
+      "duplicates": 0,
+      "wrong_channel": 0,
+      "object_years": 0.0,
+      "no_burn_years": 0.0,
+      "missed": [],
+      "wrong_channel_list": [],
+      "false_alarm_list": [],
+      "duplicate_list": []
+    },
+    "QZS-6": {
+      "norad_id": 62876,
+      "group": "GEO",
+      "element_source": "geo/62876.tle",
+      "element_sets": 577,
+      "subsets": {
+        "all": {
+          "events": 10,
+          "covered": 7,
+          "matched": 6,
+          "matched_all": 6
+        },
+        "EW": {
+          "events": 7,
+          "covered": 5,
+          "matched": 5,
+          "matched_all": 5
+        },
+        "NS": {
+          "events": 3,
+          "covered": 2,
+          "matched": 1,
+          "matched_all": 1
+        }
+      },
+      "detections": 32,
+      "matched_detections": 6,
+      "dropped_attitude_or_unplanned": 0,
+      "false_alarms": 4,
+      "duplicates": 1,
+      "wrong_channel": 0,
+      "object_years": 0.2941,
+      "no_burn_years": 0.3593,
+      "missed": [
+        {
+          "event_id": "QZS-6-002",
+          "start_utc": "2025-08-22T13:44:42Z",
+          "kind": "NS",
+          "delta_a_est_m": 164.6
+        }
+      ],
+      "wrong_channel_list": [],
+      "false_alarm_list": [
+        {
+          "start_utc": "2025-09-02T21:24:24Z",
+          "end_utc": "2025-09-03T03:02:09Z",
+          "step_m": 726.3,
+          "z": 116.96,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-10T07:42:26Z",
+          "end_utc": "2025-09-10T16:16:28Z",
+          "step_m": -467.4,
+          "z": -25.88,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-22T00:36:55Z",
+          "end_utc": "2025-09-22T12:36:19Z",
+          "step_m": -778.9,
+          "z": -304.47,
+          "channel": "a"
+        },
+        {
+          "start_utc": "2025-09-22T19:44:06Z",
+          "end_utc": "2025-09-23T20:47:26Z",
+          "step_m": -771.0,
+          "z": -57.47,
+          "channel": "a"
+        }
+      ],
+      "duplicate_list": [
+        {
+          "start_utc": "2025-12-11T03:00:38Z",
+          "end_utc": "2025-12-11T13:56:27Z",
+          "step_m": -1925.2,
+          "z": -984.53,
+          "channel": "a"
+        }
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-# Build ground-truth manoeuvre lists from published logs (IDS, QZSS and the Fengyun set).
+# Build ground-truth manoeuvre lists from published logs (QZSS and the Fengyun set).
 # Every output row carries its source file, the file's revision date and its URL.
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 MU_KM3_S2 = 398600.4418
-IDS_URL = "ftp://ftp.ids-doris.org/pub/ids/satellites/"
 QZSS_URL = "https://qzss.go.jp/en/technical/qzssinfo/khp0mf0000000wuf-att/"
 FENGYUN_COMMIT = "4cf0b15600658a486eff9e6a967ebd520e2354d1"
 FENGYUN_URL = ("https://github.com/dpshorten/TLE_observation_benchmark_dataset/blob/"
@@ -30,26 +29,11 @@ class Source:
 
     @property
     def url(self) -> str:
-        if self.file.startswith("ohi-"):
-            return QZSS_URL + self.file
         if self.file.startswith("manFY"):
             return FENGYUN_URL + self.file
-        return IDS_URL + self.file
+        return QZSS_URL + self.file
 
 
-IDS_SOURCES = (
-    Source("cs2man.txt", "CryoSat-2", 36508, date(2026, 11, 6), 7094.4),
-    Source("ja3man.txt", "Jason-3", 41240, date(2026, 11, 14), 7714.4),
-    Source("swoman.txt", "SWOT", 54754, date(2026, 11, 14), 7268.7),
-    Source("sp5man.txt", "SPOT-5", 27421, date(2015, 12, 10), 7200.5),
-    Source("s3aman.txt", "Sentinel-3A", 41335, date(2026, 11, 10), 7177.9),
-    Source("s3bman.txt", "Sentinel-3B", 43437, date(2026, 11, 12), 7177.9),
-    Source("s6aman.txt", "Sentinel-6A", 46984, date(2026, 8, 26), 7714.4),
-    Source("s6bman.txt", "Sentinel-6B", 66514, date(2026, 8, 26), 7694.6),
-    Source("srlman.txt", "SARAL", 39086, date(2026, 7, 4), 7159.6),
-    Source("h2cman.txt", "HY-2C", 46469, date(2026, 8, 4), 7328.6),
-    Source("h2dman.txt", "HY-2D", 48621, date(2026, 9, 30), 7328.6),
-)
 QZSS_SOURCES = (
     Source("ohi-qzs3.txt", "QZS-3", 42917, date(2026, 11, 4), 42165.9),
     Source("ohi-qzs6.txt", "QZS-6", 62876, date(2026, 11, 4), 42165.9),
@@ -64,9 +48,6 @@ FENGYUN_SOURCES = (
     Source("manFY4A.txt.fy", "Fengyun-4A", 41882, date(2022, 11, 22), 0.0, "2016-077A"),
 )
 
-IDS_FIELDS = ["event_id", "satellite", "norad_id", "start_utc", "end_utc", "n_burns",
-              "burn_times_utc", "dv_radial_m_s", "dv_along_m_s", "dv_cross_m_s", "kind",
-              "delta_a_est_m", "source_file", "source_revision", "source_url"]
 QZSS_FIELDS = ["event_id", "event_group", "satellite", "norad_id", "start_utc", "end_utc",
                "duration", "ns_ew", "dvx_m_s", "dvy_m_s", "dvz_m_s", "kind", "delta_a_est_m",
                "source_file", "source_revision", "source_url"]
@@ -85,80 +66,9 @@ def delta_a_m(dv_along_m_s: float, a_km: float) -> float:
     return 2.0 * dv_along_m_s / n
 
 
-def _doy(year: str, doy: str, hh: str, mm: str, ss: str = "0") -> datetime:
-    sec = float(ss)
-    return datetime(int(year), 1, 1) + timedelta(days=int(doy) - 1, hours=int(hh), minutes=int(mm),
-                                                  seconds=sec)
-
-
 def _iso(t: datetime) -> str:
     return t.isoformat(timespec="seconds") + "Z" if t.microsecond == 0 else \
         t.isoformat(timespec="milliseconds") + "Z"
-
-
-@dataclass(frozen=True)
-class IdsRow:
-    satellite_code: str
-    start: datetime
-    end: datetime
-    burn_times: tuple[datetime, ...]
-    dv_radial: float
-    dv_along: float
-    dv_cross: float
-
-
-def parse_ids_line(line: str) -> IdsRow:
-    if len(line) < 46 or not line[44].isdigit():
-        raise ValueError(f"not an IDS manoeuvre row: {line[:60]!r}")
-    start = _doy(line[6:10], line[11:14], line[15:17], line[18:20])
-    end = _doy(line[21:25], line[26:29], line[30:32], line[33:35])
-    ptype, n = line[40:43], int(line[44])
-    if ptype not in ("005", "006", "007"):
-        raise ValueError(f"unknown parameter type {ptype!r}")
-    fields = line[45:].split()
-    if len(fields) != 15 * n:
-        raise ValueError(f"expected {15 * n} burn fields for {n} burns, got {len(fields)}")
-    times, radial, along, cross = [], 0.0, 0.0, 0.0
-    for b in range(n):
-        f = fields[15 * b:15 * b + 15]
-        times.append(_doy(*f[0:5]))
-        dv = [float(x) for x in f[6:9]]
-        along += dv[1]
-        if ptype == "005":
-            cross, radial = cross + dv[0], radial + dv[2]
-        else:
-            radial, cross = radial + dv[0], cross + dv[2]
-    return IdsRow(line[0:5], start, end, tuple(times), radial, along, cross)
-
-
-def parse_ids(text: str, src: Source) -> tuple[list[dict], dict]:
-    lines = [ln for ln in text.splitlines() if ln.strip()]
-    seen, rows, dropped = set(), [], {"duplicate_rows": 0, "on_or_after_revision": 0}
-    revision = datetime.combine(src.revision, datetime.min.time())
-    for ln in lines:
-        key = ln.rstrip()
-        if key in seen:
-            dropped["duplicate_rows"] += 1
-            continue
-        seen.add(key)
-        r = parse_ids_line(ln)
-        if r.start >= revision:
-            dropped["on_or_after_revision"] += 1
-            continue
-        rows.append({
-            "satellite": src.satellite, "norad_id": src.norad_id,
-            "start_utc": _iso(r.start), "end_utc": _iso(r.end), "n_burns": len(r.burn_times),
-            "burn_times_utc": ";".join(_iso(t) for t in r.burn_times),
-            "dv_radial_m_s": f"{r.dv_radial:.6g}", "dv_along_m_s": f"{r.dv_along:.6g}",
-            "dv_cross_m_s": f"{r.dv_cross:.6g}",
-            "kind": "along-track" if abs(r.dv_along) >= abs(r.dv_cross) else "cross-track",
-            "delta_a_est_m": round(delta_a_m(r.dv_along, src.nominal_a_km), 1),
-            "source_file": src.file, "source_revision": src.revision.isoformat(),
-            "source_url": src.url,
-        })
-    dropped["kept"] = len(rows)
-    dropped["source_rows"] = len(lines)
-    return rows, dropped
 
 
 def parse_qzss(text: str, src: Source) -> tuple[list[dict], dict]:
@@ -252,16 +162,9 @@ def _write(path: Path, fields: list[str], rows: list[dict]) -> None:
         w.writerows(rows)
 
 
-def build(ids_dir: Path, qzss_dir: Path, fengyun_dir: Path, out: Path) -> dict:
+def build(qzss_dir: Path, fengyun_dir: Path, out: Path) -> dict:
     out.mkdir(parents=True, exist_ok=True)
-    counts, ids_rows = {}, []
-    for src in IDS_SOURCES:
-        rows, c = parse_ids((ids_dir / src.file).read_text(encoding="ascii"), src)
-        for k, r in enumerate(rows):
-            r["event_id"] = f"{src.satellite}-{k + 1:03d}"
-        ids_rows += rows
-        counts[src.file] = c
-    qz_rows = []
+    counts, qz_rows = {}, []
     for src in QZSS_SOURCES:
         rows, c = parse_qzss((qzss_dir / src.file).read_text(encoding="utf-8"), src)
         qz_rows += rows
@@ -271,20 +174,18 @@ def build(ids_dir: Path, qzss_dir: Path, fengyun_dir: Path, out: Path) -> dict:
         rows, c = parse_fengyun((fengyun_dir / src.file).read_text(encoding="ascii"), src)
         fy_rows += rows
         counts[src.file] = c
-    _write(out / "ids_manoeuvres.csv", IDS_FIELDS, ids_rows)
     _write(out / "fengyun_manoeuvres.csv", FENGYUN_FIELDS, fy_rows)
     _write(out / "qzss_manoeuvres.csv", QZSS_FIELDS, qz_rows)
     return counts
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Build ground-truth manoeuvre lists from published logs (IDS, QZSS and the Fengyun set).")
-    p.add_argument("--ids-dir", type=Path, required=True)
+    p = argparse.ArgumentParser(description="Build ground-truth manoeuvre lists from published logs (QZSS and the Fengyun set).")
     p.add_argument("--qzss-dir", type=Path, required=True)
     p.add_argument("--fengyun-dir", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args(argv)
-    for name, c in build(args.ids_dir, args.qzss_dir, args.fengyun_dir, args.out).items():
+    for name, c in build(args.qzss_dir, args.fengyun_dir, args.out).items():
         print(name, c)
     return 0
 

@@ -1,5 +1,5 @@
 {
-  "description": "The frozen evaluation split for the detector hill-climb. train and dev use the train objects of groundtruth/splits.json, split in time; test is the holdout objects, scored only with --final. Do not edit to change a score.",
+  "description": "The frozen split for the detector evaluation. train and dev use the train objects of groundtruth/splits.json, split in time; test is the holdout objects, scored only with --final. Do not edit to change a score.",
   "periods": {
     "train": {
       "objects": "train",
@@ -20,7 +20,6 @@
   },
   "assignment": "'to' is exclusive. An event belongs to the period holding the midpoint of its window; a detection to the period holding the epoch before its step. Only a period's events and detections are matched with each other.",
   "groups": {
-    "LEO": "IDS LEO logs",
     "GEO": "QZSS geostationary logs (QZS-3, QZS-6); GEO acceptance rests on these",
     "IGSO": "QZSS inclined geosynchronous logs; reported separately",
     "ISS": "NASA and Roscosmos ISS lists (lower bounds, not operator logs)",
@@ -34,21 +33,6 @@
         "group": "ISS"
       },
       {
-        "norad_id": 27421,
-        "name": "SPOT-5",
-        "group": "LEO"
-      },
-      {
-        "norad_id": 36508,
-        "name": "CryoSat-2",
-        "group": "LEO"
-      },
-      {
-        "norad_id": 41240,
-        "name": "Jason-3",
-        "group": "LEO"
-      },
-      {
         "norad_id": 42917,
         "name": "QZS-3",
         "group": "GEO"
@@ -59,39 +43,14 @@
         "group": "IGSO"
       },
       {
-        "norad_id": 43437,
-        "name": "Sentinel-3B",
-        "group": "LEO"
-      },
-      {
         "norad_id": 43491,
         "name": "Fengyun-2H",
         "group": "GEO-Fengyun"
       },
       {
-        "norad_id": 46469,
-        "name": "HY-2C",
-        "group": "LEO"
-      },
-      {
-        "norad_id": 48621,
-        "name": "HY-2D",
-        "group": "LEO"
-      },
-      {
-        "norad_id": 54754,
-        "name": "SWOT",
-        "group": "LEO"
-      },
-      {
         "norad_id": 62876,
         "name": "QZS-6",
         "group": "GEO"
-      },
-      {
-        "norad_id": 66514,
-        "name": "Sentinel-6B",
-        "group": "LEO"
       }
     ],
     "holdout": [
@@ -106,16 +65,6 @@
         "group": "GEO-Fengyun"
       },
       {
-        "norad_id": 39086,
-        "name": "SARAL",
-        "group": "LEO"
-      },
-      {
-        "norad_id": 41335,
-        "name": "Sentinel-3A",
-        "group": "LEO"
-      },
-      {
         "norad_id": 41882,
         "name": "Fengyun-4A",
         "group": "GEO-Fengyun"
@@ -124,11 +73,6 @@
         "norad_id": 42738,
         "name": "QZS-2",
         "group": "IGSO"
-      },
-      {
-        "norad_id": 46984,
-        "name": "Sentinel-6A",
-        "group": "LEO"
       },
       {
         "norad_id": 49336,
