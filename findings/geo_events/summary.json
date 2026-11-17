@@ -1,0 +1,157 @@
+{
+  "commit": "0382f1474cf5f49ee3f8935192ca9c5d8f181128",
+  "dirty": false,
+  "events_file": "geo_events.csv",
+  "window_days": 45,
+  "dev": {
+    "events": 15,
+    "scored": 15,
+    "caught": 12,
+    "recall": 0.8,
+    "median_abs_error_days": 11.0,
+    "p90_abs_error_days": 37.5,
+    "by_event_type": {
+      "relocation_start": {
+        "events": 6,
+        "scored": 6,
+        "caught": 5,
+        "recall": 0.8333,
+        "median_abs_error_days": 10.0,
+        "p90_abs_error_days": 27.6
+      },
+      "relocation_end": {
+        "events": 3,
+        "scored": 3,
+        "caught": 1,
+        "recall": 0.3333,
+        "median_abs_error_days": 0.0,
+        "p90_abs_error_days": 0.0
+      },
+      "graveyard": {
+        "events": 5,
+        "scored": 5,
+        "caught": 5,
+        "recall": 1.0,
+        "median_abs_error_days": 32.0,
+        "p90_abs_error_days": 36.6
+      },
+      "ns_keeping_stop": {
+        "events": 0,
+        "scored": 0,
+        "caught": 0,
+        "recall": null,
+        "median_abs_error_days": null,
+        "p90_abs_error_days": null
+      },
+      "keeping_stop": {
+        "events": 1,
+        "scored": 1,
+        "caught": 1,
+        "recall": 1.0,
+        "median_abs_error_days": 10.0,
+        "p90_abs_error_days": 10.0
+      }
+    }
+  },
+  "test": {
+    "events": 18,
+    "scored": 18,
+    "caught": 13,
+    "recall": 0.7222,
+    "median_abs_error_days": 11.0,
+    "p90_abs_error_days": 32.400000000000006,
+    "by_event_type": {
+      "relocation_start": {
+        "events": 3,
+        "scored": 3,
+        "caught": 2,
+        "recall": 0.6667,
+        "median_abs_error_days": 18.0,
+        "p90_abs_error_days": 30.8
+      },
+      "relocation_end": {
+        "events": 4,
+        "scored": 4,
+        "caught": 3,
+        "recall": 0.75,
+        "median_abs_error_days": 7.0,
+        "p90_abs_error_days": 19.8
+      },
+      "graveyard": {
+        "events": 10,
+        "scored": 10,
+        "caught": 7,
+        "recall": 0.7,
+        "median_abs_error_days": 22.0,
+        "p90_abs_error_days": 29.6
+      },
+      "ns_keeping_stop": {
+        "events": 0,
+        "scored": 0,
+        "caught": 0,
+        "recall": null,
+        "median_abs_error_days": null,
+        "p90_abs_error_days": null
+      },
+      "keeping_stop": {
+        "events": 1,
+        "scored": 1,
+        "caught": 1,
+        "recall": 1.0,
+        "median_abs_error_days": 5.0,
+        "p90_abs_error_days": 5.0
+      }
+    }
+  },
+  "overall": {
+    "events": 33,
+    "scored": 33,
+    "caught": 25,
+    "recall": 0.7576,
+    "median_abs_error_days": 11.0,
+    "p90_abs_error_days": 34.6,
+    "by_event_type": {
+      "relocation_start": {
+        "events": 9,
+        "scored": 9,
+        "caught": 7,
+        "recall": 0.7778,
+        "median_abs_error_days": 10.0,
+        "p90_abs_error_days": 35.6
+      },
+      "relocation_end": {
+        "events": 7,
+        "scored": 7,
+        "caught": 4,
+        "recall": 0.5714,
+        "median_abs_error_days": 7.0,
+        "p90_abs_error_days": 18.200000000000003
+      },
+      "graveyard": {
+        "events": 15,
+        "scored": 15,
+        "caught": 12,
+        "recall": 0.8,
+        "median_abs_error_days": 22.0,
+        "p90_abs_error_days": 34.8
+      },
+      "ns_keeping_stop": {
+        "events": 0,
+        "scored": 0,
+        "caught": 0,
+        "recall": null,
+        "median_abs_error_days": null,
+        "p90_abs_error_days": null
+      },
+      "keeping_stop": {
+        "events": 2,
+        "scored": 2,
+        "caught": 2,
+        "recall": 1.0,
+        "median_abs_error_days": 7.5,
+        "p90_abs_error_days": 9.5
+      }
+    }
+  },
+  "unscored": []
+}
