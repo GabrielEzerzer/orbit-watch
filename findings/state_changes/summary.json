@@ -1,0 +1,71 @@
+{
+  "commit": "8b580c27fff2677991b3eb8d9ef8dcf1dc1940dc",
+  "dirty": false,
+  "geo_dir_object_count": 1804,
+  "skipped_not_by_rule": [],
+  "skipped_holdout": [
+    37158,
+    38049,
+    41882,
+    42738,
+    49336
+  ],
+  "objects_processed": 1799,
+  "objects_with_events": 308,
+  "events": 863,
+  "events_by_type": {
+    "relocation_start": 231,
+    "relocation_end": 342,
+    "free_burn": 97,
+    "graveyard": 83,
+    "keeping_stop": 34,
+    "ns_keeping_stop": 76
+  },
+  "events_by_type_and_year": {
+    "relocation_start": {
+      "2021": 42,
+      "2022": 38,
+      "2023": 57,
+      "2024": 45,
+      "2025": 49
+    },
+    "graveyard": {
+      "2021": 17,
+      "2022": 12,
+      "2023": 20,
+      "2024": 15,
+      "2025": 19
+    },
+    "keeping_stop": {
+      "2021": 4,
+      "2022": 7,
+      "2023": 2,
+      "2024": 4,
+      "2025": 17
+    },
+    "relocation_end": {
+      "2021": 66,
+      "2022": 60,
+      "2023": 86,
+      "2024": 60,
+      "2025": 70
+    },
+    "ns_keeping_stop": {
+      "2021": 10,
+      "2022": 9,
+      "2023": 16,
+      "2024": 18,
+      "2025": 23
+    },
+    "free_burn": {
+      "2021": 11,
+      "2022": 4,
+      "2023": 18,
+      "2024": 26,
+      "2025": 38
+    }
+  },
+  "events_csv_bytes": 86008,
+  "events_csv_committed": true,
+  "run_seconds": 1083.2
+}
