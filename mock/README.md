@@ -54,20 +54,20 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
 ## `geo/`
 
 - `bundle-sample.txt`: five real TLEs laid out like a full-catalogue yearly bundle (2-line, no
-  names), copied byte for byte from `data/archive/` (the OndroNR/tle-archive extract of CelesTrak's
+  names), copied byte for byte from `$ORBIT_WATCH_DATA/archive/` (the OndroNR/tle-archive extract of CelesTrak's
   `active.txt`): the first two Luch 5A (37951) sets, the first ISS (25544), Luch-5X / Olymp-K 2
   (55841) and Luch / Olymp-K 1 (40258) sets of 2021 (2023 for 55841). The rule's edge cases (GTO,
   a 24-hour orbit with e > 0.2, an object that arrives) are synthetic TLE pairs built inside
   `tests/test_geo_belt.py`, not files here.
 - `37344_every_2_days.tle`: real element sets of Elektro-L No. 1 (NORAD 37344, 2011-001A),
-  cut from `data/geo/37344.tle`, which `orbit_watch.jobs.geo_belt` extracted from the Kaggle
+  cut from `$ORBIT_WATCH_DATA/geo/37344.tle`, which `orbit_watch.jobs.geo_belt` extracted from the Kaggle
   dataset `vaibhavpandey12382/historical-tle-datasets` (yearly TLE bundles 2021-2025; the
   bundle names and sha256 are in that folder's `manifest.json`). The first element set in each
   two-day bucket counted from 2021-01-01 is kept: 904 of 2,914, lines unchanged. Read by
   `tests/test_modes.py`, which checks it against ESA's issue-21 classification of the object.
 - `22269_every_4_days.tle` and `25110_every_4_days.tle`: real element sets of Cosmos 2224
   (NORAD 22269, 1992-088A) and Intelsat 804 (NORAD 25110, 1997-083A), cut the same way from
-  `data/geo/22269.tle` and `data/geo/25110.tle`, keeping the first element set in each four-day
+  `$ORBIT_WATCH_DATA/geo/22269.tle` and `$ORBIT_WATCH_DATA/geo/25110.tle`, keeping the first element set in each four-day
   bucket counted from 2021-01-01: 456 of 2,398 and 456 of 2,766, lines unchanged. Both energies
   sit within about 2 % of a potential barrier and both paths pass over it (the low barrier for
   22269, the high one for 25110). Read by `tests/test_modes.py`, which checks that neither is

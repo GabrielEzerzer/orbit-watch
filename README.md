@@ -89,7 +89,7 @@ Download rules:
 | Injection-recovery | `python -m orbit_watch.inject --spacetrack $ORBIT_WATCH_DATA/spacetrack/gp_history-25544-2021-01-01--2026-01-01.json --truth groundtruth/iss_manoeuvres.csv groundtruth/iss_roscosmos_manoeuvres.csv --out findings/injection` | `findings/injection/` |
 | Label CSVs from operator logs | `python -m orbit_watch.manoeuvre_logs --qzss-dir $ORBIT_WATCH_DATA/sources/qzss --fengyun-dir $ORBIT_WATCH_DATA/sources/fengyun --out groundtruth` | `groundtruth/*_manoeuvres.csv` |
 | Generalisation (QZSS GEO) | `python -m orbit_watch.generalise --truth-dir groundtruth --tle-dir $ORBIT_WATCH_DATA/spacetrack --out findings/generalise` | `findings/generalise/` |
-| Frozen per-regime eval | `python -m harness.evals.detector --split dev --data-dir data [--settings harness/evals/settings/inc-vector.json]` | `harness/evals/results/<split>-<settings>.json` |
+| Frozen per-regime eval | `python -m harness.evals.detector --split dev [--settings harness/evals/settings/inc-vector.json]` | `harness/evals/results/<split>-<settings>.json` |
 | TLE archive extraction (about 5 min, a 2 GB clone) | `python -m orbit_watch.jobs.extract_tle_archive --out $ORBIT_WATCH_DATA/archive --norad 25544` | `<norad>.tle`, `manifest.json` |
 | GEO-region history (about 16 min) | see "Every object in the GEO region" | `$ORBIT_WATCH_DATA/geo/` |
 | GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir $ORBIT_WATCH_DATA/geo --out $ORBIT_WATCH_DATA/geo_modes` | `$ORBIT_WATCH_DATA/geo_modes/segments.csv`, `findings/geo_modes/` |

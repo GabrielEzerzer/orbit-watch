@@ -68,8 +68,8 @@
       "name": "Detector evaluation",
       "kind": "eval",
       "description": "Scores the step detector per regime (GEO, IGSO, ISS) against fixed periods and objects, with the GEO east-west and ISS recall guardrails.",
-      "command": "python -m harness.evals.detector --split SPLIT [--final] --data-dir DIR [--settings JSON] [--truth-dir DIR] [--out JSON]",
-      "inputs": ["harness/evals/split.json", "a settings JSON (default harness/evals/settings/frozen.json)", "element sets under DATA-DIR", "ground truth under TRUTH-DIR"],
+      "command": "python -m harness.evals.detector --split SPLIT [--final] [--data-dir DIR] [--settings JSON] [--truth-dir DIR] [--out JSON]",
+      "inputs": ["harness/evals/split.json", "a settings JSON (default harness/evals/settings/frozen.json)", "element sets under DATA-DIR (default $ORBIT_WATCH_DATA)", "ground truth under TRUTH-DIR"],
       "outputs": ["a results JSON (default harness/evals/results/<split>-<settings>.json)", "a score table on stdout"],
       "test": "tests/test_eval_detector.py"
     },
