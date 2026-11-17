@@ -41,8 +41,8 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
 
 ## `spacetrack/`
 
-- `gp_history-25544-format-sample.json`: **a format sample, not a recorded response.** No
-  Space-Track account exists, so nothing has been downloaded from it. The two records are the two
+- `gp_history-25544-format-sample.json`: **a format sample, not a recorded response.** It was
+  written before anything had been downloaded from Space-Track. The two records are the two
   real ISS TLEs in `elements/iss.tle`, rewritten as Space-Track `gp_history` JSON: every value is
   a JSON string; the OMM fields come from `sgp4.exporter.export_omm` (sgp4 2.27), with the
   angles, eccentricity, mean motion and its first derivative copied as text from the TLE columns.

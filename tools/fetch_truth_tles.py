@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
     source = SpaceTrackSource.from_env(START, END, cache_dir=args.cache_dir, limiter=RateLimiter())
     if source is None:
-        print("SPACETRACK_USER / SPACETRACK_PASSWORD not set; run through hush run")
+        print("SPACETRACK_USER and SPACETRACK_PASSWORD are not set; set them to your Space-Track login")
         return 2
     for norad, entry in load_splits().items():
         if entry["previously_scored"]:
