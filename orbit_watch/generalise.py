@@ -1,5 +1,5 @@
-# Score the ISS-tuned step detector against IDS (LEO) and QZSS (GEO) operator logs, frozen and with
-# a per-regime tune on a time split, each next to a chance baseline.
+# Score the ISS-tuned step detector against the QZSS (GEO) operator logs, frozen and with a GEO tune
+# on a time split, each next to a chance baseline.
 
 from __future__ import annotations
 
@@ -25,18 +25,11 @@ LATE_DAYS = 2.0
 CHANCE_SHIFTS_DAYS = (-19, -13, -7, 7, 13, 19)
 K_GRID = (4, 6, 8)
 Z_GRID_EXT = Z_GRID + (40, 60, 80, 100, 150, 200, 300)
-STEP_GRID_M = {
-    "LEO": (0, 10, 20, 30, 50, 100, 150, 200, 300, 400),
-    "GEO": (0, 50, 100, 200, 300, 500, 1000, 1500, 2000, 3000),
-}
+STEP_GRID_M = {"GEO": (0, 50, 100, 200, 300, 500, 1000, 1500, 2000, 3000)}
 BIN_EDGES_M = (0, 50, 100, 200, 500, 1000, 2000, 5000, float("inf"))
 BIN_LABELS = ("<50 m", "50-100 m", "100-200 m", "200-500 m", "500 m-1 km", "1-2 km", "2-5 km",
               ">5 km")
 SATELLITES = (
-    ("CryoSat-2", 36508, "LEO", "ids_manoeuvres.csv"),
-    ("Jason-3", 41240, "LEO", "ids_manoeuvres.csv"),
-    ("SWOT", 54754, "LEO", "ids_manoeuvres.csv"),
-    ("SPOT-5", 27421, "LEO", "ids_manoeuvres.csv"),
     ("QZS-3", 42917, "GEO", "qzss_manoeuvres.csv"),
     ("QZS-6", 62876, "GEO", "qzss_manoeuvres.csv"),
 )
@@ -86,11 +79,8 @@ def load_log_events(path: Path, norad: int, *, final: bool = False) -> list[LogE
     for rs in clusters:
         das = [float(r["delta_a_est_m"]) if r["delta_a_est_m"] else None for r in rs]
         kinds = sorted({r["kind"] for r in rs})
-        direction_unknown = "dvx_m_s" in rs[0] or kinds != ["along-track"] or None in das
-        one_direction = not direction_unknown and (all(d > 0 for d in das) or all(d < 0 for d in das))
-        sign = int(np.sign(das[0])) if one_direction else 0
         events.append(LogEvent("+".join(r["event_id"] for r in rs), "+".join(kinds),
-                               None if None in das else round(sum(das), 1), sign,
+                               None if None in das else round(sum(das), 1), 0,
                                _t(rs[0]["start_utc"]), max(_t(r["end_utc"]) for r in rs), len(rs)))
     events.sort(key=lambda e: e.lo)
     return events
@@ -102,8 +92,6 @@ def log_coverage(path: Path, norad: int, *, final: bool = False) -> tuple[np.dat
         raise ValueError(f"{path}: no log rows for NORAD {norad}")
     lo = min(_t(r["start_utc"]) for r in rows)
     hi = max(_t(r["end_utc"]) for r in rows)
-    if "burn_times_utc" in rows[0]:
-        hi = max([hi] + [np.datetime64(r["source_revision"], "us") for r in rows])
     return lo, hi
 
 
@@ -263,10 +251,9 @@ class Satellite:
     def lag_days(self, which: str) -> dict:
         sc, _ = self.scores(4)
         day = _tol(1.0)
-        floor = 50 if self.regime == "LEO" else 500
         lags = []
         for i, e in enumerate(self.events):
-            if (e.delta_a_est_m is None or abs(e.delta_a_est_m) < floor
+            if (e.delta_a_est_m is None or abs(e.delta_a_est_m) < 500
                     or self.ev_test[i] != (which == "test")):
                 continue
             w = (sc.end >= e.lo - day) & (sc.start <= e.hi + 4 * day) & sc.valid
@@ -407,8 +394,8 @@ TEST_PART_NOT_BLIND = (
     "Four method changes were made after a first scoring of the test part: the 2-day late "
     "tolerance, the <60 s epoch collapse, merging burns under 12 h apart, and the |z| grid beyond "
     "30. The lag figures behind the late tolerance include test-part burns. With a 0.5-day "
-    "tolerance the tuned test part is LEO P 138/260, R 138/196 and GEO P 60/88, R 60/90 (tune "
-    "re-picks |z|>=7); without merging, LEO P 167/266, R 167/211 and GEO precision 74/110. The "
+    "tolerance the tuned test part is GEO P 60/88, R 60/90 (tune re-picks |z|>=7); without "
+    "merging, GEO precision 74/110. The "
     "GEO tune sits at the bottom of the |z| grid (3), so its 1000 m step floor does all the work."
 )
 
@@ -436,7 +423,7 @@ def run(truth_dir: Path, tle_dir: Path, out: Path, final: bool = False) -> dict:
         "test_part_not_blind": TEST_PART_NOT_BLIND,
         "regimes": {}, "satellites": {},
     }
-    for regime in ("LEO", "GEO"):
+    for regime in ("GEO",):
         group = [s for s in sats if s.regime == regime]
         tuned, sweep = tune(group, regime)
         report["regimes"][regime] = {
@@ -486,7 +473,7 @@ def run(truth_dir: Path, tle_dir: Path, out: Path, final: bool = False) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Does the ISS-tuned step detector generalise? Score it against IDS (LEO) and QZSS (GEO) logs.")
+    p = argparse.ArgumentParser(description="Does the ISS-tuned step detector generalise? Score it against the QZSS (GEO) logs.")
     p.add_argument("--truth-dir", type=Path, required=True)
     p.add_argument("--tle-dir", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)

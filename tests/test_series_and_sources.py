@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from orbit_watch import DirectorySource, parse_tle, to_series
-from orbit_watch.geo_hunt import hunt
+from orbit_watch.generalise import load_series
 from orbit_watch.holdout import load_gp_history
 
 
@@ -80,8 +80,8 @@ def test_every_loader_gets_the_collapse(tmp_path):
     days = sorted(NEAR_DAYS + [3.0 + 0.5 * i for i in range(20)])
     jitter = [1.00273956 + 1e-8 * (i * 7 % 5) for i in range(len(days))]
     (tmp_path / "37951.tle").write_text("".join(_tle(d, m) for d, m in zip(days, jitter)), encoding="utf-8")
-    r = hunt(tmp_path / "37951.tle")
-    assert r["summary"]["epochs"] == len(days) - 2 == len(r["lon"]) == len(r["series"])
+    series, _, dropped = load_series(37951, tmp_path / "spacetrack", tmp_path)
+    assert len(series) == len(days) - 2 and dropped == 2
     rows = [{"EPOCH": f"2021-01-01T00:00:{s:02d}.000000", "GP_ID": str(i + 1), "NORAD_CAT_ID": "25544",
              "MEAN_MOTION": "15.5", "ECCENTRICITY": "0.0003", "INCLINATION": "51.6", "RA_OF_ASC_NODE": "10",
              "ARG_OF_PERICENTER": "20", "MEAN_ANOMALY": "30", "BSTAR": "0.0001", "MEAN_MOTION_DOT": "0",

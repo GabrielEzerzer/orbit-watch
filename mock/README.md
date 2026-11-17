@@ -38,11 +38,6 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
 - `gp-CATNR-25544.json`: a recorded CelesTrak response, saved byte for byte. It is
   `https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=json`, fetched once on
   2026-11-14 at about 05:16 UTC (ISS element set with epoch 2026-11-13T21:59:13.395264).
-- `SW-All-sample.csv`: the header and six rows cut from one download of
-  `https://celestrak.org/SpaceData/SW-All.csv` on 2026-11-14 at about 05:16 UTC, with the line
-  endings changed to LF. The rows are 1957-10-01 (the first row), 2024-05-10 and 2024-05-11 (the
-  May 2024 storm), 2026-11-13 (observed), 2026-11-14 (a daily prediction, `PRD`) and 2027-01-01
-  (a monthly prediction, `PRM`, with no Kp or Ap). Row values are unchanged.
 
 ## `spacetrack/`
 

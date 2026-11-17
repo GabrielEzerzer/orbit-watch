@@ -47,15 +47,6 @@
       "test": "tests/test_esa_classification.py"
     },
     {
-      "name": "Fetch element sets for the generalisation run",
-      "kind": "tool",
-      "description": "Fetches Space-Track gp_history once for each satellite in the generalisation run, over its manoeuvre-log span.",
-      "command": "hush run -- python tools/fetch_generalise_tles.py [NORAD ...]",
-      "inputs": ["Space-Track credentials through hush", "optional NORAD ids (default: all six satellites)"],
-      "outputs": ["data/spacetrack/gp_history-<norad>-<start>--<end>.json", "counts and file sizes on stdout"],
-      "test": "tests/test_feature_map.py"
-    },
-    {
       "name": "Fetch element sets for the labelled objects",
       "kind": "tool",
       "description": "Fetches Space-Track gp_history for 2021-2025 for each object added in groundtruth/splits.json.",
@@ -63,15 +54,6 @@
       "inputs": ["Space-Track credentials through hush", "groundtruth/splits.json"],
       "outputs": ["CACHE-DIR/gp_history-<norad>-2021-01-01--2026-01-01.json", "counts and file sizes on stdout"],
       "test": "tests/test_feature_map.py"
-    },
-    {
-      "name": "Run a command on Kaggle",
-      "kind": "tool",
-      "description": "Runs a command on Kaggle CPU against the commit at HEAD and downloads what it wrote.",
-      "command": "python tools/kaggle_run.py [--slug SLUG] [--attach PATH ...] [--dataset OWNER/SLUG ...] [-- COMMAND ...]",
-      "inputs": ["the committed tree at HEAD", "optional uncommitted files to attach", "optional Kaggle datasets", "Kaggle CLI credentials"],
-      "outputs": ["data/kaggle/<slug>/out: COMMIT.txt, run.log, exit_code.txt and the command's outputs", "the command's exit code"],
-      "test": "tests/test_kaggle_run.py"
     },
     {
       "name": "Write the labelled-objects table",
@@ -85,7 +67,7 @@
     {
       "name": "Detector evaluation",
       "kind": "eval",
-      "description": "Scores the step detector per regime (ISS, LEO, GEO, IGSO) against fixed periods, objects and targets.",
+      "description": "Scores the step detector per regime (GEO, IGSO, ISS) against fixed periods and objects, with the GEO east-west and ISS recall guardrails.",
       "command": "python -m harness.evals.detector --split SPLIT [--final] --data-dir DIR [--settings JSON] [--truth-dir DIR] [--out JSON]",
       "inputs": ["harness/evals/split.json", "a settings JSON (default harness/evals/settings/frozen.json)", "element sets under DATA-DIR", "ground truth under TRUTH-DIR"],
       "outputs": ["a results JSON (default harness/evals/results/<split>-<settings>.json)", "a score table on stdout"],
@@ -121,28 +103,19 @@
     {
       "name": "Score the detector on operator logs",
       "kind": "analysis",
-      "description": "Scores the ISS-tuned detector, and a per-regime tune, against IDS (LEO) and QZSS (GEO) manoeuvre logs.",
+      "description": "Scores the ISS-tuned detector, and a GEO tune, against the QZS-3 and QZS-6 (GEO) manoeuvre logs.",
       "command": "python -m orbit_watch.generalise --truth-dir DIR --tle-dir DIR --out DIR [--final]",
       "inputs": ["manoeuvre logs in groundtruth/", "Space-Track gp_history files, or GEO-region TLEs"],
       "outputs": ["OUT/<satellite>_events_scored.csv and <satellite>_detections.csv", "OUT/<regime>_recall.png", "OUT/report.json"],
       "test": "tests/test_generalise.py"
     },
     {
-      "name": "GEO step and longitude hunt",
-      "kind": "analysis",
-      "description": "Finds semi-major-axis steps in a few GEO objects and reports the longitude and drift rate around each.",
-      "command": "python -m orbit_watch.geo_hunt --tle-dir DIR --norad ID [ID ...] --out DIR",
-      "inputs": ["TLE-DIR/<norad>.tle per object"],
-      "outputs": ["OUT/steps.csv", "OUT/<norad>.png", "OUT/summary.json"],
-      "test": "tests/test_series_and_sources.py"
-    },
-    {
       "name": "Build ground truth from operator logs",
       "kind": "analysis",
-      "description": "Turns the published IDS, QZSS and Fengyun manoeuvre logs into the ground-truth CSVs, one row per source row.",
-      "command": "python -m orbit_watch.manoeuvre_logs --ids-dir DIR --qzss-dir DIR --fengyun-dir DIR --out DIR",
-      "inputs": ["IDS *man.txt files", "QZSS manoeuvre logs", "Fengyun manoeuvre logs"],
-      "outputs": ["OUT/ids_manoeuvres.csv", "OUT/qzss_manoeuvres.csv", "OUT/fengyun_manoeuvres.csv"],
+      "description": "Turns the published QZSS and Fengyun manoeuvre logs into the ground-truth CSVs, one row per source row.",
+      "command": "python -m orbit_watch.manoeuvre_logs --qzss-dir DIR --fengyun-dir DIR --out DIR",
+      "inputs": ["QZSS manoeuvre logs", "Fengyun manoeuvre logs"],
+      "outputs": ["OUT/qzss_manoeuvres.csv", "OUT/fengyun_manoeuvres.csv"],
       "test": "tests/test_manoeuvre_logs.py"
     },
     {

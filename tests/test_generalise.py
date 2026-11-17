@@ -10,7 +10,7 @@ from orbit_watch.generalise import (FROZEN, LogEvent, Satellite, covered, evalua
 
 
 def ev(lo, hi, sign=0, da=500.0, eid="e"):
-    return LogEvent(eid, "along-track", da, sign, np.datetime64(lo, "us"), np.datetime64(hi, "us"))
+    return LogEvent(eid, "EW", da, sign, np.datetime64(lo, "us"), np.datetime64(hi, "us"))
 
 
 def det(start, end, step):
@@ -69,20 +69,6 @@ def test_match_and_cover_agree_with_calibrate():
     assert covered(events, scores) == calibrate.covered(events, scores)
 
 
-def test_burn_and_counter_burn_merge_into_one_event(tmp_path):
-    p = tmp_path / "s.csv"
-    p.write_text(
-        "event_id,satellite,norad_id,start_utc,end_utc,n_burns,burn_times_utc,dv_radial_m_s,"
-        "dv_along_m_s,dv_cross_m_s,kind,delta_a_est_m,source_file,source_revision,source_url\n"
-        "S-1,S,54754,2025-06-20T11:57:00Z,2025-06-20T11:58:00Z,1,a,0,0.1,0,along-track,364.1,f,r,u\n"
-        "S-2,S,54754,2025-06-20T16:14:00Z,2025-06-20T16:15:00Z,1,a,0,-0.1,0,along-track,-346.2,f,r,u\n"
-        "S-3,S,54754,2025-06-21T16:14:00Z,2025-06-21T16:15:00Z,1,a,0,0.01,0,along-track,30.0,f,r,u\n",
-        encoding="utf-8")
-    e = load_log_events(p, 54754)
-    assert [(x.event_id, x.n_rows, x.delta_a_est_m, x.expected_sign) for x in e] == [
-        ("S-1+S-2", 2, 17.9, 0), ("S-3", 1, 30.0, 1)]
-
-
 def test_qzss_ns_pair_is_one_event_with_either_sign(tmp_path):
     p = tmp_path / "q.csv"
     p.write_text(
@@ -97,17 +83,6 @@ def test_qzss_ns_pair_is_one_event_with_either_sign(tmp_path):
         ("Q-1+Q-2", "NS", 164.5, 0), ("Q-3", "EW", -2248.6, 0)]
     assert e[0].lo == np.datetime64("2025-11-17T06:28:44", "us")
     assert e[0].hi == np.datetime64("2025-11-17T07:39:33", "us")
-
-
-def test_ids_along_track_sign_follows_delta_v(tmp_path):
-    p = tmp_path / "i.csv"
-    p.write_text(
-        "event_id,satellite,norad_id,start_utc,end_utc,n_burns,burn_times_utc,dv_radial_m_s,"
-        "dv_along_m_s,dv_cross_m_s,kind,delta_a_est_m,source_file,source_revision,source_url\n"
-        "C-1,C,36508,2010-05-03T17:55:00Z,2010-05-04T00:35:00Z,2,a;b,0,-0.0396884,0,along-track,-75.1,f,r,u\n"
-        "C-2,C,36508,2010-06-03T17:55:00Z,2010-06-03T18:35:00Z,1,a,0,0.001,0.02,cross-track,1.9,f,r,u\n",
-        encoding="utf-8")
-    assert [x.expected_sign for x in load_log_events(p, 36508)] == [-1, 0]
 
 
 GROUNDTRUTH = Path(__file__).resolve().parents[1] / "groundtruth"
@@ -146,17 +121,9 @@ def test_attitude_rows_do_not_merge_into_orbit_events(tmp_path):
     assert [(e.event_id, e.kind) for e in load_log_events(p, FY2H)] == [("A", "EW"), ("B", "attitude")]
 
 
-def test_log_coverage_ends_at_ids_revision_or_last_row(tmp_path):
+def test_log_coverage_runs_from_the_first_row_to_the_last():
     lo, hi = log_coverage(GROUNDTRUTH / "fengyun_manoeuvres.csv", FY2H)
     assert (lo, hi) == (np.datetime64("2019-01-18T01:00", "us"), np.datetime64("2022-01-18T10:00", "us"))
-    p = tmp_path / "ids.csv"
-    p.write_text(
-        "event_id,satellite,norad_id,start_utc,end_utc,n_burns,burn_times_utc,dv_radial_m_s,"
-        "dv_along_m_s,dv_cross_m_s,kind,delta_a_est_m,source_file,source_revision,source_url\n"
-        "C-1,C,36508,2024-05-03T17:55:00Z,2024-05-04T00:35:00Z,1,a,0,-0.03,0,along-track,-75.1,f,2026-11-06,u\n",
-        encoding="utf-8")
-    assert log_coverage(p, 36508) == (np.datetime64("2024-05-03T17:55", "us"),
-                                      np.datetime64("2026-11-06", "us"))
 
 
 def _geo_omm(t0, days, steps, seed=3):

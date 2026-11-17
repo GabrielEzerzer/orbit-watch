@@ -6,8 +6,8 @@ import pytest
 from orbit_watch import generalise, truth
 from orbit_watch.truth import SPLITS_PATH, HoldoutError, load_splits, make_splits, require_allowed
 
-SARAL = 39086
-CRYOSAT2 = 36508
+QZS2 = 42738
+QZS3 = 42917
 
 
 def test_committed_splits_follow_the_rule():
@@ -18,15 +18,15 @@ def test_previously_scored_objects_are_train_and_holdout_is_not_empty():
     splits = load_splits()
     assert all(o["split"] == "train" for o in splits.values() if o["previously_scored"])
     holdout = {o["regime"] for o in splits.values() if o["split"] == "holdout"}
-    assert holdout == {"LEO", "GEO", "IGSO"}
+    assert holdout == {"GEO", "IGSO"}
 
 
 def test_guard_refuses_holdout_unless_final():
-    assert load_splits()[SARAL]["split"] == "holdout"
+    assert load_splits()[QZS2]["split"] == "holdout"
     with pytest.raises(HoldoutError):
-        require_allowed(SARAL)
-    assert require_allowed(SARAL, final=True)["name"] == "SARAL"
-    assert require_allowed(CRYOSAT2)["split"] == "train"
+        require_allowed(QZS2)
+    assert require_allowed(QZS2, final=True)["name"] == "QZS-2"
+    assert require_allowed(QZS3)["split"] == "train"
 
 
 def test_guard_refuses_unassigned_objects():
@@ -40,12 +40,12 @@ def test_scoring_loaders_refuse_holdout(tmp_path):
     csv_path = tmp_path / "t.csv"
     csv_path.write_text("event_id,norad_id,start_utc,end_utc,kind,delta_a_est_m\n", encoding="utf-8")
     with pytest.raises(HoldoutError):
-        generalise.load_log_events(csv_path, SARAL)
-    assert generalise.load_log_events(csv_path, SARAL, final=True) == []
+        generalise.load_log_events(csv_path, QZS2)
+    assert generalise.load_log_events(csv_path, QZS2, final=True) == []
     with pytest.raises(HoldoutError):
-        generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path)
+        generalise.Satellite("QZS-2", QZS2, "IGSO", csv_path, tmp_path)
     with pytest.raises(FileNotFoundError):
-        generalise.Satellite("SARAL", SARAL, "LEO", csv_path, tmp_path, final=True)
+        generalise.Satellite("QZS-2", QZS2, "IGSO", csv_path, tmp_path, final=True)
 
 
 def test_cli_final_flag_reaches_the_loaders(monkeypatch, tmp_path):
@@ -90,21 +90,21 @@ def test_series_guard_refuses_holdout_element_sets(mock_dir):
     from orbit_watch import DirectorySource, to_series
 
     iss = DirectorySource(mock_dir / "elements").load([25544])
-    saral = [replace(r, norad_id=SARAL) for r in iss]
-    with pytest.raises(HoldoutError, match="SARAL"):
-        to_series(saral)
+    qzs2 = [replace(r, norad_id=QZS2) for r in iss]
+    with pytest.raises(HoldoutError, match="QZS-2"):
+        to_series(qzs2)
     with pytest.raises(HoldoutError):
-        to_series(iss + saral)
-    assert len(to_series(saral, final=True)[SARAL]) == 2
+        to_series(iss + qzs2)
+    assert len(to_series(qzs2, final=True)[QZS2]) == 2
     unlisted = [replace(r, norad_id=99999) for r in iss]
     assert set(to_series(iss + unlisted)) == {25544, 99999}
 
 
 def test_require_not_holdout_lets_unlisted_objects_through():
     assert truth.require_not_holdout(99999) is None
-    assert truth.require_not_holdout(CRYOSAT2)["split"] == "train"
+    assert truth.require_not_holdout(QZS3)["split"] == "train"
     with pytest.raises(HoldoutError):
-        truth.require_not_holdout(SARAL)
+        truth.require_not_holdout(QZS2)
 
 
 REPO = Path(truth.__file__).resolve().parents[1]
@@ -159,7 +159,7 @@ def test_only_truth_py_opens_ground_truth_files():
 def test_the_scan_catches_a_direct_label_read():
     import ast
 
-    src = ('import csv\nwith open("groundtruth/ids_manoeuvres.csv") as f:\n'
+    src = ('import csv\nwith open("groundtruth/qzss_manoeuvres.csv") as f:\n'
            '    rows = list(csv.DictReader(f))\n')
     assert [what for _, what in _file_readers(ast.parse(src))] == [
         "open() for reading", "csv.DictReader on a file"]
@@ -167,25 +167,25 @@ def test_the_scan_catches_a_direct_label_read():
 
 def test_label_reader_refuses_holdout_and_filters_by_object(tmp_path):
     p = tmp_path / "t.csv"
-    p.write_text(f"event_id,norad_id\na,{CRYOSAT2}\nb,{SARAL}\n", encoding="utf-8")
-    assert [r["event_id"] for r in truth.read_label_rows(p, CRYOSAT2)] == ["a"]
+    p.write_text(f"event_id,norad_id\na,{QZS3}\nb,{QZS2}\n", encoding="utf-8")
+    assert [r["event_id"] for r in truth.read_label_rows(p, QZS3)] == ["a"]
     with pytest.raises(HoldoutError):
-        truth.read_label_rows(p, SARAL)
+        truth.read_label_rows(p, QZS2)
 
 
 def test_geo_fallback_refuses_holdout_objects(tmp_path, mock_dir):
     from orbit_watch.elements import _tle_checksum
 
     def renumber(line):
-        line = line[:2] + f"{SARAL:05d}" + line[7:68]
+        line = line[:2] + f"{QZS2:05d}" + line[7:68]
         return line + str(_tle_checksum(line))
 
     tle_dir, geo_dir = tmp_path / "spacetrack", tmp_path / "geo"
     tle_dir.mkdir()
     geo_dir.mkdir()
     lines = (mock_dir / "geo" / "bundle-sample.txt").read_text(encoding="utf-8").splitlines()[:4]
-    (geo_dir / f"{SARAL}.tle").write_text("".join(renumber(x) + "\n" for x in lines), encoding="utf-8")
-    with pytest.raises(HoldoutError, match="SARAL"):
-        generalise.load_series(SARAL, tle_dir)
-    series, label, _ = generalise.load_series(SARAL, tle_dir, final=True)
-    assert label == f"geo/{SARAL}.tle" and len(series) == 2
+    (geo_dir / f"{QZS2}.tle").write_text("".join(renumber(x) + "\n" for x in lines), encoding="utf-8")
+    with pytest.raises(HoldoutError, match="QZS-2"):
+        generalise.load_series(QZS2, tle_dir)
+    series, label, _ = generalise.load_series(QZS2, tle_dir, final=True)
+    assert label == f"geo/{QZS2}.tle" and len(series) == 2

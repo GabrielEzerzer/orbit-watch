@@ -14,14 +14,13 @@ from pathlib import Path
 GROUNDTRUTH = Path(__file__).resolve().parents[1] / "groundtruth"
 SPLITS_PATH = GROUNDTRUTH / "splits.json"
 SEED = "orbit-watch truth-sets 2026-11-14"
-HOLDOUT_SHARE = {"LEO": 1 / 3, "GEO": 2 / 3, "IGSO": 2 / 3}
+HOLDOUT_SHARE = {"GEO": 2 / 3, "IGSO": 2 / 3}
 SPLIT_RULE = (
     "The rule, fixed before any detector output for the new objects existed: * Every object "
-    "that had been scored before this split (the ISS, CryoSat-2, Jason-3, SWOT, SPOT-5, "
-    "QZS-3, QZS-6) is ``train``: none of them is blind any more. * The objects added with the "
-    "split are grouped by regime (LEO, GEO, IGSO). Each group is sorted by NORAD id and "
-    "shuffled with ``random.Random(SEED)``; the first ``ceil(n / 3)`` LEO objects and the "
-    "first ``ceil(2 n / 3)`` GEO and IGSO objects are ``holdout``, the rest ``train``."
+    "that had been scored before this split (the ISS, QZS-3, QZS-6) is ``train``: none of them "
+    "is blind any more. * The objects added with the split are grouped by regime (GEO, IGSO). "
+    "Each group is sorted by NORAD id and shuffled with ``random.Random(SEED)``; the first "
+    "``ceil(2 n / 3)`` objects of each group are ``holdout``, the rest ``train``."
 )
 
 
@@ -36,19 +35,8 @@ class TruthObject:
 
 OBJECTS = (
     TruthObject(25544, "ISS", "ISS", ("iss_manoeuvres.csv", "iss_roscosmos_manoeuvres.csv"), True),
-    TruthObject(36508, "CryoSat-2", "LEO", ("ids_manoeuvres.csv",), True),
-    TruthObject(41240, "Jason-3", "LEO", ("ids_manoeuvres.csv",), True),
-    TruthObject(54754, "SWOT", "LEO", ("ids_manoeuvres.csv",), True),
-    TruthObject(27421, "SPOT-5", "LEO", ("ids_manoeuvres.csv",), True),
     TruthObject(42917, "QZS-3", "GEO", ("qzss_manoeuvres.csv",), True),
     TruthObject(62876, "QZS-6", "GEO", ("qzss_manoeuvres.csv",), True),
-    TruthObject(41335, "Sentinel-3A", "LEO", ("ids_manoeuvres.csv",), False),
-    TruthObject(43437, "Sentinel-3B", "LEO", ("ids_manoeuvres.csv",), False),
-    TruthObject(46984, "Sentinel-6A", "LEO", ("ids_manoeuvres.csv",), False),
-    TruthObject(66514, "Sentinel-6B", "LEO", ("ids_manoeuvres.csv",), False),
-    TruthObject(39086, "SARAL", "LEO", ("ids_manoeuvres.csv",), False),
-    TruthObject(46469, "HY-2C", "LEO", ("ids_manoeuvres.csv",), False),
-    TruthObject(48621, "HY-2D", "LEO", ("ids_manoeuvres.csv",), False),
     TruthObject(37158, "QZS-1", "IGSO", ("qzss_manoeuvres.csv",), False),
     TruthObject(49336, "QZS-1R", "IGSO", ("qzss_manoeuvres.csv",), False),
     TruthObject(42738, "QZS-2", "IGSO", ("qzss_manoeuvres.csv",), False),

@@ -239,3 +239,11 @@ def test_detect_uses_the_span_and_gap_limits_the_eval_uses():
     defaults = inspect.signature(score_gaps).parameters
     assert defaults["max_span_days"].default == generalise.MAX_SPAN_DAYS
     assert defaults["max_gap_days"].default == generalise.MAX_GAP_DAYS
+
+
+def test_targets_are_the_two_recall_guardrails():
+    groups = {"GEO": {"subsets": {"EW": {"recall": 0.95, "ci95": [0.8, 0.99]}, "NS": {"recall": 0.1, "ci95": None}}},
+              "ISS": {"subsets": {"all": {"recall": 0.9, "ci95": None}}}}
+    assert [(t["check"], t["status"]) for t in ev.targets(groups)] == [("GEO recall EW", "PASS"),
+                                                                        ("ISS recall all", "MISS")]
+    assert [t["status"] for t in ev.targets({})] == ["no events", "no events"]

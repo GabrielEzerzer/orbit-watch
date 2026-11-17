@@ -8,12 +8,6 @@
       "step_min_m": 200,
       "nms_days": 1.0
     },
-    "LEO": {
-      "k": 4,
-      "z_min": 12,
-      "step_min_m": 200,
-      "nms_days": 1.0
-    },
     "GEO": {
       "k": 4,
       "z_min": 12,
