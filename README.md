@@ -186,8 +186,10 @@ these gates instead:
 
 GEO north-south recall is reported, not gated: train 6/17 = 0.353, dev 4/14 = 0.286. The
 inclination vector's job is to date when north-south keeping stops, not to catch each burn. Scores are in `harness/evals/results/` (`<split>-inc-vector.json`, with
-`<split>-frozen.json` as the baseline). At the detection level, GEO has 4 unmatched detections
-over 2.388 object-years on train (1.67 a year) and 7 over 1.956 on dev (3.58 a year).
+`<split>-frozen.json` as the baseline). At the detection level, GEO has 4 false alarms
+(unmatched detections away from any logged burn) over 2.388 object-years on train (1.67 a year)
+and 7 over 1.956 on dev (3.58 a year). Another 15 on train and 12 on dev fall in a burn's match
+zone and count as duplicates.
 
 The test split has been scored once, at the FROZEN setting (`results/test-frozen.json`), and the
 kept setting has never been scored on it.
