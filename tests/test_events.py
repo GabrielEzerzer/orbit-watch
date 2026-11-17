@@ -25,6 +25,12 @@ def keeper_track(days, lon0, seed):
     return lon, np.gradient(lon, days)
 
 
+def retired_track(days, start, seed):
+    lon, rate = keeper_track(days, 10.0, seed)
+    jitter = np.random.default_rng(seed).normal(0, 0.0002, len(days))
+    return np.where(days < start, lon, 10.0), np.where(days < start, rate, jitter)
+
+
 def relocating(move_start, move_days, rate, end=EDGES[14]):
     days = np.arange(0.0, end, 0.25)
     lon, r = keeper_track(days, 10.0, 0)
@@ -47,8 +53,8 @@ def test_relocation_gives_a_start_and_an_end_near_the_move():
 
 def test_climb_of_a_kept_object_is_a_graveyard_move():
     days = np.arange(0.0, EDGES[10], 0.25)
-    lon, rate = keeper_track(days, 10.0, 1)
     start = EDGES[5] + 7.0
+    lon, rate = retired_track(days, start, 1)
     up = np.clip((days - start) / 10.0, 0.0, 1.0) * 300.0
     drift = -1.5 * up / 42164.0 * 360.98
     lon = lon + np.cumsum(drift) * 0.25
@@ -90,3 +96,15 @@ def test_keeping_stop_is_dated_between_the_last_burn_and_the_missed_one():
     found = E.state_changes(element_sets(days, lon, rate))
     assert [f.event_type for f in found] == ["keeping_stop"]
     assert found[0].signal == "burn_gap" and abs(E._day(found[0].date) - (burns[-1] + 3.5)) <= 1
+
+
+def test_kilometre_burn_after_a_graveyard_move_is_a_free_burn():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    start, kick = EDGES[5] + 7.0, EDGES[9] + 3.0
+    lon, rate = retired_track(days, start, 4)
+    up = np.clip((days - start) / 10.0, 0.0, 1.0) * 300.0 + np.where(days >= kick, 2.0, 0.0)
+    up = up + np.where(days >= EDGES[11] + 3.0, 0.3, 0.0)
+    drift = -1.5 * up / 42164.0 * 360.98
+    found = E.state_changes(element_sets(days, lon + np.cumsum(drift) * 0.25, rate + drift))
+    assert [f.event_type for f in found] == ["graveyard", "free_burn"]
+    assert abs(E._day(found[1].date) - kick) <= 1 and found[1].size > 1000
