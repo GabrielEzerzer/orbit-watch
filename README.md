@@ -96,7 +96,7 @@ Download rules:
 | TLE archive extraction (about 5 min, a 2 GB clone) | `python -m orbit_watch.jobs.extract_tle_archive --out $ORBIT_WATCH_DATA/archive --norad 25544` | `<norad>.tle`, `manifest.json` |
 | GEO-region history (about 16 min) | see "Every object in the GEO region" | `$ORBIT_WATCH_DATA/geo/` |
 | GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir $ORBIT_WATCH_DATA/geo --out $ORBIT_WATCH_DATA/geo_modes` | `$ORBIT_WATCH_DATA/geo_modes/segments.csv`, `findings/geo_modes/` |
-| GEO state changes (about 4 min) | `python -m orbit_watch.jobs.state_changes` | `$ORBIT_WATCH_DATA/state_changes/events.csv`, `findings/state_changes/` |
+| GEO state changes (2 to 18 min; measured runs took 145 to 1,083 s) | `python -m orbit_watch.jobs.state_changes` | `$ORBIT_WATCH_DATA/state_changes/events.csv`, `findings/state_changes/` |
 | GEO state changes evaluation | `python -m harness.evals.state_changes [--split dev\|all]` | `findings/state_changes/eval_<split>.json` and `.csv` |
 
 Tools:
@@ -188,7 +188,7 @@ these gates instead:
 |---|---|
 | Guardrail: GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
 | Guardrail: ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
-| At most 0.2 false events per object-year, counted on state-change events | met: 0 events over 5.412 object-years of QZS-3 and QZS-6 log coverage |
+| At most 0.2 false events per object-year, counted on state-change events | met on QZS-3 and QZS-6, the only objects with burn logs and the objects the snap-back filter was tuned on: 0 events over 5.412 object-years of log coverage. They keep station throughout, so the check sees false departures, arrivals and keeping stops on a held object; it does not see extra or mistyped events around a real change, or false free burns on objects that are not held |
 | Recall and dating error on a cited list of known GEO events | dated state changes: dev 13/13, median date error 2 days; test 17/20, median 3 days (scored once). The mode layer alone: 26/33, median 11.5 days |
 | A hand audit of about 50 events from across the belt | not done |
 
@@ -353,13 +353,16 @@ mode-layer boundary the event came from). The event types are:
 | `ns_keeping_stop` | `controlled_lon_inc` to `controlled_lon` at the same slot | `mode_change`: the 30-day window boundary | largest inclination after, deg |
 | `free_burn` | a semi-major-axis step of at least 1 km by an object that is never held again | `a_step`: the step detector's peak | step, m |
 
-The steps behind it, each measured on the dev split of `groundtruth/geo_events.csv`:
+The steps behind it. Step 1 was measured on the detector evaluation's QZS-3 and QZS-6 false
+alarms; the others on the dev split of `groundtruth/geo_events.csv`:
 
 1. **Snap-back blocks** (`orbit_watch.clean`). Runs of up to 10 days where the semi-major axis or
    the inclination vector jumps away and comes back while the mean longitude carries on are
    alternate orbit solutions, not burns. They are about 1.6% of sets on a 100-object sample, and
-   on QZS-3 and QZS-6 they caused 6 of the 7 dev false alarms that were not near a logged burn.
-   They are dropped before anything else.
+   on QZS-3 and QZS-6 they caused 6 of the 7 detector dev false alarms that were not near a logged
+   burn. They are dropped before anything else, with none of the logged QZS burns lost. When the
+   sets on either side of a block are fewer than 3 or span less than a day, only the inclination
+   vector is judged, so a block that is the start of a new orbit is kept.
 2. **Dating from the drift rate.** The mode layer dates a change at a 30-day window boundary; the
    per-set drift rate leaves the held band within a day of a real departure (dev median error 10
    to 6 days).
@@ -371,6 +374,9 @@ The steps behind it, each measured on the dev split of `groundtruth/geo_events.c
 4. **Burn gap.** When keeping simply stops, the longitude leaves the box weeks after the last
    burn; the midpoint between the last burn and the one that never came dates it (one dev event,
    14 to 0 days). If the object climbs later, the climb is a second event.
+5. **One slot.** Two holds whose longitude ranges come within 0.5 deg of each other are the same
+   slot, so a re-centred box or a hold split by a short drift is not a relocation. An arrival is
+   dated no earlier than the departure it follows.
 
 | split | events | caught | median \|error\| (days) | 90th percentile (days) | same type |
 |---|---|---|---|---|---|
