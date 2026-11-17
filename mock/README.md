@@ -1,7 +1,8 @@
 # Test fixtures
 
-Every element set here is a real, published one. Nothing is invented. The tests
-read these files; package code never does.
+Every element set here is a real, published one. Nothing is invented apart from the event rows
+in `geo_events/`, which are marked as invented below. The tests read these files; package code
+never does.
 
 ## `elements/`
 
@@ -72,3 +73,12 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
   sit within about 2 % of a potential barrier and both paths pass over it (the low barrier for
   22269, the high one for 25110). Read by `tests/test_modes.py`, which checks that neither is
   labelled as trapped behind the barrier it crosses.
+
+## `geo_events/`
+
+- `geo_events.csv`: **an invented fixture, not real events.** Six rows in the layout of
+  `groundtruth/geo_events.csv`, each with `invented fixture row` as its quote and a placeholder
+  source URL. The NORAD ids are real GEO-region objects (one is not, and one is a holdout object),
+  and the dates were picked near or away from mode changes to exercise each status of
+  `harness.evals.mode_events`. The event ids and splits follow the file's rules, which
+  `tests/test_mode_events.py` checks.

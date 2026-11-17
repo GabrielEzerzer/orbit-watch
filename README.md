@@ -197,6 +197,26 @@ zone and count as duplicates.
 The test split has been scored once, at the FROZEN setting (`results/test-frozen.json`), and the
 kept setting has never been scored on it.
 
+##### GEO mode events (`harness/evals/mode_events.py`)
+
+Scores the mode layer, not the detector, against `groundtruth/geo_events.csv`: real relocations,
+graveyard moves and ends of station keeping, each with a source. For every event it recomputes the
+object's segments from `<geo-dir>/<norad>.tle` with the current `orbit_watch.modes`, drops
+`undetermined` segments, and looks for a matching mode change (held to free for the end of keeping,
+`controlled_lon_inc` to `controlled_lon` for the end of north-south keeping, held to held with
+disjoint longitudes as a relocation) within 45 days of the event. Each change matches one event,
+closest first, and the date error is the change's date minus the event's. Events on holdout
+objects, outside 2021-2025 or on objects missing from the GEO-region set are listed, not scored.
+Events are split into `dev` and `test` by the last hex digit of the sha256 of their `event_id`.
+
+```
+python -m harness.evals.mode_events [--events groundtruth/geo_events.csv] [--geo-dir DIR] [--out findings/geo_events]
+```
+
+It writes `summary.json` (recall and the median and 90th percentile of the absolute date error,
+per split and event type) and `events.csv` (one row per event with the matched change and the
+object's mode timeline 90 days either side). No results yet.
+
 ### Every object in the GEO region, 2021-2025
 
 `orbit_watch.jobs.geo_belt` collects every element set from 2021 to 2025 of every object that was
