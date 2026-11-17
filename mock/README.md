@@ -79,6 +79,6 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
 - `geo_events.csv`: **an invented fixture, not real events.** Six rows in the layout of
   `groundtruth/geo_events.csv`, each with `invented fixture row` as its quote and a placeholder
   source URL. The NORAD ids are real GEO-region objects (one is not, and one is a holdout object),
-  and the dates were picked near or away from mode changes to exercise each status of
-  `harness.evals.mode_events`. The event ids and splits follow the file's rules, which
-  `tests/test_mode_events.py` checks.
+  and they cover each event type and each unscored reason of `harness.evals.mode_events`. The tests
+  check only the file's rules (event ids, splits, types and date precision) on it; the scoring
+  tests use hand-built segments.

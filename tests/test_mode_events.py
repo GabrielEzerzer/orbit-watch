@@ -46,6 +46,7 @@ def one(event_type, segs, day=100):
     ("keeping_stop", "controlled_lon", "out_of_region", False),
     ("ns_keeping_stop", "controlled_lon_inc", "controlled_lon", True),
     ("ns_keeping_stop", "controlled_lon_inc", "drifting", False),
+    ("ns_keeping_stop", "controlled_lon", "controlled_lon_inc", False),
 ])
 def test_each_event_type_accepts_only_its_mode_changes(event_type, before, after, caught):
     r = one(event_type, [seg(before, 0, 100, lon=(10, 10.2)), seg(after, 100, 300, lon=(10, 10.2))])
@@ -59,6 +60,9 @@ def test_held_to_held_with_disjoint_longitudes_is_a_jump_for_relocations_only():
     assert one("relocation_end", jump).status == "caught"
     assert one("graveyard", jump).status == "missed"
     assert one("relocation_start", stay).status == "missed"
+    free = [seg("drifting", 0, 100, lon=(10, 10.2)), seg("drifting", 100, 300, lon=(30, 30.2))]
+    assert one("relocation_start", free).status == "missed"
+    assert one("relocation_end", free).status == "missed"
 
 
 def test_jump_reads_longitude_arcs_across_the_dateline():

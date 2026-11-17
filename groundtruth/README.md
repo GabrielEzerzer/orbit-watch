@@ -130,7 +130,7 @@ Sources: Wikipedia (8 rows), Advanced Television (7), KeepTrack (4), EUMETSAT (3
 
 Caveats:
 
-- Some dates mark the end of a step rather than its start: INSAT-4B's is its decommissioning after disposal, GSAT-12's the end of passivation, Express-AM33's the day it was ready for operation at its new slot, and Meteosat-9's arrival is the month of the page that reports the move complete. Meteosat-8's is the start of re-orbiting.
+- Some dates mark the end of a step rather than its start: INSAT-4B's is its decommissioning after disposal, GSAT-12's the end of passivation, Express-AM33's the day it was ready for operation at its new slot, Eutelsat 5 West A's the switch-off of its last transmitter after re-orbiting, and Meteosat-9's arrival is the month of the page that reports the move complete. Meteosat-8's is the start of re-orbiting.
 - The Luch (Olymp) rows in 2021 and 2025 and the SJ-17 rows rest on tracker and hobbyist analyses of public element sets, not on operator statements.
 - No source with a stated date was found for an end of north-south keeping, so that type has no rows.
 - Dropped during checking: Intelsat 33e (the source dates its breakup, not an end of keeping), GOES-19 (the date is when it became operational, not its arrival), Thaicom-9A (its catalogue object could not be identified), Eutelsat 113 West A and the SJ-21 tow of Compass G2 (the quotes did not appear on the pages).
