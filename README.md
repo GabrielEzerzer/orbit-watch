@@ -184,7 +184,7 @@ these gates instead:
 | Guardrail: GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
 | Guardrail: ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
 | At most 0.2 false events per object-year, counted on state-change events | not measured: the event unit is not built |
-| Recall and dating error on a cited list of known GEO events | measured for the mode layer, not yet for dated state changes: 25 of 33 events caught, median date error 11 days |
+| Recall and dating error on a cited list of known GEO events | measured for the mode layer, not yet for dated state changes: 26 of 33 events caught, median date error 11.5 days |
 | A hand audit of about 50 events from across the belt | not done |
 
 GEO north-south recall is reported, not gated: train 6/17 = 0.353, dev 4/14 = 0.286. The
@@ -217,24 +217,24 @@ It writes `summary.json` (recall and the median and 90th percentile of the absol
 per split and event type) and `events.csv` (one row per event with the matched change and the
 object's mode timeline 90 days either side).
 
-Baseline at commit 0382f14 (`findings/geo_events/`), 33 events on 24 objects:
+Baseline (`findings/geo_events/`, which records the commit it was run at), 33 events on 24 objects:
 
 | split | events | caught | recall | median \|error\| (days) | 90th percentile (days) |
 |---|---|---|---|---|---|
-| dev | 15 | 12 | 0.80 | 11 | 37.5 |
-| test | 18 | 13 | 0.72 | 11 | 32.4 |
-| all | 33 | 25 | 0.76 | 11 | 34.6 |
+| dev | 13 | 11 | 0.85 | 10 | 33 |
+| test | 20 | 15 | 0.75 | 14 | 30.8 |
+| all | 33 | 26 | 0.79 | 11.5 | 33.5 |
 
-By type over both splits: relocation starts 7 of 9, relocation ends 4 of 7, graveyard moves 12 of
+By type over both splits: relocation starts 7 of 8, relocation ends 5 of 8, graveyard moves 12 of
 15, ends of keeping 2 of 2. Caught graveyard moves are dated early (median error 22 days, 10 of 12
 before the source date), partly because several sources date the end of disposal or the
-decommissioning, and partly because a change is dated at the start of its 30-day window. Of the 8
+decommissioning, and partly because a change is dated at the start of its 30-day window. Of the 7
 misses, five are on objects the layer reads as drifting on both sides of the event: Luch (Olymp)
-in all four of its rows, which moves too often to hold a 30-day window, and Express-AM3, already
-free before its graveyard move, whose climb the layer cannot see because it does not use the
-semi-major axis. Astra 3A's keeping ended 58 days before the month its source gives for disposal.
-GOES-18 reads as drifting before its June 2022 move and held after it, and Express-AM33 has no
-segment after its arrival. The test split was scored once here; later changes are judged on dev.
+in four of its five rows (its short moves in 2021 and its last months in 2025 never hold a 30-day
+window), and Express-AM3, already free before its graveyard move, whose climb the layer cannot see
+because it does not use the semi-major axis. Astra 3A's keeping ended 58 days before the month its
+source gives for disposal, and Express-AM33 has no determined segment after its arrival. The test
+split was scored once here; later changes are judged on dev.
 
 ### Every object in the GEO region, 2021-2025
 
