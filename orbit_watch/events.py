@@ -25,6 +25,7 @@ SUSTAIN_DAYS = 5.0
 RATE_TOL_MIN = 0.02
 RATE_TOL_MADS = 4.0
 BOX_MARGIN_DEG = 0.05
+SAME_SLOT_DEG = 0.5
 SLOW_RATE = 0.02
 FAST_RATE = 0.05
 HOLD_BOX_DEG = 0.3
@@ -63,7 +64,7 @@ def _slot(s: Segment) -> float:
 
 def _arcs_overlap(a: Segment, b: Segment) -> bool:
     def inside(x: float, s: Segment) -> bool:
-        return (x - s.lon_min) % 360.0 <= (s.lon_max - s.lon_min) % 360.0
+        return (x - s.lon_min + SAME_SLOT_DEG) % 360.0 <= (s.lon_max - s.lon_min) % 360.0 + 2 * SAME_SLOT_DEG
     return inside(a.lon_min, b) or inside(b.lon_min, a)
 
 

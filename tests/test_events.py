@@ -128,11 +128,19 @@ def test_a_window_misread_between_two_holds_of_the_same_box_is_not_a_relocation(
     assert E.events_from_track(M.track(element_sets(days, lon, rate))) == []
 
 
+def test_holds_less_than_half_a_degree_apart_are_one_slot(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    segs = [held(0, 75, 9.98, 10.02), held(75, 150, 10.28, 10.32)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    assert E.events_from_track(M.track(element_sets(days, lon, rate))) == []
+
+
 def test_an_arrival_is_never_dated_before_its_departure(monkeypatch):
     days = np.arange(0.0, 150.0, 0.25)
     lon, rate = quiet_keeper(days)
-    lon = np.where(days >= 65.0, lon + 0.4, lon)
-    segs = [held(0, 60, 9.98, 10.02), held(60, 90, 9.98, 10.42, "drifting"), held(90, 150, 10.38, 10.42)]
+    lon = np.where(days >= 65.0, lon + 1.0, lon)
+    segs = [held(0, 60, 9.98, 10.02), held(60, 90, 9.98, 11.02, "drifting"), held(90, 150, 10.98, 11.02)]
     monkeypatch.setattr(E, "segments", lambda tr: segs)
     monkeypatch.setattr(E, "_departure", lambda *a: (80.0, "rate_exit", None))
     start, end = E.events_from_track(M.track(element_sets(days, lon, rate)))
