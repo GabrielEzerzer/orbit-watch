@@ -99,6 +99,12 @@ def read_label_rows(path: Path, norad_id: int, *, final: bool = False) -> list[d
                 if "norad_id" not in r or int(r["norad_id"]) == int(norad_id)]
 
 
+def read_event_rows(path: Path) -> tuple[list[str], list[dict]]:
+    with open(path, encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        return list(reader.fieldnames or []), list(reader)
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Write or check groundtruth/splits.json.")
     p.add_argument("--write", action="store_true", help="write splits.json from the rule")

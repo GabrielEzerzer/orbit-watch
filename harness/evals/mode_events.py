@@ -21,7 +21,7 @@ import numpy as np
 from orbit_watch.jobs.geo_modes import object_segments
 from orbit_watch.modes import Segment
 from orbit_watch.sources import data_dir
-from orbit_watch.truth import GROUNDTRUTH, load_splits
+from orbit_watch.truth import GROUNDTRUTH, load_splits, read_event_rows
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_EVENTS = GROUNDTRUTH / "geo_events.csv"
@@ -116,11 +116,9 @@ def row_problems(rows: Sequence[dict]) -> list[str]:
 
 
 def load_events(path: Path) -> list[Event]:
-    with open(path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        if reader.fieldnames != FIELDS:
-            raise ValueError(f"{path}: header should be {','.join(FIELDS)}")
-        rows = list(reader)
+    header, rows = read_event_rows(path)
+    if header != FIELDS:
+        raise ValueError(f"{path}: header should be {','.join(FIELDS)}")
     problems = row_problems(rows)
     if problems:
         raise ValueError(f"{path}:\n" + "\n".join(problems))

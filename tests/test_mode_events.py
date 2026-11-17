@@ -157,6 +157,13 @@ def test_event_files_follow_the_id_split_type_and_precision_rules(mock_dir):
         assert me.load_events(path)
 
 
+def test_load_events_refuses_a_wrong_header(tmp_path):
+    p = tmp_path / "e.csv"
+    p.write_text("event_id,norad_id\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="header"):
+        me.load_events(p)
+
+
 def test_main_writes_summary_and_events_from_the_current_mode_code(mock_dir, tmp_path):
     geo = tmp_path / "geo"
     geo.mkdir()
