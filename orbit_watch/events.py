@@ -251,6 +251,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
     steps = np.zeros(len(burn_days)) if steps is None else steps
     det = [s for s in with_short_holds(tr, segments(tr)) if s.mode != "undetermined"]
     out: list[Event] = []
+    departed: float | None = None
+    same_slot: Segment | None = None
     for k, (a, b) in enumerate(zip(det, det[1:])):
         rest = det[k + 1:]
         if a.mode in HELD and b.mode in HELD:
@@ -258,22 +260,29 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, "ns_keeping_stop", a, b, _slot(b), b.inc_max))
             elif not _arcs_overlap(a, b):
                 left, signal, _ = _departure(tr, a, b, _day(b.end), burn_days)
-                j = _arrival_date(tr, b, left if left is not None else _day(a.start))
+                j = _arrival_date(tr, b, left if left is not None else _day(b.start))
                 out.append(_event(tr, "relocation_start", a, b, _slot(b), 0.0, left, signal))
                 out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _days_of(tr, j), "rate_entry"))
         elif a.mode in HELD:
-            kind, rise = _departure_type(tr, a, rest)
             nxt = next((s for s in rest if s.mode in HELD), None)
+            if nxt is not None and _arcs_overlap(a, nxt):
+                same_slot = nxt
+                continue
+            kind, rise = _departure_type(tr, a, rest)
             lon_after = _slot(nxt) if nxt else _lon_near(tr, _day(rest[-1].end), True)
             left, signal, burn = _departure(tr, a, b, _day(nxt.start) if nxt else _day(rest[-1].end), burn_days)
+            departed = left if left is not None else _day(b.start)
             if signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
                 out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
                 out.append(_event(tr, kind, a, b, lon_after, rise, burn, "rate_exit"))
+                departed = burn
             else:
                 out.append(_event(tr, kind, a, b, lon_after, rise, left, signal))
         elif b.mode in HELD:
-            j = _arrival_date(tr, b, _day(a.start))
-            out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _days_of(tr, j), "rate_entry"))
+            if b is not same_slot:
+                j = _arrival_date(tr, b, departed if departed is not None else _day(a.start))
+                out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _days_of(tr, j), "rate_entry"))
+            departed, same_slot = None, None
     return sorted(out + _free_burns(tr, det, out, burn_days, steps), key=lambda e: e.date)
 
 
@@ -282,9 +291,13 @@ def state_changes(records: Sequence[ElementSet]) -> list[Event]:
     return events_from_track(track(kept), *burns(kept)) if kept else []
 
 
+def _field(x: float) -> float | str:
+    return "" if x != x else x
+
+
 def as_row(e: Event) -> dict:
     return {"norad_id": e.norad_id, "event_type": e.event_type, "date": e.date.date().isoformat(),
-            "signal": e.signal, "size": e.size, "lon_before": e.lon_before, "lon_after": e.lon_after,
+            "signal": e.signal, "size": e.size, "lon_before": _field(e.lon_before), "lon_after": _field(e.lon_after),
             "mode_before": e.mode_before, "mode_after": e.mode_after,
             "mode_change": e.mode_change.date().isoformat()}
 
