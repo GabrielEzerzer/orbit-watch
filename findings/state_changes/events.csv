@@ -87,6 +87,8 @@ norad_id,event_type,date,signal,size,lon_before,lon_after,mode_before,mode_after
 26853,relocation_start,2021-04-12,rate_exit,63.675,23.693,-72.552,controlled_lon,drifting,2021-03-28
 26853,relocation_end,2021-08-19,rate_entry,0.0,-69.552,-72.552,drifting,controlled_lon,2021-08-25
 26853,graveyard,2024-06-01,rate_exit,353.346,-72.552,-98.75,controlled_lon,drifting,2024-05-11
+27168,relocation_start,2024-09-04,rate_exit,-3.214,17.553,18.932,controlled_lon,librating_75E,2024-09-08
+27168,relocation_end,2024-10-16,rate_entry,0.0,19.035,18.932,librating_75E,controlled_lon,2024-10-08
 27378,keeping_stop,2022-03-05,rate_exit,124.006,-118.79,-110.211,controlled_lon_inc,drifting,2022-02-21
 27380,relocation_start,2025-06-11,rate_exit,-0.312,-29.486,-27.478,controlled_lon,drifting,2025-06-05
 27380,relocation_end,2025-06-28,rate_entry,0.0,-27.912,-27.478,drifting,controlled_lon,2025-07-05
@@ -555,6 +557,8 @@ norad_id,event_type,date,signal,size,lon_before,lon_after,mode_before,mode_after
 44067,relocation_end,2021-12-28,rate_entry,0.0,128.491,125.013,drifting,controlled_lon_inc,2022-01-22
 44067,relocation_start,2022-06-15,rate_exit,0.956,125.013,129.103,controlled_lon_inc,drifting,2022-05-22
 44067,relocation_end,2022-06-29,rate_entry,0.0,128.747,129.103,drifting,controlled_lon_inc,2022-06-21
+44067,relocation_start,2023-05-01,rate_exit,31.073,129.103,130.535,controlled_lon_inc,drifting,2023-04-17
+44067,relocation_end,2023-05-18,rate_entry,0.0,130.698,130.535,drifting,controlled_lon_inc,2023-05-17
 44076,relocation_start,2023-08-11,rate_exit,0.989,79.991,77.029,controlled_lon_inc,drifting,2023-07-16
 44076,relocation_end,2023-08-11,rate_entry,0.0,,77.029,drifting,controlled_lon_inc,2023-08-15
 44231,ns_keeping_stop,2021-09-24,mode_change,2.072,144.491,144.476,controlled_lon_inc,controlled_lon,2021-09-24
@@ -723,6 +727,8 @@ norad_id,event_type,date,signal,size,lon_before,lon_after,mode_before,mode_after
 55971,relocation_end,2023-05-19,rate_entry,0.0,-136.78,-135.063,drifting,controlled_lon_inc,2023-05-17
 56174,relocation_end,2023-05-04,rate_entry,0.0,-92.069,-91.017,drifting,controlled_lon_inc,2023-05-17
 56370,relocation_end,2023-05-16,rate_entry,0.0,-102.422,-89.101,drifting,controlled_lon_inc,2023-05-17
+56370,relocation_start,2023-08-14,rate_exit,144.46,-89.101,-88.927,controlled_lon_inc,drifting,2023-08-15
+56370,relocation_end,2023-11-17,rate_entry,0.0,-90.722,-88.927,drifting,controlled_lon_inc,2023-11-13
 56371,relocation_end,2023-05-09,rate_entry,0.0,-132.351,-162.902,drifting,controlled_lon_inc,2023-05-17
 56371,ns_keeping_stop,2023-11-13,mode_change,0.476,-162.902,-162.988,controlled_lon_inc,controlled_lon,2023-11-13
 56371,relocation_start,2024-02-01,rate_exit,235.937,-162.988,77.929,controlled_lon,drifting,2024-01-12

@@ -376,8 +376,10 @@ alarms; the others on the dev split of `groundtruth/geo_events.csv`:
    burn; the midpoint between the last burn and the one that never came dates it (one dev event,
    14 to 0 days). If the object climbs later, the climb is a second event.
 5. **One slot.** Two holds whose longitude ranges come within 0.5 deg of each other are the same
-   slot, so a re-centred box or a hold split by a short drift is not a relocation. An arrival is
-   dated no earlier than the departure it follows.
+   slot, so a re-centred box or a hold split by a short drift is not a relocation. Across a
+   stretch that is not held, this applies only when nothing in the stretch drifts at 0.05
+   deg/day or more for 5 days; a move out and back to the same slot is a start and an end. An
+   arrival is dated no earlier than the departure it follows.
 
 | split | events | caught | median \|error\| (days) | 90th percentile (days) | same type |
 |---|---|---|---|---|---|
@@ -394,12 +396,12 @@ sources variously date the start of the climb, its end or the decommissioning; t
 events are dated only to the month and scored as the 15th.
 
 The belt run (`findings/state_changes/summary.json` records its commit) covers 1,799 objects and
-finds 819 events on 304 of them; the full list is `findings/state_changes/events.csv`:
+finds 825 events on 305 of them; the full list is `findings/state_changes/events.csv`:
 
 | type | 2021 | 2022 | 2023 | 2024 | 2025 | total |
 |---|---|---|---|---|---|---|
-| relocation_start | 36 | 35 | 51 | 42 | 47 | 211 |
-| relocation_end | 61 | 56 | 80 | 57 | 68 | 322 |
+| relocation_start | 36 | 35 | 53 | 43 | 47 | 214 |
+| relocation_end | 61 | 56 | 82 | 58 | 68 | 325 |
 | graveyard | 17 | 12 | 20 | 15 | 19 | 83 |
 | keeping_stop | 3 | 7 | 2 | 3 | 16 | 31 |
 | ns_keeping_stop | 10 | 9 | 16 | 18 | 23 | 76 |
@@ -410,8 +412,9 @@ is an arrival: 90 were launched in 2021-2025, 11 were already moving at the star
 are older objects that settled later. A departure in the last weeks of 2025 has no arrival inside
 the data, so it is typed `keeping_stop`: 11 of the 16 in 2025 fall in November and December. A
 slow keeping stop followed by a move gives two departures for one physical move, a
-`keeping_stop` and then a `relocation_start`, and the scorer matches the closer one (this happens
-on one test event). A move made entirely inside a gap in the element sets is dated to the end of
+`keeping_stop` and then a `relocation_start`, and the scorer matches only one of them: on dev
+event 28884 the keeping stop is matched by exact type and the relocation start, 48 days later,
+is left over. A move made entirely inside a gap in the element sets is dated to the end of
 the gap at both ends, as Meteosat-11 (40732) is in April 2023. A satellite that
 arrives in the last 10 days of the data is not seen as held, so its first trim burn can read as a
 `free_burn`. A climb by an object that was already free is a `free_burn`, not a `graveyard` move.
