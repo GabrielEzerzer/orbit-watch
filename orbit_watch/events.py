@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -22,6 +22,12 @@ SUSTAIN_DAYS = 5.0
 RATE_TOL_MIN = 0.02
 RATE_TOL_MADS = 4.0
 BOX_MARGIN_DEG = 0.05
+SLOW_RATE = 0.02
+FAST_RATE = 0.05
+HOLD_BOX_DEG = 0.3
+HOLD_MIN_DAYS = 10.0
+HOLD_MIN_SETS = 5
+STEP_REACH_DAYS = 5.0
 ROW_FIELDS = ["norad_id", "event_type", "date", "signal", "size", "lon_before", "lon_after", "mode_before",
               "mode_after", "mode_change"]
 
@@ -95,6 +101,73 @@ def _arrival_date(tr: Track, held: Segment, floor: float) -> int | None:
     return _sustained(tr, _in_hold(tr, held), lo, min(_day(held.end), _day(held.start) + REACH_DAYS))
 
 
+def _at(tr: Track, i: int) -> datetime:
+    return GRID_START + timedelta(days=float(tr.days[i]))
+
+
+def _entered_by_step(tr: Track, first: int) -> bool:
+    before = (tr.days >= tr.days[first] - STEP_REACH_DAYS) & (tr.days < tr.days[first])
+    return bool((np.abs(tr.rate[before]) >= FAST_RATE).any())
+
+
+def short_holds(tr: Track, lo: float, hi: float) -> list[tuple[int, int]]:
+    idx = np.flatnonzero((tr.days >= lo) & (tr.days < hi))
+    runs, cur = [], []
+    for i in idx:
+        lon = np.unwrap(np.radians(tr.lon[cur + [i]])) if cur else None
+        fits = cur and np.degrees(np.ptp(lon)) <= HOLD_BOX_DEG
+        if abs(tr.rate[i]) <= SLOW_RATE and (not cur or fits):
+            cur.append(int(i))
+            continue
+        runs.append(cur)
+        cur = [int(i)] if abs(tr.rate[i]) <= SLOW_RATE else []
+    runs.append(cur)
+    return [(r[0], r[-1]) for r in runs if len(r) >= HOLD_MIN_SETS
+            and tr.days[r[-1]] - tr.days[r[0]] >= HOLD_MIN_DAYS and _entered_by_step(tr, r[0])]
+
+
+def _hold_segment(tr: Track, first: int, last: int, template: Segment) -> Segment:
+    lon = tr.lon[first:last + 1]
+    u = np.degrees(np.unwrap(np.radians(lon)))
+    lo = float(((u.min() + 180.0) % 360.0) - 180.0)
+    return replace(template, start=_at(tr, first), end=_at(tr, last), mode="controlled_lon", windows=0,
+                   n_sets=last - first + 1, lon_min=lo, lon_max=float(((lo + np.ptp(u) + 180.0) % 360.0) - 180.0),
+                   drift_mean=float(np.mean(tr.rate[first:last + 1])),
+                   inc_min=float(tr.inclination[first:last + 1].min()),
+                   inc_max=float(tr.inclination[first:last + 1].max()))
+
+
+def with_short_holds(tr: Track, segs: Sequence[Segment]) -> list[Segment]:
+    out: list[Segment] = []
+    k = 0
+    while k < len(segs):
+        m = k
+        while m < len(segs) and segs[m].mode not in HELD:
+            m += 1
+        if m == k:
+            out.append(segs[k])
+            k += 1
+            continue
+        stretch = segs[k:m]
+        near = [segs[j] for j in (k - 1, m) if 0 <= j < len(segs)]
+        holds: list[tuple[int, int]] = []
+        for h in short_holds(tr, _day(stretch[0].start), _day(stretch[-1].end)):
+            if holds and _arcs_overlap(_hold_segment(tr, *holds[-1], stretch[0]), _hold_segment(tr, *h, stretch[0])):
+                holds[-1] = (holds[-1][0], h[1])
+            else:
+                holds.append(h)
+        holds = [h for h in holds if not any(_arcs_overlap(_hold_segment(tr, *h, stretch[0]), n) for n in near)]
+        starts = [stretch[0].start] + [_at(tr, last) for _, last in holds]
+        ends = [_at(tr, first) for first, _ in holds] + [stretch[-1].end]
+        for h, (s0, e0) in enumerate(zip(starts, ends)):
+            out.extend(replace(seg, start=max(seg.start, s0), end=min(seg.end, e0))
+                       for seg in stretch if max(seg.start, s0) < min(seg.end, e0))
+            if h < len(holds):
+                out.append(_hold_segment(tr, *holds[h], stretch[0]))
+        k = m
+    return out
+
+
 def _departure_type(tr: Track, held: Segment, rest: Sequence[Segment]) -> tuple[str, float]:
     held_a = _a_between(tr, _day(held.start), _day(held.end))
     end = next((s for s in rest if s.mode in HELD), None)
@@ -117,7 +190,7 @@ def _event(tr: Track, kind: str, a: Segment, b: Segment, lon_after: float, size:
 
 
 def events_from_track(tr: Track) -> list[Event]:
-    det = [s for s in segments(tr) if s.mode != "undetermined"]
+    det = [s for s in with_short_holds(tr, segments(tr)) if s.mode != "undetermined"]
     out: list[Event] = []
     for k, (a, b) in enumerate(zip(det, det[1:])):
         rest = det[k + 1:]

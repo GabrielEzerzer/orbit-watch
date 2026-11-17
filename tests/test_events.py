@@ -55,3 +55,26 @@ def test_climb_of_a_kept_object_is_a_graveyard_move():
     found = E.state_changes(element_sets(days, lon, rate + drift))
     assert [f.event_type for f in found] == ["graveyard"]
     assert found[0].size > 250 and abs(E._day(found[0].date) - start) <= 1
+
+
+def test_stop_between_two_moves_is_an_arrival_and_a_departure():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    lon, rate = keeper_track(days, 10.0, 2)
+    lon, rate = 10.0 + 0.1 * (lon - 10.0), 0.1 * rate
+    legs = ((EDGES[5] + 7.0, 10.0), (EDGES[5] + 37.0, 15.0))
+    for start, length in legs:
+        moving = (days >= start) & (days < start + length)
+        lon = lon + np.cumsum(np.where(moving, 0.3, 0.0)) * 0.25
+        rate = rate + np.where(moving, 0.3, 0.0)
+    found = E.state_changes(element_sets(days, lon, rate))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"] * 2
+    expected = [legs[0][0], legs[0][0] + 10.0, legs[1][0], legs[1][0] + 15.0]
+    assert all(abs(E._day(f.date) - d) <= 1 for f, d in zip(found, expected))
+
+
+def test_slow_drift_with_no_burn_into_it_is_not_a_hold():
+    days = np.arange(0.0, 40.0, 0.25)
+    rate = np.where(days < 30.0, 0.012, -2.0)
+    lon = 10.0 + np.cumsum(rate) * 0.25
+    tr = M.track(element_sets(days, lon, rate))
+    assert E.short_holds(tr, 0.0, 40.0) == []
