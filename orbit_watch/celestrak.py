@@ -9,10 +9,10 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from orbit_watch.elements import ElementSet, parse_omm_json
+from orbit_watch.sources import data_dir
 
 USER_AGENT = "orbit-watch/0.1 (research prototype)"
 GP_URL = "https://celestrak.org/NORAD/elements/gp.php"
-CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "celestrak"
 NO_DATA = "No GP data found"
 
 Fetch = Callable[[str], bytes]
@@ -35,10 +35,11 @@ def cached_fetch(
     key: str,
     parse: Callable[[bytes], object],
     *,
-    cache_dir: Path = CACHE_DIR,
+    cache_dir: Path | None = None,
     fetch: Fetch = http_get,
     today: Callable[[], date] = utc_today,
 ):
+    cache_dir = cache_dir if cache_dir is not None else data_dir() / "celestrak"
     path = cache_dir / today().isoformat() / key
     if path.is_file():
         return parse(path.read_bytes())
@@ -61,11 +62,12 @@ def parse_gp_json(body: bytes) -> list[ElementSet]:
 class CelesTrakSource:
     def __init__(
         self,
-        cache_dir: Path = CACHE_DIR,
+        cache_dir: Path | None = None,
         fetch: Fetch = http_get,
         today: Callable[[], date] = utc_today,
     ) -> None:
-        self.cache_dir, self.fetch, self.today = Path(cache_dir), fetch, today
+        self.cache_dir = Path(cache_dir) if cache_dir is not None else data_dir() / "celestrak"
+        self.fetch, self.today = fetch, today
 
     def _query(self, param: str, value: str) -> list[ElementSet]:
         if not value.replace("-", "").isalnum():

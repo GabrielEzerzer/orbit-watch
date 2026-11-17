@@ -25,7 +25,7 @@
       "description": "Adds each object's Space-Track SATCAT entry (type, launch, decay) to the GEO-region manifest.",
       "command": "hush run -- python -m orbit_watch.jobs.geo_belt satcat --out DIR",
       "inputs": ["DIR/manifest.json from the build command", "Space-Track credentials through hush"],
-      "outputs": ["DIR/manifest.json with SATCAT entries", "the SATCAT query cached under data/spacetrack beside DIR"],
+      "outputs": ["DIR/manifest.json with SATCAT entries", "the SATCAT query cached under spacetrack/ beside DIR"],
       "test": "tests/test_geo_belt.py"
     },
     {
@@ -42,7 +42,7 @@
       "kind": "tool",
       "description": "Prints, per ESA 2019 class, how many objects have the matching mode in early 2021.",
       "command": "python tools/esa_classification.py ESA_TEXT SEGMENTS_CSV [--manifest PATH]",
-      "inputs": ["pdftotext output of ESA's Classification of Geosynchronous Objects, Issue 21", "segments.csv from the GEO modes job", "data/geo/manifest.json with SATCAT entries"],
+      "inputs": ["pdftotext output of ESA's Classification of Geosynchronous Objects, Issue 21", "segments.csv from the GEO modes job", "$ORBIT_WATCH_DATA/geo/manifest.json with SATCAT entries"],
       "outputs": ["a Markdown table on stdout"],
       "test": "tests/test_esa_classification.py"
     },
@@ -68,8 +68,8 @@
       "name": "Detector evaluation",
       "kind": "eval",
       "description": "Scores the step detector per regime (GEO, IGSO, ISS) against fixed periods and objects, with the GEO east-west and ISS recall guardrails.",
-      "command": "python -m harness.evals.detector --split SPLIT [--final] --data-dir DIR [--settings JSON] [--truth-dir DIR] [--out JSON]",
-      "inputs": ["harness/evals/split.json", "a settings JSON (default harness/evals/settings/frozen.json)", "element sets under DATA-DIR", "ground truth under TRUTH-DIR"],
+      "command": "python -m harness.evals.detector --split SPLIT [--final] [--data-dir DIR] [--settings JSON] [--truth-dir DIR] [--out JSON]",
+      "inputs": ["harness/evals/split.json", "a settings JSON (default harness/evals/settings/frozen.json)", "element sets under DATA-DIR (default $ORBIT_WATCH_DATA)", "ground truth under TRUTH-DIR"],
       "outputs": ["a results JSON (default harness/evals/results/<split>-<settings>.json)", "a score table on stdout"],
       "test": "tests/test_eval_detector.py"
     },

@@ -18,9 +18,9 @@ from typing import Protocol
 
 from orbit_watch.celestrak import USER_AGENT
 from orbit_watch.elements import ElementSet, parse_omm_json
+from orbit_watch.sources import data_dir
 
 BASE_URL = "https://www.space-track.org"
-CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "spacetrack"
 LIMITS = ((60.0, 29), (3600.0, 299))
 
 
@@ -78,7 +78,7 @@ class SpaceTrackSource:
         start: date,
         end: date,
         session: Session | None = None,
-        cache_dir: Path = CACHE_DIR,
+        cache_dir: Path | None = None,
         limiter: RateLimiter | None = None,
     ) -> None:
         if not end > start:
@@ -86,7 +86,7 @@ class SpaceTrackSource:
         self._user, self._password = user, password
         self.start, self.end = start, end
         self.session = session if session is not None else UrllibSession()
-        self.cache_dir = Path(cache_dir)
+        self.cache_dir = Path(cache_dir) if cache_dir is not None else data_dir() / "spacetrack"
         self.limiter = limiter if limiter is not None else RateLimiter()
         self._logged_in = False
 

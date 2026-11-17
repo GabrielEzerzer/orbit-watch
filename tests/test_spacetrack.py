@@ -46,14 +46,14 @@ def source(session, tmp_path, **kwargs):
     return SpaceTrackSource("user", "pw", START, END, session=session, cache_dir=tmp_path, **kwargs)
 
 
-def test_off_unless_both_credentials_are_set(monkeypatch):
+def test_off_unless_both_credentials_are_set(monkeypatch, tmp_path):
     monkeypatch.delenv("SPACETRACK_USER", raising=False)
     monkeypatch.delenv("SPACETRACK_PASSWORD", raising=False)
     assert SpaceTrackSource.from_env(START, END) is None
     monkeypatch.setenv("SPACETRACK_USER", "user")
     assert SpaceTrackSource.from_env(START, END) is None
     monkeypatch.setenv("SPACETRACK_PASSWORD", "pw")
-    assert SpaceTrackSource.from_env(START, END, session=FakeSession(b"[]")) is not None
+    assert SpaceTrackSource.from_env(START, END, session=FakeSession(b"[]"), cache_dir=tmp_path) is not None
 
 
 def test_logs_in_then_queries_gp_history_and_parses(tmp_path, sample):

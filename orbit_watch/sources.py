@@ -2,11 +2,22 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Protocol
 
 from orbit_watch.elements import ElementSet, parse_omm_csv, parse_omm_json, parse_tle
+
+DATA_ENV = "ORBIT_WATCH_DATA"
+
+
+def data_dir() -> Path:
+    root = os.environ.get(DATA_ENV)
+    if not root:
+        raise RuntimeError(f"set {DATA_ENV} to the folder that holds orbit-watch's data")
+    return Path(root)
+
 
 _PARSERS = {
     ".tle": parse_tle,

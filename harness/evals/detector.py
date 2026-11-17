@@ -18,6 +18,7 @@ from orbit_watch import calibrate, holdout
 from orbit_watch.detect import Detection, Setting, pick_setting, score_gaps
 from orbit_watch.generalise import (LATE_DAYS, MAX_GAP_DAYS, MAX_SPAN_DAYS, TOLERANCE_DAYS, covered,
                                     load_log_events, load_series, log_coverage)
+from orbit_watch.sources import data_dir as default_data_dir
 from orbit_watch.truth import GROUNDTRUTH, HoldoutError, load_splits, require_allowed
 
 HERE = Path(__file__).resolve().parent
@@ -367,12 +368,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--split", choices=("train", "dev", "test"), default="dev")
     p.add_argument("--final", action="store_true", help="required for --split test (holdout objects)")
     p.add_argument("--settings", type=Path, default=DEFAULT_SETTINGS)
-    p.add_argument("--data-dir", type=Path, default=Path("data"),
-                   help="folder holding spacetrack/ (gp_history) and geo/ (<norad>.tle)")
+    p.add_argument("--data-dir", type=Path,
+                   help="folder holding spacetrack/ (gp_history) and geo/ (<norad>.tle); default $ORBIT_WATCH_DATA")
     p.add_argument("--truth-dir", type=Path, default=GROUNDTRUTH)
     p.add_argument("--out", type=Path, help="JSON path (default results/<split>-<settings name>.json)")
     a = p.parse_args(argv)
-    res = evaluate(a.split, a.settings, a.data_dir, a.truth_dir, final=a.final)
+    res = evaluate(a.split, a.settings, a.data_dir or default_data_dir(), a.truth_dir, final=a.final)
     out = a.out or RESULTS / f"{a.split}-{res['settings']}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8", newline="\n")
