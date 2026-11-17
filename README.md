@@ -184,7 +184,7 @@ these gates instead:
 | Guardrail: GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
 | Guardrail: ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
 | At most 0.2 false events per object-year, counted on state-change events | not measured: the event unit is not built |
-| Recall and dating error on a cited list of known GEO events | not measured: the list is not assembled |
+| Recall and dating error on a cited list of known GEO events | measured for the mode layer, not yet for dated state changes: 26 of 33 events caught, median date error 11.5 days |
 | A hand audit of about 50 events from across the belt | not done |
 
 GEO north-south recall is reported, not gated: train 6/17 = 0.353, dev 4/14 = 0.286. The
@@ -196,6 +196,45 @@ zone and count as duplicates.
 
 The test split has been scored once, at the FROZEN setting (`results/test-frozen.json`), and the
 kept setting has never been scored on it.
+
+##### GEO mode events (`harness/evals/mode_events.py`)
+
+Scores the mode layer, not the detector, against `groundtruth/geo_events.csv`: real relocations,
+graveyard moves and ends of station keeping, each with a source. For every event it recomputes the
+object's segments from `<geo-dir>/<norad>.tle` with the current `orbit_watch.modes`, drops
+`undetermined` segments, and looks for a matching mode change (held to free for the end of keeping,
+`controlled_lon_inc` to `controlled_lon` for the end of north-south keeping, held to held with
+disjoint longitudes as a relocation) within 45 days of the event. Each change matches one event,
+closest first, and the date error is the change's date minus the event's. Events on holdout
+objects, outside 2021-2025 or on objects missing from the GEO-region set are listed, not scored.
+Events are split into `dev` and `test` by the last hex digit of the sha256 of their `event_id`.
+
+```
+python -m harness.evals.mode_events [--events groundtruth/geo_events.csv] [--geo-dir DIR] [--out findings/geo_events]
+```
+
+It writes `summary.json` (recall and the median and 90th percentile of the absolute date error,
+per split and event type) and `events.csv` (one row per event with the matched change and the
+object's mode timeline 90 days either side).
+
+Baseline (`findings/geo_events/`, which records the commit it was run at), 33 events on 24 objects:
+
+| split | events | caught | recall | median \|error\| (days) | 90th percentile (days) |
+|---|---|---|---|---|---|
+| dev | 13 | 11 | 0.85 | 10 | 33 |
+| test | 20 | 15 | 0.75 | 14 | 30.8 |
+| all | 33 | 26 | 0.79 | 11.5 | 33.5 |
+
+By type over both splits: relocation starts 7 of 8, relocation ends 5 of 8, graveyard moves 12 of
+15, ends of keeping 2 of 2. Caught graveyard moves are dated early (median error 22 days, 10 of 12
+before the source date), partly because several sources date the end of disposal or the
+decommissioning, and partly because a change is dated at the start of its 30-day window. Of the 7
+misses, five are on objects the layer reads as drifting on both sides of the event: Luch (Olymp)
+in four of its five rows (its short moves in 2021 and its last months in 2025 never hold a 30-day
+window), and Express-AM3, already free before its graveyard move, whose climb the layer cannot see
+because it does not use the semi-major axis. Astra 3A's keeping ended 58 days before the month its
+source gives for disposal, and Express-AM33 has no determined segment after its arrival. The test
+split was scored once here; later changes are judged on dev.
 
 ### Every object in the GEO region, 2021-2025
 

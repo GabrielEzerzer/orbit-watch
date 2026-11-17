@@ -74,6 +74,15 @@
       "test": "tests/test_eval_detector.py"
     },
     {
+      "name": "GEO mode events evaluation",
+      "kind": "eval",
+      "description": "Scores the GEO mode layer against a cited list of real GEO events: whether each event's mode change appears within 45 days, and how many days off it is.",
+      "command": "python -m harness.evals.mode_events [--events CSV] [--geo-dir DIR] [--out DIR]",
+      "inputs": ["an events CSV (default groundtruth/geo_events.csv)", "GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "groundtruth/splits.json, to skip holdout objects"],
+      "outputs": ["OUT/summary.json (default findings/geo_events)", "OUT/events.csv", "a score table on stdout"],
+      "test": "tests/test_mode_events.py"
+    },
+    {
       "name": "Calibrate the detector on the ISS",
       "kind": "analysis",
       "description": "Picks the detector thresholds on 2021-2022 ISS burns and scores 2023 once with them.",

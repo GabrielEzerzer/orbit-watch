@@ -1,0 +1,7 @@
+event_id,norad_id,name,event_type,date,date_precision,lon_from_deg,lon_to_deg,source_url,quote,split
+25954-ns_keeping_stop-2022-01-10,25954,fixture object,ns_keeping_stop,2022-01-10,day,,,https://example.org/fixture,invented fixture row,dev
+20253-keeping_stop-2023-05,20253,fixture object,keeping_stop,2023-05,month,,,https://example.org/fixture,invented fixture row,dev
+23331-graveyard-2021-12-20,23331,fixture object,graveyard,2021-12-20,day,,,https://example.org/fixture,invented fixture row,dev
+99999-relocation_start-2023-03-01,99999,fixture object,relocation_start,2023-03-01,day,10.0,20.0,https://example.org/fixture,invented fixture row,dev
+38049-relocation_end-2022-06-01,38049,fixture object,relocation_end,2022-06-01,day,,,https://example.org/fixture,invented fixture row,test
+23435-graveyard-2020-06-01,23435,fixture object,graveyard,2020-06-01,day,,,https://example.org/fixture,invented fixture row,dev
