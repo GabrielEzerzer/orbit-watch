@@ -78,3 +78,15 @@ def test_slow_drift_with_no_burn_into_it_is_not_a_hold():
     lon = 10.0 + np.cumsum(rate) * 0.25
     tr = M.track(element_sets(days, lon, rate))
     assert E.short_holds(tr, 0.0, 40.0) == []
+
+
+def test_keeping_stop_is_dated_between_the_last_burn_and_the_missed_one():
+    days = np.arange(0.0, EDGES[10], 0.25)
+    last = EDGES[5] + 10.0
+    burns = np.arange(3.0, last + 0.1, 7.0)
+    since = days - burns[np.clip(np.searchsorted(burns, days, side="right") - 1, 0, None)]
+    rate = -0.00525 + 0.0015 * since + np.random.default_rng(3).normal(0, 0.0002, len(days))
+    lon = 10.0 + np.cumsum(rate) * 0.25
+    found = E.state_changes(element_sets(days, lon, rate))
+    assert [f.event_type for f in found] == ["keeping_stop"]
+    assert found[0].signal == "burn_gap" and abs(E._day(found[0].date) - (burns[-1] + 3.5)) <= 1
