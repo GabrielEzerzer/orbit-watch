@@ -254,3 +254,25 @@ def test_a_move_that_starts_inside_a_gap_is_dated_by_running_the_first_set_after
     monkeypatch.setattr(E, "segments", lambda tr: segs)
     start = E.events_from_track(M.track(element_sets(days[keep], lon[keep], rate[keep])))[0]
     assert start.event_type == "relocation_start" and abs(E._day(start.date) - 68.0) <= 1
+
+
+def test_a_move_still_under_way_when_the_data_ends_is_a_relocation_start_not_a_keeping_stop(monkeypatch):
+    days = np.arange(0.0, 120.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    moving = days >= 100.0
+    rate = rate + np.where(moving, 0.3, 0.0)
+    lon = lon + np.cumsum(np.where(moving, 0.3, 0.0)) * 0.25
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 90, 9.98, 10.02), held(90, 120, 9.98, 16.0, "drifting")])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [f.event_type for f in found] == ["relocation_start"] and abs(E._day(found[0].date) - 100.0) <= 1
+
+
+def test_natural_drift_that_speeds_up_after_a_hold_near_the_end_of_the_data_stays_a_keeping_stop(monkeypatch):
+    days = np.arange(0.0, 120.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    free = days >= 100.0
+    rate = np.where(free, 0.003 * (days - 100.0), rate)
+    lon = np.where(free, lon[free.argmax()] + 0.0015 * (days - 100.0) ** 2, lon)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 90, 9.98, 10.02), held(90, 120, 9.98, 10.4, "drifting")])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [f.event_type for f in found] == ["keeping_stop"]

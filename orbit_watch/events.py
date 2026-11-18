@@ -47,6 +47,7 @@ NS_TOL_MIN_DEG = 0.006
 NS_MERGE_DAYS = 2.0
 NS_MIN_CORRECTIONS = 2
 GAP_DAYS = 2.0
+OPEN_DAYS = 90.0
 MOVE_MIN_DEG = 0.5
 MOVE_SIDE_DAYS = 10.0
 MOVE_MERGE_DAYS = 2.0
@@ -363,6 +364,15 @@ def _arrival_day(tr: Track, held: Segment, j: int | None) -> float | None:
     return None if j is None else _through_gap(tr, j, j - 1, _held_rate(tr, held))
 
 
+def _open_move(tr: Track, held: Segment, left: float | None) -> bool:
+    if left is None or tr.days[-1] - left > OPEN_DAYS:
+        return False
+    rel = np.abs(tr.rate - _held_rate(tr, held))
+    i = _sustained(tr, rel >= FAST_RATE, left - 1.0, float(tr.days[-1]) + 1.0)
+    calm = np.flatnonzero(rel[:i] < FAST_RATE / 2) if i is not None else []
+    return len(calm) > 0 and (calm[-1] == i - 1 or tr.days[i] - tr.days[calm[-1]] <= STEP_REACH_DAYS)
+
+
 def _departure(tr: Track, a: Segment, b: Segment, limit: float,
                burn_days: np.ndarray) -> tuple[float | None, str, float | None]:
     i = _departure_date(tr, a, b, limit)
@@ -419,6 +429,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
             kind, rise = _departure_type(tr, a, rest)
             lon_after = _slot(nxt) if nxt else _lon_near(tr, _day(rest[-1].end), True)
             left, signal, burn = _departure(tr, a, b, _day(nxt.start) if nxt else _day(rest[-1].end), burn_days)
+            if kind == "keeping_stop" and _open_move(tr, a, left):
+                kind = "relocation_start"
             departed = left if left is not None else _day(b.start)
             if signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
                 out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
