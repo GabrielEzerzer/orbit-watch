@@ -22,7 +22,7 @@ from harness.evals.mode_events import DEFAULT_EVENTS, WINDOW_DAYS, Event, _commi
 from harness.evals.state_changes import object_records, score
 from orbit_watch.elements import ElementSet
 from orbit_watch.events import Event as Found, burns, state_changes
-from orbit_watch.modes import GRID_START, SIDEREAL_REV_PER_DAY, Track, longitude_acceleration, track
+from orbit_watch.modes import GRID_START, SIDEREAL_REV_PER_DAY, Segment, Track, longitude_acceleration, segments, track
 from orbit_watch.sources import data_dir
 from orbit_watch.truth import load_splits, read_event_rows
 
@@ -106,15 +106,15 @@ def excluded_objects(splits: dict[int, dict], event_rows: Sequence[dict]) -> set
     return holdout | {int(r["norad_id"]) for r in event_rows if r["split"] == "test"}
 
 
-def candidate_stretches(segment_rows: Sequence[dict], excluded: set[int]) -> dict[int, Host]:
+def candidate_stretches(segs: Sequence[Segment], excluded: set[int]) -> dict[int, Host]:
     best: dict[int, Host] = {}
-    for r in segment_rows:
-        n = int(r["norad_id"])
-        if r["mode"] not in HELD or n in excluded:
+    for s in segs:
+        n = s.norad_id
+        if s.mode not in HELD or n in excluded:
             continue
-        lo, hi = _day(date.fromisoformat(r["start"])), _day(date.fromisoformat(r["end"]))
+        lo, hi = _day(s.start.date()), _day(s.end.date())
         if hi - lo >= MIN_HOLD_DAYS and (n not in best or hi - lo > best[n].end - best[n].start):
-            best[n] = Host(n, lo, hi, r["mode"], host_split(n))
+            best[n] = Host(n, lo, hi, s.mode, host_split(n))
     return dict(sorted(best.items()))
 
 
@@ -323,6 +323,10 @@ def run_trial(records: Sequence[ElementSet], tr: Track, sm: Smooth, host: Host, 
     }
 
 
+def object_segments(path: Path) -> list[Segment]:
+    return segments(track(object_records(path)))
+
+
 def host_events(path: Path) -> tuple[list[Found], float]:
     records = object_records(path)
     return state_changes(records), _day(records[-1].epoch)
@@ -422,16 +426,16 @@ def main(argv: list[str] | None = None) -> int:
                                 "stops, graveyard climbs and free burns planted in the element sets of held "
                                 "satellites, scored per kind and drift rate on dev and test hosts.")
     p.add_argument("--geo-dir", type=Path, help="folder of <norad>.tle files; default $ORBIT_WATCH_DATA/geo")
-    p.add_argument("--segments", type=Path, help="mode segments; default $ORBIT_WATCH_DATA/geo_modes/segments.csv")
     p.add_argument("--out", type=Path, default=DEFAULT_OUT, help="folder for summary.json and trials.csv")
     a = p.parse_args(argv)
     geo_dir = a.geo_dir or data_dir() / "geo"
-    with open(a.segments or data_dir() / "geo_modes" / "segments.csv", encoding="utf-8", newline="") as fh:
-        segment_rows = list(csv.DictReader(fh))
     excluded = excluded_objects(load_splits(), read_event_rows(DEFAULT_EVENTS)[1])
-    candidates = {n: h for n, h in candidate_stretches(segment_rows, excluded).items()
-                  if (geo_dir / f"{n}.tle").is_file()}
+    manifest = json.loads((geo_dir / "manifest.json").read_text(encoding="utf-8"))
+    norads = sorted(int(n) for n, o in manifest["objects"].items()
+                    if o["by_rule"] and int(n) not in excluded and (geo_dir / f"{n}.tle").is_file())
     with ProcessPoolExecutor() as pool:
+        segs = [s for ss in pool.map(object_segments, [geo_dir / f"{n}.tle" for n in norads], chunksize=8) for s in ss]
+        candidates = candidate_stretches(segs, excluded)
         base = dict(zip(candidates, pool.map(host_events, [geo_dir / f"{n}.tle" for n in candidates], chunksize=4)))
         found = {n: f for n, (f, _) in base.items()}
         last_day = {n: d for n, (_, d) in base.items()}

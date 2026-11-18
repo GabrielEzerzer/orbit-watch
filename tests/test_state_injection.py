@@ -1,3 +1,6 @@
+from datetime import datetime, timezone
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
@@ -27,17 +30,20 @@ def test_a_planted_relocation_adds_the_drift_and_keeps_each_element_set_consiste
                                                                           r.arg_perigee)
 
 
+def seg(n, mode, start, end):
+    return SimpleNamespace(norad_id=n, mode=mode, start=datetime.fromisoformat(start).replace(tzinfo=timezone.utc),
+                           end=datetime.fromisoformat(end).replace(tzinfo=timezone.utc))
+
+
 def test_host_selection_drops_holdout_and_test_event_objects_and_keeps_the_longest_held_stretch():
     splits = {1: {"split": "holdout"}, 2: {"split": "dev"}, 3: {"split": "dev"}, 4: {"split": "test"}}
     events = [{"norad_id": "3", "split": "test"}, {"norad_id": "2", "split": "dev"}]
     excluded = si.excluded_objects(splits, events)
     assert excluded == {1, 3}
-    rows = [{"norad_id": str(n), "mode": "controlled_lon", "start": "2022-01-01", "end": "2022-12-31"}
-            for n in (1, 2, 3)]
-    rows += [{"norad_id": "2", "mode": "controlled_lon_inc", "start": "2023-01-01", "end": "2023-06-01"},
-             {"norad_id": "4", "mode": "controlled_lon", "start": "2022-01-01", "end": "2022-04-01"},
-             {"norad_id": "4", "mode": "drifting", "start": "2022-04-01", "end": "2023-04-01"}]
-    hosts = si.candidate_stretches(rows, excluded)
+    segs = [seg(n, "controlled_lon", "2022-01-01T06:00", "2022-12-31T18:00") for n in (1, 2, 3)]
+    segs += [seg(2, "controlled_lon_inc", "2023-01-01", "2023-06-01"), seg(4, "controlled_lon", "2022-01-01", "2022-04-01"),
+             seg(4, "drifting", "2022-04-01", "2023-04-01")]
+    hosts = si.candidate_stretches(segs, excluded)
     assert list(hosts) == [2]
     assert hosts[2].end - hosts[2].start == 364.0 and hosts[2].split == si.host_split(2)
 
