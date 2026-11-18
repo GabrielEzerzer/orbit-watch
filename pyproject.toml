@@ -1,11 +1,13 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "orbit-watch"
 version = "0.1.0"
-description = "Orbital-element history parsing and SGP4 propagation for manoeuvre detection."
+description = "A dated list of station-keeping changes for every object in the geostationary belt, 2021-2025, built only from public orbital elements."
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["sgp4>=2.23", "numpy>=1.26", "matplotlib>=3.8"]

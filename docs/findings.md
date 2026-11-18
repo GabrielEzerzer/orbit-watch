@@ -53,4 +53,4 @@ Seven remain unexplained. Four of them lie about a day from a burn in the NASA l
 
 ## Not yet done
 
-- The unmatched QZS-3 and QZS-6 detections (README, "Beyond the ISS") have not been checked against momentum-unloading windows or any other source.
+- The unmatched QZS-3 and QZS-6 detections (`docs/results.md`, "QZSS") have not been checked against momentum-unloading windows or any other source.

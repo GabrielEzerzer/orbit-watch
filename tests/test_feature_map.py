@@ -14,6 +14,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 FEATURES = json.loads((ROOT / "features.json").read_text(encoding="utf-8"))["features"]
 FIELDS = ("name", "kind", "description", "command", "inputs", "outputs", "test")
+_spec = importlib.util.spec_from_file_location("features_doc", ROOT / "tools" / "features_doc.py")
+features_doc = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(features_doc)
 
 
 def target(command: str) -> tuple[str, list[str]]:
@@ -41,6 +44,12 @@ def test_every_entry_has_every_field_and_a_unique_name():
     assert all(all(f.get(k) for k in FIELDS) for f in FEATURES), [f.get("name") for f in FEATURES]
     names = [f["name"] for f in FEATURES]
     assert len(names) == len(set(names))
+
+
+def test_docs_features_md_matches_features_json():
+    committed = (ROOT / "docs" / "features.md").read_text(encoding="utf-8")
+    assert committed == features_doc.render(FEATURES), (
+        "docs/features.md is out of date with features.json; run python tools/features_doc.py")
 
 
 def test_every_job_tool_eval_and_entry_point_is_mapped():

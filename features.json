@@ -74,6 +74,24 @@
       "test": "tests/test_feature_map.py"
     },
     {
+      "name": "Draw the belt relocation chart",
+      "kind": "tool",
+      "description": "Draws every relocation and graveyard move in the belt's state-change list as date against longitude, one line per move from its start to its end.",
+      "command": "python tools/relocation_chart.py [--events CSV] [--out PNG]",
+      "inputs": ["an events CSV from the state changes job (default findings/state_changes/events.csv)"],
+      "outputs": ["a PNG (default docs/belt_relocations.png)", "the counts drawn on stdout"],
+      "test": "tests/test_relocation_chart.py"
+    },
+    {
+      "name": "Write the feature map",
+      "kind": "tool",
+      "description": "Writes docs/features.md from features.json, grouped into data jobs, analyses, evaluations and tools.",
+      "command": "python tools/features_doc.py",
+      "inputs": ["features.json"],
+      "outputs": ["docs/features.md"],
+      "test": "tests/test_feature_map.py"
+    },
+    {
       "name": "Detector evaluation",
       "kind": "eval",
       "description": "Scores the step detector per regime (GEO, IGSO, ISS) against fixed periods and objects, with the GEO east-west and ISS recall guardrails.",

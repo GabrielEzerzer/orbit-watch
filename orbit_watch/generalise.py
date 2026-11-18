@@ -415,7 +415,7 @@ def run(truth_dir: Path, tle_dir: Path, out: Path, final: bool = False) -> dict:
     report = {
         "frozen_iss_setting": {**FROZEN.__dict__, "max_span_days": MAX_SPAN_DAYS,
                                "max_gap_days": MAX_GAP_DAYS,
-                               "source": "FINDINGS.md: calibration run at 508838a"},
+                               "source": "docs/findings.md: calibration run at 508838a"},
         "tolerance_days": {"before_burn": TOLERANCE_DAYS, "after_burn": LATE_DAYS},
         "merge_hours": MERGE_HOURS,
         "split_rule": f"per satellite: first day of the month holding its {SPLIT_QUANTILE:.0%} "
