@@ -1,6 +1,6 @@
 {
- "commit": "f5563d4d0f47e27a751d8f2460270d3df518fa7a",
- "dirty": true,
+ "commit": "738e41f0003c693c7ef0807adedeb080138694ee",
+ "dirty": false,
  "rule": "longest held mode segment of at least 120 days per GEO-region object, holdout objects and objects with a test-split event left out; quiet means no state-change event inside it at this commit; only quiet stretches host plants",
  "excluded_objects": [
   23331,
