@@ -108,8 +108,17 @@ def _sustained(tr: Track, flags: np.ndarray, lo: float, hi: float) -> int | None
     return None
 
 
+def _shift(tr: Track, a: Segment, nxt: Segment) -> float:
+    before = (tr.days >= _day(a.end) - MOVE_SIDE_DAYS) & (tr.days < _day(a.end))
+    after = (tr.days >= _day(nxt.start)) & (tr.days < _day(nxt.start) + MOVE_SIDE_DAYS)
+    if not before.any() or not after.any():
+        return 0.0
+    return float(wrap180(np.median(tr.lon[after]) - np.median(tr.lon[before])))
+
+
 def _moved(tr: Track, a: Segment, nxt: Segment) -> bool:
-    return _sustained(tr, np.abs(tr.rate) >= FAST_RATE, _day(a.end), _day(nxt.start)) is not None
+    return (_sustained(tr, np.abs(tr.rate) >= FAST_RATE, _day(a.end), _day(nxt.start)) is not None
+            or abs(_shift(tr, a, nxt)) >= MOVE_MIN_DEG)
 
 
 def _departure_date(tr: Track, held: Segment, b: Segment, limit: float) -> int | None:

@@ -203,3 +203,16 @@ def test_a_burn_that_returns_to_the_same_slot_is_not_a_move_inside_a_held_segmen
     rate = rate + np.where((days >= 70.0) & (days < 72.0), 0.1, 0.0) - np.where((days >= 72.0) & (days < 74.0), 0.1, 0.0)
     monkeypatch.setattr(E, "segments", lambda tr: [held(0, 150, 9.9, 10.1)])
     assert E.events_from_track(M.track(element_sets(days, lon, rate))) == []
+
+
+def test_a_short_move_between_holds_whose_ranges_touch_is_a_start_and_an_end(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    moving = (days >= 70.0) & (days < 72.0)
+    rate = rate + np.where(moving, 0.35, 0.0)
+    lon = lon + np.cumsum(np.where(moving, 0.35, 0.0)) * 0.25
+    segs = [held(0, 60, 9.98, 10.02), held(60, 90, 9.98, 10.72, "drifting"), held(90, 150, 10.40, 10.72)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [e.event_type for e in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[1].date) - 72.0) <= 1
