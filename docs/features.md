@@ -2,7 +2,7 @@
 
 Every command in the repo: what it does, how to run it, what it reads and what it writes. Generated from `features.json` by `python tools/features_doc.py`; do not edit by hand.
 
-Upper-case words in a command are placeholders. `$ORBIT_WATCH_DATA` is the data folder (see [method.md](method.md#data-and-downloads)).
+Upper-case words in a command are placeholders. `$ORBIT_WATCH_DATA` is the data folder (see [orbit_watch/README.md](../orbit_watch/README.md#data-and-downloads)).
 
 - [Data jobs](#data-jobs)
 - [Analyses](#analyses)

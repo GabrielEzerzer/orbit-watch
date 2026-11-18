@@ -21,7 +21,7 @@ def render(features: list[dict]) -> str:
              "Every command in the repo: what it does, how to run it, what it reads and what it writes. "
              "Generated from `features.json` by `python tools/features_doc.py`; do not edit by hand.", "",
              "Upper-case words in a command are placeholders. `$ORBIT_WATCH_DATA` is the data folder "
-             "(see [method.md](method.md#data-and-downloads)).", ""]
+             "(see [orbit_watch/README.md](../orbit_watch/README.md#data-and-downloads)).", ""]
     lines += [f"- [{title}](#{title.lower().replace(' ', '-')})" for _, title in GROUPS]
     for kind, title in GROUPS:
         lines += ["", f"## {title}"]

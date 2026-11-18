@@ -50,7 +50,7 @@ Not built yet: a ranking of the objects that have no real routine.
    inside a gap of more than 2 days is placed in the gap by running the first set after it back at
    its drift rate relative to the hold.
 
-Every rule, threshold and source is in [docs/method.md](docs/method.md).
+Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/README.md).
 
 ## Results
 
@@ -67,7 +67,7 @@ Across the belt: **764 changes on 301 objects**: 242 relocation starts, 339 relo
 graveyard moves, 17 keeping stops, 59 ends of north-south keeping and 24 free burns.
 
 How each number was measured, with the full breakdowns and caveats:
-[docs/results.md](docs/results.md). Leads from the ISS work: [docs/findings.md](docs/findings.md).
+[findings/README.md](findings/README.md), which also lists the leads from the ISS work.
 
 ## Known limits
 
@@ -90,7 +90,7 @@ python -m venv .venv
 The tests need no data or network. The jobs read and write data in the folder named by the
 `ORBIT_WATCH_DATA` environment variable. Every command, what it reads and what it writes:
 [docs/features.md](docs/features.md). Download rules and data layout:
-[docs/method.md](docs/method.md#data-and-downloads).
+[orbit_watch/README.md](orbit_watch/README.md#data-and-downloads).
 
 ## Data sources
 
