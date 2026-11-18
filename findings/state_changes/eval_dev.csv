@@ -4,7 +4,7 @@ event_id,split,event_type,status,found_type,found_date,error_days,signal,size,mo
 28912-relocation_start-2022-02-01,dev,relocation_start,caught,relocation_start,2022-02-01,0,rate_exit,2.935,2022-01-22
 28884-keeping_stop-2022-08-10,dev,keeping_stop,caught,keeping_stop,2022-08-10,0,burn_gap,0.0,2022-08-20
 27509-graveyard-2022-10-06,dev,graveyard,caught,graveyard,2022-10-08,2,rate_exit,721.184,2022-09-19
-26638-graveyard-2023-01-27,dev,graveyard,caught,graveyard,2023-01-24,-3,rate_exit,360.923,2023-01-17
+26638-graveyard-2023-01-27,dev,graveyard,caught,graveyard,2023-01-14,-13,rate_exit,360.923,2023-01-17
 41838-relocation_start-2023-02,dev,relocation_start,caught,relocation_start,2023-02-25,10,rate_exit,1.053,2023-02-16
 55841-relocation_start-2023-09-26,dev,relocation_start,caught,relocation_start,2023-09-25,-1,rate_exit,80.631,2023-09-14
 40258-relocation_start-2025-03,dev,relocation_start,caught,relocation_start,2025-03-28,13,rate_exit,0.178,2025-03-07

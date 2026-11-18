@@ -1,5 +1,5 @@
 {
-  "commit": "467a70ef1a15041c6b4dae63b462f4aef9e7ce2f",
+  "commit": "480e66b26e3540efe2753fa4aad5424895674113",
   "dirty": false,
   "events_file": "geo_events.csv",
   "window_days": 45,
@@ -9,7 +9,7 @@
     "caught": 13,
     "recall": 1.0,
     "median_abs_error_days": 2.0,
-    "p90_abs_error_days": 12.400000000000002,
+    "p90_abs_error_days": 13.0,
     "same_type": 13,
     "by_event_type": {
       "relocation_start": {
@@ -35,8 +35,8 @@
         "scored": 5,
         "caught": 5,
         "recall": 1.0,
-        "median_abs_error_days": 6.0,
-        "p90_abs_error_days": 18.6,
+        "median_abs_error_days": 9.0,
+        "p90_abs_error_days": 20.200000000000003,
         "same_type": 5
       },
       "ns_keeping_stop": {

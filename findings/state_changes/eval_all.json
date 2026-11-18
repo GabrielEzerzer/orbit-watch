@@ -1,5 +1,5 @@
 {
-  "commit": "5e8f2e5cecbafb4935123e87658027ec9c6e2233",
+  "commit": "480e66b26e3540efe2753fa4aad5424895674113",
   "dirty": false,
   "events_file": "geo_events.csv",
   "window_days": 45,
@@ -9,7 +9,7 @@
     "caught": 13,
     "recall": 1.0,
     "median_abs_error_days": 2.0,
-    "p90_abs_error_days": 12.400000000000002,
+    "p90_abs_error_days": 13.0,
     "same_type": 13,
     "by_event_type": {
       "relocation_start": {
@@ -35,8 +35,8 @@
         "scored": 5,
         "caught": 5,
         "recall": 1.0,
-        "median_abs_error_days": 6.0,
-        "p90_abs_error_days": 18.6,
+        "median_abs_error_days": 9.0,
+        "p90_abs_error_days": 20.200000000000003,
         "same_type": 5
       },
       "ns_keeping_stop": {
@@ -64,8 +64,8 @@
     "scored": 20,
     "caught": 17,
     "recall": 0.85,
-    "median_abs_error_days": 3.0,
-    "p90_abs_error_days": 12.200000000000001,
+    "median_abs_error_days": 5.0,
+    "p90_abs_error_days": 13.4,
     "same_type": 16,
     "by_event_type": {
       "relocation_start": {
@@ -91,8 +91,8 @@
         "scored": 10,
         "caught": 8,
         "recall": 0.8,
-        "median_abs_error_days": 5.5,
-        "p90_abs_error_days": 11.899999999999999,
+        "median_abs_error_days": 7.0,
+        "p90_abs_error_days": 13.3,
         "same_type": 8
       },
       "ns_keeping_stop": {
@@ -120,22 +120,48 @@
     "objects": {
       "QZS-3": {
         "norad_id": 42917,
-        "from": "2021-01-01",
-        "to": "2025-12-31",
+        "spans": [
+          [
+            "2021-01-01",
+            "2025-12-31"
+          ]
+        ],
+        "excluded": [],
         "object_years": 4.998,
         "false_events": 0,
+        "per_object_year": 0.0,
         "events": []
       },
       "QZS-6": {
         "norad_id": 62876,
-        "from": "2025-08-02",
-        "to": "2025-12-31",
+        "spans": [
+          [
+            "2025-08-02",
+            "2025-12-31"
+          ]
+        ],
+        "excluded": [],
         "object_years": 0.414,
         "false_events": 0,
+        "per_object_year": 0.0,
+        "events": []
+      },
+      "Fengyun-2H": {
+        "norad_id": 43491,
+        "spans": [
+          [
+            "2021-01-01",
+            "2022-01-18"
+          ]
+        ],
+        "excluded": [],
+        "object_years": 1.047,
+        "false_events": 0,
+        "per_object_year": 0.0,
         "events": []
       }
     },
-    "object_years": 5.412,
+    "object_years": 6.459,
     "false_events": 0,
     "per_object_year": 0.0,
     "target": 0.2,
