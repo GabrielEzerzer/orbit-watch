@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import timedelta
 
 import numpy as np
@@ -351,6 +352,17 @@ def test_a_move_whose_burn_follows_a_slow_drift_out_of_the_box_starts_at_the_bur
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([115.0]), np.array([9000.0]))
     assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
     assert found[0].signal == "a_step" and abs(E._day(found[0].date) - 115.0) <= 1
+
+
+def test_free_drift_after_an_arrival_read_as_a_short_hold_gives_no_keeping_stop(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    rate = np.where(days < 60.0, -0.3, -0.001 * (days - 60.0))
+    lon = 28.0 + np.cumsum(rate) * 0.25
+    segs = [held(0, 60, 10.0, 28.0, "drifting"), replace(held(60, 80, lon[days < 80].min(), 10.0), windows=0),
+            held(80, 200, lon[-1], 9.8, "drifting")]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([]), np.array([]))
+    assert [f.event_type for f in found] == ["relocation_end"]
 
 
 def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():

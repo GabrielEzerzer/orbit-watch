@@ -508,7 +508,7 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
                 out.append(_event(tr, kind, a, b, lon_after, rise, burn, "rate_exit"))
                 departed = burn
-            else:
+            elif kind != "keeping_stop" or a.windows or ((burn_days >= _day(a.start)) & (burn_days <= departed)).any():
                 out.append(_event(tr, kind, a, b, lon_after, rise, left, signal))
         elif b.mode in HELD:
             if b is not same_slot:
