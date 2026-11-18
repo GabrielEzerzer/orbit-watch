@@ -354,12 +354,12 @@ event types are:
 
 | type | what it is | dated by (`signal`) | `size` |
 |---|---|---|---|
-| `relocation_start` | a held object leaves its slot and is held again later, or is still moving at relocation speed when the data end | `rate_exit`: the first set that leaves the held drift band or longitude box and stays out 5 days (inside a gap, see step 7); `a_step` when that exit is slow drift and a burn starts the move later (step 16); `burn_gap` when the exit is slow and the burns stop first (steps 4 and 15) | change of the semi-major axis, km, signed (negative for an eastward move; 0 when the next mode segment is already held) |
+| `relocation_start` | a held object leaves its slot and is held again later, is still moving at relocation speed when the data end, or moves at relocation speed until a graveyard climb (step 14) | `rate_exit`: the first set that leaves the held drift band or longitude box and stays out 5 days (inside a gap, see step 7); `a_step` when that exit is slow drift and a burn starts the move later (step 16); `burn_gap` when the exit is slow and the burns stop first (steps 4 and 15) | median semi-major axis of the moving sets (drift at least 0.05 deg/day away from the hold's) from the start to the next held mode segment, the end of the data or the climb, minus the hold's median, km: negative for an eastward move. All sets in that span are used when none moves that fast; 0 when the next mode segment is already held |
 | `relocation_end` | a moving object starts to hold a slot | `rate_entry`: the first set that stays inside the new slot's band (inside a gap, see step 7) | 0 |
-| `graveyard` | a held object leaves and its semi-major axis rises at least 150 km, with no later hold | `rate_exit`; `a_step` when the climb starts with a burn after a slow drift or a stall (steps 14 and 16) | rise, km |
-| `keeping_stop` | a held object leaves with no climb, no later hold and no move under way at the end of the data | `burn_gap`: the last east-west burn plus half the burn interval (step 4, or step 15 on a slow cycle); `rate_exit` when the burns give no date | rise, km |
-| `ns_keeping_stop` | `controlled_lon_inc` to `controlled_lon` at the same slot, with at least 2 inclination corrections found | `ns_gap`: the last correction plus half the median interval between corrections (step 8) | largest inclination after, deg |
-| `free_burn` | a semi-major-axis step of at least 1 km by an object that is never held again (steps 10 and 18) | `a_step`: the step detector's peak | step, m |
+| `graveyard` | a held object leaves and its semi-major axis rises at least 150 km, with no later hold | `rate_exit`; `a_step` when the climb starts with a burn after a slow drift or a stall (steps 14 and 16) | highest semi-major axis from the end of the held mode segment to the end of the data, minus the hold's median, km |
+| `keeping_stop` | a held object leaves with no climb, no later hold and no move under way at the end of the data, or drifts slowly for more than 90 days before a climb (step 14) | `burn_gap`: the last east-west burn plus half the burn interval (step 4, or step 15 on a slow cycle); `rate_exit` when the burns give no date | highest semi-major axis from the end of the held mode segment to the end of the data (to the climb under step 14), minus the hold's median, km; 0 when a move or climb follows it (step 4) |
+| `ns_keeping_stop` | `controlled_lon_inc` to `controlled_lon` at the same slot, with at least 2 inclination corrections found | `ns_gap`: the last correction plus half the median interval between corrections (step 8) | largest inclination in the `controlled_lon` segment after it, deg |
+| `free_burn` | a semi-major-axis step of at least 1 km by an object that is never held again (steps 10 and 18) | `a_step`: the step detector's peak | the step detector's step, m: the change in median semi-major axis across the detection once the local linear trend of the 6 sets on each side is removed. On a steady climb it can have the opposite sign to the net change: 29155 on 2024-07-16 is listed at -1179 m while its semi-major axis climbs about 11 km between 8 and 20 July |
 
 Any type except `ns_keeping_stop` and `free_burn` can carry `mode_change` instead: no sustained
 exit from the hold or entry into it was found within 45 days of the mode-layer boundary, so the
@@ -441,8 +441,12 @@ kept under the same rule:
 14. **Burns after the departure.** A departure followed within 15 days by a burn of at least
     1 km, with the data ending within 90 days of it, is a move under way (`relocation_start`), not
     a keeping stop. A climb that stalls for more than 90 days and then rises again to 150 km
-    above the hold is a keeping stop followed by a graveyard move, dated at the burn that resumes
-    the climb.
+    above the hold is a graveyard move dated at the burn that resumes the climb. The departure
+    before it is a `relocation_start` when the drift jumps to 0.05 deg/day or more relative to the
+    hold within 5 days, as in step 9, and the median drift until the climb is at least that fast:
+    the object was moved and then retired, as 26719 was in December 2022. Otherwise the departure
+    is a keeping stop. The stall is measured on a 3-set median of the semi-major axis that only
+    counts gains, so an orbit lowered for a move reads as a stall.
 15. **Slow burn cycles.** When fewer than 3 burns fall in the 60 days before a slow exit, the last
     two burns inside the hold within 180 days give the stop (the last burn plus half their
     interval), if the exit comes between half and one and a half intervals after the last burn.
@@ -475,7 +479,10 @@ hand audit's estimate from the sets.
 
 The test split is scored once per set of steps, after the steps were kept on dev and the hand
 audit. The extra test catch after steps 12-18 is the graveyard move of 28707, now dated 17 days
-before its cited date by step 14.
+before its cited date by step 14. 28707's belt row was looked at while building step 14, and its
+date moved by one day as a result (from 18 to 17 days early). Its departure on 2021-11-09, a burn
+that lowers the orbit by about 50 km and starts an eastward drift of 0.5 to 0.7 deg/day, was then
+listed as a keeping stop; it is now a `relocation_start`, and its graveyard row is unchanged.
 
 Matching is rung 1's (one event per change, closest first, within 45 days; a departure of any
 kind matches a relocation start, graveyard move or end of keeping). False events are counted on
@@ -593,6 +600,37 @@ Public sources. Four sampled rows are corroborated by public pages, listed with 
   2023-01-14 sits between the two.
 - Astra 5B (39617), relocation_end 2023-07-19: "the satellite had moved to 23.5"
   (https://en.wikipedia.org/wiki/Astra_5B), in July 2023. This matches the estimate to the month.
+
+#### Out-of-sample audit (`findings/state_audit_fresh/`)
+
+After steps 6 to 18 were written, 50 more events were drawn from the new belt list and judged on
+the same checklist, from the element sets only. This sample was never used to choose a rule. The
+list as audited is frozen in `findings/state_audit_fresh/events.csv`, and `state_audit sample
+--fresh` redraws the sample from it with its own seed, leaving out the holdout objects, the
+objects with test-split events and every object in the first audit. `audit.csv` and
+`summary.json` hold the verdicts; like the first audit's, they are judgments from the sets, not
+cited ground truth.
+
+| type | sampled | real | artefact | duplicate | wrong type |
+|---|---|---|---|---|---|
+| relocation_start | 11 | 11 | 0 | 0 | 0 |
+| relocation_end | 14 | 14 | 0 | 0 | 0 |
+| graveyard | 7 | 6 | 1 | 0 | 0 |
+| keeping_stop | 5 | 3 | 0 | 1 | 1 |
+| ns_keeping_stop | 7 | 7 | 0 | 0 | 0 |
+| free_burn | 6 | 6 | 0 | 0 | 0 |
+| all | 50 | 47 | 1 | 1 | 1 |
+
+47 of 50 are real with the right type. 45 of them could be dated from the sets: median error 0
+days, 90th percentile 3, maximum 50; 42 are within 3 days and 43 within 7. The misses: Express 80
+(45986) is held to its last set, and one bad set at the end of its data reads as a graveyard move
+(#71); GOES 16's (41866) keeping stop is a pause in keeping before a move that is already listed
+(#72); SJ-23's (55131) keeping stop is a move with no later hold (#72). The largest error is
+EUTE 113 West A's (29162) keeping stop, 50 days late because a small burn after keeping ended
+anchors it (#73). The other two over 3 days are DSN-3's (61733) arrival, dated at a trim inside
+its new slot 9 days after it settled (#74), and a north-south stop 4 days late. The 2 real events
+left undated are arrivals after a transfer orbit, which the sets bound only to a window across a
+gap (#70). Issues #69 to #74 hold the failure patterns this audit found.
 
 #### Planted-change test (`harness/evals/state_injection.py`, `findings/state_injection/`)
 
