@@ -24,9 +24,9 @@ from orbit_watch.sources import data_dir
 from orbit_watch.truth import GROUNDTRUTH, load_splits, read_event_rows
 
 REPO = Path(__file__).resolve().parents[2]
-EVENTS = REPO / "findings" / "state_changes" / "events.csv"
 GEO_EVENTS = GROUNDTRUTH / "geo_events.csv"
 OUT = REPO / "findings" / "state_audit"
+EVENTS = OUT / "events.csv"
 SEED = "orbit-watch state audit 2026-11-18"
 SAMPLE_SIZE = 50
 MIN_PER_TYPE = 5

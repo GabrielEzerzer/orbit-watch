@@ -489,7 +489,9 @@ date error), `artefact` if nothing changed at that date (bad sets, free drift re
 routine keeping burn), `wrong_type` if a real change has another type, and `duplicate` if another
 event already covers it.
 
-The sample is fixed by `SEED` in `harness/evals/state_audit.py`. It leaves out the holdout objects
+The sample is fixed by `SEED` in `harness/evals/state_audit.py` and drawn from the belt list as it
+was audited, kept in `findings/state_audit/events.csv`, so later changes to the list do not move
+it. It leaves out the holdout objects
 and every object with a test-split event in `groundtruth/geo_events.csv` (5 holdout objects and 17
 with test-split events, 75 belt events in all), takes at least 5 events of each type and shares the rest in proportion to each type's count, then
 draws within each type with a seeded generator. Each event was charted over 60 days either side
