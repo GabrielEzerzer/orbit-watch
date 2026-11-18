@@ -1,5 +1,6 @@
 # Hand audit of the belt's dated state changes: a fixed, stratified sample of the belt list as audited
-# (findings/state_audit/events.csv), one chart and digest per sampled event, and a summary of the hand verdicts.
+# (findings/state_audit/events.csv, or with --fresh the out-of-sample draw from findings/state_audit_fresh/events.csv),
+# one chart and digest per sampled event, and a summary of the hand verdicts.
 
 from __future__ import annotations
 
@@ -28,6 +29,8 @@ GEO_EVENTS = GROUNDTRUTH / "geo_events.csv"
 OUT = REPO / "findings" / "state_audit"
 EVENTS = OUT / "events.csv"
 SEED = "orbit-watch state audit 2026-11-18"
+FRESH = REPO / "findings" / "state_audit_fresh"
+FRESH_SEED = "orbit-watch fresh audit 2026-11-18"
 SAMPLE_SIZE = 50
 MIN_PER_TYPE = 5
 HALF_WINDOW_DAYS = 60
@@ -61,6 +64,14 @@ def excluded_objects(splits_path: Path | None = None, geo_events: Path = GEO_EVE
 
 def read_events(path: Path = EVENTS) -> list[dict]:
     return read_event_rows(path)[1]
+
+
+def fresh_excluded() -> set[int]:
+    return excluded_objects() | {int(r["norad_id"]) for r in read_events(OUT / "audit.csv")}
+
+
+def fresh_sample() -> list[dict]:
+    return draw(read_events(FRESH / "events.csv"), fresh_excluded(), seed=FRESH_SEED)
 
 
 def quotas(available: dict[str, int], total: int = SAMPLE_SIZE, floor: int = MIN_PER_TYPE) -> dict[str, int]:
@@ -231,8 +242,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("step", choices=("sample", "chart", "summary"))
     p.add_argument("--out", type=Path, help="folder for audit.csv and summary.json (default findings/state_audit), "
                    "or for the charts and digests.json (default $ORBIT_WATCH_DATA/state_audit)")
+    p.add_argument("--fresh", action="store_true", help="draw or chart the out-of-sample audit of "
+                   "findings/state_audit_fresh/events.csv instead; its summary.json is committed as judged")
     a = p.parse_args(argv)
-    sample = draw(read_events(), excluded_objects())
+    if a.fresh and a.step == "summary":
+        p.error("--fresh supports sample and chart; the fresh summary.json is committed as judged")
+    events_path = FRESH / "events.csv" if a.fresh else EVENTS
+    sample = fresh_sample() if a.fresh else draw(read_events(), excluded_objects())
     if a.step == "sample":
         w = csv.DictWriter(sys.stdout, fieldnames=list(sample[0]), lineterminator="\n")
         w.writeheader()
@@ -253,7 +269,7 @@ def main(argv: list[str] | None = None) -> int:
     scratch = a.out or data_dir() / "state_audit"
     scratch.mkdir(parents=True, exist_ok=True)
     names = _names(geo)
-    every = read_events()
+    every = read_events(events_path)
     digests = []
     for k, e in enumerate(sample):
         norad = int(e["norad_id"])
