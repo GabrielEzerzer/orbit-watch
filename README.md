@@ -513,7 +513,8 @@ and argument of perigee; it gets a new mean motion n from the planted drift rate
 axis scaled by (n_old/n)^(2/3), and a mean anomaly shifted by the planted change in mean
 longitude, so the three agree.
 
-- **Relocation**: a burn-free drift for D days from the host's local longitude to its slot
+- **Relocation**: a burn-free drift at constant rate (a straight line in longitude, with no
+  longitude acceleration) for D days from the host's local longitude to its slot
   longitude D days later plus r*D, then the host's own sets shifted by r*D. |r| is
   log-uniform within five bins from 0.02 to 3 deg/day (100 trials each); the distance is
   log-uniform from 1 to 20 deg, so D = distance/|r|, clipped to 2-120 days. Truth: a start on
