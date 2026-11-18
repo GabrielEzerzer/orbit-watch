@@ -46,6 +46,7 @@ NS_SPAN_DAYS = 12.0
 NS_TOL_MIN_DEG = 0.006
 NS_MERGE_DAYS = 2.0
 NS_MIN_CORRECTIONS = 2
+GAP_DAYS = 2.0
 MOVE_MIN_DEG = 0.5
 MOVE_SIDE_DAYS = 10.0
 MOVE_MERGE_DAYS = 2.0
@@ -340,8 +341,26 @@ def _event(tr: Track, kind: str, a: Segment, b: Segment, lon_after: float, size:
                  round(lon_after, 3), a.mode, b.mode, b.start)
 
 
-def _days_of(tr: Track, i: int | None) -> float | None:
-    return None if i is None else float(tr.days[i])
+def _held_rate(tr: Track, held: Segment) -> float:
+    return _band(tr.rate[(tr.days >= _day(held.start)) & (tr.days < _day(held.end))])[0]
+
+
+def _through_gap(tr: Track, i: int, moving: int, held_rate: float) -> float:
+    p = i - 1
+    dt = float(tr.days[i] - tr.days[p])
+    if p < 0 or dt <= GAP_DAYS:
+        return float(tr.days[i])
+    shift = float(wrap180(tr.lon[i] - tr.lon[p])) - held_rate * dt
+    rel = float(tr.rate[moving]) - held_rate
+    if abs(rel) < FAST_RATE:
+        return float(tr.days[i])
+    lag = shift / rel
+    when = tr.days[i] - lag if moving == i else tr.days[p] + lag
+    return float(np.clip(when, tr.days[p], tr.days[i]))
+
+
+def _arrival_day(tr: Track, held: Segment, j: int | None) -> float | None:
+    return None if j is None else _through_gap(tr, j, j - 1, _held_rate(tr, held))
 
 
 def _departure(tr: Track, a: Segment, b: Segment, limit: float,
@@ -351,7 +370,7 @@ def _departure(tr: Track, a: Segment, b: Segment, limit: float,
         return None, "", None
     missed = _missed_burn_day(tr, i, burn_days)
     if missed is None:
-        return float(tr.days[i]), "rate_exit", None
+        return _through_gap(tr, i, i, _held_rate(tr, a)), "rate_exit", None
     fast = np.flatnonzero((tr.days > tr.days[i]) & (tr.days < limit) & (np.abs(tr.rate) >= FAST_RATE))
     return missed, "burn_gap", float(tr.days[fast[0]]) if len(fast) else None
 
@@ -391,7 +410,7 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 left, signal, _ = _departure(tr, a, b, _day(b.end), burn_days)
                 j = _arrival_date(tr, b, left if left is not None else _day(b.start))
                 out.append(_event(tr, "relocation_start", a, b, _slot(b), 0.0, left, signal))
-                out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _days_of(tr, j), "rate_entry"))
+                out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _arrival_day(tr, b, j), "rate_entry"))
         elif a.mode in HELD:
             nxt = next((s for s in rest if s.mode in HELD), None)
             if nxt is not None and _arcs_overlap(a, nxt) and not _moved(tr, a, nxt):
@@ -410,7 +429,7 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
         elif b.mode in HELD:
             if b is not same_slot:
                 j = _arrival_date(tr, b, departed if departed is not None else _day(a.start))
-                out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _days_of(tr, j), "rate_entry"))
+                out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _arrival_day(tr, b, j), "rate_entry"))
             departed, same_slot = None, None
     return sorted(out + _free_burns(tr, det, out, burn_days, steps), key=lambda e: e.date)
 

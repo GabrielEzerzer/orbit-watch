@@ -241,3 +241,16 @@ def test_a_departure_is_dated_from_the_hold_edge_when_the_hold_range_already_spa
     start = E.events_from_track(M.track(element_sets(days, lon, rate)))[0]
     assert start.event_type == "relocation_start" and start.signal == "rate_exit"
     assert abs(E._day(start.date) - 70.0) <= 1
+
+
+def test_a_move_that_starts_inside_a_gap_is_dated_by_running_the_first_set_after_it_back(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    moving = (days >= 68.0) & (days < 88.0)
+    rate = rate + np.where(moving, 0.4, 0.0)
+    lon = lon + np.cumsum(np.where(moving, 0.4, 0.0)) * 0.25
+    keep = (days < 65.0) | (days >= 75.0)
+    segs = [held(0, 60, 9.98, 10.02), held(60, 90, 9.98, 18.02, "drifting"), held(90, 150, 17.98, 18.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    start = E.events_from_track(M.track(element_sets(days[keep], lon[keep], rate[keep])))[0]
+    assert start.event_type == "relocation_start" and abs(E._day(start.date) - 68.0) <= 1
