@@ -175,6 +175,20 @@ def test_keeping_stop_then_a_later_climb_are_two_events():
     assert abs(E._day(found[0].date) - (burns[-1] + 3.5)) <= 1 and abs(E._day(found[1].date) - climb) <= 1
 
 
+def test_a_climb_months_after_a_keeping_stop_is_a_graveyard_move_on_the_day_of_the_climb():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    start = EDGES[3] + 7.0
+    climb = start + 150.0
+    lon, rate = keeper_track(days, 10.0, 3)
+    rate = np.where(days < start, rate, 0.001 * (days - start))
+    up = sum(np.where(days >= climb + k, 100.0, 0.0) for k in (0.0, 3.0, 6.0))
+    rate = rate - 1.5 * up / 42164.0 * 360.98
+    lon = np.where(days < start, lon, lon[days < start][-1] + np.cumsum(np.where(days < start, 0.0, rate)) * 0.25)
+    found = E.state_changes(element_sets(days, lon, rate))
+    assert [f.event_type for f in found] == ["keeping_stop", "graveyard"]
+    assert abs(E._day(found[1].date) - climb) <= 1
+
+
 def ns_sets(days, inc, seed=7):
     lon, rate = quiet_keeper(days, seed)
     return [s for d, l, r, i in zip(days, lon, rate, inc) for s in element_sets([d], [l], [r], inc=float(i))]

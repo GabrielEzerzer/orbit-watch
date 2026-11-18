@@ -38,6 +38,7 @@ BURN_LOOKBACK_DAYS = 60.0
 MIN_BURNS = 3
 CLIMB_DAYS = 15.0
 CLIMB_GAP_DAYS = 30.0
+CLIMB_STALL_DAYS = 90.0
 FREE_BURN_MIN_M = 1000.0
 EDGE_DAYS = 30.0
 NS_ANCHOR_DAYS = 60.0
@@ -339,6 +340,24 @@ def _departure_type(tr: Track, held: Segment, rest: Sequence[Segment]) -> tuple[
     return "keeping_stop", rise
 
 
+def _climb_start(tr: Track, held: Segment, left: float, burn_days: np.ndarray, steps: np.ndarray) -> float | None:
+    idx = np.flatnonzero(tr.days >= left)
+    base = np.median(_a_between(tr, _day(held.start), _day(held.end)))
+    raw = tr.semi_major_axis_km[idx]
+    a = np.array([np.median(raw[max(0, k - 1):k + 2]) for k in range(len(raw))])
+    top, gained, start = a[0], left, None
+    for k in range(1, len(idx)):
+        if a[k] - top >= FREE_BURN_MIN_M / 1000.0:
+            if tr.days[idx[k]] - gained > CLIMB_STALL_DAYS:
+                lo, hi = float(tr.days[idx[k - 1]]), float(tr.days[idx[k]])
+                big = burn_days[(burn_days >= lo - STEP_REACH_DAYS) & (burn_days <= hi) & (np.abs(steps) >= FREE_BURN_MIN_M)]
+                start = float(big[-1]) if len(big) else lo
+            top, gained = a[k], float(tr.days[idx[k]])
+        if a[k] - base >= GRAVEYARD_RISE_KM:
+            return start
+    return None
+
+
 def _event(tr: Track, kind: str, a: Segment, b: Segment, lon_after: float, size: float,
            day: float | None = None, signal: str = "") -> Event:
     when = b.start if day is None else GRID_START + timedelta(days=float(day))
@@ -457,6 +476,11 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
             left, signal, burn = _departure(tr, a, b, _day(nxt.start) if nxt else _day(rest[-1].end), burn_days)
             if kind == "keeping_stop" and _open_move(tr, a, left, burn_days, steps):
                 kind = "relocation_start"
+            climb = _climb_start(tr, a, left, burn_days, steps) if kind == "graveyard" and left is not None else None
+            if climb is not None:
+                out.append(_event(tr, "graveyard", b, b, lon_after, rise, climb, "a_step"))
+                before = _a_between(tr, left, climb)
+                kind, rise = "keeping_stop", float(np.max(before) - np.median(_a_between(tr, _day(a.start), _day(a.end))))
             departed = left if left is not None else _day(b.start)
             if signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
                 out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
