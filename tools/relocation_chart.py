@@ -118,7 +118,7 @@ def draw(rows: list[dict], out: Path) -> tuple[int, int, int]:
         plt.Line2D([], [], color=MOVE, marker="o", markerfacecolor="none", linestyle="none", markersize=6,
                    label=f"Arrival with no start in the data ({len(arrivals)})"),
         plt.Line2D([], [], color=GRAVEYARD, marker="X", linestyle="none", markersize=8,
-                   label=f"Graveyard move, from its slot ({len(graveyards)})"),
+                   label=f"Graveyard move, where the climb starts ({len(graveyards)})"),
     ]
     ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.07), ncol=3, frameon=False,
               labelcolor=INK)
