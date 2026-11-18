@@ -18,6 +18,7 @@ from orbit_watch.modes import GRID_START, Segment, Track, _arc, segments, track
 from orbit_watch.series import to_series
 
 HELD = ("controlled_lon_inc", "controlled_lon")
+UNREAD = ("undetermined", "inclined")
 DEPARTURES = ("relocation_start", "graveyard", "keeping_stop")
 EVENT_TYPES = (*DEPARTURES, "relocation_end", "ns_keeping_stop", "free_burn")
 GRAVEYARD_RISE_KM = 150.0
@@ -424,7 +425,7 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
 def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.ndarray | None = None) -> list[Event]:
     burn_days = np.array([]) if burn_days is None else burn_days
     steps = np.zeros(len(burn_days)) if steps is None else steps
-    det = [s for s in with_inner_moves(tr, with_short_holds(tr, segments(tr))) if s.mode != "undetermined"]
+    det = [s for s in with_inner_moves(tr, with_short_holds(tr, segments(tr))) if s.mode not in UNREAD]
     out: list[Event] = []
     departed: float | None = None
     same_slot: Segment | None = None
