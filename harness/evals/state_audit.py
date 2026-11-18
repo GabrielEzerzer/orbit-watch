@@ -34,6 +34,22 @@ HALF_WINDOW_DAYS = 60
 VERDICTS = ("real", "artefact", "wrong_type", "duplicate")
 AUDIT_FIELDS = ["norad_id", "name", "event_type", "date", "verdict", "correct_type", "est_date", "date_error_days",
                 "evidence"]
+PUBLIC_SOURCES = [
+    {"norad_id": 41748, "event_type": "keeping_stop", "date": "2024-10-29", "est_date": "2024-10-19",
+     "url": "https://en.wikipedia.org/wiki/Intelsat_33e", "quote": "broke into at least 57 pieces on 19 October 2024",
+     "agrees": "yes, the same day as the estimate"},
+    {"norad_id": 36744, "event_type": "ns_keeping_stop", "date": "2021-07-26", "est_date": "2021-04-03",
+     "url": "https://www.eoportal.org/satellite-missions/coms-1", "quote": "COMS concluded operations in April 2021",
+     "agrees": "yes, the estimate is in April 2021; the event date is in July"},
+    {"norad_id": 26638, "event_type": "graveyard", "date": "2023-01-24", "est_date": "2023-01-14",
+     "url": "https://space.skyrocket.de/doc_sdat/astra-2d.htm",
+     "quote": "In early January 2023, Astra 2D was put into a graveyard orbit",
+     "agrees": "roughly: the estimate is mid-January and the event date late January; Wikipedia "
+               "(https://en.wikipedia.org/wiki/Astra_2D) gives decommissioning on 27 January 2023"},
+    {"norad_id": 39617, "event_type": "relocation_end", "date": "2023-07-19", "est_date": "2023-07-19",
+     "url": "https://en.wikipedia.org/wiki/Astra_5B", "quote": "the satellite had moved to 23.5",
+     "agrees": "yes, to the month (July 2023)"},
+]
 
 
 def excluded_objects(splits_path: Path | None = None, geo_events: Path = GEO_EVENTS) -> set[int]:
@@ -227,7 +243,7 @@ def main(argv: list[str] | None = None) -> int:
         if problems:
             print("\n".join(problems), file=sys.stderr)
             return 1
-        summary = {"sample_seed": SEED, **summarise(rows)}
+        summary = {"sample_seed": SEED, **summarise(rows), "public_sources": PUBLIC_SOURCES}
         (a.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
         print(json.dumps(summary, indent=2))
         return 0

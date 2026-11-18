@@ -40,7 +40,9 @@ def test_committed_audit_matches_sample_and_summary():
     assert sa.check_rows(rows, committed_sample()) == []
     summary = sa.summarise(rows)
     with open(sa.OUT / "summary.json", encoding="utf-8") as f:
-        assert json.load(f) == {"sample_seed": sa.SEED, **summary}
+        assert json.load(f) == {"sample_seed": sa.SEED, **summary, "public_sources": sa.PUBLIC_SOURCES}
+    audited = {(int(r["norad_id"]), r["event_type"], r["date"]): r["est_date"] for r in rows}
+    assert all(audited[(x["norad_id"], x["event_type"], x["date"])] == x["est_date"] for x in sa.PUBLIC_SOURCES)
 
 
 def test_check_rows_flags_bad_rows():

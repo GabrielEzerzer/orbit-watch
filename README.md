@@ -432,8 +432,8 @@ routine keeping burn), `wrong_type` if a real change has another type, and `dupl
 event already covers it.
 
 The sample is fixed by `SEED` in `harness/evals/state_audit.py`. It leaves out the holdout objects
-and every object with a test-split event in `groundtruth/geo_events.csv` (22 objects, 75 events),
-takes at least 5 events of each type and shares the rest in proportion to each type's count, then
+and every object with a test-split event in `groundtruth/geo_events.csv` (5 holdout objects and 17
+with test-split events, 75 belt events in all), takes at least 5 events of each type and shares the rest in proportion to each type's count, then
 draws within each type with a seeded generator. Each event was charted over 60 days either side
 (mean longitude, drift rate, semi-major axis and the inclination vector, with the raw and
 filtered sets, neighbouring events and mode segments) and judged on the same checklist: did the
@@ -454,11 +454,32 @@ evidence; `summary.json` holds the counts.
 Of the 42 real events, 41 could be dated from the sets. Leaving out north-south stops, the median
 error is 1 day and 27 of 36 are within 3 days. Of the 9 dated more than 3 days off, 8 are late,
 mostly where the change falls in a gap in the sets (dated at the gap's end, 4 to 15 days)
-or where keeping stops on a burn cycle slower than the burn-gap rule needs (25 and 46 days). The 5
-real north-south stops are dated 82 to 114 days late (median 108): the inclination takes about
-100 days to grow from the kept value past the 0.3 deg limit that separates the two modes. Free
-burns are the weakest type: two are steps inside a graveyard climb already listed, one is a single
-bad set, and two are routine east-west burns of kept inclined satellites (BeiDou 7, IRNSS 1D).
+or where keeping stops on a burn cycle slower than the burn-gap rule needs (25 and 46 days). For a
+change inside a gap, the estimate runs the first set after the gap back at its drift rate as if
+the burn were instant, so it is the latest plausible start and those errors are lower bounds. The
+5 real north-south stops are dated 82 to 114 days late (median 108): a stop is dated at the start
+of the first 30-day window whose median inclination is above 0.3 deg, which can be up to about 15
+days either side of the crossing, and the inclination takes about 100 days to grow from the kept
+value to 0.3 deg. Free burns are the weakest type. Two are steps inside a graveyard climb already
+listed: a burn is left out only within 15 days of a listed event (`CLIMB_DAYS`), and these come 22
+days (Spaceway 2) and 21 days (Optus D2) after it. One is a run of bad sets over about 1.5 days
+that relaxes back, which a one-set outlier filter would not remove. Two are routine east-west
+burns of kept inclined satellites (BeiDou 7, IRNSS 1D), whose free burns all follow a false
+earlier departure.
+
+Public sources. Four sampled rows are corroborated by public pages, listed with quotes in
+`summary.json` under `public_sources`:
+
+- Intelsat 33E (41748), keeping_stop 2024-10-29: "broke into at least 57 pieces on 19 October
+  2024" (https://en.wikipedia.org/wiki/Intelsat_33e). This matches the estimate of 2024-10-19.
+- COMS 1 (36744), ns_keeping_stop 2021-07-26: "COMS concluded operations in April 2021"
+  (https://www.eoportal.org/satellite-missions/coms-1). This matches the estimate of 2021-04-03.
+- Astra 2D (26638), graveyard 2023-01-24: "In early January 2023, Astra 2D was put into a
+  graveyard orbit" (https://space.skyrocket.de/doc_sdat/astra-2d.htm), while Wikipedia gives
+  decommissioning on 27 January 2023 (https://en.wikipedia.org/wiki/Astra_2D). The estimate of
+  2023-01-14 sits between the two.
+- Astra 5B (39617), relocation_end 2023-07-19: "the satellite had moved to 23.5"
+  (https://en.wikipedia.org/wiki/Astra_5B), in July 2023. This matches the estimate to the month.
 
 ## Method notes
 
