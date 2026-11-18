@@ -6,7 +6,7 @@
     "nms_days": 1.0,
     "max_span_days": 3.0,
     "max_gap_days": 2.0,
-    "source": "FINDINGS.md: calibration run at 508838a"
+    "source": "findings/README.md, ISS leads: calibration run at 508838a"
   },
   "tolerance_days": {
     "before_burn": 0.5,

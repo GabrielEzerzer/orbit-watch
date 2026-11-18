@@ -275,7 +275,7 @@ def evaluate(split: str, settings_path: Path, data_dir: Path, truth_dir: Path = 
     period = spec["periods"][split]
     if period.get("requires_final") and not final:
         raise HoldoutError(f"--split {split} scores the holdout objects; it needs --final, and has "
-                           "been scored once, at FROZEN (README, 'Detector evaluation')")
+                           "been scored once, at FROZEN (findings/README.md, 'Detector evaluation')")
     if final and not period.get("requires_final"):
         raise HoldoutError("--final is only for --split test")
     lo, hi = (np.datetime64(period[k], "us") for k in ("from", "to"))
