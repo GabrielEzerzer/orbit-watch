@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from orbit_watch.clean import drop_snapback_blocks
+from orbit_watch.clean import drop_snapback_blocks, noise
 from orbit_watch.detect import detect
 from orbit_watch.elements import ElementSet
 from orbit_watch.generalise import FROZEN
@@ -38,6 +38,14 @@ MIN_BURNS = 3
 CLIMB_DAYS = 15.0
 FREE_BURN_MIN_M = 1000.0
 EDGE_DAYS = 30.0
+NS_ANCHOR_DAYS = 60.0
+NS_LOOKBACK_DAYS = 180.0
+NS_TOL_SIGMAS = 5.0
+NS_SIDE_SETS = 3
+NS_SPAN_DAYS = 12.0
+NS_TOL_MIN_DEG = 0.006
+NS_MERGE_DAYS = 2.0
+NS_MIN_CORRECTIONS = 2
 MOVE_MIN_DEG = 0.5
 MOVE_SIDE_DAYS = 10.0
 MOVE_MERGE_DAYS = 2.0
@@ -256,6 +264,44 @@ def with_inner_moves(tr: Track, segs: Sequence[Segment]) -> list[Segment]:
     return out
 
 
+def _inc_vector(tr: Track) -> np.ndarray:
+    node = np.radians(tr.raan)
+    return np.column_stack([tr.inclination * np.cos(node), tr.inclination * np.sin(node)])
+
+
+def ns_corrections(tr: Track, a: Segment, b: Segment) -> list[float]:
+    stop = _day(b.start)
+    anchor = np.flatnonzero((tr.days >= stop) & (tr.days < min(stop + NS_ANCHOR_DAYS, _day(b.end))))
+    if len(anchor) < HOLD_MIN_SETS:
+        return []
+    v = _inc_vector(tr)
+    t = tr.days - stop
+    drift = np.linalg.lstsq(np.column_stack([np.ones(len(anchor)), t[anchor]]), v[anchor], rcond=None)[0][1]
+    r = v - np.outer(t, drift)
+    tol = max(NS_TOL_SIGMAS * max(noise(tr.days[anchor], v[anchor, k], 0.0) for k in range(2)), NS_TOL_MIN_DEG)
+    idx = np.flatnonzero((tr.days >= max(_day(a.start), stop - NS_LOOKBACK_DAYS)) & (tr.days < stop))
+    steps = []
+    for j in range(NS_SIDE_SETS - 1, len(idx) - NS_SIDE_SETS):
+        before, after = idx[j - NS_SIDE_SETS + 1:j + 1], idx[j + 1:j + 1 + NS_SIDE_SETS]
+        if tr.days[after[-1]] - tr.days[before[0]] > NS_SPAN_DAYS:
+            continue
+        size = float(np.hypot(*(np.median(r[after], axis=0) - np.median(r[before], axis=0))))
+        if size >= tol:
+            steps.append((size, 0.5 * float(tr.days[idx[j]] + tr.days[idx[j + 1]])))
+    kept: list[float] = []
+    for _, day in sorted(steps, reverse=True):
+        if all(abs(day - k) > NS_MERGE_DAYS for k in kept):
+            kept.append(day)
+    return sorted(kept)
+
+
+def _ns_stop_day(tr: Track, a: Segment, b: Segment) -> float | None:
+    found = ns_corrections(tr, a, b) if tr.raan is not None else []
+    if len(found) < NS_MIN_CORRECTIONS:
+        return None
+    return found[-1] + float(np.median(np.diff(found))) / 2.0
+
+
 def burns(records: Sequence[ElementSet]) -> tuple[np.ndarray, np.ndarray]:
     (series,) = to_series(records).values()
     dets = detect(series, FROZEN)
@@ -338,7 +384,9 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
         rest = det[k + 1:]
         if a.mode in HELD and b.mode in HELD:
             if a.mode == "controlled_lon_inc" and b.mode == "controlled_lon" and _arcs_overlap(a, b):
-                out.append(_event(tr, "ns_keeping_stop", a, b, _slot(b), b.inc_max))
+                ns = _ns_stop_day(tr, a, b)
+                if ns is not None:
+                    out.append(_event(tr, "ns_keeping_stop", a, b, _slot(b), b.inc_max, ns, "ns_gap"))
             elif not _arcs_overlap(a, b):
                 left, signal, _ = _departure(tr, a, b, _day(b.end), burn_days)
                 j = _arrival_date(tr, b, left if left is not None else _day(b.start))

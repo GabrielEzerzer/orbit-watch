@@ -175,14 +175,26 @@ def test_keeping_stop_then_a_later_climb_are_two_events():
     assert abs(E._day(found[0].date) - (burns[-1] + 3.5)) <= 1 and abs(E._day(found[1].date) - climb) <= 1
 
 
-def test_end_of_inclination_keeping_at_the_same_slot_is_an_ns_keeping_stop():
+def ns_sets(days, inc, seed=7):
+    lon, rate = quiet_keeper(days, seed)
+    return [s for d, l, r, i in zip(days, lon, rate, inc) for s in element_sets([d], [l], [r], inc=float(i))]
+
+
+def test_end_of_inclination_keeping_is_dated_from_the_last_correction_plus_half_the_cycle():
     days = np.arange(0.0, EDGES[14], 0.25)
-    lon, rate = quiet_keeper(days, 7)
-    stop = EDGES[5]
-    inc = 0.05 + 0.0025 * np.clip(days - stop, 0.0, None)
-    sets = [s for d, l, r, i in zip(days, lon, rate, inc) for s in element_sets([d], [l], [r], inc=float(i))]
-    found = E.state_changes(sets)
+    last = EDGES[5] - 60.0
+    fixes = np.arange(10.0, last + 0.1, 14.0)
+    since = days - fixes[np.clip(np.searchsorted(fixes, days, side="right") - 1, 0, None)]
+    inc = np.where(days < fixes[0], 0.03 + 0.0025 * days, 0.02 + 0.0025 * since)
+    found = E.state_changes(ns_sets(days, inc))
     assert [f.event_type for f in found] == ["ns_keeping_stop"] and found[0].size > 0.3
+    assert found[0].signal == "ns_gap" and abs(E._day(found[0].date) - (fixes[-1] + 7.0)) <= 1
+
+
+def test_inclination_that_only_grows_through_the_kept_band_gives_no_ns_keeping_stop():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    inc = 0.05 + 0.0025 * np.clip(days - EDGES[5], 0.0, None)
+    assert E.state_changes(ns_sets(days, inc)) == []
 
 
 def test_a_quick_move_inside_one_held_segment_is_a_start_and_an_end(monkeypatch):

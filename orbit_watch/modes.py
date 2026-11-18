@@ -114,6 +114,7 @@ class Track:
     inclination: np.ndarray
     semi_major_axis_km: np.ndarray
     eccentricity: np.ndarray
+    raan: np.ndarray | None = None
 
 
 def mean_longitude(record: ElementSet) -> float:
@@ -130,6 +131,7 @@ def track(records: Sequence[ElementSet]) -> Track:
         inclination=np.array([r.inclination for r in records]),
         semi_major_axis_km=np.array([r.semi_major_axis_km for r in records]),
         eccentricity=np.array([r.eccentricity for r in records]),
+        raan=np.array([r.raan for r in records]),
     )
 
 
