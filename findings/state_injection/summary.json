@@ -1,6 +1,6 @@
 {
-  "commit": "480e66b26e3540efe2753fa4aad5424895674113",
-  "dirty": false,
+  "commit": "74ee02821267458ea16b62129acd4af31c4193f3",
+  "dirty": true,
   "seed": 20261118,
   "window_days": 45,
   "splits": [
@@ -26,7 +26,7 @@
               "caught": 41,
               "recall": 0.82,
               "median_abs_error_days": 2.0,
-              "p90_abs_error_days": 13.0,
+              "p90_abs_error_days": 14.0,
               "same_type": 37,
               "mistyped": 4
             },
@@ -171,12 +171,10 @@
               "mistyped": 0
             }
           },
-          "extra_near_per_trial": 0.02,
+          "extra_near_per_trial": 0.0,
           "extra_later_per_trial": 0.0,
           "extra_median_per_trial": 0.0,
-          "extra_types": {
-            "keeping_stop": 1
-          },
+          "extra_types": {},
           "all_caught": {
             "trials": 50,
             "fraction": 1.0
@@ -190,7 +188,7 @@
               "caught": 89,
               "recall": 0.89,
               "median_abs_error_days": 1.0,
-              "p90_abs_error_days": 6.2,
+              "p90_abs_error_days": 7.2,
               "same_type": 83,
               "mistyped": 6
             },
@@ -238,12 +236,11 @@
               "mistyped": 0
             }
           },
-          "extra_near_per_trial": 0.013,
+          "extra_near_per_trial": 0.007,
           "extra_later_per_trial": 0.0,
           "extra_median_per_trial": 0.0,
           "extra_types": {
-            "free_burn": 1,
-            "keeping_stop": 1
+            "free_burn": 1
           },
           "all_caught": {
             "trials": 148,
@@ -258,18 +255,18 @@
             "trials": 80,
             "caught": 68,
             "recall": 0.85,
-            "median_abs_error_days": 9.0,
-            "p90_abs_error_days": 33.0,
+            "median_abs_error_days": 8.0,
+            "p90_abs_error_days": 30.3,
             "same_type": 68,
             "mistyped": 0
           }
         },
-        "extra_near_per_trial": 0.075,
-        "extra_later_per_trial": 1.913,
+        "extra_near_per_trial": 0.0,
+        "extra_later_per_trial": 0.338,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "keeping_stop": 9,
-          "free_burn": 138,
+          "keeping_stop": 10,
+          "free_burn": 5,
           "relocation_start": 6,
           "relocation_end": 6
         },
@@ -277,18 +274,18 @@
           "held-era SMA scatter < 0.1 km": {
             "trials": 68,
             "hosts": 60,
-            "extra_events": 35,
-            "extra_free_burns": 19,
-            "extras_per_trial": 0.515,
+            "extra_events": 16,
+            "extra_free_burns": 0,
+            "extras_per_trial": 0.235,
             "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
             "trials": 12,
             "hosts": 10,
-            "extra_events": 124,
-            "extra_free_burns": 119,
-            "extras_per_trial": 10.333,
-            "extras_median_per_trial": 8.5
+            "extra_events": 11,
+            "extra_free_burns": 5,
+            "extras_per_trial": 0.917,
+            "extras_median_per_trial": 0.0
           }
         }
       },
@@ -305,28 +302,28 @@
             "mistyped": 0
           }
         },
-        "extra_near_per_trial": 0.05,
-        "extra_later_per_trial": 3.062,
+        "extra_near_per_trial": 0.037,
+        "extra_later_per_trial": 0.25,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "free_burn": 249
+          "free_burn": 23
         },
         "by_host_noise": {
           "held-era SMA scatter < 0.1 km": {
             "trials": 68,
             "hosts": 58,
-            "extra_events": 15,
-            "extra_free_burns": 15,
-            "extras_per_trial": 0.221,
+            "extra_events": 3,
+            "extra_free_burns": 3,
+            "extras_per_trial": 0.044,
             "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
             "trials": 12,
             "hosts": 11,
-            "extra_events": 234,
-            "extra_free_burns": 234,
-            "extras_per_trial": 19.5,
-            "extras_median_per_trial": 15.5
+            "extra_events": 20,
+            "extra_free_burns": 20,
+            "extras_per_trial": 1.667,
+            "extras_median_per_trial": 0.5
           }
         }
       },
@@ -335,64 +332,64 @@
         "by_truth_type": {
           "keeping_stop": {
             "trials": 80,
-            "caught": 62,
-            "recall": 0.775,
-            "median_abs_error_days": 18.0,
-            "p90_abs_error_days": 31.8,
-            "same_type": 58,
+            "caught": 64,
+            "recall": 0.8,
+            "median_abs_error_days": 12.0,
+            "p90_abs_error_days": 30.0,
+            "same_type": 60,
             "mistyped": 4
           },
           "free_burn": {
             "trials": 80,
-            "caught": 49,
-            "recall": 0.6125,
+            "caught": 48,
+            "recall": 0.6,
             "median_abs_error_days": 0.0,
             "p90_abs_error_days": 1.0,
-            "same_type": 49,
+            "same_type": 48,
             "mistyped": 0
           }
         },
-        "extra_near_per_trial": 0.6,
-        "extra_later_per_trial": 2.3,
+        "extra_near_per_trial": 0.3,
+        "extra_later_per_trial": 0.362,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "keeping_stop": 23,
+          "keeping_stop": 19,
           "relocation_start": 10,
           "relocation_end": 14,
-          "free_burn": 185
+          "free_burn": 10
         },
         "all_caught": {
-          "trials": 47,
-          "fraction": 0.5875
+          "trials": 46,
+          "fraction": 0.575
         },
         "by_host_noise": {
           "held-era SMA scatter < 0.1 km": {
             "trials": 68,
             "hosts": 58,
-            "extra_events": 61,
-            "extra_free_burns": 16,
-            "extras_per_trial": 0.897,
+            "extra_events": 41,
+            "extra_free_burns": 0,
+            "extras_per_trial": 0.603,
             "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
             "trials": 12,
             "hosts": 11,
-            "extra_events": 171,
-            "extra_free_burns": 169,
-            "extras_per_trial": 14.25,
-            "extras_median_per_trial": 10.5
+            "extra_events": 12,
+            "extra_free_burns": 10,
+            "extras_per_trial": 1.0,
+            "extras_median_per_trial": 0.5
           }
         }
       }
     },
     "untouched": {
       "object_years": 1412.471,
-      "events": 13,
-      "per_object_year": 0.0092,
+      "events": 15,
+      "per_object_year": 0.0106,
       "by_type": {
+        "keeping_stop": 3,
         "relocation_start": 6,
-        "relocation_end": 6,
-        "keeping_stop": 1
+        "relocation_end": 6
       }
     }
   },
@@ -631,17 +628,17 @@
             "trials": 80,
             "caught": 62,
             "recall": 0.775,
-            "median_abs_error_days": 8.5,
-            "p90_abs_error_days": 30.0,
+            "median_abs_error_days": 7.0,
+            "p90_abs_error_days": 25.8,
             "same_type": 62,
             "mistyped": 0
           }
         },
         "extra_near_per_trial": 0.0,
-        "extra_later_per_trial": 2.263,
+        "extra_later_per_trial": 0.338,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "free_burn": 158,
+          "free_burn": 4,
           "relocation_start": 6,
           "relocation_end": 6,
           "keeping_stop": 11
@@ -650,18 +647,18 @@
           "held-era SMA scatter < 0.1 km": {
             "trials": 69,
             "hosts": 56,
-            "extra_events": 56,
-            "extra_free_burns": 33,
-            "extras_per_trial": 0.812,
+            "extra_events": 23,
+            "extra_free_burns": 0,
+            "extras_per_trial": 0.333,
             "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
             "trials": 11,
             "hosts": 10,
-            "extra_events": 125,
-            "extra_free_burns": 125,
-            "extras_per_trial": 11.364,
-            "extras_median_per_trial": 8.0
+            "extra_events": 4,
+            "extra_free_burns": 4,
+            "extras_per_trial": 0.364,
+            "extras_median_per_trial": 0.0
           }
         }
       },
@@ -678,28 +675,28 @@
             "mistyped": 0
           }
         },
-        "extra_near_per_trial": 0.113,
-        "extra_later_per_trial": 2.325,
+        "extra_near_per_trial": 0.037,
+        "extra_later_per_trial": 0.163,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "free_burn": 195
+          "free_burn": 16
         },
         "by_host_noise": {
           "held-era SMA scatter < 0.1 km": {
             "trials": 67,
             "hosts": 61,
-            "extra_events": 52,
-            "extra_free_burns": 52,
-            "extras_per_trial": 0.776,
+            "extra_events": 3,
+            "extra_free_burns": 3,
+            "extras_per_trial": 0.045,
             "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
             "trials": 13,
             "hosts": 12,
-            "extra_events": 143,
-            "extra_free_burns": 143,
-            "extras_per_trial": 11.0,
-            "extras_median_per_trial": 6.0
+            "extra_events": 13,
+            "extra_free_burns": 13,
+            "extras_per_trial": 1.0,
+            "extras_median_per_trial": 1.0
           }
         }
       },
@@ -710,50 +707,50 @@
             "trials": 80,
             "caught": 60,
             "recall": 0.75,
-            "median_abs_error_days": 10.0,
-            "p90_abs_error_days": 30.1,
-            "same_type": 58,
-            "mistyped": 2
+            "median_abs_error_days": 8.0,
+            "p90_abs_error_days": 30.0,
+            "same_type": 59,
+            "mistyped": 1
           },
           "free_burn": {
             "trials": 80,
-            "caught": 50,
-            "recall": 0.625,
+            "caught": 49,
+            "recall": 0.6125,
             "median_abs_error_days": 0.0,
-            "p90_abs_error_days": 1.1,
-            "same_type": 50,
+            "p90_abs_error_days": 1.0,
+            "same_type": 49,
             "mistyped": 0
           }
         },
-        "extra_near_per_trial": 0.425,
-        "extra_later_per_trial": 2.013,
-        "extra_median_per_trial": 1.0,
+        "extra_near_per_trial": 0.25,
+        "extra_later_per_trial": 0.212,
+        "extra_median_per_trial": 0.0,
         "extra_types": {
-          "keeping_stop": 23,
-          "free_burn": 166,
-          "relocation_end": 4,
-          "relocation_start": 2
+          "keeping_stop": 21,
+          "free_burn": 9,
+          "relocation_start": 3,
+          "relocation_end": 4
         },
         "all_caught": {
-          "trials": 46,
-          "fraction": 0.575
+          "trials": 45,
+          "fraction": 0.5625
         },
         "by_host_noise": {
           "held-era SMA scatter < 0.1 km": {
             "trials": 64,
             "hosts": 57,
-            "extra_events": 51,
-            "extra_free_burns": 25,
-            "extras_per_trial": 0.797,
-            "extras_median_per_trial": 0.5
+            "extra_events": 26,
+            "extra_free_burns": 1,
+            "extras_per_trial": 0.406,
+            "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
             "trials": 16,
             "hosts": 12,
-            "extra_events": 144,
-            "extra_free_burns": 141,
-            "extras_per_trial": 9.0,
-            "extras_median_per_trial": 9.5
+            "extra_events": 11,
+            "extra_free_burns": 8,
+            "extras_per_trial": 0.688,
+            "extras_median_per_trial": 1.0
           }
         }
       }
@@ -777,39 +774,27 @@
       "host_sma_scatter_km": 0.2473
     },
     {
-      "trial": 846,
-      "norad_id": 38070,
-      "error_days": 39,
-      "host_sma_scatter_km": 0.2463
-    },
-    {
-      "trial": 852,
-      "norad_id": 42709,
-      "error_days": -24,
-      "host_sma_scatter_km": 0.1758
+      "trial": 868,
+      "norad_id": 38245,
+      "error_days": 23,
+      "host_sma_scatter_km": 0.1814
     },
     {
       "trial": 919,
       "norad_id": 61503,
-      "error_days": 5,
+      "error_days": 29,
       "host_sma_scatter_km": 0.1284
-    },
-    {
-      "trial": 959,
-      "norad_id": 57045,
-      "error_days": 36,
-      "host_sma_scatter_km": 0.0768
     }
   ],
   "belt_held_stretches": {
     "what": "every event the current code dates inside a candidate held stretch, 45 days trimmed from each end, before hosts are chosen; an upper bound on false events on held satellites",
     "stretches": 594,
     "object_years": 2131.937,
-    "events": 58,
-    "per_object_year": 0.0272,
+    "events": 54,
+    "per_object_year": 0.0253,
     "by_type": {
-      "relocation_start": 12,
-      "relocation_end": 12,
+      "relocation_start": 10,
+      "relocation_end": 10,
       "ns_keeping_stop": 34
     },
     "list": [
@@ -1013,18 +998,6 @@
       },
       {
         "norad_id": 35755,
-        "event_type": "relocation_start",
-        "date": "2022-03-23",
-        "signal": "mode_change"
-      },
-      {
-        "norad_id": 35755,
-        "event_type": "relocation_end",
-        "date": "2022-03-24",
-        "signal": "mode_change"
-      },
-      {
-        "norad_id": 35755,
         "event_type": "relocation_end",
         "date": "2022-03-29",
         "signal": "rate_entry"
@@ -1046,18 +1019,6 @@
         "event_type": "relocation_start",
         "date": "2023-11-11",
         "signal": "rate_exit"
-      },
-      {
-        "norad_id": 37237,
-        "event_type": "relocation_start",
-        "date": "2023-11-18",
-        "signal": "mode_change"
-      },
-      {
-        "norad_id": 37237,
-        "event_type": "relocation_end",
-        "date": "2023-11-21",
-        "signal": "mode_change"
       },
       {
         "norad_id": 37237,

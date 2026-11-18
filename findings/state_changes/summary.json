@@ -1,5 +1,5 @@
 {
-  "commit": "480e66b26e3540efe2753fa4aad5424895674113",
+  "commit": "74ee02821267458ea16b62129acd4af31c4193f3",
   "dirty": false,
   "geo_dir_object_count": 1804,
   "skipped_not_by_rule": [],
@@ -12,41 +12,41 @@
   ],
   "objects_processed": 1799,
   "objects_with_events": 301,
-  "events": 777,
+  "events": 764,
   "events_by_type": {
     "relocation_start": 240,
-    "relocation_end": 341,
+    "relocation_end": 339,
     "graveyard": 83,
-    "keeping_stop": 22,
-    "free_burn": 32,
+    "keeping_stop": 19,
+    "free_burn": 24,
     "ns_keeping_stop": 59
   },
   "events_by_type_and_year": {
     "relocation_start": {
       "2021": 40,
-      "2022": 40,
-      "2023": 57,
+      "2022": 39,
+      "2023": 56,
       "2024": 48,
-      "2025": 55
+      "2025": 57
     },
     "graveyard": {
-      "2021": 17,
+      "2021": 16,
       "2022": 11,
-      "2023": 20,
+      "2023": 21,
       "2024": 15,
       "2025": 20
     },
     "keeping_stop": {
-      "2021": 2,
-      "2022": 7,
+      "2021": 3,
+      "2022": 8,
       "2023": 2,
-      "2024": 3,
-      "2025": 8
+      "2024": 2,
+      "2025": 4
     },
     "relocation_end": {
       "2021": 65,
-      "2022": 60,
-      "2023": 85,
+      "2022": 59,
+      "2023": 84,
       "2024": 63,
       "2025": 68
     },
@@ -59,13 +59,13 @@
     },
     "free_burn": {
       "2021": 0,
-      "2022": 1,
-      "2023": 6,
-      "2024": 15,
-      "2025": 10
+      "2022": 0,
+      "2023": 5,
+      "2024": 10,
+      "2025": 9
     }
   },
-  "events_csv_bytes": 77837,
+  "events_csv_bytes": 76620,
   "events_csv_committed": true,
-  "run_seconds": 387.2
+  "run_seconds": 400.0
 }

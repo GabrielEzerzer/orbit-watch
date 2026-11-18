@@ -1,6 +1,6 @@
 {
-  "commit": "480e66b26e3540efe2753fa4aad5424895674113",
-  "dirty": false,
+  "commit": "74ee02821267458ea16b62129acd4af31c4193f3",
+  "dirty": true,
   "events_file": "geo_events.csv",
   "window_days": 45,
   "dev": {
@@ -62,11 +62,11 @@
   "test": {
     "events": 20,
     "scored": 20,
-    "caught": 17,
-    "recall": 0.85,
+    "caught": 18,
+    "recall": 0.9,
     "median_abs_error_days": 5.0,
-    "p90_abs_error_days": 13.4,
-    "same_type": 16,
+    "p90_abs_error_days": 14.0,
+    "same_type": 17,
     "by_event_type": {
       "relocation_start": {
         "events": 4,
@@ -89,11 +89,11 @@
       "graveyard": {
         "events": 10,
         "scored": 10,
-        "caught": 8,
-        "recall": 0.8,
+        "caught": 9,
+        "recall": 0.9,
         "median_abs_error_days": 7.0,
-        "p90_abs_error_days": 13.3,
-        "same_type": 8
+        "p90_abs_error_days": 14.600000000000001,
+        "same_type": 9
       },
       "ns_keeping_stop": {
         "events": 0,
