@@ -115,7 +115,7 @@
       "description": "Draws the fixed 50-event audit sample from the belt's state changes, charts each sampled event, or checks and summarises the hand verdicts.",
       "command": "python -m harness.evals.state_audit sample|chart|summary [--out DIR]",
       "inputs": ["findings/state_audit/events.csv, the belt list as audited (from #55)", "groundtruth/splits.json and groundtruth/geo_events.csv, to leave out holdout and test-event objects", "for chart: $ORBIT_WATCH_DATA/geo/<norad>.tle, manifest.json and $ORBIT_WATCH_DATA/geo_modes/segments.csv", "for summary: OUT/audit.csv with the hand verdicts"],
-      "outputs": ["sample: the sample as CSV on stdout", "chart: one PNG per event and digests.json in $ORBIT_WATCH_DATA/state_audit", "summary: OUT/summary.json (default findings/state_audit)"],
+      "outputs": ["sample: the sample as CSV on stdout", "chart: one PNG per event, with neighbouring events from the audited list, and digests.json in OUT (default $ORBIT_WATCH_DATA/state_audit)", "summary: OUT/summary.json (default findings/state_audit)"],
       "test": "tests/test_state_audit.py"
     },
     {

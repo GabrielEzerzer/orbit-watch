@@ -1,5 +1,5 @@
-# Hand audit of the belt's dated state changes: a fixed, stratified sample of findings/state_changes/events.csv,
-# one chart and one numeric digest per sampled event from its element sets, and a summary of the hand verdicts.
+# Hand audit of the belt's dated state changes: a fixed, stratified sample of the belt list as audited
+# (findings/state_audit/events.csv), one chart and digest per sampled event, and a summary of the hand verdicts.
 
 from __future__ import annotations
 
@@ -229,7 +229,8 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Hand audit of the belt's dated state changes: draw the fixed sample, "
                                 "chart each sampled event, or summarise the hand verdicts.")
     p.add_argument("step", choices=("sample", "chart", "summary"))
-    p.add_argument("--out", type=Path, default=OUT, help="folder for audit.csv and summary.json")
+    p.add_argument("--out", type=Path, help="folder for audit.csv and summary.json (default findings/state_audit), "
+                   "or for the charts and digests.json (default $ORBIT_WATCH_DATA/state_audit)")
     a = p.parse_args(argv)
     sample = draw(read_events(), excluded_objects())
     if a.step == "sample":
@@ -238,17 +239,19 @@ def main(argv: list[str] | None = None) -> int:
         w.writerows(sample)
         return 0
     if a.step == "summary":
-        rows = read_events(a.out / "audit.csv")
+        out = a.out or OUT
+        rows = read_events(out / "audit.csv")
         problems = check_rows(rows, sample)
         if problems:
             print("\n".join(problems), file=sys.stderr)
             return 1
         summary = {"sample_seed": SEED, **summarise(rows), "public_sources": PUBLIC_SOURCES}
-        (a.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
+        (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
         print(json.dumps(summary, indent=2))
         return 0
     geo = data_dir() / "geo"
-    scratch = data_dir() / "state_audit"
+    scratch = a.out or data_dir() / "state_audit"
+    scratch.mkdir(parents=True, exist_ok=True)
     names = _names(geo)
     every = read_events()
     digests = []
