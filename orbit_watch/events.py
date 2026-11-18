@@ -36,6 +36,7 @@ STEP_REACH_DAYS = 5.0
 BURN_LOOKBACK_DAYS = 60.0
 MIN_BURNS = 3
 CLIMB_DAYS = 15.0
+CLIMB_GAP_DAYS = 30.0
 FREE_BURN_MIN_M = 1000.0
 EDGE_DAYS = 30.0
 NS_ANCHOR_DAYS = 60.0
@@ -385,11 +386,25 @@ def _departure(tr: Track, a: Segment, b: Segment, limit: float,
     return missed, "burn_gap", float(tr.days[fast[0]]) if len(fast) else None
 
 
+def _climb_burns(found: Sequence[Event], burn_days: np.ndarray, steps: np.ndarray) -> set[float]:
+    out: set[float] = set()
+    big = np.sort(burn_days[np.abs(steps) >= FREE_BURN_MIN_M])
+    for g in (e for e in found if e.event_type == "graveyard"):
+        last = _day(g.date)
+        for day in big[big > last]:
+            if day - last > CLIMB_GAP_DAYS:
+                break
+            out.add(float(day))
+            last = day
+    return out
+
+
 def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_days: np.ndarray,
                 steps: np.ndarray) -> list[Event]:
     taken = np.array([_day(e.date) for e in found])
     moves = sorted((e for e in found if e.event_type in (*DEPARTURES, "relocation_end")), key=lambda e: e.date)
     open_from = _day(moves[-1].date) if moves and moves[-1].event_type == "relocation_start" else np.inf
+    climb = _climb_burns(found, burn_days, steps)
     out = []
     for k, seg in enumerate(det):
         if seg.mode in HELD or not any(s.mode in HELD for s in det[:k]) or any(s.mode in HELD for s in det[k:]):
@@ -397,7 +412,7 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
         for day, step in zip(burn_days, steps):
             if (_day(seg.start) <= day < _day(seg.end) and abs(step) >= FREE_BURN_MIN_M
                     and tr.days[-1] - day >= HOLD_MIN_DAYS
-                    and day < open_from
+                    and day < open_from and float(day) not in climb
                     and not (np.abs(taken - day) <= CLIMB_DAYS).any()):
                 when = GRID_START + timedelta(days=float(day))
                 out.append(Event(tr.norad_id, "free_burn", when, "a_step", round(float(step), 1),

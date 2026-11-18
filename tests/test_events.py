@@ -297,3 +297,14 @@ def test_a_burn_during_a_relocation_still_under_way_at_the_end_of_the_data_is_no
     monkeypatch.setattr(E, "segments", lambda tr: [held(0, 90, 9.98, 10.02), held(90, 150, 9.98, 25.0, "drifting")])
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([120.0]), np.array([20000.0]))
     assert [f.event_type for f in found] == ["relocation_start"]
+
+
+def test_burns_that_carry_on_a_graveyard_climb_weeks_apart_are_not_free_burns():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    start = EDGES[5] + 7.0
+    lon, rate = retired_track(days, start, 4)
+    up = np.clip((days - start) / 10.0, 0.0, 1.0) * 200.0
+    up = up + np.where(days >= start + 25.0, 60.0, 0.0) + np.where(days >= start + 50.0, 60.0, 0.0)
+    drift = -1.5 * up / 42164.0 * 360.98
+    found = E.state_changes(element_sets(days, lon + np.cumsum(drift) * 0.25, rate + drift))
+    assert [f.event_type for f in found] == ["graveyard"]
