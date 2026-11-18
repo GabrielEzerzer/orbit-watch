@@ -99,6 +99,7 @@ Download rules:
 | GEO state changes (2 to 18 min; measured runs took 145 to 1,083 s) | `python -m orbit_watch.jobs.state_changes` | `$ORBIT_WATCH_DATA/state_changes/events.csv`, `findings/state_changes/` |
 | GEO state changes evaluation | `python -m harness.evals.state_changes [--split dev\|all]`; `--final` adds the holdout Fengyun false-event check, run once | `findings/state_changes/eval_<split>.json` and `.csv`, `false_events_final.json` |
 | GEO state changes planted-change test (about 12 min) | `python -m harness.evals.state_injection` | `findings/state_injection/summary.json` and `trials.csv` |
+| Hand audit of belt state changes | `python -m harness.evals.state_audit sample\|chart\|summary` | the sample on stdout; charts in `$ORBIT_WATCH_DATA/state_audit/`; `findings/state_audit/summary.json` |
 
 Tools:
 
@@ -193,7 +194,7 @@ these gates instead:
 | The same count on the holdout Fengyun-2F and Fengyun-4A (`--final`, run once) | measured, not yet gated: 0 events over 2.15 object-years (Fengyun-2F 0 in 1.01, Fengyun-4A 0 in 1.14), from the first log row in 2021 to the last in January and February 2022; `findings/state_changes/false_events_final.json` |
 | Planted changes in held satellites (`harness/evals/state_injection.py`) | measured, not yet gated: relocations at 0.1-3 deg/day caught at both ends in 0.85 (dev) and 0.84-0.85 (test) of trials, median date error 0 days; at 0.02-0.1 deg/day 0.71-0.77, p90 error 5-23 days; graveyard climbs 1.00; keeping stops 0.78-0.85, median error 9 days; free burns after a stop 0.61-0.63. False events on untouched held stretches: 0 in 2,131.9 object-years before host selection |
 | Recall and dating error on a cited list of known GEO events | dated state changes: dev 13/13, median date error 2 days; test 17/20, median 3 days (scored once). The mode layer alone: 26/33, median 11.5 days |
-| A hand audit of about 50 events from across the belt | not done |
+| A hand audit of about 50 events from across the belt | done: 42 of 50 real with the right type; see "Hand audit of belt state changes" |
 
 GEO north-south recall is reported, not gated: train 6/17 = 0.353, dev 4/14 = 0.286. The
 inclination vector's job is to date when north-south keeping stops, not to catch each burn. Scores are in `harness/evals/results/` (`<split>-inc-vector.json`, with
@@ -431,8 +432,67 @@ is left over. A move made entirely inside a gap in the element sets is dated to 
 the gap at both ends, as Meteosat-11 (40732) is in April 2023. A satellite that
 arrives in the last 10 days of the data is not seen as held, so its first trim burn can read as a
 `free_burn`. A climb by an object that was already free is a `free_burn`, not a `graveyard` move.
-North-south keeping stops are still dated at the window boundary. No hand audit of belt events
-has been done.
+North-south keeping stops are still dated at the window boundary, which the hand audit below
+finds is months after the last north-south burn.
+
+### Hand audit of belt state changes (`harness/evals/state_audit.py`, `findings/state_audit/`)
+
+The scored lists above are small and lean on well-documented events, so 50 events from the belt
+list were judged by hand. The verdicts are judgments read from each object's element sets, not
+cited ground truth: an event is `real` if the change it describes shows in the sets (whatever its
+date error), `artefact` if nothing changed at that date (bad sets, free drift read as a hold, or a
+routine keeping burn), `wrong_type` if a real change has another type, and `duplicate` if another
+event already covers it.
+
+The sample is fixed by `SEED` in `harness/evals/state_audit.py`. It leaves out the holdout objects
+and every object with a test-split event in `groundtruth/geo_events.csv` (5 holdout objects and 17
+with test-split events, 75 belt events in all), takes at least 5 events of each type and shares the rest in proportion to each type's count, then
+draws within each type with a seeded generator. Each event was charted over 60 days either side
+(mean longitude, drift rate, semi-major axis and the inclination vector, with the raw and
+filtered sets, neighbouring events and mode segments) and judged on the same checklist: did the
+change happen, of this type, and when. `findings/state_audit/audit.csv` holds one row per event
+with the estimated true date, `date_error_days` (event date minus estimated date) and one line of
+evidence; `summary.json` holds the counts.
+
+| type | sampled | real | artefact | duplicate | wrong type |
+|---|---|---|---|---|---|
+| relocation_start | 10 | 10 | 0 | 0 | 0 |
+| relocation_end | 13 | 13 | 0 | 0 | 0 |
+| graveyard | 7 | 7 | 0 | 0 | 0 |
+| keeping_stop | 6 | 5 | 1 | 0 | 0 |
+| ns_keeping_stop | 7 | 5 | 2 | 0 | 0 |
+| free_burn | 7 | 2 | 3 | 2 | 0 |
+| all | 50 | 42 | 6 | 2 | 0 |
+
+Of the 42 real events, 41 could be dated from the sets. Leaving out north-south stops, the median
+error is 1 day and 27 of 36 are within 3 days. Of the 9 dated more than 3 days off, 8 are late,
+mostly where the change falls in a gap in the sets (dated at the gap's end, 4 to 15 days)
+or where keeping stops on a burn cycle slower than the burn-gap rule needs (25 and 46 days). For a
+change inside a gap, the estimate runs the first set after the gap back at its drift rate as if
+the burn were instant, so it is the latest plausible start and those errors are lower bounds. The
+5 real north-south stops are dated 82 to 114 days late (median 108): a stop is dated at the start
+of the first 30-day window whose median inclination is above 0.3 deg, which can be up to about 15
+days either side of the crossing, and the inclination takes about 100 days to grow from the kept
+value to 0.3 deg. Free burns are the weakest type. Two are steps inside a graveyard climb already
+listed: a burn is left out only within 15 days of a listed event (`CLIMB_DAYS`), and these come 22
+days (Spaceway 2) and 21 days (Optus D2) after it. One is a run of bad sets over about 1.5 days
+that relaxes back, which a one-set outlier filter would not remove. Two are routine east-west
+burns of kept inclined satellites (BeiDou 7, IRNSS 1D), whose free burns all follow a false
+earlier departure.
+
+Public sources. Four sampled rows are corroborated by public pages, listed with quotes in
+`summary.json` under `public_sources`:
+
+- Intelsat 33E (41748), keeping_stop 2024-10-29: "broke into at least 57 pieces on 19 October
+  2024" (https://en.wikipedia.org/wiki/Intelsat_33e). This matches the estimate of 2024-10-19.
+- COMS 1 (36744), ns_keeping_stop 2021-07-26: "COMS concluded operations in April 2021"
+  (https://www.eoportal.org/satellite-missions/coms-1). This matches the estimate of 2021-04-03.
+- Astra 2D (26638), graveyard 2023-01-24: "In early January 2023, Astra 2D was put into a
+  graveyard orbit" (https://space.skyrocket.de/doc_sdat/astra-2d.htm), while Wikipedia gives
+  decommissioning on 27 January 2023 (https://en.wikipedia.org/wiki/Astra_2D). The estimate of
+  2023-01-14 sits between the two.
+- Astra 5B (39617), relocation_end 2023-07-19: "the satellite had moved to 23.5"
+  (https://en.wikipedia.org/wiki/Astra_5B), in July 2023. This matches the estimate to the month.
 
 #### Planted-change test (`harness/evals/state_injection.py`, `findings/state_injection/`)
 

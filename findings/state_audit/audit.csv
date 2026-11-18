@@ -1,0 +1,51 @@
+norad_id,name,event_type,date,verdict,correct_type,est_date,date_error_days,evidence
+26388,TDRS 8,relocation_start,2023-07-21,real,,2023-07-19,2,"drift -0.016 to +2.88 deg/day and a -224 km step; last held set 07-18, the first set dated 07-21 is already mid-burn at +1.34 deg/day"
+26451,INTELSAT 9 (PAS 9),relocation_start,2024-02-06,real,,2024-01-22,15,14.9-day gap from 01-22; first set after it at -43.77 deg moving 0.405 deg/day back-extrapolates to 01-22; a -32 km step; dated at the gap end
+27718,ASIASAT 4,relocation_start,2022-01-06,real,,2022-01-05,1,drift +0.005 to +0.99 deg/day and a -76 km step on 01-05; move from 38.2 E to 147.6 E
+29520,XM-4,relocation_start,2023-01-18,real,,2023-01-18,0,drift -0.013 to +1.13 deg/day over 6 days and a -88 km step from 01-18; move from -85.1 to -39.0 deg
+32258,WGS F1 (USA 195),relocation_start,2024-05-22,real,,2024-05-22,0,burn on 05-22 04:56 to -1.93 deg/day and +150 km; move from 6.0 E to -42.5 deg where it holds again
+36108,WGS F3 (USA 211),relocation_start,2021-11-02,real,,2021-11-02,0,first burn on 11-02 raises a by 4.6 km (drift -0.07 deg/day); main burns from 11-06 add 230 km
+36108,WGS F3 (USA 211),relocation_start,2025-08-07,real,,2025-08-06,1,drift -0.012 to -0.517 deg/day and a +39.5 km step on 08-06; move from 86.0 E to 78.3 E
+41103,CHINASAT 1C,relocation_start,2022-08-26,real,,2022-09-10,-15,free drift of about -0.03 deg/day from the last trim on 07-28 tripped the rate test; the first move burn is 09-10/11 (drift -0.027 to -0.143 deg/day and +9 km); move 81.4 E to 78.2 E
+58990,INSAT 3DS,relocation_start,2024-07-09,real,,unclear,unclear,held at 83.02 E to 06-14 and at 82.11 E from 07-09 with a 20-day gap in between and an inclination-vector step 06-14..06-18; start and end both fall in the gap
+62259,SIRIUS XM-9,relocation_start,2025-01-11,real,,2025-01-11,0,held at -88.0 deg from 12-19 to 01-10; burn on 01-10/11 to +0.15..0.37 deg/day and -13 km; arrives at -85.19 deg about 01-22
+25639,SKYNET 4E,graveyard,2025-12-15,real,,2025-12-05,10,gap from 12-03; first set after it at -47.57 deg moving -4.48 deg/day back-extrapolates to 12-05; +353 km; dated at the gap end
+25954,AMC-4 (GE-4),graveyard,2023-02-11,real,,2023-02-11,0,burn on 02-11 between 09h and 17h to -4.1 deg/day; +323 km
+26638,ASTRA 2D,graveyard,2023-01-24,real,,2023-01-14,10,gap 01-12..01-24; the 01-24 set at +360 km moving -4.57 deg/day back-extrapolates to 01-14; a stale old-orbit set 4 h later (24.1 E and a near 42164 km) survived the filter
+26766,INTELSAT 10 (PAS 10),graveyard,2025-07-11,real,,2025-07-10,1,burn on 07-10 starts a climb to +340 km
+28542,XTAR-EUR,graveyard,2025-08-15,real,,2025-08-15,0,burn between 08-14 06h and 08-15 06h: +16 km then +362 km
+28626,XM-3,graveyard,2025-10-17,real,,2025-10-17,0,a first lowered by 180 km (drift +2.4 deg/day) then raised to +374 km from 10-17
+41103,CHINASAT 1C,graveyard,2023-05-26,real,,2023-05-26,0,"continuous 30-day climb to +314 km from 05-26; the object's free_burn events on 06-11, 06-17 and 06-20 are steps inside this climb"
+25258,UFO 8 (USA 138),keeping_stop,2022-05-24,real,,2022-04-08,46,"last two burns 2022-01-13 and 2022-03-11 (57-day cycle), none after; burn-gap dating needs 3 burns in 60 days so it fell back to the rate test, 46 days late"
+28884,GALAXY 15,keeping_stop,2022-08-10,real,,2022-08-10,0,weekly burns until 08-06 then smooth drift; last burn plus half the cycle is 08-10
+32478,EXPRESS AM-33,keeping_stop,2022-09-11,real,,2022-08-17,25,held at -11.1 deg since Aug 2021; a last burn of about -1.2 km on 08-17 then free libration toward 143.5 E; the 34.7 km size is the libration's swing in a
+37150,CHINASAT 6A,keeping_stop,2021-12-20,real,,2021-12-20,0,"last burn on 12-19, graveyard climb from 2022-01-14 as a separate event"
+41748,INTELSAT 33E,keeping_stop,2024-10-29,real,,2024-10-19,10,"last held set 10-19 18:48; after the gap a is 29 km lower, drift +0.382 deg/day and e 0.0003 to 0.0023, matching the reported break-up of 19 Oct 2024; keeping_stop fits"
+56372,GS-1,keeping_stop,2024-06-30,artefact,,,,drift rate falls smoothly from -0.005 (06-01) to -0.034 (06-30) and -0.039 (07-05) deg/day with no burn in 120 days; the hold at 89.4 E after the 05-26 arrival was free drift
+27691,USA 167,relocation_end,2024-08-13,real,,2024-08-09,4,last moving set 08-09 14:11 at -121.664 deg and 0.128 deg/day; gap to 08-13; dated at the gap end
+27954,HORIZONS 1 (GALAXY 13),relocation_end,2023-11-17,real,,2023-11-16,1,drift stops at -150.0 deg on 11-16
+39617,ASTRA 5B,relocation_end,2023-07-19,real,,2023-07-19,0,move 31.5 E to 23.5 E ends 07-19; the paired relocation_start 07-11 sits at the end of a 07-05..07-11 gap and back-extrapolates about 6 days earlier
+42070,ECHOSTAR 23,relocation_end,2022-05-12,real,,2022-05-12,0,"arrival at -109.9 deg, drift -0.49 to -0.01 deg/day"
+44910,SJ-20,relocation_end,2022-06-03,real,,2022-06-03,0,"arrival at 33.6 E, drift -1.99 to -0.016 deg/day"
+44910,SJ-20,relocation_end,2023-09-25,real,,2023-09-25,0,"arrival at 44.57 E, drift +0.51 to -0.03 deg/day"
+49817,STPSAT-6,relocation_end,2021-12-19,real,,2021-12-19,0,post-launch arrival at -111.65 deg
+54225,HOTBIRD 13G,relocation_end,2023-05-29,real,,2023-05-25,4,"drift stopped at 13.01 E by 05-26 19h; one off set on 05-28 21:10 (+0.214 deg/day, e 0.00084) broke the 5-day sustain"
+55686,CHINASAT-26,relocation_end,2023-03-05,real,,2023-03-04,1,"post-launch; a set on 03-03 at 125.0 E still moving -0.28 deg/day, held from 03-04"
+55970,SES 18,relocation_end,2023-06-09,real,,2023-06-08,1,arrival at -103.1 deg on 06-08
+62483,THURAYA 4,relocation_end,2025-05-15,real,,2025-05-13,2,post-launch; stop burn on 05-13
+63075,CHINASAT 10R,relocation_end,2025-06-15,real,,2025-06-12,3,gap from 06-12 13:50 (110.71 E moving -1.39 deg/day) to 06-15; arrival at 110.55 E; dated at the gap end
+63157,TJS-15,relocation_end,2025-08-27,real,,2025-08-26,1,gap from 08-24 (92.85 E moving 0.567 deg/day) to 08-27; arrival at 94.09 E; a later 0.3 deg shift about 09-29 has no event
+27954,HORIZONS 1 (GALAXY 13),ns_keeping_stop,2025-04-06,real,,2024-12-19,108,"last north-south burn 2024-12-05 (i 0.040 to 0.008, 26-30 day cycle); i grows linearly to 0.256 by 03-25 and passes 0.3 deg in April"
+32294,SKYNET 5B,ns_keeping_stop,2021-01-27,artefact,,,,"i already 0.223 deg and rising 0.0025 deg/day on 2021-01-01; no north-south burn in the data, so the stop predates the data and the event comes from the first windows"
+33275,AMC-21,ns_keeping_stop,2023-08-15,real,,2023-05-25,82,"i near 0.05 deg until the last steps on 05-17/05-20, then linear growth (0.063 on 05-28, 0.261 on 08-15)"
+36744,COMS 1,ns_keeping_stop,2021-07-26,real,,2021-04-03,114,"weekly north-south steps in March, last on 03-31; i 0.024 on 03-29 and 0.043 on 04-10, growing linearly after"
+37748,SES 3,ns_keeping_stop,2025-05-06,real,,2025-01-25,101,last north-south step 2025-01-21; i 0.011 to 0.036 by 02-04 and linear growth after; 19 sets in the window dropped by the clean
+38352,CHINASAT 2A,ns_keeping_stop,2025-04-06,real,,2024-12-16,111,"i 0.04-0.05 deg until steps on 12-12..12-14, then linear growth (0.057 by 12-22)"
+52940,WFOV (USA 332),ns_keeping_stop,2022-10-19,artefact,,,,new object arriving 2022-09-01; i grows linearly from 0.13 deg at arrival to 0.26 at the event with no north-south burn in the data; the inc label only reflected i under 0.3 deg
+27854,GALAXY 23 (TELSTAR 13),free_burn,2025-08-08,artefact,,,,"a run of about four bad sets over 1.5 days: a +371.32 km before, 373.43 on 08-07 20:04, then 372.12, 372.03 and 371.93 on 08-08 and 371.48 on 08-09, back to 371.31 on 08-10; no lasting step, 54 days into a free drift at -4.70 deg/day"
+28790,GALAXY 14,free_burn,2024-12-04,real,,2024-12-04,0,"burn between 12-03 19:50 and 12-04 09:32: a down 6.0 km, drift -4.561 to -4.486 deg/day, 91 days after the graveyard climb; later small raises follow"
+28790,GALAXY 14,free_burn,2025-01-18,real,,2025-01-18,0,"burn between 01-17 07:16 and 01-18 07:15: a up 2.5 km, drift -4.823 to -4.855 deg/day; one of a series of small raises after the graveyard"
+28903,SPACEWAY 2,free_burn,2024-11-24,duplicate,,,,"end of the graveyard climb that the 11-02 graveyard event already covers: a falls to -180 km then rises to +340 km on 11-24, the 60.7 km step is its last leg"
+32252,OPTUS D2,free_burn,2025-08-19,duplicate,,,,"a 3 km step (08-19 14:49 to 20:15) inside a multi-burn climb to +265 km; the climb starts with the free_burn on 07-29 (held at 161.03 E at -0.006 deg/day until 07-28 19:06, then -0.098 deg/day and +7 km), the real departure that the 07-08 graveyard row dates 21 days early; seven free_burn events fall in the climb"
+37256,BEIDOU 7,free_burn,2022-07-02,artefact,,,,"routine east-west burn of a kept inclined object at its longitude turn (103.7 E): drift -0.10 to +0.10 deg/day, a +8 to -7.7 km; repeated on 07-03 for the same burn"
+40547,IRNSS 1D,free_burn,2024-08-14,artefact,,,,"routine east-west burn of a kept inclined object at 111.75 E: drift -0.043 to +0.020 deg/day, a down 4.7 km, the same burn about every 37 days; free burns are possible only because of a false 2022-07-10 graveyard row, and all 17 follow it"
