@@ -365,6 +365,18 @@ def test_free_drift_after_an_arrival_read_as_a_short_hold_gives_no_keeping_stop(
     assert [f.event_type for f in found] == ["relocation_end"]
 
 
+def test_a_detected_burn_with_no_step_in_the_sets_or_a_split_detection_is_not_a_free_burn():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    start, fake, kick = EDGES[5] + 7.0, EDGES[8] + 3.0, EDGES[9] + 3.0
+    lon, rate = retired_track(days, start, 4)
+    up = np.clip((days - start) / 10.0, 0.0, 1.0) * 300.0 + np.where(days >= kick, 2.0, 0.0)
+    drift = -1.5 * up / 42164.0 * 360.98
+    tr = M.track(element_sets(days, lon + np.cumsum(drift) * 0.25, rate + drift))
+    found = E.events_from_track(tr, np.array([fake, kick - 0.7, kick]), np.array([-4300.0, 1900.0, 2000.0]))
+    assert [f.event_type for f in found] == ["graveyard", "free_burn"]
+    assert abs(E._day(found[1].date) - kick) <= 1
+
+
 def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():
     days = np.arange(0.0, EDGES[14], 0.25)
     start, kick = EDGES[5] + 7.0, EDGES[14] - 6.0

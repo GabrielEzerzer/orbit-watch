@@ -443,13 +443,34 @@ def _climb_burns(found: Sequence[Event], burn_days: np.ndarray, steps: np.ndarra
     return out
 
 
+def _seen_in_sets(tr: Track, day: float, burn_days: np.ndarray, picked: dict[float, float]) -> bool:
+    b = np.sort(burn_days)
+    k = int(np.flatnonzero(b == day)[0])
+    first, last = k, k
+    while first and b[first] - b[first - 1] <= MOVE_MERGE_DAYS:
+        first -= 1
+    while last + 1 < len(b) and b[last + 1] - b[last] <= MOVE_MERGE_DAYS:
+        last += 1
+    rivals = [abs(picked[float(d)]) for d in b[first:last + 1] if float(d) in picked]
+    if abs(picked[day]) < max(rivals):
+        return False
+    lo = max(b[first] - STEP_REACH_DAYS, b[first - 1] if first else -np.inf)
+    hi = min(b[last] + STEP_REACH_DAYS, b[last + 1] if last + 1 < len(b) else np.inf)
+    before = tr.semi_major_axis_km[(tr.days >= lo) & (tr.days < b[first])][-3:]
+    after = tr.semi_major_axis_km[(tr.days > b[last]) & (tr.days <= hi)][:3]
+    if not len(before) or not len(after):
+        return True
+    return abs(float(np.median(after) - np.median(before))) * 1000.0 >= FREE_BURN_MIN_M
+
+
 def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_days: np.ndarray,
                 steps: np.ndarray) -> list[Event]:
     taken = np.array([_day(e.date) for e in found])
     moves = sorted((e for e in found if e.event_type in (*DEPARTURES, "relocation_end")), key=lambda e: e.date)
     open_from = _day(moves[-1].date) if moves and moves[-1].event_type == "relocation_start" else np.inf
     climb = _climb_burns(found, burn_days, steps)
-    out = []
+    picked: dict[float, float] = {}
+    modes: dict[float, str] = {}
     for k, seg in enumerate(det):
         if seg.mode in HELD or not any(s.mode in HELD for s in det[:k]) or any(s.mode in HELD for s in det[k:]):
             continue
@@ -458,10 +479,14 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
                     and tr.days[-1] - day >= HOLD_MIN_DAYS
                     and day < open_from and float(day) not in climb
                     and not (np.abs(taken - day) <= CLIMB_DAYS).any()):
-                when = GRID_START + timedelta(days=float(day))
-                out.append(Event(tr.norad_id, "free_burn", when, "a_step", round(float(step), 1),
-                                 round(_lon_near(tr, day, True), 3), round(_lon_near(tr, day, False), 3),
-                                 seg.mode, seg.mode, when))
+                picked[float(day)], modes[float(day)] = float(step), seg.mode
+    out = []
+    for day, step in picked.items():
+        if _seen_in_sets(tr, day, burn_days, picked):
+            when = GRID_START + timedelta(days=day)
+            out.append(Event(tr.norad_id, "free_burn", when, "a_step", round(step, 1),
+                             round(_lon_near(tr, day, True), 3), round(_lon_near(tr, day, False), 3),
+                             modes[day], modes[day], when))
     return out
 
 
