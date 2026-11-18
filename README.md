@@ -6,8 +6,9 @@ built only from public orbital elements.
 ![Relocations and graveyard moves in the GEO belt, 2021-2025](docs/belt_relocations.png)
 
 Each line is one relocation from the list, drawn from its start date and longitude to its end date
-and longitude, the short way round; crosses mark graveyard moves where the climb starts. Redraw
-it with `python tools/relocation_chart.py`.
+and longitude. It goes the long way round when the drift rate implied by the start's `size` points
+that way and would cover more than 180° over the move; otherwise it goes the short way. Crosses
+mark graveyard moves where the climb starts. Redraw it with `python tools/relocation_chart.py`.
 
 ## What it does
 

@@ -1,6 +1,6 @@
 # Draw every relocation and graveyard move in the belt's state-change list as date against longitude.
-# A move is a line from its start to its end; one that crosses 180 deg is drawn the short way round,
-# split at the chart edge.
+# A move is a line from its start to its end, drawn the way its start's drift rate points when that
+# rate covers more than half the belt over the move, otherwise the short way; split at the chart edge.
 
 from __future__ import annotations
 
@@ -22,14 +22,22 @@ OUT = ROOT / "docs" / "belt_relocations.png"
 DATA_END = date(2025, 12, 31)
 SURFACE, INK, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
 MOVE, GRAVEYARD = "#2a78d6", "#eb6834"
+DRIFT_DEG_PER_DAY_PER_KM = 1.5 * 360.9856 / 42164.17
 
 
 def wrap180(x: float) -> float:
     return (x + 180.0) % 360.0 - 180.0
 
 
-def pieces(d0: date, lon0: float, d1: date, lon1: float) -> list[tuple[tuple[date, date], tuple[float, float]]]:
-    delta = wrap180(lon1 - lon0)
+def arc(lon0: float, lon1: float, size_km: float, days: int) -> float:
+    short = wrap180(lon1 - lon0)
+    drift = -DRIFT_DEG_PER_DAY_PER_KM * size_km
+    if drift * short < 0 and abs(drift) * days > 180.0:
+        return short - 360.0 if short > 0 else short + 360.0
+    return short
+
+
+def pieces(d0: date, lon0: float, d1: date, delta: float) -> list[tuple[tuple[date, date], tuple[float, float]]]:
     end = lon0 + delta
     if -180.0 <= end <= 180.0:
         return [((d0, d1), (lon0, end))]
@@ -74,7 +82,7 @@ def moves(rows: list[dict]) -> tuple[list, list, list]:
         else:
             d1 = date.fromisoformat(end["date"])
             lon1 = float(end["lon_after"] if end["event_type"] == "relocation_end" else end["lon_before"])
-        segments.extend(pieces(d0, lon0, d1, lon1))
+        segments.extend(pieces(d0, lon0, d1, arc(lon0, lon1, float(start["size"]), (d1 - d0).days)))
     return segments, arrivals, graveyards
 
 
@@ -116,8 +124,8 @@ def draw(rows: list[dict], out: Path) -> tuple[int, int, int]:
               labelcolor=INK)
     fig.suptitle("Relocations and graveyard moves in the GEO belt, 2021-2025", x=0.07, ha="left",
                  color=INK, fontsize=13, fontweight="bold")
-    ax.set_title("Each line runs from a move's start date and longitude to its end date and longitude. "
-                 "Moves across 180° are drawn the short way round.", loc="left", color=MUTED, fontsize=9.5)
+    ax.set_title("Each line runs from a move's start to its end, the way its drift points, or the short way "
+                 "when the drift is too slow to tell.", loc="left", color=MUTED, fontsize=9.5)
     fig.subplots_adjust(left=0.07, right=0.98, top=0.88, bottom=0.14)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, facecolor=SURFACE)
