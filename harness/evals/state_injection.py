@@ -41,6 +41,7 @@ TRIALS = {"keeping_stop": 160, "graveyard": 160, "free_burn": 160}
 TRUTH_TYPES = {"relocation": ("relocation_start", "relocation_end"), "keeping_stop": ("keeping_stop",),
                "graveyard": ("graveyard",), "free_burn": ("keeping_stop", "free_burn")}
 KINDS = ("relocation", *TRIALS)
+SPLITS = ("dev", "test")
 DISTANCE_DEG = (1.0, 20.0)
 DRIFT_DAYS = (2.0, 120.0)
 CLIMB_KM = (200.0, 400.0)
@@ -322,14 +323,19 @@ def draw(rng, kind: str, trial: int, hosts: Sequence[Host], last_day: dict[int, 
 
 
 def plan(hosts: Sequence[Host], last_day: dict[int, float]) -> list[Plant]:
-    by_split = {s: [h for h in hosts if h.split == s] for s in ("dev", "test")}
+    by_split = {s: [h for h in hosts if h.split == s] for s in SPLITS}
     jobs = [("relocation", b, TRIALS_PER_BIN) for b in RATE_BINS] + [(k, None, n) for k, n in TRIALS.items()]
     out: list[Plant] = []
     for j, (kind, rate_bin, n) in enumerate(jobs):
         rng = np.random.default_rng([SEED, j])
         for i in range(n):
-            out.append(draw(rng, kind, len(out), by_split[("dev", "test")[i % 2]], last_day, rate_bin))
+            out.append(draw(rng, kind, len(out), by_split[SPLITS[i % 2]], last_day, rate_bin))
     return out
+
+
+def chosen(plants: Sequence[Plant], candidates: dict[int, Host], splits: Sequence[str]
+           ) -> tuple[list[Plant], dict[int, Host]]:
+    return [q for q in plants if q.split in splits], {n: h for n, h in candidates.items() if h.split in splits}
 
 
 def _kicks_km(p: Plant, a_km: float) -> tuple[tuple[float, float], ...]:
@@ -440,9 +446,9 @@ def _bin_groups(rows: Sequence[dict]) -> dict[str, list[dict]]:
     return out
 
 
-def summarise(rows: Sequence[dict]) -> dict:
+def summarise(rows: Sequence[dict], splits: Sequence[str] = SPLITS) -> dict:
     out = {}
-    for split in ("dev", "test"):
+    for split in splits:
         rs = [r for r in rows if r["plant"].split == split]
         reloc = [r for r in rs if r["plant"].kind == "relocation"]
         kinds = {"relocation": {b: _group(g, TRUTH_TYPES["relocation"]) for b, g in _bin_groups(reloc).items()}}
@@ -474,13 +480,13 @@ def trial_row(r: dict) -> dict:
             "untouched_events": ";".join(f"{e['event_type']}@{e['date']}" for e in r["untouched_events"])}
 
 
-def table(summary: dict) -> str:
+def table(summary: dict, splits: Sequence[str] = SPLITS) -> str:
     def f(x):
         return "-" if x is None else f"{x:g}"
     head = (f"{'split':<5} {'kind':<12} {'bin':<18} {'truth':<16} {'n':>4} {'recall':>6} {'med|d|':>6} "
             f"{'p90|d|':>6} {'mistyp':>6} {'x_near':>6} {'x_late':>6}")
     lines = [head, "-" * len(head)]
-    for split in ("dev", "test"):
+    for split in splits:
         k = summary[split]["kinds"]
         groups = [("relocation", b, g) for b, g in k["relocation"].items()] + [(n, "", k[n]) for n in TRIALS]
         for kind, b, g in groups:
@@ -503,27 +509,30 @@ def main(argv: list[str] | None = None) -> int:
                                 "satellites, scored per kind and drift rate on dev and test hosts.")
     p.add_argument("--geo-dir", type=Path, help="folder of <norad>.tle files; default $ORBIT_WATCH_DATA/geo")
     p.add_argument("--out", type=Path, default=DEFAULT_OUT, help="folder for summary.json and trials.csv")
+    p.add_argument("--split", choices=("dev", "all"), default="all",
+                   help="dev runs and reports only dev hosts, with the same plants as all; all adds the test hosts")
     p.add_argument("--freeze", action="store_true",
                    help=f"rebuild the frozen host set in {HOSTS_FILE.name} from the current code and stop")
     a = p.parse_args(argv)
     geo_dir = a.geo_dir or data_dir() / "geo"
     if a.freeze:
         return freeze(geo_dir)
+    splits = SPLITS if a.split == "all" else ("dev",)
     candidates = {n: h for n, h in load_hosts().items() if (geo_dir / f"{n}.tle").is_file()}
+    hosts = [h for h in candidates.values() if h.quiet]
+    plants, candidates = chosen(plan(hosts, {h.norad_id: h.last_day for h in hosts}), candidates, splits)
+    hosts = [h for h in hosts if h.split in splits]
     with ProcessPoolExecutor() as pool:
         found = dict(zip(candidates, pool.map(host_events, [geo_dir / f"{n}.tle" for n in candidates], chunksize=4)))
-        hosts = [h for h in candidates.values() if h.quiet]
-        plants = plan(hosts, {h.norad_id: h.last_day for h in hosts})
         by_host = {h.norad_id: h for h in hosts}
         tasks = [(geo_dir / f"{n}.tle", by_host[n], [q for q in plants if q.norad_id == n])
                  for n in sorted({q.norad_id for q in plants})]
         rows = sorted((r for rs in pool.map(run_host, tasks) for r in rs), key=lambda r: r["plant"].trial)
 
-    summary = {**_commit(), "seed": SEED, "window_days": WINDOW_DAYS,
+    summary = {**_commit(), "seed": SEED, "window_days": WINDOW_DAYS, "splits": list(splits),
                "hosts": {"candidates": len(candidates), "quiet": len(hosts),
-                         "dev": sum(h.split == "dev" for h in hosts), "test": sum(h.split == "test" for h in hosts),
-                         "host_file": HOSTS_FILE.name},
-               **summarise(rows), "free_burns_caught_4_days_or_more_off": late_free_burn_matches(rows),
+                         **{s: sum(h.split == s for h in hosts) for s in splits}, "host_file": HOSTS_FILE.name},
+               **summarise(rows, splits), "free_burns_caught_4_days_or_more_off": late_free_burn_matches(rows),
                "belt_held_stretches": held_estimate(candidates, found)}
     a.out.mkdir(parents=True, exist_ok=True)
     (a.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
@@ -531,7 +540,7 @@ def main(argv: list[str] | None = None) -> int:
         w = csv.DictWriter(fh, fieldnames=TRIAL_FIELDS, lineterminator="\n")
         w.writeheader()
         w.writerows(trial_row(r) for r in rows)
-    print(table(summary))
+    print(table(summary, splits))
     print(f"wrote {a.out / 'summary.json'} and {a.out / 'trials.csv'}")
     return 0
 

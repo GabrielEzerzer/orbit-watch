@@ -104,7 +104,7 @@
       "name": "GEO state changes planted-change test",
       "kind": "eval",
       "description": "Plants relocations, keeping stops, graveyard climbs and free burns into the element sets of held GEO satellites with a fixed seed, and reports recall, date error and extra events per kind and drift rate on dev and test hosts, plus false events on the untouched stretches.",
-      "command": "python -m harness.evals.state_injection [--geo-dir DIR] [--out DIR] [--freeze]",
+      "command": "python -m harness.evals.state_injection [--geo-dir DIR] [--out DIR] [--split dev|all] [--freeze]",
       "inputs": ["GEO-DIR/manifest.json and GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "harness/evals/state_injection_hosts.json, the frozen host stretches (rebuilt by --freeze from groundtruth/splits.json, groundtruth/geo_events.csv and the current code)"],
       "outputs": ["OUT/summary.json (default findings/state_injection)", "OUT/trials.csv", "a score table on stdout"],
       "test": "tests/test_state_injection.py"
