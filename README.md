@@ -6,8 +6,8 @@ built only from public orbital elements.
 ![Relocations and graveyard moves in the GEO belt, 2021-2025](docs/belt_relocations.png)
 
 Each line is one relocation from the list, drawn from its start date and longitude to its end date
-and longitude; crosses mark graveyard moves at the slot they left. Redraw it with
-`python tools/relocation_chart.py`.
+and longitude, the short way round; crosses mark graveyard moves where the climb starts. Redraw
+it with `python tools/relocation_chart.py`.
 
 ## What it does
 
@@ -19,7 +19,7 @@ objects held out for scoring are left out, so the list covers 1,799 objects.
 |---|---|
 | `relocation_start` / `relocation_end` | left its slot / started to hold a new one |
 | `graveyard` | left its slot and raised its semi-major axis by 150 km or more, with no later hold |
-| `keeping_stop` | stopped east-west station keeping, with no climb and no later hold |
+| `keeping_stop` | stopped east-west station keeping; a later move or climb is its own row |
 | `ns_keeping_stop` | stopped correcting its inclination but kept its longitude |
 | `free_burn` | changed its semi-major axis by 1 km or more after its last hold |
 
@@ -57,10 +57,10 @@ Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/READM
 | Check | Result |
 |---|---|
 | Real GEO events from cited public sources, dev split | 13 of 13 found, median date error 2 days |
-| The same, test split (scored once per set of rules) | 18 of 20 found, median date error 5 days |
+| The same, test split | 18 of 20 found, median date error 5 days |
 | 500 relocations planted in held satellites' element sets | at 0.1-3°/day, both ends found in 148 of 150 (dev) and 147 of 150 (test), median date error 0 days; at 0.02-0.1°/day, 86 of 100 and 87 of 100 |
 | False events on satellites with published burn logs while on station | 0 in 6.46 object-years (QZS-3, QZS-6, Fengyun-2H) and 0 in 2.15 object-years on the held-out Fengyun-2F and Fengyun-4A |
-| 50 events drawn from the final list and judged by hand from the element sets, never used to choose a rule | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days |
+| 50 events drawn from a frozen copy of the list, judged by hand from the element sets; none of the 50 changed in the final list | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days |
 | ISS burns in 2024-2025, held out from tuning the step detector | all 35 covered NASA and Roscosmos burns found; 35 of 42 detections match a listed burn |
 
 Across the belt: **764 changes on 301 objects**: 242 relocation starts, 339 relocation ends, 83

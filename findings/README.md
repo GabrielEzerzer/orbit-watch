@@ -35,9 +35,10 @@ By type on test: relocation starts 3 of 4, relocation ends 5 of 5, graveyard mov
 (median error 7 days), the one keeping stop caught but typed as another departure.
 
 - **How often the test split was used.** The rules were built on the dev events, the first hand
-  audit and the dev planted trials. The test split was scored once at the end of each of three
-  sets of steps, and never used to choose a rule. One test object's belt row was looked at while
-  building step 14: the graveyard move of 28707, now dated 17 days before its cited date. Its
+  audit, a second hand reading of the belt list and the dev planted trials. The test split was
+  scored at six rule states while steps 6 to 18 were built, the last after the step 14 change
+  below, and its score was never used to choose a rule. One test object's belt row was looked at
+  while building step 14: the graveyard move of 28707, now dated 17 days before its cited date. Its
   date moved by one day as a result (from 18 to 17 days early), and its departure on 2021-11-09,
   a burn that lowers the orbit by about 50 km and starts an eastward drift, became a
   `relocation_start` instead of a `keeping_stop`.
@@ -67,7 +68,7 @@ semi-major axis.
 
 ## False events on satellites with burn logs
 
-Three train-split satellites have published burn logs: QZS-3, QZS-6 and Fengyun-2H. While a log
+Three train-split GEO satellites have published burn logs: QZS-3, QZS-6 and Fengyun-2H. While a log
 shows a satellite on station, every listed departure, arrival or keeping stop is false. A
 satellite counts as on station from its first log row to its last, clipped to its element sets
 and to 2021-2025. A gap between east-west burns longer than twice that log's median gap would
@@ -85,7 +86,8 @@ mean the log shows it away, and would be dropped; none is in 2021-2025.
 - The Fengyun logs end in January and February 2022 and have no stated provenance (see
   [groundtruth/README.md](../groundtruth/README.md)), so the count on them supports the QZSS count
   rather than standing alone.
-- The held-out count was run once, after everything else was fixed. It is measured, not gated.
+- The held-out count was run at four rule states, 0 events each time, and never used to choose a
+  rule. It is measured, not gated.
   `events.state_changes` builds its series without `final=True`, which refuses held-out objects,
   so the evaluation runs a copy of `events.burns` that passes it; a test checks that the copy
   gives the same events on mock data.
@@ -181,8 +183,9 @@ sets.
 54 events over 2,131.9 object-years (0.025 per object-year): 10 relocation pairs and 34 ends of
 north-south keeping. The relocation pairs are on 23553, 27168, 28626, 28885, 35755 (one move split
 into 2 pairs), 37237, 52903 (the element-set mix-up), 55912 and 58204; most are real moves that
-the 30-day windows hid when the hosts were chosen. This is an upper bound on false events on held
-satellites.
+the 30-day windows hid when the hosts were chosen. The 34 north-south stops are real: they were
+listed before too, about 100 days later and outside the stretch, and step 8 now dates them at the
+last inclination correction, inside it. This is an upper bound on false events on held satellites.
 
 **Extra events after a planted stop, by the host's held-era scatter** (median absolute change of
 the semi-major axis between consecutive sets in the host stretch):
@@ -236,9 +239,13 @@ each type's count.
 
 ### Out-of-sample audit
 
-`findings/state_audit_fresh/`: 50 events drawn from the final belt list (frozen in that folder's
-`events.csv`) with their own seed, leaving out every object in the first audit. This sample was
-never used to choose a rule.
+`findings/state_audit_fresh/`: 50 events drawn with their own seed from the belt list frozen in
+that folder's `events.csv`, leaving out every object in the first audit. One rule changed after
+the draw: step 14 now types the departures of 26719 and 28707 as `relocation_start` instead of
+`keeping_stop`, and 239 rows have a different `size`. Neither departure is in the sample (26719's
+sampled row is a later free burn), and none of the 50 sampled rows changed type or date in the
+final list. Two sampled objects were read while writing rules: HYLAS 1 (37237) for step 12, before
+the draw, and EUTE 28A (26719) for the step 14 change, after it.
 
 | type | sampled | real | artefact | duplicate | wrong type |
 |---|---|---|---|---|---|
@@ -304,7 +311,7 @@ burn by burn against them; a change has to pass these gates instead (scores in
 | GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
 | ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
 | At most 0.2 false state-change events per object-year on logged satellites | met: 0 in 6.459 object-years (see above) |
-| The same on the held-out Fengyun-2F and Fengyun-4A | measured, not gated: 0 in 2.15 object-years, run once |
+| The same on the held-out Fengyun-2F and Fengyun-4A | measured, not gated: 0 in 2.15 object-years at each of four rule states |
 | Planted changes in held satellites | measured, not gated (see above) |
 | Recall and dating error on cited GEO events | dev 13/13, median 2 days; test 18/20, median 5 days |
 | Hand audit of about 50 belt events | out of sample: 47 of 50 real with the right type |
@@ -325,7 +332,7 @@ burn by burn against them; a change has to pass these gates instead (scores in
 `orbit_watch.modes` labels 1,799 objects (the 1,804 less the 5 held out) per 30-day window.
 Year-end counts, transitions and the summary are in `findings/geo_modes/`; 1,477 objects keep one
 mode for the whole period, not counting undetermined windows. Known limits:
-[#29](../../../issues/29), [#30](../../../issues/30), [#32](../../../issues/32).
+[#21](../../../issues/21), [#28](../../../issues/28), [#29](../../../issues/29), [#30](../../../issues/30), [#32](../../../issues/32).
 
 No ESA classification for 2021-2025 could be reached, so there is no same-date check. The table
 puts ESA's counts for 1 January 2019 (*Classification of Geosynchronous Objects*, Issue 21.0, each

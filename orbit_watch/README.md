@@ -87,8 +87,9 @@ python -I -m orbit_watch.jobs.geo_belt satcat --out $ORBIT_WATCH_DATA/geo
 The `satcat` step needs the Space-Track variables. The manifest records the rule, each bundle's
 sha256 and per-object counts.
 
-The full run read 177,075,602 lines (88,220,159 pairs). The set holds 1,804 objects and 4,940,529
-TLEs; 136 objects have sets outside the region, such as a transfer orbit before arrival. 635,284
+The counts in this section and the next come from the full run and a one-off comparison; they
+are not committed. The full run read 177,075,602 lines (88,220,159 pairs). The set holds 1,804
+objects and 4,940,529 TLEs; 136 objects have sets outside the region, such as a transfer orbit before arrival. 635,284
 lines were rejected (the ones looked at are 68-character lines of analyst objects, 8xxxx), 785,425
 pairs restated an epoch already held with different lines, and 8 pairs failed `parse_tle`.
 
@@ -107,7 +108,7 @@ mean longitude carries on: an alternate orbit solution, not a burn, because a re
 return. When the sets on either side of a block are fewer than 3 or span less than a day, only the
 inclination vector is judged, so a block that is the start of a new orbit is kept. The rule was
 built on the detector evaluation's QZS-3 and QZS-6 false alarms; blocks are about 1.6% of sets on a
-100-object sample, and none of the logged QZS burns is lost.
+100-object sample (not committed), and none of the logged QZS burns is lost.
 
 ## Operating modes
 
@@ -115,7 +116,8 @@ built on the detector evaluation's QZS-3 and QZS-6 false alarms; blocks are abou
 of Geosynchronous Objects*, Issue 21.0, 2019): `controlled_lon_inc` (C1), `controlled_lon` (C2),
 `drifting` (D), `librating_75E` (L1), `librating_105W` (L2), `librating_both` (L3), `inclined`
 (I), `undetermined` (Ind) and `out_of_region`. The windows are merged into segments of one mode.
-`jobs.geo_modes` skips the 5 holdout objects, so 1,799 objects are classified.
+`jobs.geo_modes` skips the 5 holdout objects, so 1,799 objects are classified. The sample counts
+below that justify each threshold come from one-off runs whose outputs are not committed.
 
 - Classes and region: ESA Space Debris Office, *Classification of Geosynchronous Objects*, Issue
   21.0, 19 July 2019, GEN-DB-LOG-00270-OPS-SD, status at 1 January 2019, section 2 and table 1
@@ -125,8 +127,8 @@ of Geosynchronous Objects*, Issue 21.0, 2019): `controlled_lon_inc` (C1), `contr
   (ESA's GEO, IGO and EGO classes together). `inclined`: median inclination above 25 deg.
 - Longitude is the mean longitude (node + argument of perigee + mean anomaly - GMST), the quantity
   ESA tabulates. The sub-satellite longitude adds an inclined orbit's daily figure-eight, about
-  ±1 deg at 15 deg inclination. The drift rate of a set is 360 times its mean motion minus one
-  sidereal revolution per day, in deg/day.
+  ±1 deg at 15 deg inclination. The drift rate of a set is 360 times the difference between its mean
+  motion and one sidereal revolution per day (1.00273790935 rev/day), in deg/day.
 - A window needs at least 5 sets spanning at least 10 days; otherwise it is `undetermined`.
 - Held: the 5th-95th percentile longitude spread is at most 0.3 deg. ITU Radio Regulations
   No. 22.6 sets ±0.1 deg east-west for geostationary stations; 0.3 leaves room for TLE noise and
@@ -179,8 +181,8 @@ part of the climb (step 10): an object in a graveyard orbit can keep manoeuvring
 29155 do in 2024.
 
 The rules were built on the dev split of the cited events (`groundtruth/geo_events.csv`), the first
-hand audit and the dev trials of the planted-change test, and each was kept only if none of these
-got worse. The test split, the out-of-sample audit and the held-out Fengyun satellites were not
+hand audit and the dev trials of the planted-change test; steps 12 to 18 came from a second hand
+reading of the belt list after steps 6 to 11. Each was kept only if none of these got worse. The test split, the out-of-sample audit and the held-out Fengyun satellites were not
 used to choose a rule (see [findings/README.md](../findings/README.md)).
 
 1. **Snap-back blocks** are dropped first (see [Cleaning](#cleaning)).
@@ -236,7 +238,8 @@ used to choose a rule (see [findings/README.md](../findings/README.md)).
     and a departure, and every later keeping burn as a free burn. Inclined stretches are skipped,
     like undetermined ones.
 12. **One move, one pair.** An out-of-band run inside a held segment that starts before the
-    previous inner move has arrived is part of that move, not a second one.
+    previous inner move has arrived is part of that move, not a second one (JCSAT 12, 35755, and
+    37237 each lost a duplicate start).
 13. **A hold to the last set.** A short hold that lasts to the last element set is not followed
     by an empty stretch, so it gives no departure at the end of the data.
 14. **Burns after the departure.** A departure followed within 15 days by a burn of at least
