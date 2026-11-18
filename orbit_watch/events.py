@@ -238,6 +238,8 @@ def inner_moves(tr: Track, held: Segment) -> list[tuple[int, int]]:
     found = []
     for run in runs:
         first, last = run[0], run[-1]
+        if found and first < found[-1][1]:
+            continue
         before = calm & (tr.days >= tr.days[first] - MOVE_SIDE_DAYS) & (tr.days < tr.days[first])
         after = calm & (tr.days > tr.days[last]) & (tr.days <= tr.days[last] + MOVE_SIDE_DAYS)
         if before.sum() < MOVE_SIDE_SETS or after.sum() < MOVE_SIDE_SETS:
