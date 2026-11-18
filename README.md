@@ -98,7 +98,7 @@ Download rules:
 | GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir $ORBIT_WATCH_DATA/geo --out $ORBIT_WATCH_DATA/geo_modes` | `$ORBIT_WATCH_DATA/geo_modes/segments.csv`, `findings/geo_modes/` |
 | GEO state changes (2 to 18 min; measured runs took 145 to 1,083 s) | `python -m orbit_watch.jobs.state_changes` | `$ORBIT_WATCH_DATA/state_changes/events.csv`, `findings/state_changes/` |
 | GEO state changes evaluation | `python -m harness.evals.state_changes [--split dev\|all]`; `--final` adds the holdout Fengyun false-event check, run once | `findings/state_changes/eval_<split>.json` and `.csv`, `false_events_final.json` |
-| GEO state changes planted-change test (about 6 min) | `python -m harness.evals.state_injection` | `findings/state_injection/summary.json` and `trials.csv` |
+| GEO state changes planted-change test (about 12 min) | `python -m harness.evals.state_injection` | `findings/state_injection/summary.json` and `trials.csv` |
 
 Tools:
 
