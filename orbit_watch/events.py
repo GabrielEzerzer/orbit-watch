@@ -35,6 +35,7 @@ HOLD_MIN_DAYS = 10.0
 HOLD_MIN_SETS = 5
 STEP_REACH_DAYS = 5.0
 BURN_LOOKBACK_DAYS = 60.0
+SLOW_CYCLE_DAYS = 180.0
 MIN_BURNS = 3
 CLIMB_DAYS = 15.0
 CLIMB_GAP_DAYS = 30.0
@@ -319,13 +320,19 @@ def burns(records: Sequence[ElementSet]) -> tuple[np.ndarray, np.ndarray]:
     return np.array(days, dtype=float), np.array([d.step_m for d in dets], dtype=float)
 
 
-def _missed_burn_day(tr: Track, i: int, burns: np.ndarray) -> float | None:
+def _missed_burn_day(tr: Track, i: int, burns: np.ndarray, floor: float) -> float | None:
     if (np.abs(tr.rate[(tr.days >= tr.days[i]) & (tr.days <= tr.days[i] + SUSTAIN_DAYS)]) >= FAST_RATE).any():
         return None
-    recent = burns[(burns < tr.days[i]) & (burns >= tr.days[i] - BURN_LOOKBACK_DAYS)]
-    if len(recent) < MIN_BURNS:
+    before = np.sort(burns[burns < tr.days[i]])
+    recent = before[before >= tr.days[i] - BURN_LOOKBACK_DAYS]
+    if len(recent) >= MIN_BURNS:
+        return float(recent[-1] + np.median(np.diff(recent)) / 2.0)
+    slow = before[before >= max(floor, tr.days[i] - SLOW_CYCLE_DAYS)]
+    slow = slow[np.r_[True, np.diff(slow) > MOVE_MERGE_DAYS]] if len(slow) else slow
+    if len(slow) < 2:
         return None
-    return float(recent[-1] + np.median(np.diff(recent)) / 2.0)
+    cycle = slow[-1] - slow[-2]
+    return float(slow[-1] + cycle / 2.0) if cycle / 2.0 < tr.days[i] - slow[-1] <= 1.5 * cycle else None
 
 
 def _departure_type(tr: Track, held: Segment, rest: Sequence[Segment]) -> tuple[str, float]:
@@ -405,7 +412,7 @@ def _departure(tr: Track, a: Segment, b: Segment, limit: float,
     i = _departure_date(tr, a, b, limit)
     if i is None:
         return None, "", None
-    missed = _missed_burn_day(tr, i, burn_days)
+    missed = _missed_burn_day(tr, i, burn_days, _day(a.start))
     if missed is None:
         return _through_gap(tr, i, i, _held_rate(tr, a)), "rate_exit", None
     fast = np.flatnonzero((tr.days > tr.days[i]) & (tr.days < limit) & (np.abs(tr.rate) >= FAST_RATE))

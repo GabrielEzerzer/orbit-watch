@@ -326,6 +326,18 @@ def test_an_arrival_into_a_hold_that_lasts_to_the_last_set_gives_no_departure():
     assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
 
 
+def test_a_keeping_stop_on_a_slow_burn_cycle_is_dated_between_the_last_burn_and_the_missed_one(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    free = days >= 107.0
+    rate = np.where(free, 0.002 * (days - 107.0), rate)
+    lon = np.where(free, lon[free.argmax()] + 0.001 * (days - 107.0) ** 2, lon)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 120, 9.98, 10.02), held(120, 200, 9.98, 40.0, "drifting")])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 78.0]), np.array([1500.0, 1500.0]))
+    assert [f.event_type for f in found] == ["keeping_stop"]
+    assert found[0].signal == "burn_gap" and abs(E._day(found[0].date) - 107.0) <= 1
+
+
 def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():
     days = np.arange(0.0, EDGES[14], 0.25)
     start, kick = EDGES[5] + 7.0, EDGES[14] - 6.0
