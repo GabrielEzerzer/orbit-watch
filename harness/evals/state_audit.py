@@ -21,7 +21,7 @@ from orbit_watch.events import EVENT_TYPES, burns
 from orbit_watch.modes import GRID_START, track
 from orbit_watch.series import distinct_epochs
 from orbit_watch.sources import data_dir
-from orbit_watch.truth import GROUNDTRUTH, load_splits
+from orbit_watch.truth import GROUNDTRUTH, load_splits, read_event_rows
 
 REPO = Path(__file__).resolve().parents[2]
 EVENTS = REPO / "findings" / "state_changes" / "events.csv"
@@ -39,14 +39,12 @@ AUDIT_FIELDS = ["norad_id", "name", "event_type", "date", "verdict", "correct_ty
 def excluded_objects(splits_path: Path | None = None, geo_events: Path = GEO_EVENTS) -> set[int]:
     splits = load_splits() if splits_path is None else load_splits(splits_path)
     out = {n for n, e in splits.items() if e["split"] == "holdout"}
-    with open(geo_events, newline="", encoding="utf-8") as f:
-        out |= {int(r["norad_id"]) for r in csv.DictReader(f) if r["split"] == "test"}
+    out |= {int(r["norad_id"]) for r in read_event_rows(geo_events)[1] if r["split"] == "test"}
     return out
 
 
 def read_events(path: Path = EVENTS) -> list[dict]:
-    with open(path, newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+    return read_event_rows(path)[1]
 
 
 def quotas(available: dict[str, int], total: int = SAMPLE_SIZE, floor: int = MIN_PER_TYPE) -> dict[str, int]:
@@ -79,8 +77,7 @@ def _names(geo_dir: Path) -> dict[int, str]:
 
 
 def _segments(path: Path, norad: int) -> list[dict]:
-    with open(path, newline="", encoding="utf-8") as f:
-        return [r for r in csv.DictReader(f) if int(r["norad_id"]) == norad]
+    return [r for r in read_event_rows(path)[1] if int(r["norad_id"]) == norad]
 
 
 def _day(d: str | date) -> float:
