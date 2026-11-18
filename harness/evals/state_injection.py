@@ -27,6 +27,7 @@ from orbit_watch.sources import data_dir
 from orbit_watch.truth import load_splits, read_event_rows
 
 DEFAULT_OUT = Path("findings/state_injection")
+HOSTS_FILE = Path(__file__).with_name("state_injection_hosts.json")
 HELD = ("controlled_lon_inc", "controlled_lon")
 SEED = 20261118
 MIN_HOLD_DAYS = 120.0
@@ -52,7 +53,9 @@ WINDOW_SETS = 4
 JUMP_SIGMAS = 10.0
 GUARD_DAYS = 2.0
 MAX_DRAWS = 1000
-TRIAL_FIELDS = ["trial", "kind", "split", "norad_id", "rate_bin", "t0", "drift_rate", "drift_days", "size",
+NOISY_KM = 0.1
+NOISE_CAUGHT_DAYS = 4
+TRIAL_FIELDS = ["trial", "kind", "split", "norad_id", "host_sma_scatter_km", "rate_bin", "t0", "drift_rate", "drift_days", "size",
                 "truth", "extra_near", "extra_later", "untouched_days", "untouched_events"]
 
 
@@ -63,6 +66,9 @@ class Host:
     end: float
     mode: str
     split: str
+    last_day: float = 0.0
+    scatter_km: float = 0.0
+    quiet: bool = True
 
 
 @dataclass(frozen=True)
@@ -80,6 +86,7 @@ class Plant:
 
 @dataclass(frozen=True)
 class Smooth:
+    lon: np.ndarray
     lon_fit: np.ndarray
     lon_res: np.ndarray
     lon_slope: np.ndarray
@@ -120,6 +127,27 @@ def candidate_stretches(segs: Sequence[Segment], excluded: set[int]) -> dict[int
 
 def quiet(host: Host, found: Sequence[Found]) -> bool:
     return not any(host.start <= _day(f.date) <= host.end for f in found)
+
+
+def sma_scatter(tr: Track, host: Host) -> float:
+    sel = (tr.days >= host.start) & (tr.days < host.end)
+    return float(np.median(np.abs(np.diff(tr.semi_major_axis_km[sel])))) if sel.sum() > 1 else 0.0
+
+
+def host_record(h: Host) -> dict:
+    return {"norad_id": h.norad_id, "start": _date(h.start).isoformat(), "end": _date(h.end).isoformat(),
+            "mode": h.mode, "split": h.split, "quiet": h.quiet,
+            "last_set": (GRID_START + timedelta(days=h.last_day)).isoformat(), "sma_scatter_km": round(h.scatter_km, 4)}
+
+
+def read_host(r: dict) -> Host:
+    last = datetime.fromisoformat(r["last_set"])
+    return Host(int(r["norad_id"]), _day(date.fromisoformat(r["start"])), _day(date.fromisoformat(r["end"])),
+                r["mode"], r["split"], _day(last), float(r["sma_scatter_km"]), bool(r["quiet"]))
+
+
+def load_hosts(path: Path = HOSTS_FILE) -> dict[int, Host]:
+    return {h.norad_id: h for h in map(read_host, json.loads(path.read_text(encoding="utf-8"))["candidates"])}
 
 
 def held_estimate(candidates: dict[int, Host], found_by_norad: dict[int, Sequence[Found]]) -> dict:
@@ -170,7 +198,7 @@ def smooth(tr: Track, burn_days: np.ndarray, host: Host) -> Smooth:
         donor = np.flatnonzero(~near)[np.arange(int(near.sum())) % int((~near).sum())]
         lon_res[near], rate_res[near] = lon_res[donor], rate_res[donor]
     sel = (tr.days >= host.start) & (tr.days < host.end)
-    return Smooth(lon_fit, white(lon_res), slope, white(rate_res), float(np.median((rate_fit - slope)[sel])),
+    return Smooth(u, lon_fit, white(lon_res), slope, white(rate_res), float(np.median((rate_fit - slope)[sel])),
                   float(np.median(tr.semi_major_axis_km[sel])))
 
 
@@ -207,19 +235,29 @@ def free_path(t0: float, lon0: float, rate0: float, inc: float, kicks: Sequence[
     return np.interp(days, ts, ls), np.interp(days, ts, rs)
 
 
+def drift_base(d: np.ndarray, sm: Smooth, p: Plant) -> tuple[float, float]:
+    i = max(int(np.argmax(d >= p.t0)) - 1, 0)
+    lon0 = sm.lon_fit[i] + sm.lon_slope[i] * (p.t0 - d[i])
+    if p.kind != "relocation":
+        return lon0, float(sm.lon_slope[i])
+    return lon0, float((np.interp(p.t0 + p.days, d, sm.lon_fit) - lon0) / p.days)
+
+
 def plant(records: Sequence[ElementSet], tr: Track, sm: Smooth, p: Plant) -> list[ElementSet]:
     d = tr.days
+    after = d >= p.t0
+    lon0, rate0 = drift_base(d, sm, p)
+    delta, rate = np.zeros(len(d)), tr.rate.copy()
     if p.kind == "relocation":
-        delta = p.rate * np.clip(d - p.t0, 0.0, p.days)
-        rate = tr.rate + np.where((d >= p.t0) & (d < p.t0 + p.days), p.rate, 0.0)
+        sel = after & (d < p.t0 + p.days)
+        lam, lamdot = lon0 + (rate0 + p.rate) * (d[sel] - p.t0), rate0 + p.rate
+        delta[d >= p.t0 + p.days] = p.rate * p.days
     else:
-        after = d >= p.t0
+        sel = after
         i = max(int(np.argmax(after)) - 1, 0)
-        lon0 = sm.lon_fit[i] + sm.lon_slope[i] * (p.t0 - d[i])
-        lam, lamdot = free_path(p.t0, lon0, sm.lon_slope[i], float(tr.inclination[i]), p.kicks, d[after])
-        delta, rate = np.zeros(len(d)), tr.rate.copy()
-        delta[after] = lam - sm.lon_fit[after]
-        rate[after] = lamdot + sm.offset + sm.rate_res[after]
+        lam, lamdot = free_path(p.t0, lon0, rate0, float(tr.inclination[i]), p.kicks, d[after])
+    delta[sel] = lam + sm.lon_res[sel] - sm.lon[sel]
+    rate[sel] = lamdot + sm.offset + sm.rate_res[sel]
     out = []
     for r, dl, rt, d0 in zip(records, delta, rate, d):
         if d0 < p.t0:
@@ -313,6 +351,7 @@ def run_trial(records: Sequence[ElementSet], tr: Track, sm: Smooth, host: Host, 
     untouched = [f for f in free if any(a <= _day(f.date) < b for a, b in spans)]
     return {
         "plant": p,
+        "host": host,
         "results": [{"type": r.event.event_type, "date": r.event.date.isoformat(), "status": r.status,
                      "found_type": r.found.event_type if r.found else "", "error_days": r.error_days}
                     for r in results],
@@ -327,9 +366,15 @@ def object_segments(path: Path) -> list[Segment]:
     return segments(track(object_records(path)))
 
 
-def host_events(path: Path) -> tuple[list[Found], float]:
+def host_events(path: Path) -> list[Found]:
+    return state_changes(object_records(path))
+
+
+def freeze_host(task: tuple[Path, Host]) -> Host:
+    path, h = task
     records = object_records(path)
-    return state_changes(records), _day(records[-1].epoch)
+    return replace(h, last_day=_day(records[-1].epoch), scatter_km=sma_scatter(track(records), h),
+                   quiet=quiet(h, state_changes(records)))
 
 
 def run_host(task: tuple[Path, Host, list[Plant]]) -> list[dict]:
@@ -351,12 +396,41 @@ def _stats(rows: Sequence[dict], truth_type: str) -> dict:
             "mistyped": sum(r["found_type"] != truth_type for r in caught)}
 
 
+def _extras(r: dict) -> int:
+    return len(r["extra_near"]) + len(r["extra_later"])
+
+
 def _group(rows: Sequence[dict], types: Sequence[str]) -> dict:
     n = len(rows)
-    return {"trials": n, "by_truth_type": {t: _stats(rows, t) for t in types},
-            "extra_near_per_trial": round(sum(len(r["extra_near"]) for r in rows) / n, 3) if n else None,
-            "extra_later_per_trial": round(sum(len(r["extra_later"]) for r in rows) / n, 3) if n else None,
-            "extra_types": dict(Counter(t for r in rows for t in r["extra_near"] + r["extra_later"]))}
+    out = {"trials": n, "by_truth_type": {t: _stats(rows, t) for t in types},
+           "extra_near_per_trial": round(sum(len(r["extra_near"]) for r in rows) / n, 3) if n else None,
+           "extra_later_per_trial": round(sum(len(r["extra_later"]) for r in rows) / n, 3) if n else None,
+           "extra_median_per_trial": float(np.median([_extras(r) for r in rows])) if n else None,
+           "extra_types": dict(Counter(t for r in rows for t in r["extra_near"] + r["extra_later"]))}
+    if len(types) > 1:
+        both = sum(all(x["status"] == "caught" for x in r["results"]) for r in rows)
+        out["all_caught"] = {"trials": both, "fraction": round(both / n, 4) if n else None}
+    return out
+
+
+def noise_classes(rows: Sequence[dict]) -> dict:
+    out = {}
+    for name, keep in ((f"held-era SMA scatter < {NOISY_KM:g} km", lambda s: s < NOISY_KM),
+                       (f"held-era SMA scatter >= {NOISY_KM:g} km", lambda s: s >= NOISY_KM)):
+        rs = [r for r in rows if keep(r["host"].scatter_km)]
+        fb = [sum(t == "free_burn" for t in r["extra_near"] + r["extra_later"]) for r in rs]
+        out[name] = {"trials": len(rs), "hosts": len({r["host"].norad_id for r in rs}),
+                     "extra_events": sum(map(_extras, rs)), "extra_free_burns": sum(fb),
+                     "extras_per_trial": round(sum(map(_extras, rs)) / len(rs), 3) if rs else None,
+                     "extras_median_per_trial": float(np.median([_extras(r) for r in rs])) if rs else None}
+    return out
+
+
+def late_free_burn_matches(rows: Sequence[dict]) -> list[dict]:
+    return [{"trial": r["plant"].trial, "norad_id": r["plant"].norad_id, "error_days": x["error_days"],
+             "host_sma_scatter_km": round(r["host"].scatter_km, 4)}
+            for r in rows if r["plant"].kind == "free_burn" for x in r["results"]
+            if x["type"] == "free_burn" and x["status"] == "caught" and abs(x["error_days"]) >= NOISE_CAUGHT_DAYS]
 
 
 def _bin_groups(rows: Sequence[dict]) -> dict[str, list[dict]]:
@@ -374,6 +448,7 @@ def summarise(rows: Sequence[dict]) -> dict:
         kinds = {"relocation": {b: _group(g, TRUTH_TYPES["relocation"]) for b, g in _bin_groups(reloc).items()}}
         for kind in TRIALS:
             kinds[kind] = _group([r for r in rs if r["plant"].kind == kind], TRUTH_TYPES[kind])
+            kinds[kind]["by_host_noise"] = noise_classes([r for r in rs if r["plant"].kind == kind])
         years = sum(r["untouched_days"] for r in rs) / 365.25
         events = [e for r in rs for e in r["untouched_events"]]
         out[split] = {"hosts": len({r["plant"].norad_id for r in rs}), "kinds": kinds,
@@ -388,7 +463,8 @@ def trial_row(r: dict) -> dict:
     size = (f"{sum(da for _, da in p.kicks):.1f} km in {len(p.kicks)}" if p.kind == "graveyard"
             else f"{p.kicks[0][1]:.2f} km" if p.kind == "free_burn"
             else f"{p.rate * p.days:.2f} deg" if p.kind == "relocation" else "")
-    return {"trial": p.trial, "kind": p.kind, "split": p.split, "norad_id": p.norad_id, "rate_bin": p.rate_bin,
+    return {"trial": p.trial, "kind": p.kind, "split": p.split, "norad_id": p.norad_id,
+            "host_sma_scatter_km": round(r["host"].scatter_km, 4), "rate_bin": p.rate_bin,
             "t0": _date(p.t0).isoformat(), "drift_rate": round(p.rate, 4) if p.rate else "",
             "drift_days": round(p.days, 1) if p.days else "", "size": size,
             "truth": ";".join(f"{x['type']}@{x['date']}:{x['status']}:{x['found_type']}:"
@@ -427,20 +503,17 @@ def main(argv: list[str] | None = None) -> int:
                                 "satellites, scored per kind and drift rate on dev and test hosts.")
     p.add_argument("--geo-dir", type=Path, help="folder of <norad>.tle files; default $ORBIT_WATCH_DATA/geo")
     p.add_argument("--out", type=Path, default=DEFAULT_OUT, help="folder for summary.json and trials.csv")
+    p.add_argument("--freeze", action="store_true",
+                   help=f"rebuild the frozen host set in {HOSTS_FILE.name} from the current code and stop")
     a = p.parse_args(argv)
     geo_dir = a.geo_dir or data_dir() / "geo"
-    excluded = excluded_objects(load_splits(), read_event_rows(DEFAULT_EVENTS)[1])
-    manifest = json.loads((geo_dir / "manifest.json").read_text(encoding="utf-8"))
-    norads = sorted(int(n) for n, o in manifest["objects"].items()
-                    if o["by_rule"] and int(n) not in excluded and (geo_dir / f"{n}.tle").is_file())
+    if a.freeze:
+        return freeze(geo_dir)
+    candidates = {n: h for n, h in load_hosts().items() if (geo_dir / f"{n}.tle").is_file()}
     with ProcessPoolExecutor() as pool:
-        segs = [s for ss in pool.map(object_segments, [geo_dir / f"{n}.tle" for n in norads], chunksize=8) for s in ss]
-        candidates = candidate_stretches(segs, excluded)
-        base = dict(zip(candidates, pool.map(host_events, [geo_dir / f"{n}.tle" for n in candidates], chunksize=4)))
-        found = {n: f for n, (f, _) in base.items()}
-        last_day = {n: d for n, (_, d) in base.items()}
-        hosts = [h for n, h in candidates.items() if quiet(h, found[n])]
-        plants = plan(hosts, last_day)
+        found = dict(zip(candidates, pool.map(host_events, [geo_dir / f"{n}.tle" for n in candidates], chunksize=4)))
+        hosts = [h for h in candidates.values() if h.quiet]
+        plants = plan(hosts, {h.norad_id: h.last_day for h in hosts})
         by_host = {h.norad_id: h for h in hosts}
         tasks = [(geo_dir / f"{n}.tle", by_host[n], [q for q in plants if q.norad_id == n])
                  for n in sorted({q.norad_id for q in plants})]
@@ -449,8 +522,9 @@ def main(argv: list[str] | None = None) -> int:
     summary = {**_commit(), "seed": SEED, "window_days": WINDOW_DAYS,
                "hosts": {"candidates": len(candidates), "quiet": len(hosts),
                          "dev": sum(h.split == "dev" for h in hosts), "test": sum(h.split == "test" for h in hosts),
-                         "excluded_objects": sorted(excluded)},
-               **summarise(rows), "belt_held_stretches": held_estimate(candidates, found)}
+                         "host_file": HOSTS_FILE.name},
+               **summarise(rows), "free_burns_caught_4_days_or_more_off": late_free_burn_matches(rows),
+               "belt_held_stretches": held_estimate(candidates, found)}
     a.out.mkdir(parents=True, exist_ok=True)
     (a.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
     with open(a.out / "trials.csv", "w", newline="", encoding="utf-8") as fh:
@@ -459,6 +533,24 @@ def main(argv: list[str] | None = None) -> int:
         w.writerows(trial_row(r) for r in rows)
     print(table(summary))
     print(f"wrote {a.out / 'summary.json'} and {a.out / 'trials.csv'}")
+    return 0
+
+
+def freeze(geo_dir: Path) -> int:
+    excluded = excluded_objects(load_splits(), read_event_rows(DEFAULT_EVENTS)[1])
+    manifest = json.loads((geo_dir / "manifest.json").read_text(encoding="utf-8"))
+    norads = sorted(int(n) for n, o in manifest["objects"].items()
+                    if o["by_rule"] and int(n) not in excluded and (geo_dir / f"{n}.tle").is_file())
+    with ProcessPoolExecutor() as pool:
+        segs = [s for ss in pool.map(object_segments, [geo_dir / f"{n}.tle" for n in norads], chunksize=8) for s in ss]
+        candidates = candidate_stretches(segs, excluded)
+        hosts = list(pool.map(freeze_host, [(geo_dir / f"{n}.tle", h) for n, h in candidates.items()], chunksize=4))
+    out = {**_commit(), "rule": f"longest held mode segment of at least {MIN_HOLD_DAYS:g} days per GEO-region object, "
+                                "holdout objects and objects with a test-split event left out; quiet means no "
+                                "state-change event inside it at this commit; only quiet stretches host plants",
+           "excluded_objects": sorted(excluded), "candidates": [host_record(h) for h in hosts]}
+    HOSTS_FILE.write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8", newline="\n")
+    print(f"wrote {HOSTS_FILE}: {len(hosts)} candidates, {sum(h.quiet for h in hosts)} quiet")
     return 0
 
 
