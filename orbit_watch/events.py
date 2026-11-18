@@ -347,6 +347,19 @@ def _departure_type(tr: Track, held: Segment, rest: Sequence[Segment]) -> tuple[
     return "keeping_stop", rise
 
 
+def _move_sma(tr: Track, held: Segment, lo: float, hi: float) -> float:
+    held_a = _a_between(tr, _day(held.start), _day(held.end))
+    sel = (tr.days >= lo) & (tr.days < hi)
+    moving = sel & (np.abs(tr.rate - _held_rate(tr, held)) >= FAST_RATE)
+    pick = moving if moving.any() else sel
+    return float(np.median(tr.semi_major_axis_km[pick]) - np.median(held_a)) if pick.any() and len(held_a) else 0.0
+
+
+def _fast_until(tr: Track, held: Segment, left: float, climb: float) -> bool:
+    sel = (tr.days >= left) & (tr.days < climb)
+    return _jumps(tr, held, left, climb) and float(np.median(np.abs(tr.rate[sel] - _held_rate(tr, held)))) >= FAST_RATE
+
+
 def _climb_start(tr: Track, held: Segment, left: float, burn_days: np.ndarray, steps: np.ndarray) -> float | None:
     idx = np.flatnonzero(tr.days >= left)
     base = np.median(_a_between(tr, _day(held.start), _day(held.end)))
@@ -401,8 +414,12 @@ def _open_move(tr: Track, held: Segment, left: float | None, burn_days: np.ndarr
         return False
     if ((burn_days > left) & (burn_days <= left + CLIMB_DAYS) & (np.abs(steps) >= FREE_BURN_MIN_M)).any():
         return True
+    return _jumps(tr, held, left, float(tr.days[-1]) + 1.0)
+
+
+def _jumps(tr: Track, held: Segment, left: float, hi: float) -> bool:
     rel = np.abs(tr.rate - _held_rate(tr, held))
-    i = _sustained(tr, rel >= FAST_RATE, left - 1.0, float(tr.days[-1]) + 1.0)
+    i = _sustained(tr, rel >= FAST_RATE, left - 1.0, hi)
     calm = np.flatnonzero(rel[:i] < FAST_RATE / 2) if i is not None else []
     return len(calm) > 0 and (calm[-1] == i - 1 or tr.days[i] - tr.days[calm[-1]] <= STEP_REACH_DAYS)
 
@@ -526,9 +543,15 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
             climb = _climb_start(tr, a, left, burn_days, steps) if kind == "graveyard" and left is not None else None
             if climb is not None:
                 out.append(_event(tr, "graveyard", b, b, lon_after, rise, climb, "a_step"))
-                before = _a_between(tr, left, climb)
-                kind, rise = "keeping_stop", float(np.max(before) - np.median(_a_between(tr, _day(a.start), _day(a.end))))
+                if _fast_until(tr, a, left, climb):
+                    kind, limit = "relocation_start", climb
+                else:
+                    before = _a_between(tr, left, climb)
+                    kind, rise = "keeping_stop", float(np.max(before) - np.median(_a_between(tr, _day(a.start), _day(a.end))))
             departed = left if left is not None else _day(b.start)
+            if kind == "relocation_start":
+                moved = burn if signal == "burn_gap" and burn is not None else departed
+                rise = _move_sma(tr, a, moved, limit)
             if signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
                 out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
                 out.append(_event(tr, kind, a, b, lon_after, rise, burn, "rate_exit"))

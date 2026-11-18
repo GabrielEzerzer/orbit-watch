@@ -50,6 +50,7 @@ def test_relocation_gives_a_start_and_an_end_near_the_move():
     assert abs(E._day(first.date) - start) <= 1 and abs(E._day(second.date) - (start + 20.0)) <= 1
     assert (first.signal, second.signal) == ("rate_exit", "rate_entry")
     assert abs(first.lon_before - 10.0) < 0.2 and abs(first.lon_after - 16.0) < 0.3
+    assert abs(first.size + 0.3 / (1.5 * 360.98) * 42164.0) < 2.0
 
 
 def test_climb_of_a_kept_object_is_a_graveyard_move():
@@ -188,6 +189,21 @@ def test_a_climb_months_after_a_keeping_stop_is_a_graveyard_move_on_the_day_of_t
     found = E.state_changes(element_sets(days, lon, rate))
     assert [f.event_type for f in found] == ["keeping_stop", "graveyard"]
     assert abs(E._day(found[1].date) - climb) <= 1
+
+
+def test_a_burn_into_fast_drift_months_before_a_climb_is_a_relocation_start_then_a_graveyard_move():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    start = EDGES[3] + 7.0
+    climb = start + 150.0
+    lon, rate = keeper_track(days, 10.0, 3)
+    up = np.where(days >= start, -50.0, 0.0) + sum(np.where(days >= climb + k, 120.0, 0.0) for k in (0.0, 3.0, 6.0))
+    jitter = np.random.default_rng(3).normal(0, 0.0002, len(days))
+    rate = np.where(days < start, rate, jitter) - 1.5 * up / 42164.0 * 360.98
+    lon = np.where(days < start, lon, lon[days < start][-1] + np.cumsum(np.where(days < start, 0.0, rate)) * 0.25)
+    found = E.state_changes(element_sets(days, lon, rate))
+    assert [f.event_type for f in found] == ["relocation_start", "graveyard"]
+    assert abs(E._day(found[0].date) - start) <= 1 and abs(E._day(found[1].date) - climb) <= 1
+    assert abs(found[0].size + 50.0) < 2.0
 
 
 def ns_sets(days, inc, seed=7):
