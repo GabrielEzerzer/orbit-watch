@@ -290,6 +290,17 @@ def test_natural_drift_that_speeds_up_after_a_hold_near_the_end_of_the_data_stay
     assert [f.event_type for f in found] == ["keeping_stop"]
 
 
+def test_an_arrival_into_a_hold_that_lasts_to_the_last_set_gives_no_departure():
+    days = np.arange(0.0, EDGES[14] - 1.0, 0.25)
+    lon, rate = keeper_track(days, 10.0, 0)
+    start, stop = EDGES[12] + 5.0, EDGES[13] + 5.0
+    moving = (days >= start) & (days < stop)
+    lon = np.where(days >= stop, 10.0 + 0.3 * (stop - start), lon + np.cumsum(np.where(moving, 0.3, 0.0)) * 0.25)
+    rate = np.where(days >= stop, 0.0, rate + np.where(moving, 0.3, 0.0))
+    found = E.state_changes(element_sets(days, lon, rate))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+
+
 def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():
     days = np.arange(0.0, EDGES[14], 0.25)
     start, kick = EDGES[5] + 7.0, EDGES[14] - 6.0

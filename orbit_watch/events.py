@@ -212,6 +212,8 @@ def with_short_holds(tr: Track, segs: Sequence[Segment]) -> list[Segment]:
         starts = [stretch[0].start] + [_at(tr, last) for _, last in holds]
         ends = [_at(tr, first) for first, _ in holds] + [stretch[-1].end]
         for h, (s0, e0) in enumerate(zip(starts, ends)):
+            if h and h == len(holds) and not ((tr.days > _day(s0)) & (tr.days < _day(e0))).any():
+                break
             out.extend(replace(seg, start=max(seg.start, s0), end=min(seg.end, e0))
                        for seg in stretch if max(seg.start, s0) < min(seg.end, e0))
             if h < len(holds):
