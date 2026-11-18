@@ -37,6 +37,7 @@ BURN_LOOKBACK_DAYS = 60.0
 MIN_BURNS = 3
 CLIMB_DAYS = 15.0
 FREE_BURN_MIN_M = 1000.0
+EDGE_DAYS = 30.0
 MOVE_MIN_DEG = 0.5
 MOVE_SIDE_DAYS = 10.0
 MOVE_MERGE_DAYS = 2.0
@@ -91,11 +92,16 @@ def _band(rate: np.ndarray) -> tuple[float, float]:
     return centre, max(RATE_TOL_MIN, RATE_TOL_MADS * 1.4826 * float(np.median(np.abs(rate - centre))))
 
 
-def _in_hold(tr: Track, held: Segment) -> np.ndarray:
-    sel = (tr.days >= _day(held.start)) & (tr.days < _day(held.end))
+def _in_hold(tr: Track, held: Segment, edge: str = "") -> np.ndarray:
+    lo, hi = _day(held.start), _day(held.end)
+    sel = (tr.days >= lo) & (tr.days < hi)
     centre, tol = _band(tr.rate[sel])
-    width = (held.lon_max - held.lon_min) % 360.0 + 2 * BOX_MARGIN_DEG
-    in_box = (tr.lon - held.lon_min + BOX_MARGIN_DEG) % 360.0 <= width
+    lon_min, lon_max = held.lon_min, held.lon_max
+    near = sel & ((tr.days >= hi - EDGE_DAYS) if edge == "end" else (tr.days < lo + EDGE_DAYS))
+    if edge and near.sum() >= HOLD_MIN_SETS:
+        lon_min, lon_max = _arc(tr.lon[near])
+    width = (lon_max - lon_min) % 360.0 + 2 * BOX_MARGIN_DEG
+    in_box = (tr.lon - lon_min + BOX_MARGIN_DEG) % 360.0 <= width
     return in_box & (np.abs(tr.rate - centre) <= tol)
 
 
@@ -123,12 +129,16 @@ def _moved(tr: Track, a: Segment, nxt: Segment) -> bool:
 
 def _departure_date(tr: Track, held: Segment, b: Segment, limit: float) -> int | None:
     lo = max(_day(held.start), _day(b.start) - REACH_DAYS)
-    return _sustained(tr, ~_in_hold(tr, held), lo, min(_day(b.start) + REACH_DAYS, limit))
+    hi = min(_day(b.start) + REACH_DAYS, limit)
+    i = _sustained(tr, ~_in_hold(tr, held), lo, hi)
+    return _sustained(tr, ~_in_hold(tr, held, "end"), lo, hi) if i is None else i
 
 
 def _arrival_date(tr: Track, held: Segment, floor: float) -> int | None:
     lo = max(floor, _day(held.start) - REACH_DAYS)
-    return _sustained(tr, _in_hold(tr, held), lo, min(_day(held.end), _day(held.start) + REACH_DAYS))
+    hi = min(_day(held.end), _day(held.start) + REACH_DAYS)
+    i = _sustained(tr, _in_hold(tr, held), lo, hi)
+    return _sustained(tr, _in_hold(tr, held, "start"), lo, hi) if i is None else i
 
 
 def _at(tr: Track, i: int) -> datetime:

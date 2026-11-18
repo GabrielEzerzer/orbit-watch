@@ -216,3 +216,16 @@ def test_a_short_move_between_holds_whose_ranges_touch_is_a_start_and_an_end(mon
     found = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert [e.event_type for e in found] == ["relocation_start", "relocation_end"]
     assert abs(E._day(found[1].date) - 72.0) <= 1
+
+
+def test_a_departure_is_dated_from_the_hold_edge_when_the_hold_range_already_spans_the_new_slot(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    moving = (days >= 70.0) & (days < 72.0)
+    rate = rate + np.where(moving, 0.35, 0.0)
+    lon = lon + np.cumsum(np.where(moving, 0.35, 0.0)) * 0.25
+    segs = [held(0, 60, 9.98, 10.72), held(60, 90, 9.98, 10.72, "drifting"), held(90, 150, 10.40, 10.72)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    start = E.events_from_track(M.track(element_sets(days, lon, rate)))[0]
+    assert start.event_type == "relocation_start" and start.signal == "rate_exit"
+    assert abs(E._day(start.date) - 70.0) <= 1
