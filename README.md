@@ -98,6 +98,7 @@ Download rules:
 | GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir $ORBIT_WATCH_DATA/geo --out $ORBIT_WATCH_DATA/geo_modes` | `$ORBIT_WATCH_DATA/geo_modes/segments.csv`, `findings/geo_modes/` |
 | GEO state changes (2 to 18 min; measured runs took 145 to 1,083 s) | `python -m orbit_watch.jobs.state_changes` | `$ORBIT_WATCH_DATA/state_changes/events.csv`, `findings/state_changes/` |
 | GEO state changes evaluation | `python -m harness.evals.state_changes [--split dev\|all]` | `findings/state_changes/eval_<split>.json` and `.csv` |
+| Hand audit of belt state changes | `python -m harness.evals.state_audit sample\|chart\|summary` | the sample on stdout; charts in `$ORBIT_WATCH_DATA/state_audit/`; `findings/state_audit/summary.json` |
 
 Tools:
 
@@ -190,7 +191,7 @@ these gates instead:
 | Guardrail: ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
 | At most 0.2 false events per object-year, counted on state-change events | met on QZS-3 and QZS-6, the only objects with burn logs and the objects the snap-back filter was tuned on: 0 events over 5.412 object-years of log coverage. They keep station throughout, so the check sees false departures, arrivals and keeping stops on a held object; it does not see extra or mistyped events around a real change, or false free burns on objects that are not held |
 | Recall and dating error on a cited list of known GEO events | dated state changes: dev 13/13, median date error 2 days; test 17/20, median 3 days (scored once). The mode layer alone: 26/33, median 11.5 days |
-| A hand audit of about 50 events from across the belt | not done |
+| A hand audit of about 50 events from across the belt | done: 42 of 50 real with the right type; see "Hand audit of belt state changes" |
 
 GEO north-south recall is reported, not gated: train 6/17 = 0.353, dev 4/14 = 0.286. The
 inclination vector's job is to date when north-south keeping stops, not to catch each burn. Scores are in `harness/evals/results/` (`<split>-inc-vector.json`, with
@@ -418,8 +419,46 @@ is left over. A move made entirely inside a gap in the element sets is dated to 
 the gap at both ends, as Meteosat-11 (40732) is in April 2023. A satellite that
 arrives in the last 10 days of the data is not seen as held, so its first trim burn can read as a
 `free_burn`. A climb by an object that was already free is a `free_burn`, not a `graveyard` move.
-North-south keeping stops are still dated at the window boundary. No hand audit of belt events
-has been done.
+North-south keeping stops are still dated at the window boundary, which the hand audit below
+finds is months after the last north-south burn.
+
+### Hand audit of belt state changes (`harness/evals/state_audit.py`, `findings/state_audit/`)
+
+The scored lists above are small and lean on well-documented events, so 50 events from the belt
+list were judged by hand. The verdicts are judgments read from each object's element sets, not
+cited ground truth: an event is `real` if the change it describes shows in the sets (whatever its
+date error), `artefact` if nothing changed at that date (bad sets, free drift read as a hold, or a
+routine keeping burn), `wrong_type` if a real change has another type, and `duplicate` if another
+event already covers it.
+
+The sample is fixed by `SEED` in `harness/evals/state_audit.py`. It leaves out the holdout objects
+and every object with a test-split event in `groundtruth/geo_events.csv` (22 objects, 75 events),
+takes at least 5 events of each type and shares the rest in proportion to each type's count, then
+draws within each type with a seeded generator. Each event was charted over 60 days either side
+(mean longitude, drift rate, semi-major axis and the inclination vector, with the raw and
+filtered sets, neighbouring events and mode segments) and judged on the same checklist: did the
+change happen, of this type, and when. `findings/state_audit/audit.csv` holds one row per event
+with the estimated true date, `date_error_days` (event date minus estimated date) and one line of
+evidence; `summary.json` holds the counts.
+
+| type | sampled | real | artefact | duplicate | wrong type |
+|---|---|---|---|---|---|
+| relocation_start | 10 | 10 | 0 | 0 | 0 |
+| relocation_end | 13 | 13 | 0 | 0 | 0 |
+| graveyard | 7 | 7 | 0 | 0 | 0 |
+| keeping_stop | 6 | 5 | 1 | 0 | 0 |
+| ns_keeping_stop | 7 | 5 | 2 | 0 | 0 |
+| free_burn | 7 | 2 | 3 | 2 | 0 |
+| all | 50 | 42 | 6 | 2 | 0 |
+
+Of the 42 real events, 41 could be dated from the sets. Leaving out north-south stops, the median
+error is 1 day and 27 of 36 are within 3 days. Of the 9 dated more than 3 days off, 8 are late,
+mostly where the change falls in a gap in the sets (dated at the gap's end, 4 to 15 days)
+or where keeping stops on a burn cycle slower than the burn-gap rule needs (25 and 46 days). The 5
+real north-south stops are dated 82 to 114 days late (median 108): the inclination takes about
+100 days to grow from the kept value past the 0.3 deg limit that separates the two modes. Free
+burns are the weakest type: two are steps inside a graveyard climb already listed, one is a single
+bad set, and two are routine east-west burns of kept inclined satellites (BeiDou 7, IRNSS 1D).
 
 ## Method notes
 
