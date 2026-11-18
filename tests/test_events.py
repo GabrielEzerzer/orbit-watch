@@ -276,3 +276,13 @@ def test_natural_drift_that_speeds_up_after_a_hold_near_the_end_of_the_data_stay
     monkeypatch.setattr(E, "segments", lambda tr: [held(0, 90, 9.98, 10.02), held(90, 120, 9.98, 10.4, "drifting")])
     found = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert [f.event_type for f in found] == ["keeping_stop"]
+
+
+def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    start, kick = EDGES[5] + 7.0, EDGES[14] - 6.0
+    lon, rate = retired_track(days, start, 4)
+    up = np.clip((days - start) / 10.0, 0.0, 1.0) * 300.0 + np.where(days >= kick, 2.0, 0.0)
+    drift = -1.5 * up / 42164.0 * 360.98
+    found = E.state_changes(element_sets(days, lon + np.cumsum(drift) * 0.25, rate + drift))
+    assert [f.event_type for f in found] == ["graveyard"]

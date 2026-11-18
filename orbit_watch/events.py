@@ -394,6 +394,7 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
             continue
         for day, step in zip(burn_days, steps):
             if (_day(seg.start) <= day < _day(seg.end) and abs(step) >= FREE_BURN_MIN_M
+                    and tr.days[-1] - day >= HOLD_MIN_DAYS
                     and not (np.abs(taken - day) <= CLIMB_DAYS).any()):
                 when = GRID_START + timedelta(days=float(day))
                 out.append(Event(tr.norad_id, "free_burn", when, "a_step", round(float(step), 1),
