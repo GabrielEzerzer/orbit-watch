@@ -1,5 +1,6 @@
 # Scores dated state-change events against the cited GEO event list (rung 1's file, split and matching rule),
-# and counts false events on QZS-3 and QZS-6, whose operator logs show them kept on station throughout.
+# and counts false events on satellites whose logs show them kept on station: QZS-3, QZS-6, Fengyun-2H, and
+# with --final the holdout Fengyun-2F and Fengyun-4A.
 
 from __future__ import annotations
 
@@ -17,19 +18,27 @@ import numpy as np
 
 from harness.evals.mode_events import (DEFAULT_EVENTS, EVENT_TYPES, SPLITS, WINDOW_DAYS, Event, _commit,
                                        load_events, unscored_reason)
+from orbit_watch.clean import drop_snapback_blocks
+from orbit_watch.detect import detect
 from orbit_watch.elements import parse_tle
-from orbit_watch.events import DEPARTURES, Event as Found, as_row, state_changes
-from orbit_watch.generalise import log_coverage
-from orbit_watch.series import distinct_epochs
+from orbit_watch.events import DEPARTURES, Event as Found, as_row, events_from_track, state_changes
+from orbit_watch.generalise import FROZEN
+from orbit_watch.modes import GRID_START, track
+from orbit_watch.series import distinct_epochs, to_series
 from orbit_watch.sources import data_dir
-from orbit_watch.truth import GROUNDTRUTH, load_splits
+from orbit_watch.truth import GROUNDTRUTH, load_splits, read_label_rows, require_allowed
 
 DEFAULT_OUT = Path("findings/state_changes")
-KEPT_OBJECTS = {42917: "QZS-3", 62876: "QZS-6"}
-KEPT_LOG = GROUNDTRUTH / "qzss_manoeuvres.csv"
+QZSS_LOG = GROUNDTRUTH / "qzss_manoeuvres.csv"
+FENGYUN_LOG = GROUNDTRUTH / "fengyun_manoeuvres.csv"
+KEPT_OBJECTS = {42917: ("QZS-3", QZSS_LOG), 62876: ("QZS-6", QZSS_LOG), 43491: ("Fengyun-2H", FENGYUN_LOG)}
+FINAL_KEPT_OBJECTS = {38049: ("Fengyun-2F", FENGYUN_LOG), 41882: ("Fengyun-4A", FENGYUN_LOG)}
+FINAL_OUT = "false_events_final.json"
+CADENCE_GAP_FACTOR = 2.0
 FALSE_EVENT_TARGET = 0.2
 ACCEPTS = {"relocation_start": DEPARTURES, "graveyard": DEPARTURES, "keeping_stop": DEPARTURES,
-           "relocation_end": ("relocation_end",), "ns_keeping_stop": ("ns_keeping_stop",)}
+           "relocation_end": ("relocation_end",), "ns_keeping_stop": ("ns_keeping_stop",),
+           "free_burn": ("free_burn",)}
 PERIOD_DT = (datetime(2021, 1, 1, tzinfo=timezone.utc), datetime(2026, 1, 1, tzinfo=timezone.utc))
 EVENT_FIELDS = ["event_id", "split", "event_type", "status", "found_type", "found_date", "error_days", "signal",
                 "size", "mode_change"]
@@ -99,14 +108,31 @@ def summarise(results: Sequence[Result], splits: Sequence[str]) -> dict:
     return out
 
 
-def false_events(found_by_norad: dict[int, Sequence[Found]], spans: dict[int, tuple[datetime, datetime]]) -> dict:
+@dataclass(frozen=True)
+class Station:
+    norad_id: int
+    name: str
+    spans: tuple[tuple[datetime, datetime], ...]
+    excluded: tuple[tuple[datetime, datetime], ...] = ()
+
+
+def _years(spans) -> float:
+    return sum(max((hi - lo).total_seconds(), 0.0) for lo, hi in spans) / (365.25 * 86400.0)
+
+
+def _dates(spans) -> list[list[str]]:
+    return [[lo.date().isoformat(), hi.date().isoformat()] for lo, hi in spans]
+
+
+def false_events(found_by_norad: dict[int, Sequence[Found]], stations: Sequence[Station]) -> dict:
     per, total_years, total = {}, 0.0, 0
-    for norad, (lo, hi) in spans.items():
-        inside = [f for f in found_by_norad.get(norad, []) if lo <= f.date < hi]
-        years = max((hi - lo).total_seconds(), 0.0) / (365.25 * 86400.0)
-        per[KEPT_OBJECTS[norad]] = {"norad_id": norad, "from": lo.date().isoformat(), "to": hi.date().isoformat(),
-                                    "object_years": round(years, 3), "false_events": len(inside),
-                                    "events": [as_row(f) for f in inside]}
+    for st in stations:
+        inside = [f for f in found_by_norad.get(st.norad_id, []) if any(lo <= f.date < hi for lo, hi in st.spans)]
+        years = _years(st.spans)
+        per[st.name] = {"norad_id": st.norad_id, "spans": _dates(st.spans), "excluded": _dates(st.excluded),
+                        "object_years": round(years, 3), "false_events": len(inside),
+                        "per_object_year": round(len(inside) / years, 4) if years else None,
+                        "events": [as_row(f) for f in inside]}
         total_years += years
         total += len(inside)
     rate = total / total_years if total_years else None
@@ -115,21 +141,66 @@ def false_events(found_by_norad: dict[int, Sequence[Found]], spans: dict[int, tu
             "status": None if rate is None else ("PASS" if rate <= FALSE_EVENT_TARGET else "FAIL")}
 
 
-def kept_span(norad: int, records) -> tuple[datetime, datetime]:
-    lo, hi = log_coverage(KEPT_LOG, norad)
-    as_dt = lambda t: datetime.fromisoformat(str(t.astype("datetime64[s]"))).replace(tzinfo=timezone.utc)
-    lo = max(as_dt(lo), records[0].epoch, PERIOD_DT[0])
-    hi = min(as_dt(hi), records[-1].epoch, PERIOD_DT[1])
-    return lo, hi
+def _utc(text: str) -> datetime:
+    return datetime.fromisoformat(text.replace("Z", "+00:00"))
 
 
-def object_records(path: Path):
-    (recs,) = distinct_epochs(parse_tle(path.read_text(encoding="utf-8"))).values()
+def station_spans(log: Path, norad: int, *, final: bool = False
+                  ) -> tuple[list[tuple[datetime, datetime]], list[tuple[datetime, datetime]]]:
+    rows = read_label_rows(log, norad, final=final)
+    if not rows:
+        raise ValueError(f"{log}: no log rows for NORAD {norad}")
+    lo, hi = min(_utc(r["start_utc"]) for r in rows), max(_utc(r["end_utc"]) for r in rows)
+    ew = sorted((_utc(r["start_utc"]), _utc(r["end_utc"])) for r in rows if r["kind"] == "EW")
+    gaps = [(b[0] - a[0]).total_seconds() for a, b in zip(ew, ew[1:])]
+    limit = CADENCE_GAP_FACTOR * float(np.median(gaps)) if gaps else float("inf")
+    excluded = [(a[1], b[0]) for a, b, g in zip(ew, ew[1:], gaps) if g > limit]
+    spans, start = [], lo
+    for a, b in excluded:
+        spans.append((start, a))
+        start = b
+    spans.append((start, hi))
+    return spans, excluded
+
+
+def kept_station(norad: int, name: str, log: Path, records, *, final: bool = False) -> Station:
+    spans, excluded = station_spans(log, norad, final=final)
+    first, last = max(records[0].epoch, PERIOD_DT[0]), min(records[-1].epoch, PERIOD_DT[1])
+    clip = [(max(lo, first), min(hi, last)) for lo, hi in spans]
+    return Station(norad, name, tuple((lo, hi) for lo, hi in clip if lo < hi),
+                   tuple((lo, hi) for lo, hi in excluded if lo < last and hi > first))
+
+
+def object_records(path: Path, *, final: bool = False):
+    (recs,) = distinct_epochs(parse_tle(path.read_text(encoding="utf-8")), final=final).values()
     return recs
 
 
 def object_events(path: Path) -> list[Found]:
     return state_changes(object_records(path))
+
+
+def final_burns(records) -> tuple[np.ndarray, np.ndarray]:
+    (series,) = to_series(records, final=True).values()
+    dets = detect(series, FROZEN)
+    start = np.datetime64(GRID_START.replace(tzinfo=None), "us")
+    days = [(d.peak_start + (d.peak_end - d.peak_start) / 2 - start) / np.timedelta64(1, "D") for d in dets]
+    return np.array(days, dtype=float), np.array([d.step_m for d in dets], dtype=float)
+
+
+def final_state_changes(records) -> list[Found]:
+    kept, _ = drop_snapback_blocks(records)
+    return events_from_track(track(kept), *final_burns(kept)) if kept else []
+
+
+def final_check(geo_dir: Path) -> dict:
+    stations, found = [], {}
+    for norad, (name, log) in FINAL_KEPT_OBJECTS.items():
+        require_allowed(norad, final=True)
+        recs = object_records(geo_dir / f"{norad}.tle", final=True)
+        stations.append(kept_station(norad, name, log, recs, final=True))
+        found[norad] = final_state_changes(recs)
+    return false_events(found, stations)
 
 
 def table(summary: dict, fe: dict, splits: Sequence[str]) -> str:
@@ -145,19 +216,29 @@ def table(summary: dict, fe: dict, splits: Sequence[str]) -> str:
             lines.append(f"{name:<6} {t:<17} {s['events']:>6} {s['scored']:>6} {s['caught']:>6} {f(s['recall']):>6} "
                          f"{f(s['median_abs_error_days']):>6} {f(s['p90_abs_error_days']):>6} {s['same_type']:>5}")
     lines.append(f"unscored: {len(summary['unscored'])}")
-    lines.append(f"false events on QZS-3 and QZS-6: {fe['false_events']} over {fe['object_years']} object-years = "
-                 f"{f(fe['per_object_year'])} per object-year (target <= {FALSE_EVENT_TARGET}: {fe['status']})")
+    lines.append(false_line(fe))
     return "\n".join(lines)
+
+
+def false_line(fe: dict) -> str:
+    rate = "-" if fe["per_object_year"] is None else f"{fe['per_object_year']:g}"
+    each = ", ".join(f"{name} {o['false_events']} in {o['object_years']}" for name, o in fe["objects"].items())
+    return (f"false events on kept satellites ({each}): {fe['false_events']} over {fe['object_years']} "
+            f"object-years = {rate} per object-year (target <= {FALSE_EVENT_TARGET}: {fe['status']})")
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Score dated GEO state-change events against the cited GEO event list "
-                                "(recall and dating error), and count false events on QZS-3 and QZS-6.")
+                                "(recall and dating error), and count false events on satellites logged as kept "
+                                "on station (QZS-3, QZS-6, Fengyun-2H).")
     p.add_argument("--events", type=Path, default=DEFAULT_EVENTS)
     p.add_argument("--geo-dir", type=Path, help="folder of <norad>.tle files; default $ORBIT_WATCH_DATA/geo")
     p.add_argument("--split", choices=("dev", "all"), default="dev",
                    help="dev while building; all adds the test split, scored once at the end")
     p.add_argument("--out", type=Path, default=DEFAULT_OUT, help="folder for eval_<split>.json and eval_<split>.csv")
+    p.add_argument("--final", action="store_true",
+                   help=f"also count false events on the holdout Fengyun-2F and Fengyun-4A, run once at the end; "
+                        f"writes OUT/{FINAL_OUT}")
     a = p.parse_args(argv)
     geo_dir = a.geo_dir or data_dir() / "geo"
     splits = SPLITS if a.split == "all" else ("dev",)
@@ -168,8 +249,9 @@ def main(argv: list[str] | None = None) -> int:
     with ProcessPoolExecutor() as pool:
         found = dict(zip(norads, pool.map(object_events, [geo_dir / f"{n}.tle" for n in norads])))
     results = score(events, found, geo_norads, holdout)
-    spans = {n: kept_span(n, object_records(geo_dir / f"{n}.tle")) for n in KEPT_OBJECTS}
-    fe = false_events(found, spans)
+    stations = [kept_station(n, name, log, object_records(geo_dir / f"{n}.tle"))
+                for n, (name, log) in KEPT_OBJECTS.items()]
+    fe = false_events(found, stations)
 
     a.out.mkdir(parents=True, exist_ok=True)
     summary = {**_commit(), "events_file": a.events.name, "window_days": WINDOW_DAYS, **summarise(results, splits),
@@ -188,6 +270,11 @@ def main(argv: list[str] | None = None) -> int:
                         "mode_change": f.mode_change.date().isoformat() if f else ""})
     print(table(summary, fe, splits))
     print(f"wrote {a.out / f'eval_{a.split}.json'} and {a.out / f'eval_{a.split}.csv'}")
+    if a.final:
+        final = {**_commit(), "false_events": final_check(geo_dir)}
+        (a.out / FINAL_OUT).write_text(json.dumps(final, indent=2) + "\n", encoding="utf-8", newline="\n")
+        print("final, holdout: " + false_line(final["false_events"]))
+        print(f"wrote {a.out / FINAL_OUT}")
     return 0
 
 

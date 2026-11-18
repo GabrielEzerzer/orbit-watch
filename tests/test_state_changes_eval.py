@@ -55,9 +55,55 @@ def test_stats_count_exact_type_agreement():
     assert (s["caught"], s["same_type"], s["median_abs_error_days"]) == (2, 1, 0.5)
 
 
-def test_false_events_count_every_event_inside_the_log_span_per_object_year():
+def test_false_events_count_every_event_inside_the_log_spans_per_object_year():
     lo, hi = T0, T0 + timedelta(days=365.25 * 2)
-    founds = {42917: [found("relocation_start", 10, 42917), found("free_burn", 800, 42917)], 62876: []}
-    fe = sc.false_events(founds, {42917: (lo, hi), 62876: (hi, hi)})
-    assert fe["false_events"] == 1 and fe["object_years"] == pytest.approx(2.0)
-    assert fe["per_object_year"] == 0.5 and fe["status"] == "FAIL"
+    mid = T0 + timedelta(days=365.25)
+    founds = {42917: [found("relocation_start", 10, 42917), found("free_burn", 800, 42917)],
+              62876: [found("keeping_stop", 400, 62876)]}
+    stations = [sc.Station(42917, "QZS-3", ((lo, hi),)),
+                sc.Station(62876, "QZS-6", ((lo, mid), (mid + timedelta(days=60), hi)), ((mid, mid + timedelta(days=60)),))]
+    fe = sc.false_events(founds, stations)
+    assert fe["objects"]["QZS-6"]["false_events"] == 0
+    assert fe["false_events"] == 1 and fe["object_years"] == pytest.approx(4.0 - 60 / 365.25, abs=1e-3)
+    assert fe["status"] == "FAIL" and fe["objects"]["QZS-6"]["excluded"] == [["2023-01-01", "2023-03-02"]]
+
+
+def _log(tmp_path, rows):
+    path = tmp_path / "log.csv"
+    lines = ["norad_id,start_utc,end_utc,kind"] + [f"43491,{a},{b},{k}" for a, b, k in rows]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+def test_station_spans_run_from_the_first_to_the_last_log_row_and_drop_breaks_in_the_keeping_cadence(tmp_path):
+    rows = [("2020-12-20T00:00:00Z", "2020-12-20T10:00:00Z", "NS")]
+    day = datetime(2021, 1, 1, tzinfo=timezone.utc)
+    for gap in (0, 30, 30, 30, 120, 30):
+        day += timedelta(days=gap)
+        rows.append((day.strftime("%Y-%m-%dT%H:%M:%SZ"), (day + timedelta(hours=8)).strftime("%Y-%m-%dT%H:%M:%SZ"), "EW"))
+    spans, excluded = sc.station_spans(_log(tmp_path, rows), 43491)
+    assert spans[0][0] == datetime(2020, 12, 20, tzinfo=timezone.utc)
+    assert spans[-1][1] == datetime(2021, 8, 29, 8, tzinfo=timezone.utc)
+    assert excluded == [(datetime(2021, 4, 1, 8, tzinfo=timezone.utc), datetime(2021, 7, 30, tzinfo=timezone.utc))]
+    assert [s[1] for s in spans[:-1]] == [e[0] for e in excluded]
+
+
+def test_kept_station_clips_the_log_spans_to_the_element_sets_and_the_period(tmp_path):
+    rows = [("2020-06-01T00:00:00Z", "2020-06-01T08:00:00Z", "EW"), ("2021-06-01T00:00:00Z", "2021-06-01T08:00:00Z", "EW")]
+
+    class Rec:
+        def __init__(self, t):
+            self.epoch = t
+    recs = [Rec(datetime(2020, 1, 1, tzinfo=timezone.utc)), Rec(datetime(2021, 3, 1, tzinfo=timezone.utc))]
+    st = sc.kept_station(43491, "Fengyun-2H", _log(tmp_path, rows), recs)
+    assert st.spans == ((datetime(2021, 1, 1, tzinfo=timezone.utc), datetime(2021, 3, 1, tzinfo=timezone.utc)),)
+
+
+def test_the_final_path_runs_the_same_event_code(mock_dir):
+    from orbit_watch.events import burns, state_changes
+    recs = sc.object_records(mock_dir / "geo" / "37344_every_2_days.tle")
+    days, steps = sc.final_burns(recs)
+    want_days, want_steps = burns(recs)
+    assert days.tolist() == want_days.tolist() and steps.tolist() == want_steps.tolist()
+    assert sc.final_state_changes(recs) == state_changes(recs)
+
