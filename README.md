@@ -97,7 +97,8 @@ Download rules:
 | GEO-region history (about 16 min) | see "Every object in the GEO region" | `$ORBIT_WATCH_DATA/geo/` |
 | GEO operating modes (about 2 min) | `python -m orbit_watch.jobs.geo_modes --geo-dir $ORBIT_WATCH_DATA/geo --out $ORBIT_WATCH_DATA/geo_modes` | `$ORBIT_WATCH_DATA/geo_modes/segments.csv`, `findings/geo_modes/` |
 | GEO state changes (2 to 18 min; measured runs took 145 to 1,083 s) | `python -m orbit_watch.jobs.state_changes` | `$ORBIT_WATCH_DATA/state_changes/events.csv`, `findings/state_changes/` |
-| GEO state changes evaluation | `python -m harness.evals.state_changes [--split dev\|all]` | `findings/state_changes/eval_<split>.json` and `.csv` |
+| GEO state changes evaluation | `python -m harness.evals.state_changes [--split dev\|all]`; `--final` adds the holdout Fengyun false-event check, run once | `findings/state_changes/eval_<split>.json` and `.csv`, `false_events_final.json` |
+| GEO state changes planted-change test (about 6 min) | `python -m harness.evals.state_injection` | `findings/state_injection/summary.json` and `trials.csv` |
 
 Tools:
 
@@ -188,7 +189,9 @@ these gates instead:
 |---|---|
 | Guardrail: GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
 | Guardrail: ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
-| At most 0.2 false events per object-year, counted on state-change events | met on QZS-3 and QZS-6, the only objects with burn logs and the objects the snap-back filter was tuned on: 0 events over 5.412 object-years of log coverage. They keep station throughout, so the check sees false departures, arrivals and keeping stops on a held object; it does not see extra or mistyped events around a real change, or false free burns on objects that are not held |
+| At most 0.2 false events per object-year, counted on state-change events | met on QZS-3, QZS-6 and Fengyun-2H, the train objects with burn logs (the snap-back filter was tuned on the two QZSS satellites): 0 events over 6.459 object-years while their logs show them on station. They keep station throughout, so the check sees false departures, arrivals and keeping stops on a held object; it does not see extra or mistyped events around a real change, or false free burns on objects that are not held |
+| The same count on the holdout Fengyun-2F and Fengyun-4A (`--final`, run once) | measured, not yet gated: FINAL_RESULT |
+| Planted changes in held satellites (`harness/evals/state_injection.py`) | measured, not yet gated: relocations at 0.1-3 deg/day caught at both ends in 0.85 (dev) and 0.84-0.85 (test) of trials, median date error 0 days; at 0.02-0.1 deg/day 0.71-0.77, p90 error 5-23 days; graveyard climbs 1.00; keeping stops 0.78-0.85, median error 9 days; free burns after a stop 0.61-0.63. False events on untouched held stretches: 0 in 2,131.9 object-years before host selection |
 | Recall and dating error on a cited list of known GEO events | dated state changes: dev 13/13, median date error 2 days; test 17/20, median 3 days (scored once). The mode layer alone: 26/33, median 11.5 days |
 | A hand audit of about 50 events from across the belt | not done |
 
@@ -390,8 +393,18 @@ alarms; the others on the dev split of `groundtruth/geo_events.csv`:
 
 Matching is rung 1's (one event per change, closest first, within 45 days; a departure of any
 kind matches a relocation start, graveyard move or end of keeping). False events are counted on
-QZS-3 and QZS-6 over the span their logs cover: 0 over 5.412 object-years (target at most 0.2 per
-object-year). Graveyard moves are still the worst dated (dev median 6 days, mostly early), because
+QZS-3, QZS-6 and Fengyun-2H while their logs show them on station: 0 over 6.459 object-years
+(target at most 0.2 per object-year). A satellite counts as on station from its first log row to
+its last, clipped to its element sets and to 2021-2025; a gap between east-west burns longer
+than twice that log's median east-west gap would mean the log shows it away, so that span is
+dropped and named in the output. No span is dropped in 2021-2025: Fengyun-2H's east-west burns
+come every 106 days at the median and at most 162 days apart. The Fengyun logs end in January and
+February 2022, so Fengyun-2H adds 1.047 object-years, and they have no stated provenance (see
+`groundtruth/README.md`), so the count on them supports the QZSS count rather than standing
+alone. `--final` runs the same count on the holdout Fengyun-2F and Fengyun-4A; it was run once,
+after everything else was fixed, and its result is in `findings/state_changes/false_events_final.json`.
+`events.state_changes` builds its series without `final=True`, so the eval runs a copy of
+`events.burns` that passes it; a test checks that the copy gives the same events on mock data. Graveyard moves are still the worst dated (dev median 6 days, mostly early), because
 sources variously date the start of the climb, its end or the decommissioning; three of the 13 dev
 events are dated only to the month and scored as the 15th.
 
@@ -420,6 +433,111 @@ arrives in the last 10 days of the data is not seen as held, so its first trim b
 `free_burn`. A climb by an object that was already free is a `free_burn`, not a `graveyard` move.
 North-south keeping stops are still dated at the window boundary. No hand audit of belt events
 has been done.
+
+#### Planted-change test (`harness/evals/state_injection.py`, `findings/state_injection/`)
+
+The cited events are few, so this test plants changes into real element sets, in memory, and
+checks what `orbit_watch.events` finds. Hosts are GEO objects whose longest held mode segment is
+at least 120 days and holds no event in the current output; holdout objects and objects with a
+test-split event in `groundtruth/geo_events.csv` are left out. Hosts go to dev or test by the
+parity of the last hex digit of the SHA-256 of their NORAD number: of 594 candidates, 491 are
+quiet, 261 dev and 230 test. Every plant starts at least 60 days into the stretch and is drawn
+with a fixed seed; trials alternate between dev and test hosts.
+
+How a plant edits the element sets. Each edited set keeps its eccentricity, inclination, node
+and argument of perigee; it gets a new mean motion n from the planted drift rate, a semi-major
+axis scaled by (n_old/n)^(2/3), and a mean anomaly shifted by the planted change in mean
+longitude, so the three agree.
+
+- **Relocation**: drift rate r for D days, then the host's own sets shifted by r*D. |r| is
+  log-uniform within five bins from 0.02 to 3 deg/day (100 trials each); the distance is
+  log-uniform from 1 to 20 deg, so D = distance/|r|, clipped to 2-120 days. Truth: a start on
+  the first day and an end on the last.
+- **Keeping stop**: after the stop day the longitude follows a free path, integrated with the
+  longitude acceleration from `orbit_watch.modes`, starting from the host's local longitude and
+  drift. Truth: a keeping stop. 160 trials.
+- **Graveyard climb**: a stop followed by 1 to 3 burns 0.5-3 days apart that raise the
+  semi-major axis 200-400 km in total. Truth: a graveyard move at the first burn. 160 trials.
+- **Free burn**: a stop, then one burn of 1.5-20 km (log-uniform, either sign) 45-120 days
+  later. Truth: a keeping stop and a free burn. 160 trials.
+
+On a free path each set keeps the host's own scatter: the host's residuals from a local line
+through 9 sets (cut at detected burns and at jumps over 10 sigma, with residuals within 2 days of
+a cut taken from elsewhere), differenced so they stay white. Scoring uses the state-change eval's
+`score` (type families, 45 days, one-to-one, closest first). Extra events are the unmatched ones
+within 45 days of the planted change (near) and, for the kinds that leave the object free, any
+after it (later). False events on untouched stretches count the unmatched events on the host
+stretch before the plant (and after a relocation); that exposure adds up over trials, so a
+stretch used by several trials counts once per trial. The belt-wide figure is taken before any
+plant: every event inside the 594 candidate held stretches with 45 days trimmed from each end.
+
+| split | kind | drift rate (deg/day) | truth | trials | recall | median \|error\| (days) | p90 (days) | mistyped | extra per trial (near / later) |
+|---|---|---|---|---|---|---|---|---|---|
+| dev | relocation | slow, 0.02-0.1 | relocation_start | 100 | 0.77 | 1 | 13 | 9 | 0.14 / 0 |
+| dev | relocation | slow, 0.02-0.1 | relocation_end | 100 | 0.74 | 0 | 5.4 | 0 | 0.14 / 0 |
+| dev | relocation | normal, 0.1-3 | relocation_start | 150 | 0.85 | 0 | 1 | 1 | 0.047 / 0 |
+| dev | relocation | normal, 0.1-3 | relocation_end | 150 | 0.85 | 0 | 2 | 0 | 0.047 / 0 |
+| dev | relocation | 0.02-0.05 | relocation_start | 50 | 0.76 | 2.5 | 19.3 | 7 | 0.24 / 0 |
+| dev | relocation | 0.02-0.05 | relocation_end | 50 | 0.70 | 0 | 11.2 | 0 | 0.24 / 0 |
+| dev | relocation | 0.05-0.1 | relocation_start | 50 | 0.78 | 1 | 4 | 2 | 0.04 / 0 |
+| dev | relocation | 0.05-0.1 | relocation_end | 50 | 0.78 | 0 | 3 | 0 | 0.04 / 0 |
+| dev | relocation | 0.1-0.3 | relocation_start | 50 | 0.78 | 0 | 1 | 1 | 0.12 / 0 |
+| dev | relocation | 0.1-0.3 | relocation_end | 50 | 0.76 | 0 | 2.6 | 0 | 0.12 / 0 |
+| dev | relocation | 0.3-1 | relocation_start | 50 | 0.82 | 0 | 1 | 0 | 0 / 0 |
+| dev | relocation | 0.3-1 | relocation_end | 50 | 0.84 | 0 | 1 | 0 | 0 / 0 |
+| dev | relocation | 1-3 | relocation_start | 50 | 0.94 | 0 | 1 | 0 | 0.02 / 0 |
+| dev | relocation | 1-3 | relocation_end | 50 | 0.94 | 0 | 1.8 | 0 | 0.02 / 0 |
+| dev | keeping_stop |  | keeping_stop | 80 | 0.85 | 9 | 33 | 0 | 0.075 / 1.925 |
+| dev | graveyard |  | graveyard | 80 | 1.00 | 0 | 1 | 0 | 0.1 / 3.112 |
+| dev | free_burn |  | keeping_stop | 80 | 0.75 | 18 | 32 | 3 | 0.525 / 2.3 |
+| dev | free_burn |  | free_burn | 80 | 0.61 | 0 | 1 | 0 | 0.525 / 2.3 |
+| test | relocation | slow, 0.02-0.1 | relocation_start | 100 | 0.75 | 1 | 21 | 13 | 0.21 / 0 |
+| test | relocation | slow, 0.02-0.1 | relocation_end | 100 | 0.71 | 0 | 23 | 0 | 0.21 / 0 |
+| test | relocation | normal, 0.1-3 | relocation_start | 150 | 0.84 | 0 | 1 | 0 | 0 / 0 |
+| test | relocation | normal, 0.1-3 | relocation_end | 150 | 0.85 | 0 | 1 | 0 | 0 / 0 |
+| test | relocation | 0.02-0.05 | relocation_start | 50 | 0.72 | 4 | 32.5 | 12 | 0.4 / 0 |
+| test | relocation | 0.02-0.05 | relocation_end | 50 | 0.64 | 1 | 37 | 0 | 0.4 / 0 |
+| test | relocation | 0.05-0.1 | relocation_start | 50 | 0.78 | 0 | 2.2 | 1 | 0.02 / 0 |
+| test | relocation | 0.05-0.1 | relocation_end | 50 | 0.78 | 0 | 5.2 | 0 | 0.02 / 0 |
+| test | relocation | 0.1-0.3 | relocation_start | 50 | 0.86 | 0 | 1 | 0 | 0 / 0 |
+| test | relocation | 0.1-0.3 | relocation_end | 50 | 0.86 | 0 | 1 | 0 | 0 / 0 |
+| test | relocation | 0.3-1 | relocation_start | 50 | 0.80 | 0 | 1 | 0 | 0 / 0 |
+| test | relocation | 0.3-1 | relocation_end | 50 | 0.84 | 0 | 1 | 0 | 0 / 0 |
+| test | relocation | 1-3 | relocation_start | 50 | 0.86 | 0 | 1 | 0 | 0 / 0 |
+| test | relocation | 1-3 | relocation_end | 50 | 0.86 | 0 | 1 | 0 | 0 / 0 |
+| test | keeping_stop |  | keeping_stop | 80 | 0.78 | 8.5 | 30 | 0 | 0 / 2.312 |
+| test | graveyard |  | graveyard | 80 | 1.00 | 0 | 1 | 0 | 0.375 / 2.375 |
+| test | free_burn |  | keeping_stop | 80 | 0.75 | 10 | 30.1 | 2 | 0.425 / 2.087 |
+| test | free_burn |  | free_burn | 80 | 0.62 | 0 | 1.1 | 0 | 0.425 / 2.087 |
+
+False events: dev 1 over 1,412.5 trial-object-years, test 1 over 1,315.9; belt-wide, before
+host selection, 0 events inside 594 held stretches over 2,131.9 object-years (0 per
+object-year).
+
+What the trials show (the dates and hosts are in `trials.csv`):
+
+- **Short moves are not seen.** Relocations of under 1.5 deg are caught at the start in 1 of 46
+  trials and missed at both ends in 45, at any drift rate. 1.5-3 deg: 93 of 128; 3-6 deg: 146 of
+  158; 6 deg and more: 165 of 168. A 1.3 deg move over 10 days by Sky Muster 2 (41794,
+  2023-02-23) and a 1.5 deg move over 42 days by ARSAT 2 (40941, 2021-05-18) give no event.
+- **Slow moves are dated late.** At 0.02-0.03 deg/day the drift stays inside the held band, so
+  the start is dated when the longitude leaves the box, about 40 days late (for example 38867
+  from 2025-03-24, 39127 from 2024-01-01, 44186 from 2024-09-28), and the arrival 120 days later
+  goes unmatched or is dated more than 45 days off.
+- **Keeping stops near a stable longitude.** Near 105 W and 75 E a free object barely drifts, so
+  its stop is dated months late or not at all: GOES 17 (43226) stopped on 2024-03-20 is dated
+  2025-10-03; MUOS 5 (41622) stopped on 2024-02-13 gives no event. Its slow libration can also
+  read as holds: EWS-G3 (35491) stopped on 2021-04-19 gives three relocation pairs from
+  2022-05-07 to 2024-11-27; GSAT 11 (43824) and DirecTV 10 (31862) do the same.
+- **False free burns on noisy hosts.** After a planted stop, the free object's set-to-set scatter
+  is the host's own; on hosts whose semi-major axis scatters by about a kilometre between sets,
+  the step detector reports 1-2 km steps as `free_burn` every month or two. Most extra events
+  are these, for example on Telstar 11N (34111), SES 4 (38087), WGS F4 (38070), Inmarsat 5-F1
+  (39476) and Cosmos 2526 (43432). Graveyard trials have no other extra type, and 116 of their
+  160 trials have none. A dead satellite may be tracked more or less cleanly than when it was
+  kept, so this measures the free-burn rule on held-satellite noise, not the belt rate.
+- **Stop then burn.** A free burn soon after a stop near the slot sometimes splits the stop with
+  a short hold, so the stop is typed `relocation_start` (5 trials).
 
 ## Method notes
 

@@ -1,5 +1,5 @@
 {
-  "commit": "5e8f2e5cecbafb4935123e87658027ec9c6e2233",
+  "commit": "c073b1a4c1df090923011017679db36bf998062e",
   "dirty": false,
   "events_file": "geo_events.csv",
   "window_days": 45,
@@ -64,22 +64,48 @@
     "objects": {
       "QZS-3": {
         "norad_id": 42917,
-        "from": "2021-01-01",
-        "to": "2025-12-31",
+        "spans": [
+          [
+            "2021-01-01",
+            "2025-12-31"
+          ]
+        ],
+        "excluded": [],
         "object_years": 4.998,
         "false_events": 0,
+        "per_object_year": 0.0,
         "events": []
       },
       "QZS-6": {
         "norad_id": 62876,
-        "from": "2025-08-02",
-        "to": "2025-12-31",
+        "spans": [
+          [
+            "2025-08-02",
+            "2025-12-31"
+          ]
+        ],
+        "excluded": [],
         "object_years": 0.414,
         "false_events": 0,
+        "per_object_year": 0.0,
+        "events": []
+      },
+      "Fengyun-2H": {
+        "norad_id": 43491,
+        "spans": [
+          [
+            "2021-01-01",
+            "2022-01-18"
+          ]
+        ],
+        "excluded": [],
+        "object_years": 1.047,
+        "false_events": 0,
+        "per_object_year": 0.0,
         "events": []
       }
     },
-    "object_years": 5.412,
+    "object_years": 6.459,
     "false_events": 0,
     "per_object_year": 0.0,
     "target": 0.2,
