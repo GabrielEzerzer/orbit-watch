@@ -253,8 +253,9 @@ def main(argv: list[str] | None = None) -> int:
                 for n, (name, log) in KEPT_OBJECTS.items()]
     fe = false_events(found, stations)
 
+    commit = _commit()
     a.out.mkdir(parents=True, exist_ok=True)
-    summary = {**_commit(), "events_file": a.events.name, "window_days": WINDOW_DAYS, **summarise(results, splits),
+    summary = {**commit, "events_file": a.events.name, "window_days": WINDOW_DAYS, **summarise(results, splits),
                "false_events": fe}
     (a.out / f"eval_{a.split}.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
     with open(a.out / f"eval_{a.split}.csv", "w", newline="", encoding="utf-8") as fh:
@@ -271,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
     print(table(summary, fe, splits))
     print(f"wrote {a.out / f'eval_{a.split}.json'} and {a.out / f'eval_{a.split}.csv'}")
     if a.final:
-        final = {**_commit(), "false_events": final_check(geo_dir)}
+        final = {**commit, "false_events": final_check(geo_dir)}
         (a.out / FINAL_OUT).write_text(json.dumps(final, indent=2) + "\n", encoding="utf-8", newline="\n")
         print("final, holdout: " + false_line(final["false_events"]))
         print(f"wrote {a.out / FINAL_OUT}")
