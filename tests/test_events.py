@@ -286,3 +286,14 @@ def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():
     drift = -1.5 * up / 42164.0 * 360.98
     found = E.state_changes(element_sets(days, lon + np.cumsum(drift) * 0.25, rate + drift))
     assert [f.event_type for f in found] == ["graveyard"]
+
+
+def test_a_burn_during_a_relocation_still_under_way_at_the_end_of_the_data_is_not_a_free_burn(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    moving = days >= 100.0
+    rate = rate + np.where(moving, 0.3, 0.0)
+    lon = lon + np.cumsum(np.where(moving, 0.3, 0.0)) * 0.25
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 90, 9.98, 10.02), held(90, 150, 9.98, 25.0, "drifting")])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([120.0]), np.array([20000.0]))
+    assert [f.event_type for f in found] == ["relocation_start"]

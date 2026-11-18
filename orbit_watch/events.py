@@ -388,6 +388,8 @@ def _departure(tr: Track, a: Segment, b: Segment, limit: float,
 def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_days: np.ndarray,
                 steps: np.ndarray) -> list[Event]:
     taken = np.array([_day(e.date) for e in found])
+    moves = sorted((e for e in found if e.event_type in (*DEPARTURES, "relocation_end")), key=lambda e: e.date)
+    open_from = _day(moves[-1].date) if moves and moves[-1].event_type == "relocation_start" else np.inf
     out = []
     for k, seg in enumerate(det):
         if seg.mode in HELD or not any(s.mode in HELD for s in det[:k]) or any(s.mode in HELD for s in det[k:]):
@@ -395,6 +397,7 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
         for day, step in zip(burn_days, steps):
             if (_day(seg.start) <= day < _day(seg.end) and abs(step) >= FREE_BURN_MIN_M
                     and tr.days[-1] - day >= HOLD_MIN_DAYS
+                    and day < open_from
                     and not (np.abs(taken - day) <= CLIMB_DAYS).any()):
                 when = GRID_START + timedelta(days=float(day))
                 out.append(Event(tr.norad_id, "free_burn", when, "a_step", round(float(step), 1),
