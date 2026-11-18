@@ -183,3 +183,23 @@ def test_end_of_inclination_keeping_at_the_same_slot_is_an_ns_keeping_stop():
     sets = [s for d, l, r, i in zip(days, lon, rate, inc) for s in element_sets([d], [l], [r], inc=float(i))]
     found = E.state_changes(sets)
     assert [f.event_type for f in found] == ["ns_keeping_stop"] and found[0].size > 0.3
+
+
+def test_a_quick_move_inside_one_held_segment_is_a_start_and_an_end(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    moving = (days >= 70.0) & (days < 74.0)
+    rate = rate + np.where(moving, -0.5, 0.0)
+    lon = lon + np.cumsum(np.where(moving, -0.5, 0.0)) * 0.25
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 150, 7.9, 10.1)])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [e.event_type for e in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[0].date) - 70.0) <= 1 and abs(E._day(found[1].date) - 74.0) <= 1
+
+
+def test_a_burn_that_returns_to_the_same_slot_is_not_a_move_inside_a_held_segment(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    rate = rate + np.where((days >= 70.0) & (days < 72.0), 0.1, 0.0) - np.where((days >= 72.0) & (days < 74.0), 0.1, 0.0)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 150, 9.9, 10.1)])
+    assert E.events_from_track(M.track(element_sets(days, lon, rate))) == []

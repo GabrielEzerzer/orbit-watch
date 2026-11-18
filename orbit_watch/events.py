@@ -13,7 +13,8 @@ from orbit_watch.clean import drop_snapback_blocks
 from orbit_watch.detect import detect
 from orbit_watch.elements import ElementSet
 from orbit_watch.generalise import FROZEN
-from orbit_watch.modes import GRID_START, Segment, Track, segments, track
+from orbit_watch.geo import wrap180
+from orbit_watch.modes import GRID_START, Segment, Track, _arc, segments, track
 from orbit_watch.series import to_series
 
 HELD = ("controlled_lon_inc", "controlled_lon")
@@ -36,6 +37,10 @@ BURN_LOOKBACK_DAYS = 60.0
 MIN_BURNS = 3
 CLIMB_DAYS = 15.0
 FREE_BURN_MIN_M = 1000.0
+MOVE_MIN_DEG = 0.5
+MOVE_SIDE_DAYS = 10.0
+MOVE_MERGE_DAYS = 2.0
+MOVE_SIDE_SETS = 3
 ROW_FIELDS = ["norad_id", "event_type", "date", "signal", "size", "lon_before", "lon_after", "mode_before",
               "mode_after", "mode_change"]
 
@@ -81,10 +86,14 @@ def _a_between(tr: Track, lo: float, hi: float) -> np.ndarray:
     return tr.semi_major_axis_km[(tr.days >= lo) & (tr.days < hi)]
 
 
+def _band(rate: np.ndarray) -> tuple[float, float]:
+    centre = float(np.median(rate))
+    return centre, max(RATE_TOL_MIN, RATE_TOL_MADS * 1.4826 * float(np.median(np.abs(rate - centre))))
+
+
 def _in_hold(tr: Track, held: Segment) -> np.ndarray:
     sel = (tr.days >= _day(held.start)) & (tr.days < _day(held.end))
-    centre = float(np.median(tr.rate[sel]))
-    tol = max(RATE_TOL_MIN, RATE_TOL_MADS * 1.4826 * float(np.median(np.abs(tr.rate[sel] - centre))))
+    centre, tol = _band(tr.rate[sel])
     width = (held.lon_max - held.lon_min) % 360.0 + 2 * BOX_MARGIN_DEG
     in_box = (tr.lon - held.lon_min + BOX_MARGIN_DEG) % 360.0 <= width
     return in_box & (np.abs(tr.rate - centre) <= tol)
@@ -180,6 +189,54 @@ def with_short_holds(tr: Track, segs: Sequence[Segment]) -> list[Segment]:
     return out
 
 
+def inner_moves(tr: Track, held: Segment) -> list[tuple[int, int]]:
+    idx = np.flatnonzero((tr.days >= _day(held.start)) & (tr.days < _day(held.end)))
+    if len(idx) < 2 * MOVE_SIDE_SETS:
+        return []
+    centre, tol = _band(tr.rate[idx])
+    out_band = idx[np.abs(tr.rate[idx] - centre) > tol]
+    runs: list[list[int]] = []
+    for i in out_band:
+        if runs and tr.days[i] - tr.days[runs[-1][-1]] <= MOVE_MERGE_DAYS:
+            runs[-1].append(int(i))
+        else:
+            runs.append([int(i)])
+    calm = np.zeros(len(tr.days), dtype=bool)
+    calm[idx] = True
+    calm[out_band] = False
+    found = []
+    for run in runs:
+        first, last = run[0], run[-1]
+        before = calm & (tr.days >= tr.days[first] - MOVE_SIDE_DAYS) & (tr.days < tr.days[first])
+        after = calm & (tr.days > tr.days[last]) & (tr.days <= tr.days[last] + MOVE_SIDE_DAYS)
+        if before.sum() < MOVE_SIDE_SETS or after.sum() < MOVE_SIDE_SETS:
+            continue
+        shift = float(wrap180(np.median(tr.lon[after]) - np.median(tr.lon[before])))
+        drift = float(np.median(tr.rate[run]) - centre)
+        if abs(shift) >= MOVE_MIN_DEG and np.sign(shift) == np.sign(drift):
+            found.append((first, int(np.flatnonzero(after)[0])))
+    return found
+
+
+def _piece(tr: Track, seg: Segment, start: datetime, end: datetime, mode: str) -> Segment:
+    sel = (tr.days >= _day(start)) & (tr.days < _day(end))
+    lon_min, lon_max = _arc(tr.lon[sel]) if sel.any() else (seg.lon_min, seg.lon_max)
+    return replace(seg, start=start, end=end, mode=mode, n_sets=int(sel.sum()), lon_min=lon_min, lon_max=lon_max)
+
+
+def with_inner_moves(tr: Track, segs: Sequence[Segment]) -> list[Segment]:
+    out: list[Segment] = []
+    for seg in segs:
+        moves = inner_moves(tr, seg) if seg.mode in HELD else []
+        start = seg.start
+        for first, arrive in moves:
+            out.append(_piece(tr, seg, start, _at(tr, first), seg.mode))
+            out.append(_piece(tr, seg, _at(tr, first), _at(tr, arrive), "drifting"))
+            start = _at(tr, arrive)
+        out.append(_piece(tr, seg, start, seg.end, seg.mode) if moves else seg)
+    return out
+
+
 def burns(records: Sequence[ElementSet]) -> tuple[np.ndarray, np.ndarray]:
     (series,) = to_series(records).values()
     dets = detect(series, FROZEN)
@@ -254,7 +311,7 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
 def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.ndarray | None = None) -> list[Event]:
     burn_days = np.array([]) if burn_days is None else burn_days
     steps = np.zeros(len(burn_days)) if steps is None else steps
-    det = [s for s in with_short_holds(tr, segments(tr)) if s.mode != "undetermined"]
+    det = [s for s in with_inner_moves(tr, with_short_holds(tr, segments(tr))) if s.mode != "undetermined"]
     out: list[Event] = []
     departed: float | None = None
     same_slot: Segment | None = None
