@@ -506,10 +506,10 @@ finds 764 events on 301 of them; the full list is `findings/state_changes/events
 
 | type | 2021 | 2022 | 2023 | 2024 | 2025 | total | after steps 6-11 | before steps 6-11 |
 |---|---|---|---|---|---|---|---|---|
-| relocation_start | 40 | 39 | 56 | 48 | 57 | 240 | 240 | 214 |
+| relocation_start | 41 | 40 | 56 | 48 | 57 | 242 | 240 | 214 |
 | relocation_end | 65 | 59 | 84 | 63 | 68 | 339 | 341 | 325 |
 | graveyard | 16 | 11 | 21 | 15 | 20 | 83 | 83 | 83 |
-| keeping_stop | 3 | 8 | 2 | 2 | 4 | 19 | 22 | 31 |
+| keeping_stop | 2 | 7 | 2 | 2 | 4 | 17 | 22 | 31 |
 | ns_keeping_stop | 9 | 7 | 14 | 14 | 15 | 59 | 59 | 76 |
 | free_burn | 0 | 0 | 5 | 10 | 9 | 24 | 32 | 96 |
 
@@ -630,7 +630,9 @@ EUTE 113 West A's (29162) keeping stop, 50 days late because a small burn after 
 anchors it (#73). The other two over 3 days are DSN-3's (61733) arrival, dated at a trim inside
 its new slot 9 days after it settled (#74), and a north-south stop 4 days late. The 2 real events
 left undated are arrivals after a transfer orbit, which the sets bound only to a window across a
-gap (#70). Issues #69 to #74 hold the failure patterns this audit found.
+gap (#70). Issues #69 to #74 hold the failure patterns this audit found. Since the audit, the
+`size` of the 11 sampled relocation starts has changed with the fix to that column; no sampled
+row changed its type or date.
 
 #### Planted-change test (`harness/evals/state_injection.py`, `findings/state_injection/`)
 
