@@ -1,0 +1,806 @@
+{
+  "commit": "d31b1ad147434a87f53bcf4ea4297e676923f828",
+  "dirty": false,
+  "seed": 20261118,
+  "window_days": 45,
+  "hosts": {
+    "candidates": 594,
+    "quiet": 491,
+    "dev": 261,
+    "test": 230,
+    "host_file": "state_injection_hosts.json"
+  },
+  "dev": {
+    "hosts": 214,
+    "kinds": {
+      "relocation": {
+        "0.02-0.05": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 34,
+              "recall": 0.68,
+              "median_abs_error_days": 2.5,
+              "p90_abs_error_days": 13.7,
+              "same_type": 30,
+              "mistyped": 4
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 34,
+              "recall": 0.68,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 7.8,
+              "same_type": 34,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.2,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "relocation_start": 7,
+            "relocation_end": 3
+          },
+          "all_caught": {
+            "trials": 31,
+            "fraction": 0.62
+          }
+        },
+        "0.05-0.1": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 40,
+              "recall": 0.8,
+              "median_abs_error_days": 1.0,
+              "p90_abs_error_days": 4.0,
+              "same_type": 38,
+              "mistyped": 2
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 40,
+              "recall": 0.8,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 3.1,
+              "same_type": 40,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.04,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "relocation_start": 2
+          },
+          "all_caught": {
+            "trials": 40,
+            "fraction": 0.8
+          }
+        },
+        "0.1-0.3": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 39,
+              "recall": 0.78,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 38,
+              "mistyped": 1
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 38,
+              "recall": 0.76,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 2.6,
+              "same_type": 38,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.02,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "free_burn": 1
+          },
+          "all_caught": {
+            "trials": 38,
+            "fraction": 0.76
+          }
+        },
+        "0.3-1": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 41,
+              "recall": 0.82,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 41,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 42,
+              "recall": 0.84,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 42,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.0,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {},
+          "all_caught": {
+            "trials": 41,
+            "fraction": 0.82
+          }
+        },
+        "1-3": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 47,
+              "recall": 0.94,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 47,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 47,
+              "recall": 0.94,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.8,
+              "same_type": 47,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.02,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "keeping_stop": 1
+          },
+          "all_caught": {
+            "trials": 47,
+            "fraction": 0.94
+          }
+        },
+        "slow (0.02-0.1)": {
+          "trials": 100,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 100,
+              "caught": 74,
+              "recall": 0.74,
+              "median_abs_error_days": 1.0,
+              "p90_abs_error_days": 6.7,
+              "same_type": 68,
+              "mistyped": 6
+            },
+            "relocation_end": {
+              "trials": 100,
+              "caught": 74,
+              "recall": 0.74,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 4.7,
+              "same_type": 74,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.12,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "relocation_start": 9,
+            "relocation_end": 3
+          },
+          "all_caught": {
+            "trials": 71,
+            "fraction": 0.71
+          }
+        },
+        "normal (0.1-3)": {
+          "trials": 150,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 150,
+              "caught": 127,
+              "recall": 0.8467,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 126,
+              "mistyped": 1
+            },
+            "relocation_end": {
+              "trials": 150,
+              "caught": 127,
+              "recall": 0.8467,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 2.0,
+              "same_type": 127,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.013,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "free_burn": 1,
+            "keeping_stop": 1
+          },
+          "all_caught": {
+            "trials": 126,
+            "fraction": 0.84
+          }
+        }
+      },
+      "keeping_stop": {
+        "trials": 80,
+        "by_truth_type": {
+          "keeping_stop": {
+            "trials": 80,
+            "caught": 68,
+            "recall": 0.85,
+            "median_abs_error_days": 9.0,
+            "p90_abs_error_days": 33.0,
+            "same_type": 68,
+            "mistyped": 0
+          }
+        },
+        "extra_near_per_trial": 0.075,
+        "extra_later_per_trial": 1.925,
+        "extra_median_per_trial": 0.0,
+        "extra_types": {
+          "keeping_stop": 9,
+          "free_burn": 139,
+          "relocation_start": 6,
+          "relocation_end": 6
+        },
+        "by_host_noise": {
+          "held-era SMA scatter < 0.1 km": {
+            "trials": 68,
+            "hosts": 60,
+            "extra_events": 35,
+            "extra_free_burns": 19,
+            "extras_per_trial": 0.515,
+            "extras_median_per_trial": 0.0
+          },
+          "held-era SMA scatter >= 0.1 km": {
+            "trials": 12,
+            "hosts": 10,
+            "extra_events": 125,
+            "extra_free_burns": 120,
+            "extras_per_trial": 10.417,
+            "extras_median_per_trial": 8.5
+          }
+        }
+      },
+      "graveyard": {
+        "trials": 80,
+        "by_truth_type": {
+          "graveyard": {
+            "trials": 80,
+            "caught": 80,
+            "recall": 1.0,
+            "median_abs_error_days": 0.0,
+            "p90_abs_error_days": 1.0,
+            "same_type": 80,
+            "mistyped": 0
+          }
+        },
+        "extra_near_per_trial": 0.1,
+        "extra_later_per_trial": 3.112,
+        "extra_median_per_trial": 0.0,
+        "extra_types": {
+          "free_burn": 257
+        },
+        "by_host_noise": {
+          "held-era SMA scatter < 0.1 km": {
+            "trials": 68,
+            "hosts": 58,
+            "extra_events": 15,
+            "extra_free_burns": 15,
+            "extras_per_trial": 0.221,
+            "extras_median_per_trial": 0.0
+          },
+          "held-era SMA scatter >= 0.1 km": {
+            "trials": 12,
+            "hosts": 11,
+            "extra_events": 242,
+            "extra_free_burns": 242,
+            "extras_per_trial": 20.167,
+            "extras_median_per_trial": 16.0
+          }
+        }
+      },
+      "free_burn": {
+        "trials": 80,
+        "by_truth_type": {
+          "keeping_stop": {
+            "trials": 80,
+            "caught": 60,
+            "recall": 0.75,
+            "median_abs_error_days": 18.0,
+            "p90_abs_error_days": 32.0,
+            "same_type": 57,
+            "mistyped": 3
+          },
+          "free_burn": {
+            "trials": 80,
+            "caught": 49,
+            "recall": 0.6125,
+            "median_abs_error_days": 0.0,
+            "p90_abs_error_days": 1.0,
+            "same_type": 49,
+            "mistyped": 0
+          }
+        },
+        "extra_near_per_trial": 0.525,
+        "extra_later_per_trial": 2.3,
+        "extra_median_per_trial": 0.0,
+        "extra_types": {
+          "keeping_stop": 23,
+          "free_burn": 186,
+          "relocation_start": 7,
+          "relocation_end": 10
+        },
+        "all_caught": {
+          "trials": 47,
+          "fraction": 0.5875
+        },
+        "by_host_noise": {
+          "held-era SMA scatter < 0.1 km": {
+            "trials": 68,
+            "hosts": 58,
+            "extra_events": 54,
+            "extra_free_burns": 16,
+            "extras_per_trial": 0.794,
+            "extras_median_per_trial": 0.0
+          },
+          "held-era SMA scatter >= 0.1 km": {
+            "trials": 12,
+            "hosts": 11,
+            "extra_events": 172,
+            "extra_free_burns": 170,
+            "extras_per_trial": 14.333,
+            "extras_median_per_trial": 10.5
+          }
+        }
+      }
+    },
+    "untouched": {
+      "object_years": 1412.471,
+      "events": 1,
+      "per_object_year": 0.0007,
+      "by_type": {
+        "keeping_stop": 1
+      }
+    }
+  },
+  "test": {
+    "hosts": 208,
+    "kinds": {
+      "relocation": {
+        "0.02-0.05": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 36,
+              "recall": 0.72,
+              "median_abs_error_days": 2.0,
+              "p90_abs_error_days": 14.5,
+              "same_type": 36,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 33,
+              "recall": 0.66,
+              "median_abs_error_days": 1.0,
+              "p90_abs_error_days": 34.8,
+              "same_type": 33,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.14,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "relocation_end": 5,
+            "relocation_start": 2
+          },
+          "all_caught": {
+            "trials": 31,
+            "fraction": 0.62
+          }
+        },
+        "0.05-0.1": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 38,
+              "recall": 0.76,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 2.0,
+              "same_type": 38,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 38,
+              "recall": 0.76,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 38,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.0,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {},
+          "all_caught": {
+            "trials": 38,
+            "fraction": 0.76
+          }
+        },
+        "0.1-0.3": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 43,
+              "recall": 0.86,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 43,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 43,
+              "recall": 0.86,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 43,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.0,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {},
+          "all_caught": {
+            "trials": 43,
+            "fraction": 0.86
+          }
+        },
+        "0.3-1": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 40,
+              "recall": 0.8,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 40,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 42,
+              "recall": 0.84,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 42,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.0,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {},
+          "all_caught": {
+            "trials": 40,
+            "fraction": 0.8
+          }
+        },
+        "1-3": {
+          "trials": 50,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 50,
+              "caught": 43,
+              "recall": 0.86,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 43,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 50,
+              "caught": 43,
+              "recall": 0.86,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 43,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.0,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {},
+          "all_caught": {
+            "trials": 43,
+            "fraction": 0.86
+          }
+        },
+        "slow (0.02-0.1)": {
+          "trials": 100,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 100,
+              "caught": 74,
+              "recall": 0.74,
+              "median_abs_error_days": 1.0,
+              "p90_abs_error_days": 8.0,
+              "same_type": 74,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 100,
+              "caught": 71,
+              "recall": 0.71,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 23.0,
+              "same_type": 71,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.07,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {
+            "relocation_end": 5,
+            "relocation_start": 2
+          },
+          "all_caught": {
+            "trials": 69,
+            "fraction": 0.69
+          }
+        },
+        "normal (0.1-3)": {
+          "trials": 150,
+          "by_truth_type": {
+            "relocation_start": {
+              "trials": 150,
+              "caught": 126,
+              "recall": 0.84,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 126,
+              "mistyped": 0
+            },
+            "relocation_end": {
+              "trials": 150,
+              "caught": 128,
+              "recall": 0.8533,
+              "median_abs_error_days": 0.0,
+              "p90_abs_error_days": 1.0,
+              "same_type": 128,
+              "mistyped": 0
+            }
+          },
+          "extra_near_per_trial": 0.0,
+          "extra_later_per_trial": 0.0,
+          "extra_median_per_trial": 0.0,
+          "extra_types": {},
+          "all_caught": {
+            "trials": 126,
+            "fraction": 0.84
+          }
+        }
+      },
+      "keeping_stop": {
+        "trials": 80,
+        "by_truth_type": {
+          "keeping_stop": {
+            "trials": 80,
+            "caught": 62,
+            "recall": 0.775,
+            "median_abs_error_days": 8.5,
+            "p90_abs_error_days": 30.0,
+            "same_type": 62,
+            "mistyped": 0
+          }
+        },
+        "extra_near_per_trial": 0.0,
+        "extra_later_per_trial": 2.312,
+        "extra_median_per_trial": 0.0,
+        "extra_types": {
+          "free_burn": 161,
+          "relocation_start": 6,
+          "relocation_end": 6,
+          "keeping_stop": 11,
+          "ns_keeping_stop": 1
+        },
+        "by_host_noise": {
+          "held-era SMA scatter < 0.1 km": {
+            "trials": 69,
+            "hosts": 56,
+            "extra_events": 57,
+            "extra_free_burns": 33,
+            "extras_per_trial": 0.826,
+            "extras_median_per_trial": 0.0
+          },
+          "held-era SMA scatter >= 0.1 km": {
+            "trials": 11,
+            "hosts": 10,
+            "extra_events": 128,
+            "extra_free_burns": 128,
+            "extras_per_trial": 11.636,
+            "extras_median_per_trial": 8.0
+          }
+        }
+      },
+      "graveyard": {
+        "trials": 80,
+        "by_truth_type": {
+          "graveyard": {
+            "trials": 80,
+            "caught": 80,
+            "recall": 1.0,
+            "median_abs_error_days": 0.0,
+            "p90_abs_error_days": 1.0,
+            "same_type": 80,
+            "mistyped": 0
+          }
+        },
+        "extra_near_per_trial": 0.375,
+        "extra_later_per_trial": 2.375,
+        "extra_median_per_trial": 0.0,
+        "extra_types": {
+          "free_burn": 220
+        },
+        "by_host_noise": {
+          "held-era SMA scatter < 0.1 km": {
+            "trials": 67,
+            "hosts": 61,
+            "extra_events": 55,
+            "extra_free_burns": 55,
+            "extras_per_trial": 0.821,
+            "extras_median_per_trial": 0.0
+          },
+          "held-era SMA scatter >= 0.1 km": {
+            "trials": 13,
+            "hosts": 12,
+            "extra_events": 165,
+            "extra_free_burns": 165,
+            "extras_per_trial": 12.692,
+            "extras_median_per_trial": 10.0
+          }
+        }
+      },
+      "free_burn": {
+        "trials": 80,
+        "by_truth_type": {
+          "keeping_stop": {
+            "trials": 80,
+            "caught": 60,
+            "recall": 0.75,
+            "median_abs_error_days": 10.0,
+            "p90_abs_error_days": 30.1,
+            "same_type": 58,
+            "mistyped": 2
+          },
+          "free_burn": {
+            "trials": 80,
+            "caught": 50,
+            "recall": 0.625,
+            "median_abs_error_days": 0.0,
+            "p90_abs_error_days": 1.1,
+            "same_type": 50,
+            "mistyped": 0
+          }
+        },
+        "extra_near_per_trial": 0.425,
+        "extra_later_per_trial": 2.087,
+        "extra_median_per_trial": 1.0,
+        "extra_types": {
+          "keeping_stop": 23,
+          "free_burn": 172,
+          "relocation_end": 4,
+          "relocation_start": 2
+        },
+        "all_caught": {
+          "trials": 46,
+          "fraction": 0.575
+        },
+        "by_host_noise": {
+          "held-era SMA scatter < 0.1 km": {
+            "trials": 64,
+            "hosts": 57,
+            "extra_events": 51,
+            "extra_free_burns": 25,
+            "extras_per_trial": 0.797,
+            "extras_median_per_trial": 0.5
+          },
+          "held-era SMA scatter >= 0.1 km": {
+            "trials": 16,
+            "hosts": 12,
+            "extra_events": 150,
+            "extra_free_burns": 147,
+            "extras_per_trial": 9.375,
+            "extras_median_per_trial": 9.5
+          }
+        }
+      }
+    },
+    "untouched": {
+      "object_years": 1315.906,
+      "events": 1,
+      "per_object_year": 0.0008,
+      "by_type": {
+        "relocation_start": 1
+      }
+    }
+  },
+  "free_burns_caught_4_days_or_more_off": [
+    {
+      "trial": 829,
+      "norad_id": 42698,
+      "error_days": 4,
+      "host_sma_scatter_km": 0.2473
+    },
+    {
+      "trial": 846,
+      "norad_id": 38070,
+      "error_days": 39,
+      "host_sma_scatter_km": 0.2463
+    },
+    {
+      "trial": 852,
+      "norad_id": 42709,
+      "error_days": -24,
+      "host_sma_scatter_km": 0.1758
+    },
+    {
+      "trial": 919,
+      "norad_id": 61503,
+      "error_days": 5,
+      "host_sma_scatter_km": 0.1284
+    },
+    {
+      "trial": 959,
+      "norad_id": 57045,
+      "error_days": 36,
+      "host_sma_scatter_km": 0.0768
+    }
+  ],
+  "belt_held_stretches": {
+    "what": "every event the current code dates inside a candidate held stretch, 45 days trimmed from each end, before hosts are chosen; an upper bound on false events on held satellites",
+    "stretches": 594,
+    "object_years": 2131.937,
+    "events": 0,
+    "per_object_year": 0.0,
+    "by_type": {},
+    "list": []
+  }
+}

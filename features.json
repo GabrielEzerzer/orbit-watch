@@ -94,11 +94,20 @@
     {
       "name": "GEO state changes evaluation",
       "kind": "eval",
-      "description": "Scores dated state changes against the cited list of real GEO events (recall and date error per split and type) and counts false events on QZS-3 and QZS-6 over their log coverage.",
-      "command": "python -m harness.evals.state_changes [--split dev|all] [--events CSV] [--geo-dir DIR] [--out DIR]",
-      "inputs": ["an events CSV (default groundtruth/geo_events.csv)", "GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "groundtruth/qzss_manoeuvres.csv for the log coverage", "groundtruth/splits.json, to skip holdout objects"],
-      "outputs": ["OUT/eval_<split>.json (default findings/state_changes)", "OUT/eval_<split>.csv", "a score table on stdout"],
+      "description": "Scores dated state changes against the cited list of real GEO events (recall and date error per split and type) and counts false events on QZS-3, QZS-6 and Fengyun-2H while their logs show them on station; --final adds the holdout Fengyun-2F and Fengyun-4A, run once.",
+      "command": "python -m harness.evals.state_changes [--split dev|all] [--final] [--events CSV] [--geo-dir DIR] [--out DIR]",
+      "inputs": ["an events CSV (default groundtruth/geo_events.csv)", "GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "groundtruth/qzss_manoeuvres.csv and groundtruth/fengyun_manoeuvres.csv for the on-station spans", "groundtruth/splits.json, to skip holdout objects outside --final"],
+      "outputs": ["OUT/eval_<split>.json (default findings/state_changes)", "OUT/eval_<split>.csv", "OUT/false_events_final.json with --final", "a score table on stdout"],
       "test": "tests/test_state_changes_eval.py"
+    },
+    {
+      "name": "GEO state changes planted-change test",
+      "kind": "eval",
+      "description": "Plants relocations, keeping stops, graveyard climbs and free burns into the element sets of held GEO satellites with a fixed seed, and reports recall, date error and extra events per kind and drift rate on dev and test hosts, plus false events on the untouched stretches.",
+      "command": "python -m harness.evals.state_injection [--geo-dir DIR] [--out DIR] [--freeze]",
+      "inputs": ["GEO-DIR/manifest.json and GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)", "harness/evals/state_injection_hosts.json, the frozen host stretches (rebuilt by --freeze from groundtruth/splits.json, groundtruth/geo_events.csv and the current code)"],
+      "outputs": ["OUT/summary.json (default findings/state_injection)", "OUT/trials.csv", "a score table on stdout"],
+      "test": "tests/test_state_injection.py"
     },
     {
       "name": "Hand audit of belt state changes",

@@ -1,0 +1,5971 @@
+{
+ "commit": "738e41f0003c693c7ef0807adedeb080138694ee",
+ "dirty": false,
+ "rule": "longest held mode segment of at least 120 days per GEO-region object, holdout objects and objects with a test-split event left out; quiet means no state-change event inside it at this commit; only quiet stretches host plants",
+ "excluded_objects": [
+  23331,
+  25071,
+  25657,
+  26853,
+  27400,
+  27460,
+  28707,
+  28902,
+  28912,
+  29648,
+  37158,
+  37746,
+  38049,
+  40258,
+  41838,
+  41882,
+  42738,
+  49332,
+  49336,
+  51850,
+  55841,
+  56371
+ ],
+ "candidates": [
+  {
+   "norad_id": 19548,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T07:30:04.262976+00:00",
+   "sma_scatter_km": 0.062
+  },
+  {
+   "norad_id": 20253,
+   "start": "2023-06-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T08:19:59.483136+00:00",
+   "sma_scatter_km": 0.0774
+  },
+  {
+   "norad_id": 20776,
+   "start": "2021-01-01",
+   "end": "2024-10-08",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:44:30.159744+00:00",
+   "sma_scatter_km": 0.0858
+  },
+  {
+   "norad_id": 21639,
+   "start": "2021-01-01",
+   "end": "2024-01-12",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:44:02.265216+00:00",
+   "sma_scatter_km": 0.0496
+  },
+  {
+   "norad_id": 22314,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:55:08.052960+00:00",
+   "sma_scatter_km": 0.0535
+  },
+  {
+   "norad_id": 22787,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:43:15.280320+00:00",
+   "sma_scatter_km": 0.0737
+  },
+  {
+   "norad_id": 22988,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:51:36.277920+00:00",
+   "sma_scatter_km": 0.0314
+  },
+  {
+   "norad_id": 23435,
+   "start": "2021-02-26",
+   "end": "2022-04-22",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T08:18:44.602848+00:00",
+   "sma_scatter_km": 0.0163
+  },
+  {
+   "norad_id": 23467,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T05:58:38.618112+00:00",
+   "sma_scatter_km": 0.0294
+  },
+  {
+   "norad_id": 23553,
+   "start": "2021-01-27",
+   "end": "2024-06-10",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T02:49:38.621568+00:00",
+   "sma_scatter_km": 0.0056
+  },
+  {
+   "norad_id": 23613,
+   "start": "2021-01-01",
+   "end": "2025-04-06",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T11:34:48.326592+00:00",
+   "sma_scatter_km": 0.0264
+  },
+  {
+   "norad_id": 23628,
+   "start": "2021-01-01",
+   "end": "2022-10-19",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T07:40:48.235872+00:00",
+   "sma_scatter_km": 0.0496
+  },
+  {
+   "norad_id": 23712,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:00:41.855328+00:00",
+   "sma_scatter_km": 0.0266
+  },
+  {
+   "norad_id": 24315,
+   "start": "2021-01-01",
+   "end": "2023-05-17",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:56:01.294080+00:00",
+   "sma_scatter_km": 0.0412
+  },
+  {
+   "norad_id": 24732,
+   "start": "2021-01-01",
+   "end": "2021-05-27",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:09:04.302144+00:00",
+   "sma_scatter_km": 0.0345
+  },
+  {
+   "norad_id": 24812,
+   "start": "2021-11-23",
+   "end": "2022-12-18",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:09:11.043360+00:00",
+   "sma_scatter_km": 0.0193
+  },
+  {
+   "norad_id": 24916,
+   "start": "2022-05-22",
+   "end": "2024-07-10",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T12:34:12.637632+00:00",
+   "sma_scatter_km": 0.0118
+  },
+  {
+   "norad_id": 24936,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:01:14.523744+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 24957,
+   "start": "2021-01-01",
+   "end": "2021-11-23",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:51.693600+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 25019,
+   "start": "2021-11-23",
+   "end": "2022-06-21",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:56.640192+00:00",
+   "sma_scatter_km": 0.0202
+  },
+  {
+   "norad_id": 25153,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T01:04:31.357632+00:00",
+   "sma_scatter_km": 0.0638
+  },
+  {
+   "norad_id": 25258,
+   "start": "2021-01-01",
+   "end": "2022-05-22",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:08:26.597184+00:00",
+   "sma_scatter_km": 0.0154
+  },
+  {
+   "norad_id": 25462,
+   "start": "2022-06-21",
+   "end": "2025-04-06",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-30T19:59:07.896192+00:00",
+   "sma_scatter_km": 0.039
+  },
+  {
+   "norad_id": 25630,
+   "start": "2021-01-01",
+   "end": "2021-11-23",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T08:02:00.629664+00:00",
+   "sma_scatter_km": 0.0521
+  },
+  {
+   "norad_id": 25639,
+   "start": "2021-01-01",
+   "end": "2024-10-08",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:32:49.135200+00:00",
+   "sma_scatter_km": 0.0238
+  },
+  {
+   "norad_id": 25740,
+   "start": "2021-01-01",
+   "end": "2021-11-23",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:51.693600+00:00",
+   "sma_scatter_km": 0.0241
+  },
+  {
+   "norad_id": 25894,
+   "start": "2021-03-28",
+   "end": "2022-01-22",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:53:50.936640+00:00",
+   "sma_scatter_km": 0.0519
+  },
+  {
+   "norad_id": 25924,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:05:32.260704+00:00",
+   "sma_scatter_km": 0.0084
+  },
+  {
+   "norad_id": 25954,
+   "start": "2021-01-27",
+   "end": "2023-02-16",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T12:28:37.345152+00:00",
+   "sma_scatter_km": 0.0433
+  },
+  {
+   "norad_id": 25967,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T09:22:13.863936+00:00",
+   "sma_scatter_km": 0.0247
+  },
+  {
+   "norad_id": 26038,
+   "start": "2021-01-01",
+   "end": "2023-07-16",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:33:14.483808+00:00",
+   "sma_scatter_km": 0.0118
+  },
+  {
+   "norad_id": 26052,
+   "start": "2021-01-01",
+   "end": "2024-08-09",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T10:55:59.544192+00:00",
+   "sma_scatter_km": 0.028
+  },
+  {
+   "norad_id": 26107,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:22:15.536064+00:00",
+   "sma_scatter_km": 0.0631
+  },
+  {
+   "norad_id": 26356,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T07:29:44.570688+00:00",
+   "sma_scatter_km": 0.0709
+  },
+  {
+   "norad_id": 26388,
+   "start": "2021-01-01",
+   "end": "2023-07-16",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:16:31.086048+00:00",
+   "sma_scatter_km": 0.0381
+  },
+  {
+   "norad_id": 26451,
+   "start": "2021-01-01",
+   "end": "2024-01-12",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:50:24.332352+00:00",
+   "sma_scatter_km": 0.0594
+  },
+  {
+   "norad_id": 26494,
+   "start": "2021-01-01",
+   "end": "2021-05-27",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:28:15.760128+00:00",
+   "sma_scatter_km": 0.0533
+  },
+  {
+   "norad_id": 26554,
+   "start": "2021-01-01",
+   "end": "2024-07-10",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T15:15:54.916992+00:00",
+   "sma_scatter_km": 0.035
+  },
+  {
+   "norad_id": 26575,
+   "start": "2021-08-25",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:47:47.082624+00:00",
+   "sma_scatter_km": 0.0406
+  },
+  {
+   "norad_id": 26580,
+   "start": "2021-01-01",
+   "end": "2024-11-07",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:56:27.261312+00:00",
+   "sma_scatter_km": 0.0549
+  },
+  {
+   "norad_id": 26590,
+   "start": "2021-01-01",
+   "end": "2021-09-24",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T06:13:04.138752+00:00",
+   "sma_scatter_km": 0.0221
+  },
+  {
+   "norad_id": 26608,
+   "start": "2021-01-01",
+   "end": "2024-07-10",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:23:46.093056+00:00",
+   "sma_scatter_km": 0.0104
+  },
+  {
+   "norad_id": 26624,
+   "start": "2021-03-28",
+   "end": "2024-11-07",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T13:25:07.760640+00:00",
+   "sma_scatter_km": 0.009
+  },
+  {
+   "norad_id": 26638,
+   "start": "2021-10-24",
+   "end": "2023-01-17",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:24:22.832640+00:00",
+   "sma_scatter_km": 0.065
+  },
+  {
+   "norad_id": 26639,
+   "start": "2021-01-01",
+   "end": "2022-11-18",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:04:13.754784+00:00",
+   "sma_scatter_km": 0.0446
+  },
+  {
+   "norad_id": 26715,
+   "start": "2021-04-27",
+   "end": "2024-09-08",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T05:34:14.787840+00:00",
+   "sma_scatter_km": 0.0346
+  },
+  {
+   "norad_id": 26719,
+   "start": "2021-01-01",
+   "end": "2022-11-18",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T16:47:38.706720+00:00",
+   "sma_scatter_km": 0.0415
+  },
+  {
+   "norad_id": 26766,
+   "start": "2021-06-26",
+   "end": "2024-01-12",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T18:19:44.886144+00:00",
+   "sma_scatter_km": 0.0306
+  },
+  {
+   "norad_id": 26824,
+   "start": "2021-01-01",
+   "end": "2025-03-07",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:28:38.828928+00:00",
+   "sma_scatter_km": 0.1039
+  },
+  {
+   "norad_id": 26880,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T08:44:09.610368+00:00",
+   "sma_scatter_km": 0.0664
+  },
+  {
+   "norad_id": 26900,
+   "start": "2021-01-01",
+   "end": "2025-05-06",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T17:08:27.443328+00:00",
+   "sma_scatter_km": 0.0489
+  },
+  {
+   "norad_id": 27168,
+   "start": "2021-01-01",
+   "end": "2024-09-08",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T06:06:42.248160+00:00",
+   "sma_scatter_km": 0.0631
+  },
+  {
+   "norad_id": 27378,
+   "start": "2021-01-01",
+   "end": "2022-02-21",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:01:41.759904+00:00",
+   "sma_scatter_km": 0.0252
+  },
+  {
+   "norad_id": 27380,
+   "start": "2021-01-01",
+   "end": "2025-06-05",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:00:36.602208+00:00",
+   "sma_scatter_km": 0.032
+  },
+  {
+   "norad_id": 27389,
+   "start": "2021-01-01",
+   "end": "2022-12-18",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T10:57:59.353344+00:00",
+   "sma_scatter_km": 0.0549
+  },
+  {
+   "norad_id": 27414,
+   "start": "2021-01-01",
+   "end": "2024-01-12",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:17:03.271776+00:00",
+   "sma_scatter_km": 0.0179
+  },
+  {
+   "norad_id": 27426,
+   "start": "2021-07-26",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:40:12.662976+00:00",
+   "sma_scatter_km": 0.0098
+  },
+  {
+   "norad_id": 27438,
+   "start": "2021-01-01",
+   "end": "2025-02-05",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T10:50:26.905920+00:00",
+   "sma_scatter_km": 0.0227
+  },
+  {
+   "norad_id": 27445,
+   "start": "2022-10-19",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:07:56.162208+00:00",
+   "sma_scatter_km": 0.0143
+  },
+  {
+   "norad_id": 27509,
+   "start": "2021-01-01",
+   "end": "2022-09-19",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T02:54:38.143584+00:00",
+   "sma_scatter_km": 0.0704
+  },
+  {
+   "norad_id": 27513,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T04:36:58.341888+00:00",
+   "sma_scatter_km": 0.0233
+  },
+  {
+   "norad_id": 27528,
+   "start": "2021-01-01",
+   "end": "2022-05-22",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T19:55:30.742752+00:00",
+   "sma_scatter_km": 0.0547
+  },
+  {
+   "norad_id": 27566,
+   "start": "2021-01-01",
+   "end": "2025-03-07",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:58:55.981344+00:00",
+   "sma_scatter_km": 0.0496
+  },
+  {
+   "norad_id": 27603,
+   "start": "2021-01-01",
+   "end": "2023-08-15",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:05.237376+00:00",
+   "sma_scatter_km": 0.0392
+  },
+  {
+   "norad_id": 27632,
+   "start": "2022-03-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:35:51.933696+00:00",
+   "sma_scatter_km": 0.0218
+  },
+  {
+   "norad_id": 27691,
+   "start": "2022-02-21",
+   "end": "2024-07-10",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:50:41.294400+00:00",
+   "sma_scatter_km": 0.0345
+  },
+  {
+   "norad_id": 27711,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T10:10:11.428896+00:00",
+   "sma_scatter_km": 0.0191
+  },
+  {
+   "norad_id": 27715,
+   "start": "2021-01-01",
+   "end": "2023-05-17",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:35:27.518784+00:00",
+   "sma_scatter_km": 0.037
+  },
+  {
+   "norad_id": 27718,
+   "start": "2022-05-22",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:34:21.875808+00:00",
+   "sma_scatter_km": 0.0294
+  },
+  {
+   "norad_id": 27811,
+   "start": "2022-04-22",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:24:00.852192+00:00",
+   "sma_scatter_km": 0.0121
+  },
+  {
+   "norad_id": 27825,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T18:14:52.852416+00:00",
+   "sma_scatter_km": 0.0659
+  },
+  {
+   "norad_id": 27831,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:36:36.660672+00:00",
+   "sma_scatter_km": 0.0106
+  },
+  {
+   "norad_id": 27854,
+   "start": "2021-01-01",
+   "end": "2023-05-17",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:54:44.180352+00:00",
+   "sma_scatter_km": 0.0334
+  },
+  {
+   "norad_id": 27875,
+   "start": "2024-06-10",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-30T19:51:53.590176+00:00",
+   "sma_scatter_km": 0.0628
+  },
+  {
+   "norad_id": 27954,
+   "start": "2021-01-01",
+   "end": "2023-10-14",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:57:30.052800+00:00",
+   "sma_scatter_km": 0.1264
+  },
+  {
+   "norad_id": 28089,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:38:36.469824+00:00",
+   "sma_scatter_km": 0.0045
+  },
+  {
+   "norad_id": 28117,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:13:53.837184+00:00",
+   "sma_scatter_km": 0.0014
+  },
+  {
+   "norad_id": 28158,
+   "start": "2021-01-01",
+   "end": "2025-05-06",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:07:18.721632+00:00",
+   "sma_scatter_km": 0.0319
+  },
+  {
+   "norad_id": 28184,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T04:36:05.925600+00:00",
+   "sma_scatter_km": 0.0283
+  },
+  {
+   "norad_id": 28187,
+   "start": "2021-02-26",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:25:49.403712+00:00",
+   "sma_scatter_km": 0.0472
+  },
+  {
+   "norad_id": 28252,
+   "start": "2023-01-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:03:11.615904+00:00",
+   "sma_scatter_km": 0.0213
+  },
+  {
+   "norad_id": 28358,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:34:38.604864+00:00",
+   "sma_scatter_km": 0.1556
+  },
+  {
+   "norad_id": 28378,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:03:19.104192+00:00",
+   "sma_scatter_km": 0.0118
+  },
+  {
+   "norad_id": 28446,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:04:56.449344+00:00",
+   "sma_scatter_km": 0.016
+  },
+  {
+   "norad_id": 28472,
+   "start": "2021-01-01",
+   "end": "2021-07-26",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:01:36.505920+00:00",
+   "sma_scatter_km": 0.0443
+  },
+  {
+   "norad_id": 28526,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:41:19.457088+00:00",
+   "sma_scatter_km": 0.042
+  },
+  {
+   "norad_id": 28542,
+   "start": "2022-02-21",
+   "end": "2025-08-04",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-30T13:50:57.202080+00:00",
+   "sma_scatter_km": 0.1489
+  },
+  {
+   "norad_id": 28626,
+   "start": "2021-01-01",
+   "end": "2025-10-03",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:41:52.910880+00:00",
+   "sma_scatter_km": 0.2747
+  },
+  {
+   "norad_id": 28628,
+   "start": "2021-01-01",
+   "end": "2023-12-13",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T10:17:33.224064+00:00",
+   "sma_scatter_km": 0.0743
+  },
+  {
+   "norad_id": 28659,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:00:56.831040+00:00",
+   "sma_scatter_km": 0.0261
+  },
+  {
+   "norad_id": 28702,
+   "start": "2023-04-17",
+   "end": "2025-12-02",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:13:33.124800+00:00",
+   "sma_scatter_km": 0.0249
+  },
+  {
+   "norad_id": 28786,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:26:22.640928+00:00",
+   "sma_scatter_km": 0.148
+  },
+  {
+   "norad_id": 28790,
+   "start": "2021-08-25",
+   "end": "2024-09-08",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T07:45:02.829888+00:00",
+   "sma_scatter_km": 0.0541
+  },
+  {
+   "norad_id": 28868,
+   "start": "2022-02-21",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:04:19.008768+00:00",
+   "sma_scatter_km": 0.0093
+  },
+  {
+   "norad_id": 28884,
+   "start": "2021-01-01",
+   "end": "2022-08-20",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:00:19.391328+00:00",
+   "sma_scatter_km": 0.0454
+  },
+  {
+   "norad_id": 28885,
+   "start": "2021-07-26",
+   "end": "2024-11-07",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-30T16:32:47.629824+00:00",
+   "sma_scatter_km": 0.0465
+  },
+  {
+   "norad_id": 28899,
+   "start": "2021-01-01",
+   "end": "2023-10-14",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T13:28:51.760416+00:00",
+   "sma_scatter_km": 0.0577
+  },
+  {
+   "norad_id": 28903,
+   "start": "2021-01-01",
+   "end": "2024-11-07",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:08:41.091072+00:00",
+   "sma_scatter_km": 0.0677
+  },
+  {
+   "norad_id": 28924,
+   "start": "2022-03-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:14:31.439616+00:00",
+   "sma_scatter_km": 0.0191
+  },
+  {
+   "norad_id": 28935,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:03:34.079904+00:00",
+   "sma_scatter_km": 0.0126
+  },
+  {
+   "norad_id": 28945,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T19:22:39.473184+00:00",
+   "sma_scatter_km": 0.083
+  },
+  {
+   "norad_id": 28946,
+   "start": "2021-01-01",
+   "end": "2024-07-10",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:15:38.687328+00:00",
+   "sma_scatter_km": 0.0426
+  },
+  {
+   "norad_id": 29045,
+   "start": "2021-01-01",
+   "end": "2025-08-04",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.0586
+  },
+  {
+   "norad_id": 29055,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:40:23.054880+00:00",
+   "sma_scatter_km": 0.0507
+  },
+  {
+   "norad_id": 29155,
+   "start": "2021-07-26",
+   "end": "2021-12-23",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:26:41.958816+00:00",
+   "sma_scatter_km": 0.0171
+  },
+  {
+   "norad_id": 29162,
+   "start": "2021-01-01",
+   "end": "2024-03-12",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:43:15.280320+00:00",
+   "sma_scatter_km": 0.0149
+  },
+  {
+   "norad_id": 29236,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:41.281920+00:00",
+   "sma_scatter_km": 0.0205
+  },
+  {
+   "norad_id": 29270,
+   "start": "2021-01-01",
+   "end": "2023-09-14",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:44:22.672320+00:00",
+   "sma_scatter_km": 0.0423
+  },
+  {
+   "norad_id": 29272,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:28:44.914080+00:00",
+   "sma_scatter_km": 0.0597
+  },
+  {
+   "norad_id": 29273,
+   "start": "2021-01-01",
+   "end": "2023-09-14",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:35:53.485152+00:00",
+   "sma_scatter_km": 0.0151
+  },
+  {
+   "norad_id": 29349,
+   "start": "2021-01-01",
+   "end": "2024-11-07",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:24:30.320928+00:00",
+   "sma_scatter_km": 0.0642
+  },
+  {
+   "norad_id": 29494,
+   "start": "2021-01-01",
+   "end": "2024-03-12",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:06:03.842208+00:00",
+   "sma_scatter_km": 0.0135
+  },
+  {
+   "norad_id": 29495,
+   "start": "2023-07-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:15:38.687328+00:00",
+   "sma_scatter_km": 0.0157
+  },
+  {
+   "norad_id": 29520,
+   "start": "2021-01-01",
+   "end": "2022-03-23",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:11:39.052320+00:00",
+   "sma_scatter_km": 0.2084
+  },
+  {
+   "norad_id": 29526,
+   "start": "2021-01-01",
+   "end": "2024-09-08",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:42:30.352320+00:00",
+   "sma_scatter_km": 0.0561
+  },
+  {
+   "norad_id": 29643,
+   "start": "2021-01-01",
+   "end": "2023-10-14",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:03:11.615904+00:00",
+   "sma_scatter_km": 0.0199
+  },
+  {
+   "norad_id": 29644,
+   "start": "2021-01-01",
+   "end": "2023-10-14",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:01:51.685824+00:00",
+   "sma_scatter_km": 0.0418
+  },
+  {
+   "norad_id": 30793,
+   "start": "2021-01-01",
+   "end": "2021-12-23",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T23:14:19.200192+00:00",
+   "sma_scatter_km": 0.0188
+  },
+  {
+   "norad_id": 30794,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:19:23.310624+00:00",
+   "sma_scatter_km": 0.0406
+  },
+  {
+   "norad_id": 31102,
+   "start": "2021-01-01",
+   "end": "2025-07-05",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:01:04.319328+00:00",
+   "sma_scatter_km": 0.0235
+  },
+  {
+   "norad_id": 31306,
+   "start": "2021-01-01",
+   "end": "2025-05-06",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:37:08.366304+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 31307,
+   "start": "2023-08-15",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T12:53:31.945056+00:00",
+   "sma_scatter_km": 0.0249
+  },
+  {
+   "norad_id": 31800,
+   "start": "2021-01-01",
+   "end": "2024-03-12",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:39:49.600224+00:00",
+   "sma_scatter_km": 0.0594
+  },
+  {
+   "norad_id": 31862,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:05:33.889056+00:00",
+   "sma_scatter_km": 0.266
+  },
+  {
+   "norad_id": 32018,
+   "start": "2021-01-01",
+   "end": "2022-07-21",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:14:03.077088+00:00",
+   "sma_scatter_km": 0.1828
+  },
+  {
+   "norad_id": 32019,
+   "start": "2021-01-01",
+   "end": "2025-02-05",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:46:43.192992+00:00",
+   "sma_scatter_km": 0.0622
+  },
+  {
+   "norad_id": 32252,
+   "start": "2021-01-01",
+   "end": "2023-03-18",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:44:45.136320+00:00",
+   "sma_scatter_km": 0.0199
+  },
+  {
+   "norad_id": 32253,
+   "start": "2023-01-17",
+   "end": "2025-03-07",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T13:42:38.749248+00:00",
+   "sma_scatter_km": 0.0451
+  },
+  {
+   "norad_id": 32258,
+   "start": "2021-01-01",
+   "end": "2024-05-11",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:57:21.911904+00:00",
+   "sma_scatter_km": 0.2562
+  },
+  {
+   "norad_id": 32293,
+   "start": "2021-01-01",
+   "end": "2021-09-24",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:51:48.453408+00:00",
+   "sma_scatter_km": 0.0481
+  },
+  {
+   "norad_id": 32294,
+   "start": "2021-01-27",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:16:42.560256+00:00",
+   "sma_scatter_km": 0.0547
+  },
+  {
+   "norad_id": 32299,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:36:23.436576+00:00",
+   "sma_scatter_km": 0.0314
+  },
+  {
+   "norad_id": 32388,
+   "start": "2024-01-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T12:59:57.104160+00:00",
+   "sma_scatter_km": 0.0353
+  },
+  {
+   "norad_id": 32404,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:20:23.215200+00:00",
+   "sma_scatter_km": 0.0488
+  },
+  {
+   "norad_id": 32487,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:34:46.093152+00:00",
+   "sma_scatter_km": 0.0216
+  },
+  {
+   "norad_id": 32708,
+   "start": "2021-01-01",
+   "end": "2025-05-06",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T04:27:51.715008+00:00",
+   "sma_scatter_km": 0.1009
+  },
+  {
+   "norad_id": 32729,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:41.281920+00:00",
+   "sma_scatter_km": 0.2733
+  },
+  {
+   "norad_id": 32763,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:08:26.115360+00:00",
+   "sma_scatter_km": 0.023
+  },
+  {
+   "norad_id": 32767,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:47:09.642912+00:00",
+   "sma_scatter_km": 0.0572
+  },
+  {
+   "norad_id": 32768,
+   "start": "2021-10-24",
+   "end": "2025-06-05",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:16:17.861952+00:00",
+   "sma_scatter_km": 0.0482
+  },
+  {
+   "norad_id": 32779,
+   "start": "2021-01-01",
+   "end": "2022-02-21",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T23:06:04.988736+00:00",
+   "sma_scatter_km": 0.0101
+  },
+  {
+   "norad_id": 32794,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T07:42:55.533312+00:00",
+   "sma_scatter_km": 0.0154
+  },
+  {
+   "norad_id": 32951,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:38:05.500608+00:00",
+   "sma_scatter_km": 0.0328
+  },
+  {
+   "norad_id": 33051,
+   "start": "2021-01-01",
+   "end": "2025-12-02",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T01:19:32.253888+00:00",
+   "sma_scatter_km": 0.0362
+  },
+  {
+   "norad_id": 33055,
+   "start": "2022-09-19",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:29:54.059424+00:00",
+   "sma_scatter_km": 0.0109
+  },
+  {
+   "norad_id": 33056,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:04:17.258016+00:00",
+   "sma_scatter_km": 0.0547
+  },
+  {
+   "norad_id": 33153,
+   "start": "2021-01-01",
+   "end": "2023-12-13",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T11:00:29.113920+00:00",
+   "sma_scatter_km": 0.0378
+  },
+  {
+   "norad_id": 33154,
+   "start": "2021-01-01",
+   "end": "2023-10-14",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:16:25.350240+00:00",
+   "sma_scatter_km": 0.0572
+  },
+  {
+   "norad_id": 33207,
+   "start": "2021-01-01",
+   "end": "2025-10-03",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:39:53.052768+00:00",
+   "sma_scatter_km": 0.0132
+  },
+  {
+   "norad_id": 33274,
+   "start": "2021-01-01",
+   "end": "2024-04-11",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.0342
+  },
+  {
+   "norad_id": 33275,
+   "start": "2021-01-01",
+   "end": "2023-08-15",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:57:38.617056+00:00",
+   "sma_scatter_km": 0.0366
+  },
+  {
+   "norad_id": 33278,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:56.257632+00:00",
+   "sma_scatter_km": 0.0976
+  },
+  {
+   "norad_id": 33373,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:11:33.315648+00:00",
+   "sma_scatter_km": 0.0334
+  },
+  {
+   "norad_id": 33376,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:07:18.721632+00:00",
+   "sma_scatter_km": 0.0213
+  },
+  {
+   "norad_id": 33436,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:40:23.054880+00:00",
+   "sma_scatter_km": 0.0496
+  },
+  {
+   "norad_id": 33453,
+   "start": "2021-01-01",
+   "end": "2023-11-13",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T12:38:04.767648+00:00",
+   "sma_scatter_km": 0.0406
+  },
+  {
+   "norad_id": 33459,
+   "start": "2021-01-01",
+   "end": "2023-05-17",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:37:49.791936+00:00",
+   "sma_scatter_km": 0.0429
+  },
+  {
+   "norad_id": 33460,
+   "start": "2021-02-26",
+   "end": "2023-06-16",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T02:58:22.786176+00:00",
+   "sma_scatter_km": 0.0104
+  },
+  {
+   "norad_id": 33463,
+   "start": "2021-01-01",
+   "end": "2024-03-12",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T06:51:56.208672+00:00",
+   "sma_scatter_km": 0.0317
+  },
+  {
+   "norad_id": 33595,
+   "start": "2023-02-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:31:46.380288+00:00",
+   "sma_scatter_km": 0.0093
+  },
+  {
+   "norad_id": 33749,
+   "start": "2021-01-01",
+   "end": "2025-06-05",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:41:03.719904+00:00",
+   "sma_scatter_km": 0.037
+  },
+  {
+   "norad_id": 33750,
+   "start": "2021-01-01",
+   "end": "2023-10-14",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:00:51.577920+00:00",
+   "sma_scatter_km": 0.0563
+  },
+  {
+   "norad_id": 34111,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:41:19.457088+00:00",
+   "sma_scatter_km": 0.155
+  },
+  {
+   "norad_id": 34710,
+   "start": "2021-01-01",
+   "end": "2023-08-15",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:12:24.459264+00:00",
+   "sma_scatter_km": 0.0409
+  },
+  {
+   "norad_id": 34713,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:08:39.338592+00:00",
+   "sma_scatter_km": 0.2481
+  },
+  {
+   "norad_id": 34941,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:07.952352+00:00",
+   "sma_scatter_km": 0.0622
+  },
+  {
+   "norad_id": 35362,
+   "start": "2021-01-01",
+   "end": "2024-03-12",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:10:52.394304+00:00",
+   "sma_scatter_km": 0.0353
+  },
+  {
+   "norad_id": 35491,
+   "start": "2021-01-01",
+   "end": "2023-01-17",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:00:11.903040+00:00",
+   "sma_scatter_km": 0.0062
+  },
+  {
+   "norad_id": 35493,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:10:10.947072+00:00",
+   "sma_scatter_km": 0.1388
+  },
+  {
+   "norad_id": 35496,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:03:19.104192+00:00",
+   "sma_scatter_km": 0.0123
+  },
+  {
+   "norad_id": 35696,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T08:12:45.176256+00:00",
+   "sma_scatter_km": 0.0485
+  },
+  {
+   "norad_id": 35755,
+   "start": "2021-12-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.0586
+  },
+  {
+   "norad_id": 35756,
+   "start": "2021-01-01",
+   "end": "2025-10-03",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T13:51:22.133664+00:00",
+   "sma_scatter_km": 0.016
+  },
+  {
+   "norad_id": 35873,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:14:10.565376+00:00",
+   "sma_scatter_km": 0.0409
+  },
+  {
+   "norad_id": 35942,
+   "start": "2021-01-01",
+   "end": "2024-11-07",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:33:09.942048+00:00",
+   "sma_scatter_km": 0.0474
+  },
+  {
+   "norad_id": 35943,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:52:59.346912+00:00",
+   "sma_scatter_km": 0.023
+  },
+  {
+   "norad_id": 36032,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:51:14.515200+00:00",
+   "sma_scatter_km": 0.039
+  },
+  {
+   "norad_id": 36033,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:34:46.093152+00:00",
+   "sma_scatter_km": 0.0233
+  },
+  {
+   "norad_id": 36097,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T10:56:36.983904+00:00",
+   "sma_scatter_km": 0.0474
+  },
+  {
+   "norad_id": 36101,
+   "start": "2021-01-01",
+   "end": "2024-10-08",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:06:39.531168+00:00",
+   "sma_scatter_km": 0.0594
+  },
+  {
+   "norad_id": 36106,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:16:31.086048+00:00",
+   "sma_scatter_km": 0.0249
+  },
+  {
+   "norad_id": 36108,
+   "start": "2023-04-17",
+   "end": "2024-08-09",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T11:31:48.613728+00:00",
+   "sma_scatter_km": 0.394
+  },
+  {
+   "norad_id": 36131,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:05:41.377344+00:00",
+   "sma_scatter_km": 0.2138
+  },
+  {
+   "norad_id": 36287,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:17:38.177088+00:00",
+   "sma_scatter_km": 0.0395
+  },
+  {
+   "norad_id": 36358,
+   "start": "2022-12-18",
+   "end": "2025-02-05",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:39:30.638592+00:00",
+   "sma_scatter_km": 0.0213
+  },
+  {
+   "norad_id": 36397,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:24:03.709152+00:00",
+   "sma_scatter_km": 0.0415
+  },
+  {
+   "norad_id": 36411,
+   "start": "2021-02-26",
+   "end": "2022-11-18",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:09:46.732320+00:00",
+   "sma_scatter_km": 0.0188
+  },
+  {
+   "norad_id": 36499,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:01:04.319328+00:00",
+   "sma_scatter_km": 0.2041
+  },
+  {
+   "norad_id": 36516,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:11.329632+00:00",
+   "sma_scatter_km": 0.0132
+  },
+  {
+   "norad_id": 36581,
+   "start": "2021-01-01",
+   "end": "2025-04-06",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:41:37.935168+00:00",
+   "sma_scatter_km": 0.0541
+  },
+  {
+   "norad_id": 36582,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:38:45.709728+00:00",
+   "sma_scatter_km": 0.0406
+  },
+  {
+   "norad_id": 36590,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:57:43.893216+00:00",
+   "sma_scatter_km": 0.0129
+  },
+  {
+   "norad_id": 36592,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:42:22.864032+00:00",
+   "sma_scatter_km": 0.0533
+  },
+  {
+   "norad_id": 36744,
+   "start": "2021-07-26",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 36745,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:43:37.744320+00:00",
+   "sma_scatter_km": 0.0575
+  },
+  {
+   "norad_id": 36792,
+   "start": "2021-01-01",
+   "end": "2025-04-06",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:01:04.319328+00:00",
+   "sma_scatter_km": 0.0482
+  },
+  {
+   "norad_id": 36830,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:33:01.259712+00:00",
+   "sma_scatter_km": 0.0129
+  },
+  {
+   "norad_id": 36831,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:35:45.996864+00:00",
+   "sma_scatter_km": 0.0278
+  },
+  {
+   "norad_id": 36868,
+   "start": "2021-01-01",
+   "end": "2024-08-09",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T07:52:32.113344+00:00",
+   "sma_scatter_km": 0.0275
+  },
+  {
+   "norad_id": 37150,
+   "start": "2021-01-01",
+   "end": "2021-12-23",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:18:57.345120+00:00",
+   "sma_scatter_km": 0.0517
+  },
+  {
+   "norad_id": 37185,
+   "start": "2021-12-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:04.223904+00:00",
+   "sma_scatter_km": 0.2585
+  },
+  {
+   "norad_id": 37207,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:37.904640+00:00",
+   "sma_scatter_km": 0.0611
+  },
+  {
+   "norad_id": 37210,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:37:51.541824+00:00",
+   "sma_scatter_km": 0.0076
+  },
+  {
+   "norad_id": 37218,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:03.842208+00:00",
+   "sma_scatter_km": 0.0104
+  },
+  {
+   "norad_id": 37234,
+   "start": "2021-01-01",
+   "end": "2022-04-22",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T04:02:39.128352+00:00",
+   "sma_scatter_km": 0.0516
+  },
+  {
+   "norad_id": 37237,
+   "start": "2023-08-15",
+   "end": "2024-02-11",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:23:34.478304+00:00",
+   "sma_scatter_km": 0.0095
+  },
+  {
+   "norad_id": 37238,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:53:44.275776+00:00",
+   "sma_scatter_km": 0.0241
+  },
+  {
+   "norad_id": 37258,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:37:30.830304+00:00",
+   "sma_scatter_km": 0.2265
+  },
+  {
+   "norad_id": 37264,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:00:59.066208+00:00",
+   "sma_scatter_km": 0.0314
+  },
+  {
+   "norad_id": 37265,
+   "start": "2021-01-01",
+   "end": "2025-01-06",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:10:49.886976+00:00",
+   "sma_scatter_km": 0.0613
+  },
+  {
+   "norad_id": 37392,
+   "start": "2021-01-01",
+   "end": "2024-11-07",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T11:00:29.113920+00:00",
+   "sma_scatter_km": 0.0566
+  },
+  {
+   "norad_id": 37393,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:24:34.306848+00:00",
+   "sma_scatter_km": 0.1601
+  },
+  {
+   "norad_id": 37481,
+   "start": "2021-01-01",
+   "end": "2025-03-07",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T03:32:21.765696+00:00",
+   "sma_scatter_km": 0.0109
+  },
+  {
+   "norad_id": 37602,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:04:56.675424+00:00",
+   "sma_scatter_km": 0.044
+  },
+  {
+   "norad_id": 37605,
+   "start": "2021-01-01",
+   "end": "2024-07-10",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:25:19.234848+00:00",
+   "sma_scatter_km": 0.0437
+  },
+  {
+   "norad_id": 37606,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:17:23.502336+00:00",
+   "sma_scatter_km": 0.0292
+  },
+  {
+   "norad_id": 37677,
+   "start": "2021-01-01",
+   "end": "2025-06-05",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T03:00:15.106176+00:00",
+   "sma_scatter_km": 0.0555
+  },
+  {
+   "norad_id": 37737,
+   "start": "2021-12-23",
+   "end": "2023-10-14",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:33:21.972096+00:00",
+   "sma_scatter_km": 0.0107
+  },
+  {
+   "norad_id": 37748,
+   "start": "2021-01-01",
+   "end": "2025-05-06",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:05:33.889056+00:00",
+   "sma_scatter_km": 0.0123
+  },
+  {
+   "norad_id": 37749,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T01:17:54.908736+00:00",
+   "sma_scatter_km": 0.0575
+  },
+  {
+   "norad_id": 37775,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:40:23.054880+00:00",
+   "sma_scatter_km": 0.0507
+  },
+  {
+   "norad_id": 37776,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:58:12.576576+00:00",
+   "sma_scatter_km": 0.06
+  },
+  {
+   "norad_id": 37779,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:45:45.040896+00:00",
+   "sma_scatter_km": 0.051
+  },
+  {
+   "norad_id": 37804,
+   "start": "2021-01-01",
+   "end": "2022-11-18",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:11:55.779648+00:00",
+   "sma_scatter_km": 0.0524
+  },
+  {
+   "norad_id": 37809,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:10:10.947072+00:00",
+   "sma_scatter_km": 0.0266
+  },
+  {
+   "norad_id": 37810,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:40:38.030592+00:00",
+   "sma_scatter_km": 0.0507
+  },
+  {
+   "norad_id": 37816,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:32:53.772288+00:00",
+   "sma_scatter_km": 0.0107
+  },
+  {
+   "norad_id": 37826,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:58:01.303968+00:00",
+   "sma_scatter_km": 0.039
+  },
+  {
+   "norad_id": 37834,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:18:10.663776+00:00",
+   "sma_scatter_km": 0.0376
+  },
+  {
+   "norad_id": 37836,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:39:30.638592+00:00",
+   "sma_scatter_km": 0.0513
+  },
+  {
+   "norad_id": 37843,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:04.223904+00:00",
+   "sma_scatter_km": 0.2063
+  },
+  {
+   "norad_id": 37933,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:05:05.688384+00:00",
+   "sma_scatter_km": 0.0597
+  },
+  {
+   "norad_id": 37951,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:48:55.861920+00:00",
+   "sma_scatter_km": 0.0104
+  },
+  {
+   "norad_id": 38014,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:04:24.746304+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 38070,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T03:01:29.987328+00:00",
+   "sma_scatter_km": 0.2463
+  },
+  {
+   "norad_id": 38087,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:28:31.689984+00:00",
+   "sma_scatter_km": 0.1702
+  },
+  {
+   "norad_id": 38091,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:51:44.466624+00:00",
+   "sma_scatter_km": 0.0294
+  },
+  {
+   "norad_id": 38093,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:26.306208+00:00",
+   "sma_scatter_km": 0.0076
+  },
+  {
+   "norad_id": 38098,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:47:21.117120+00:00",
+   "sma_scatter_km": 0.0093
+  },
+  {
+   "norad_id": 38107,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:51.476928+00:00",
+   "sma_scatter_km": 0.0107
+  },
+  {
+   "norad_id": 38245,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:23:04.450848+00:00",
+   "sma_scatter_km": 0.1814
+  },
+  {
+   "norad_id": 38254,
+   "start": "2021-10-24",
+   "end": "2024-07-10",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:22:08.531328+00:00",
+   "sma_scatter_km": 0.0174
+  },
+  {
+   "norad_id": 38331,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.06
+  },
+  {
+   "norad_id": 38332,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.0547
+  },
+  {
+   "norad_id": 38342,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:08:56.066784+00:00",
+   "sma_scatter_km": 0.0205
+  },
+  {
+   "norad_id": 38352,
+   "start": "2021-01-01",
+   "end": "2025-04-06",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T15:02:58.390944+00:00",
+   "sma_scatter_km": 0.0457
+  },
+  {
+   "norad_id": 38356,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:09:38.555424+00:00",
+   "sma_scatter_km": 0.0154
+  },
+  {
+   "norad_id": 38551,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:04:26.497056+00:00",
+   "sma_scatter_km": 0.1769
+  },
+  {
+   "norad_id": 38552,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T07:44:10.412736+00:00",
+   "sma_scatter_km": 0.0191
+  },
+  {
+   "norad_id": 38652,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:28:00.469632+00:00",
+   "sma_scatter_km": 0.1629
+  },
+  {
+   "norad_id": 38730,
+   "start": "2021-01-01",
+   "end": "2023-10-14",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:32:44.532384+00:00",
+   "sma_scatter_km": 0.0415
+  },
+  {
+   "norad_id": 38740,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T04:38:13.223040+00:00",
+   "sma_scatter_km": 0.1346
+  },
+  {
+   "norad_id": 38741,
+   "start": "2021-01-01",
+   "end": "2024-03-12",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T12:59:57.132672+00:00",
+   "sma_scatter_km": 0.067
+  },
+  {
+   "norad_id": 38749,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:35:42.495360+00:00",
+   "sma_scatter_km": 0.0493
+  },
+  {
+   "norad_id": 38778,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:43:00.303744+00:00",
+   "sma_scatter_km": 0.0547
+  },
+  {
+   "norad_id": 38779,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:58:36.308640+00:00",
+   "sma_scatter_km": 0.0174
+  },
+  {
+   "norad_id": 38867,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T10:54:22.199040+00:00",
+   "sma_scatter_km": 0.0673
+  },
+  {
+   "norad_id": 38953,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:58:58.772640+00:00",
+   "sma_scatter_km": 0.0177
+  },
+  {
+   "norad_id": 38977,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:04:43.707072+00:00",
+   "sma_scatter_km": 0.0112
+  },
+  {
+   "norad_id": 38978,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:40:50.505024+00:00",
+   "sma_scatter_km": 0.1051
+  },
+  {
+   "norad_id": 38991,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:59:09.085632+00:00",
+   "sma_scatter_km": 0.0398
+  },
+  {
+   "norad_id": 38992,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:41:07.982880+00:00",
+   "sma_scatter_km": 0.0552
+  },
+  {
+   "norad_id": 39008,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:05:44.640384+00:00",
+   "sma_scatter_km": 0.2198
+  },
+  {
+   "norad_id": 39017,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:59:51.189792+00:00",
+   "sma_scatter_km": 0.0269
+  },
+  {
+   "norad_id": 39020,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:55:06.644352+00:00",
+   "sma_scatter_km": 0.0109
+  },
+  {
+   "norad_id": 39022,
+   "start": "2021-01-01",
+   "end": "2025-06-05",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:50:37.073760+00:00",
+   "sma_scatter_km": 0.0435
+  },
+  {
+   "norad_id": 39034,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:07:16.970880+00:00",
+   "sma_scatter_km": 0.0409
+  },
+  {
+   "norad_id": 39035,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:11.712192+00:00",
+   "sma_scatter_km": 0.0174
+  },
+  {
+   "norad_id": 39070,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:28:27.161760+00:00",
+   "sma_scatter_km": 0.0353
+  },
+  {
+   "norad_id": 39078,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:06:51.179616+00:00",
+   "sma_scatter_km": 0.046
+  },
+  {
+   "norad_id": 39079,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:05:24.650016+00:00",
+   "sma_scatter_km": 0.0496
+  },
+  {
+   "norad_id": 39120,
+   "start": "2022-08-20",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:12:39.438720+00:00",
+   "sma_scatter_km": 0.024
+  },
+  {
+   "norad_id": 39122,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:57:18.764640+00:00",
+   "sma_scatter_km": 0.0165
+  },
+  {
+   "norad_id": 39127,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:04:19.008768+00:00",
+   "sma_scatter_km": 0.0112
+  },
+  {
+   "norad_id": 39157,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:02:50.902656+00:00",
+   "sma_scatter_km": 0.0468
+  },
+  {
+   "norad_id": 39163,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:37:00.878016+00:00",
+   "sma_scatter_km": 0.035
+  },
+  {
+   "norad_id": 39168,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:37:12.351360+00:00",
+   "sma_scatter_km": 0.2032
+  },
+  {
+   "norad_id": 39172,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:40:27.040800+00:00",
+   "sma_scatter_km": 0.0415
+  },
+  {
+   "norad_id": 39206,
+   "start": "2021-01-01",
+   "end": "2025-10-03",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:58:23.567232+00:00",
+   "sma_scatter_km": 0.0348
+  },
+  {
+   "norad_id": 39215,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:42:00.399168+00:00",
+   "sma_scatter_km": 0.129
+  },
+  {
+   "norad_id": 39216,
+   "start": "2021-01-01",
+   "end": "2024-07-10",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.014
+  },
+  {
+   "norad_id": 39222,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:26:22.829856+00:00",
+   "sma_scatter_km": 0.2834
+  },
+  {
+   "norad_id": 39233,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:42:15.375744+00:00",
+   "sma_scatter_km": 0.0513
+  },
+  {
+   "norad_id": 39234,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:06.548064+00:00",
+   "sma_scatter_km": 0.0095
+  },
+  {
+   "norad_id": 39237,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:53:29.299200+00:00",
+   "sma_scatter_km": 0.0205
+  },
+  {
+   "norad_id": 39256,
+   "start": "2021-09-24",
+   "end": "2024-09-08",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:30:43.532352+00:00",
+   "sma_scatter_km": 0.0482
+  },
+  {
+   "norad_id": 39285,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:43:07.792032+00:00",
+   "sma_scatter_km": 0.0583
+  },
+  {
+   "norad_id": 39360,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:57:18.736128+00:00",
+   "sma_scatter_km": 0.1982
+  },
+  {
+   "norad_id": 39375,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T07:53:46.992768+00:00",
+   "sma_scatter_km": 0.0533
+  },
+  {
+   "norad_id": 39460,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:19:23.310624+00:00",
+   "sma_scatter_km": 0.0421
+  },
+  {
+   "norad_id": 39476,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:10:09.196320+00:00",
+   "sma_scatter_km": 0.2953
+  },
+  {
+   "norad_id": 39481,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:10:03.458784+00:00",
+   "sma_scatter_km": 0.0233
+  },
+  {
+   "norad_id": 39487,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:42:38.749248+00:00",
+   "sma_scatter_km": 0.0653
+  },
+  {
+   "norad_id": 39498,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:06.548064+00:00",
+   "sma_scatter_km": 0.0115
+  },
+  {
+   "norad_id": 39500,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:14:38.765184+00:00",
+   "sma_scatter_km": 0.0104
+  },
+  {
+   "norad_id": 39504,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:19:13.140192+00:00",
+   "sma_scatter_km": 0.0415
+  },
+  {
+   "norad_id": 39508,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:13:38.860608+00:00",
+   "sma_scatter_km": 0.0109
+  },
+  {
+   "norad_id": 39509,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:45:45.040896+00:00",
+   "sma_scatter_km": 0.0569
+  },
+  {
+   "norad_id": 39522,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:04:09.769728+00:00",
+   "sma_scatter_km": 0.0524
+  },
+  {
+   "norad_id": 39612,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T04:10:38.748576+00:00",
+   "sma_scatter_km": 0.051
+  },
+  {
+   "norad_id": 39613,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:14:49.754976+00:00",
+   "sma_scatter_km": 0.0454
+  },
+  {
+   "norad_id": 39616,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:59:09.138336+00:00",
+   "sma_scatter_km": 0.0412
+  },
+  {
+   "norad_id": 39617,
+   "start": "2023-07-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:41:37.935168+00:00",
+   "sma_scatter_km": 0.051
+  },
+  {
+   "norad_id": 39727,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:01:58.486368+00:00",
+   "sma_scatter_km": 0.0384
+  },
+  {
+   "norad_id": 39728,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:43:28.987968+00:00",
+   "sma_scatter_km": 0.0662
+  },
+  {
+   "norad_id": 39773,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:35:53.485152+00:00",
+   "sma_scatter_km": 0.0278
+  },
+  {
+   "norad_id": 40107,
+   "start": "2021-01-01",
+   "end": "2025-03-07",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:22:15.536064+00:00",
+   "sma_scatter_km": 0.0143
+  },
+  {
+   "norad_id": 40141,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:09:12.793248+00:00",
+   "sma_scatter_km": 0.0622
+  },
+  {
+   "norad_id": 40146,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:51:22.047264+00:00",
+   "sma_scatter_km": 0.0841
+  },
+  {
+   "norad_id": 40147,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:18:23.406912+00:00",
+   "sma_scatter_km": 0.035
+  },
+  {
+   "norad_id": 40267,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:42:38.749248+00:00",
+   "sma_scatter_km": 0.0437
+  },
+  {
+   "norad_id": 40269,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T08:07:45.655104+00:00",
+   "sma_scatter_km": 0.0191
+  },
+  {
+   "norad_id": 40271,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:07:48.673920+00:00",
+   "sma_scatter_km": 0.2779
+  },
+  {
+   "norad_id": 40272,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:01:04.898784+00:00",
+   "sma_scatter_km": 0.0401
+  },
+  {
+   "norad_id": 40277,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:50:07.122336+00:00",
+   "sma_scatter_km": 0.1002
+  },
+  {
+   "norad_id": 40332,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:07:54.410592+00:00",
+   "sma_scatter_km": 0.0384
+  },
+  {
+   "norad_id": 40333,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:41.281920+00:00",
+   "sma_scatter_km": 0.1828
+  },
+  {
+   "norad_id": 40345,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:00:36.117792+00:00",
+   "sma_scatter_km": 0.0736
+  },
+  {
+   "norad_id": 40364,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:43:00.303744+00:00",
+   "sma_scatter_km": 0.0549
+  },
+  {
+   "norad_id": 40367,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:03:20.854944+00:00",
+   "sma_scatter_km": 0.0462
+  },
+  {
+   "norad_id": 40374,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:05:13.660224+00:00",
+   "sma_scatter_km": 0.007
+  },
+  {
+   "norad_id": 40384,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:15:56.959776+00:00",
+   "sma_scatter_km": 0.2576
+  },
+  {
+   "norad_id": 40424,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:25:53.173056+00:00",
+   "sma_scatter_km": 0.1001
+  },
+  {
+   "norad_id": 40425,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:11.712192+00:00",
+   "sma_scatter_km": 0.2255
+  },
+  {
+   "norad_id": 40505,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:46:22.480608+00:00",
+   "sma_scatter_km": 0.0534
+  },
+  {
+   "norad_id": 40613,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:34:46.093152+00:00",
+   "sma_scatter_km": 0.0207
+  },
+  {
+   "norad_id": 40617,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:07:01.995168+00:00",
+   "sma_scatter_km": 0.0426
+  },
+  {
+   "norad_id": 40663,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:05:33.889056+00:00",
+   "sma_scatter_km": 0.3022
+  },
+  {
+   "norad_id": 40664,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:29:43.067904+00:00",
+   "sma_scatter_km": 0.0356
+  },
+  {
+   "norad_id": 40732,
+   "start": "2023-04-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:37:38.317728+00:00",
+   "sma_scatter_km": 0.0378
+  },
+  {
+   "norad_id": 40733,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:27:58.483008+00:00",
+   "sma_scatter_km": 0.0507
+  },
+  {
+   "norad_id": 40746,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T10:16:40.807776+00:00",
+   "sma_scatter_km": 0.2425
+  },
+  {
+   "norad_id": 40874,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:36:19.935072+00:00",
+   "sma_scatter_km": 0.1336
+  },
+  {
+   "norad_id": 40875,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:32:38.795712+00:00",
+   "sma_scatter_km": 0.0073
+  },
+  {
+   "norad_id": 40880,
+   "start": "2021-01-01",
+   "end": "2024-10-08",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:58:28.821216+00:00",
+   "sma_scatter_km": 0.0157
+  },
+  {
+   "norad_id": 40882,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:57:38.617056+00:00",
+   "sma_scatter_km": 0.312
+  },
+  {
+   "norad_id": 40887,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:13:38.860608+00:00",
+   "sma_scatter_km": 0.009
+  },
+  {
+   "norad_id": 40892,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:45.829824+00:00",
+   "sma_scatter_km": 0.0121
+  },
+  {
+   "norad_id": 40895,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:30:46.474848+00:00",
+   "sma_scatter_km": 0.0261
+  },
+  {
+   "norad_id": 40940,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:42:38.749248+00:00",
+   "sma_scatter_km": 0.0973
+  },
+  {
+   "norad_id": 40941,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:11:48.292224+00:00",
+   "sma_scatter_km": 0.0342
+  },
+  {
+   "norad_id": 40946,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:41.663616+00:00",
+   "sma_scatter_km": 0.0188
+  },
+  {
+   "norad_id": 40982,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:15:27.194688+00:00",
+   "sma_scatter_km": 0.0384
+  },
+  {
+   "norad_id": 40984,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:49:14.706048+00:00",
+   "sma_scatter_km": 0.0457
+  },
+  {
+   "norad_id": 41021,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:04:28.246944+00:00",
+   "sma_scatter_km": 0.0507
+  },
+  {
+   "norad_id": 41028,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:18:53.359200+00:00",
+   "sma_scatter_km": 0.0378
+  },
+  {
+   "norad_id": 41029,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:42:22.864032+00:00",
+   "sma_scatter_km": 0.0535
+  },
+  {
+   "norad_id": 41034,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:28:52.402368+00:00",
+   "sma_scatter_km": 0.0513
+  },
+  {
+   "norad_id": 41036,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:30:31.499136+00:00",
+   "sma_scatter_km": 0.0191
+  },
+  {
+   "norad_id": 41103,
+   "start": "2021-01-27",
+   "end": "2022-08-20",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:39:42.111936+00:00",
+   "sma_scatter_km": 0.0112
+  },
+  {
+   "norad_id": 41105,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:22:38.483616+00:00",
+   "sma_scatter_km": 0.0081
+  },
+  {
+   "norad_id": 41121,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:15:08.718336+00:00",
+   "sma_scatter_km": 0.1832
+  },
+  {
+   "norad_id": 41191,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:45:15.088608+00:00",
+   "sma_scatter_km": 0.053
+  },
+  {
+   "norad_id": 41194,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:05:05.688384+00:00",
+   "sma_scatter_km": 0.0524
+  },
+  {
+   "norad_id": 41238,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:24:11.842848+00:00",
+   "sma_scatter_km": 0.0415
+  },
+  {
+   "norad_id": 41310,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:37:30.830304+00:00",
+   "sma_scatter_km": 0.035
+  },
+  {
+   "norad_id": 41380,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:07.952352+00:00",
+   "sma_scatter_km": 0.1497
+  },
+  {
+   "norad_id": 41382,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:33:35.197920+00:00",
+   "sma_scatter_km": 0.0435
+  },
+  {
+   "norad_id": 41384,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:18:49.856832+00:00",
+   "sma_scatter_km": 0.0535
+  },
+  {
+   "norad_id": 41469,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:29:14.867232+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 41471,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:37:38.851392+00:00",
+   "sma_scatter_km": 0.1058
+  },
+  {
+   "norad_id": 41552,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:14:38.765184+00:00",
+   "sma_scatter_km": 0.0098
+  },
+  {
+   "norad_id": 41581,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:07:48.673920+00:00",
+   "sma_scatter_km": 0.2358
+  },
+  {
+   "norad_id": 41586,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:06:28.056096+00:00",
+   "sma_scatter_km": 0.0558
+  },
+  {
+   "norad_id": 41588,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:14.036352+00:00",
+   "sma_scatter_km": 0.1423
+  },
+  {
+   "norad_id": 41589,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:01:50.094048+00:00",
+   "sma_scatter_km": 0.2173
+  },
+  {
+   "norad_id": 41591,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T08:44:38.584608+00:00",
+   "sma_scatter_km": 0.1011
+  },
+  {
+   "norad_id": 41592,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:32:01.140864+00:00",
+   "sma_scatter_km": 0.1892
+  },
+  {
+   "norad_id": 41622,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:05:03.936768+00:00",
+   "sma_scatter_km": 0.0134
+  },
+  {
+   "norad_id": 41725,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:03:50.807232+00:00",
+   "sma_scatter_km": 0.0485
+  },
+  {
+   "norad_id": 41729,
+   "start": "2023-11-13",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:10.278816+00:00",
+   "sma_scatter_km": 0.0785
+  },
+  {
+   "norad_id": 41747,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T04:38:13.223040+00:00",
+   "sma_scatter_km": 0.0649
+  },
+  {
+   "norad_id": 41748,
+   "start": "2021-01-01",
+   "end": "2024-10-08",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:22.928064+00:00",
+   "sma_scatter_km": 0.0322
+  },
+  {
+   "norad_id": 41752,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:06.548064+00:00",
+   "sma_scatter_km": 0.0093
+  },
+  {
+   "norad_id": 41793,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:06.548064+00:00",
+   "sma_scatter_km": 0.0104
+  },
+  {
+   "norad_id": 41794,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:10.238208+00:00",
+   "sma_scatter_km": 0.099
+  },
+  {
+   "norad_id": 41836,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:42:38.749248+00:00",
+   "sma_scatter_km": 0.0499
+  },
+  {
+   "norad_id": 41866,
+   "start": "2021-01-01",
+   "end": "2025-03-07",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:05:03.936768+00:00",
+   "sma_scatter_km": 0.0423
+  },
+  {
+   "norad_id": 41869,
+   "start": "2021-01-01",
+   "end": "2025-11-02",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T13:45:38.552832+00:00",
+   "sma_scatter_km": 0.0252
+  },
+  {
+   "norad_id": 41879,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:49:54.502752+00:00",
+   "sma_scatter_km": 0.2467
+  },
+  {
+   "norad_id": 41893,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:16:38.756352+00:00",
+   "sma_scatter_km": 0.169
+  },
+  {
+   "norad_id": 41903,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:37.904640+00:00",
+   "sma_scatter_km": 0.0985
+  },
+  {
+   "norad_id": 41904,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:54:19.926432+00:00",
+   "sma_scatter_km": 0.0325
+  },
+  {
+   "norad_id": 41911,
+   "start": "2021-04-27",
+   "end": "2025-12-02",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:28:33.925152+00:00",
+   "sma_scatter_km": 0.0143
+  },
+  {
+   "norad_id": 41937,
+   "start": "2021-01-01",
+   "end": "2023-02-16",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:40:53.007168+00:00",
+   "sma_scatter_km": 0.0275
+  },
+  {
+   "norad_id": 41942,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:59:14.232768+00:00",
+   "sma_scatter_km": 0.0943
+  },
+  {
+   "norad_id": 41944,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:25:52.688640+00:00",
+   "sma_scatter_km": 0.0594
+  },
+  {
+   "norad_id": 41945,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:39:49.600224+00:00",
+   "sma_scatter_km": 0.14
+  },
+  {
+   "norad_id": 42070,
+   "start": "2022-05-22",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:05:42.313056+00:00",
+   "sma_scatter_km": 0.2082
+  },
+  {
+   "norad_id": 42075,
+   "start": "2021-02-26",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:31:31.403712+00:00",
+   "sma_scatter_km": 0.2663
+  },
+  {
+   "norad_id": 42432,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:15:40.421376+00:00",
+   "sma_scatter_km": 0.2276
+  },
+  {
+   "norad_id": 42662,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:32:09.076128+00:00",
+   "sma_scatter_km": 0.0858
+  },
+  {
+   "norad_id": 42691,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:25:15.248928+00:00",
+   "sma_scatter_km": 0.0631
+  },
+  {
+   "norad_id": 42692,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T22:20:49.249248+00:00",
+   "sma_scatter_km": 0.1102
+  },
+  {
+   "norad_id": 42695,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:20:00.751200+00:00",
+   "sma_scatter_km": 0.0429
+  },
+  {
+   "norad_id": 42698,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:08:24.362880+00:00",
+   "sma_scatter_km": 0.2473
+  },
+  {
+   "norad_id": 42709,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:05:49.159680+00:00",
+   "sma_scatter_km": 0.1758
+  },
+  {
+   "norad_id": 42740,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:15:02.980800+00:00",
+   "sma_scatter_km": 0.1856
+  },
+  {
+   "norad_id": 42741,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:58:38.759232+00:00",
+   "sma_scatter_km": 0.0893
+  },
+  {
+   "norad_id": 42747,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:48:37.266336+00:00",
+   "sma_scatter_km": 0.0474
+  },
+  {
+   "norad_id": 42749,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:37:53.294304+00:00",
+   "sma_scatter_km": 0.0357
+  },
+  {
+   "norad_id": 42801,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:52:33.381408+00:00",
+   "sma_scatter_km": 0.0269
+  },
+  {
+   "norad_id": 42814,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:03:24.840864+00:00",
+   "sma_scatter_km": 0.0563
+  },
+  {
+   "norad_id": 42815,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:18:53.359200+00:00",
+   "sma_scatter_km": 0.0381
+  },
+  {
+   "norad_id": 42818,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:59:36.696768+00:00",
+   "sma_scatter_km": 0.0384
+  },
+  {
+   "norad_id": 42907,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:05:02.186016+00:00",
+   "sma_scatter_km": 0.0925
+  },
+  {
+   "norad_id": 42915,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:31:38.892000+00:00",
+   "sma_scatter_km": 0.0101
+  },
+  {
+   "norad_id": 42917,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 42934,
+   "start": "2021-01-01",
+   "end": "2024-08-09",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:06:47.185344+00:00",
+   "sma_scatter_km": 0.1595
+  },
+  {
+   "norad_id": 42942,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:44:24.905760+00:00",
+   "sma_scatter_km": 0.0998
+  },
+  {
+   "norad_id": 42950,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:29:39.082848+00:00",
+   "sma_scatter_km": 0.0193
+  },
+  {
+   "norad_id": 42951,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:37.904640+00:00",
+   "sma_scatter_km": 0.0628
+  },
+  {
+   "norad_id": 42967,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:04:56.449344+00:00",
+   "sma_scatter_km": 0.0109
+  },
+  {
+   "norad_id": 42984,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T06:33:39.665664+00:00",
+   "sma_scatter_km": 0.0614
+  },
+  {
+   "norad_id": 43039,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:02:28.923072+00:00",
+   "sma_scatter_km": 0.0213
+  },
+  {
+   "norad_id": 43162,
+   "start": "2021-01-01",
+   "end": "2023-09-14",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:08:05.748864+00:00",
+   "sma_scatter_km": 0.0261
+  },
+  {
+   "norad_id": 43174,
+   "start": "2021-01-01",
+   "end": "2025-03-07",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:03:43.803360+00:00",
+   "sma_scatter_km": 0.0353
+  },
+  {
+   "norad_id": 43175,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:38:42.208224+00:00",
+   "sma_scatter_km": 0.1102
+  },
+  {
+   "norad_id": 43226,
+   "start": "2023-02-16",
+   "end": "2025-06-05",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:09:26.019072+00:00",
+   "sma_scatter_km": 0.014
+  },
+  {
+   "norad_id": 43228,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:18:16.402176+00:00",
+   "sma_scatter_km": 0.1351
+  },
+  {
+   "norad_id": 43271,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:29:38.397408+00:00",
+   "sma_scatter_km": 0.0115
+  },
+  {
+   "norad_id": 43272,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:59:59.161632+00:00",
+   "sma_scatter_km": 0.1395
+  },
+  {
+   "norad_id": 43339,
+   "start": "2021-01-01",
+   "end": "2023-06-16",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T14:35:37.894272+00:00",
+   "sma_scatter_km": 0.3295
+  },
+  {
+   "norad_id": 43432,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T08:20:36.922848+00:00",
+   "sma_scatter_km": 0.1497
+  },
+  {
+   "norad_id": 43450,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T01:20:21.645312+00:00",
+   "sma_scatter_km": 0.0524
+  },
+  {
+   "norad_id": 43463,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:26:15.152640+00:00",
+   "sma_scatter_km": 0.0597
+  },
+  {
+   "norad_id": 43488,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:53:57.984288+00:00",
+   "sma_scatter_km": 0.1219
+  },
+  {
+   "norad_id": 43491,
+   "start": "2022-02-21",
+   "end": "2024-10-08",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:57:36.404928+00:00",
+   "sma_scatter_km": 0.0101
+  },
+  {
+   "norad_id": 43562,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:04:56.671104+00:00",
+   "sma_scatter_km": 0.1075
+  },
+  {
+   "norad_id": 43587,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:00.464064+00:00",
+   "sma_scatter_km": 0.0558
+  },
+  {
+   "norad_id": 43611,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T08:23:29.148288+00:00",
+   "sma_scatter_km": 0.1329
+  },
+  {
+   "norad_id": 43632,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:05:09.674304+00:00",
+   "sma_scatter_km": 0.0649
+  },
+  {
+   "norad_id": 43633,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:20:51.836640+00:00",
+   "sma_scatter_km": 0.178
+  },
+  {
+   "norad_id": 43651,
+   "start": "2021-09-24",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:02:50.355168+00:00",
+   "sma_scatter_km": 0.0412
+  },
+  {
+   "norad_id": 43683,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:42:38.749248+00:00",
+   "sma_scatter_km": 0.0387
+  },
+  {
+   "norad_id": 43698,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:08:01.898880+00:00",
+   "sma_scatter_km": 0.037
+  },
+  {
+   "norad_id": 43700,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:42:15.375744+00:00",
+   "sma_scatter_km": 0.053
+  },
+  {
+   "norad_id": 43823,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:28:52.402368+00:00",
+   "sma_scatter_km": 0.0421
+  },
+  {
+   "norad_id": 43824,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:06.548064+00:00",
+   "sma_scatter_km": 0.0093
+  },
+  {
+   "norad_id": 43864,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:44:43.868256+00:00",
+   "sma_scatter_km": 0.0235
+  },
+  {
+   "norad_id": 43867,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T04:38:35.687040+00:00",
+   "sma_scatter_km": 0.155
+  },
+  {
+   "norad_id": 43874,
+   "start": "2023-05-17",
+   "end": "2024-02-11",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T18:26:38.729184+00:00",
+   "sma_scatter_km": 0.0157
+  },
+  {
+   "norad_id": 43917,
+   "start": "2021-01-01",
+   "end": "2021-06-26",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:40:37.432704+00:00",
+   "sma_scatter_km": 0.0303
+  },
+  {
+   "norad_id": 43920,
+   "start": "2021-12-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:12:05.017824+00:00",
+   "sma_scatter_km": 0.0561
+  },
+  {
+   "norad_id": 44034,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:03:24.840864+00:00",
+   "sma_scatter_km": 0.1437
+  },
+  {
+   "norad_id": 44035,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T04:31:58.819872+00:00",
+   "sma_scatter_km": 0.0463
+  },
+  {
+   "norad_id": 44048,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:09:28.312992+00:00",
+   "sma_scatter_km": 0.0824
+  },
+  {
+   "norad_id": 44067,
+   "start": "2023-05-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T15:12:12.506112+00:00",
+   "sma_scatter_km": 0.0496
+  },
+  {
+   "norad_id": 44071,
+   "start": "2021-01-01",
+   "end": "2025-08-04",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T09:43:58.940256+00:00",
+   "sma_scatter_km": 0.2299
+  },
+  {
+   "norad_id": 44076,
+   "start": "2023-08-15",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:58.965216+00:00",
+   "sma_scatter_km": 0.0093
+  },
+  {
+   "norad_id": 44186,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:43:37.744320+00:00",
+   "sma_scatter_km": 0.062
+  },
+  {
+   "norad_id": 44231,
+   "start": "2021-09-24",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:02:10.297824+00:00",
+   "sma_scatter_km": 0.03
+  },
+  {
+   "norad_id": 44307,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:48:59.730336+00:00",
+   "sma_scatter_km": 0.0552
+  },
+  {
+   "norad_id": 44333,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:44:42.747648+00:00",
+   "sma_scatter_km": 0.1969
+  },
+  {
+   "norad_id": 44334,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:37:00.878016+00:00",
+   "sma_scatter_km": 0.0945
+  },
+  {
+   "norad_id": 44457,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T06:13:38.686656+00:00",
+   "sma_scatter_km": 0.0734
+  },
+  {
+   "norad_id": 44475,
+   "start": "2021-01-01",
+   "end": "2025-05-06",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:42:38.749248+00:00",
+   "sma_scatter_km": 0.139
+  },
+  {
+   "norad_id": 44476,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:09:54.219744+00:00",
+   "sma_scatter_km": 0.0583
+  },
+  {
+   "norad_id": 44479,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:39:45.615168+00:00",
+   "sma_scatter_km": 0.0479
+  },
+  {
+   "norad_id": 44481,
+   "start": "2021-01-01",
+   "end": "2024-07-10",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:19:00.846624+00:00",
+   "sma_scatter_km": 0.0404
+  },
+  {
+   "norad_id": 44624,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:33:31.212000+00:00",
+   "sma_scatter_km": 0.0129
+  },
+  {
+   "norad_id": 44625,
+   "start": "2021-01-01",
+   "end": "2023-06-16",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-07-31T22:27:50.430240+00:00",
+   "sma_scatter_km": 0.236
+  },
+  {
+   "norad_id": 44637,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:58:43.796928+00:00",
+   "sma_scatter_km": 0.0165
+  },
+  {
+   "norad_id": 44800,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:45:07.601184+00:00",
+   "sma_scatter_km": 0.0538
+  },
+  {
+   "norad_id": 44801,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:38:08.270016+00:00",
+   "sma_scatter_km": 0.0395
+  },
+  {
+   "norad_id": 44868,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:27:59.652864+00:00",
+   "sma_scatter_km": 0.1256
+  },
+  {
+   "norad_id": 44903,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:56:36.501216+00:00",
+   "sma_scatter_km": 0.009
+  },
+  {
+   "norad_id": 44910,
+   "start": "2021-02-26",
+   "end": "2022-04-22",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T08:06:15.798240+00:00",
+   "sma_scatter_km": 0.0275
+  },
+  {
+   "norad_id": 44978,
+   "start": "2021-05-27",
+   "end": "2025-12-02",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T11:40:10.312608+00:00",
+   "sma_scatter_km": 0.0547
+  },
+  {
+   "norad_id": 45026,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:58:36.308640+00:00",
+   "sma_scatter_km": 0.0163
+  },
+  {
+   "norad_id": 45027,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:37:00.878016+00:00",
+   "sma_scatter_km": 0.1242
+  },
+  {
+   "norad_id": 45245,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T10:05:34.371744+00:00",
+   "sma_scatter_km": 0.0684
+  },
+  {
+   "norad_id": 45246,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.06
+  },
+  {
+   "norad_id": 45344,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:57:51.380640+00:00",
+   "sma_scatter_km": 0.0101
+  },
+  {
+   "norad_id": 45465,
+   "start": "2021-08-25",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T13:28:51.760416+00:00",
+   "sma_scatter_km": 0.0463
+  },
+  {
+   "norad_id": 45807,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:06:28.056096+00:00",
+   "sma_scatter_km": 0.0561
+  },
+  {
+   "norad_id": 45863,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T08:22:21.756288+00:00",
+   "sma_scatter_km": 0.1525
+  },
+  {
+   "norad_id": 45920,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:25:22.737216+00:00",
+   "sma_scatter_km": 0.0585
+  },
+  {
+   "norad_id": 45985,
+   "start": "2021-03-28",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:02:28.438656+00:00",
+   "sma_scatter_km": 0.0632
+  },
+  {
+   "norad_id": 45986,
+   "start": "2021-01-01",
+   "end": "2025-12-02",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-17T12:54:29.287008+00:00",
+   "sma_scatter_km": 0.0394
+  },
+  {
+   "norad_id": 46112,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:37.904640+00:00",
+   "sma_scatter_km": 0.0709
+  },
+  {
+   "norad_id": 46113,
+   "start": "2023-08-15",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:34:38.604864+00:00",
+   "sma_scatter_km": 0.1962
+  },
+  {
+   "norad_id": 46114,
+   "start": "2021-01-27",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:59:19.486752+00:00",
+   "sma_scatter_km": 0.0398
+  },
+  {
+   "norad_id": 46610,
+   "start": "2022-09-19",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:08:35.352672+00:00",
+   "sma_scatter_km": 0.0662
+  },
+  {
+   "norad_id": 46916,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:24:23.577120+00:00",
+   "sma_scatter_km": 0.0597
+  },
+  {
+   "norad_id": 47202,
+   "start": "2021-01-01",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:00:51.094368+00:00",
+   "sma_scatter_km": 0.032
+  },
+  {
+   "norad_id": 47240,
+   "start": "2022-11-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:19:22.363104+00:00",
+   "sma_scatter_km": 0.1767
+  },
+  {
+   "norad_id": 47256,
+   "start": "2021-01-27",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T23:36:09.609120+00:00",
+   "sma_scatter_km": 0.016
+  },
+  {
+   "norad_id": 47306,
+   "start": "2021-04-27",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T11:18:19.905408+00:00",
+   "sma_scatter_km": 0.0824
+  },
+  {
+   "norad_id": 47321,
+   "start": "2021-01-27",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:58:13.844640+00:00",
+   "sma_scatter_km": 0.0143
+  },
+  {
+   "norad_id": 47613,
+   "start": "2021-11-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:45:38.552832+00:00",
+   "sma_scatter_km": 0.0266
+  },
+  {
+   "norad_id": 47851,
+   "start": "2022-09-19",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:16:57.052416+00:00",
+   "sma_scatter_km": 0.0398
+  },
+  {
+   "norad_id": 48618,
+   "start": "2021-12-23",
+   "end": "2025-07-05",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:36:18.182592+00:00",
+   "sma_scatter_km": 0.039
+  },
+  {
+   "norad_id": 48808,
+   "start": "2024-03-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:04:50.710944+00:00",
+   "sma_scatter_km": 0.0474
+  },
+  {
+   "norad_id": 48838,
+   "start": "2021-08-25",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:19:22.378656+00:00",
+   "sma_scatter_km": 0.1396
+  },
+  {
+   "norad_id": 49011,
+   "start": "2022-05-22",
+   "end": "2024-06-10",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T06:06:12.295872+00:00",
+   "sma_scatter_km": 0.0353
+  },
+  {
+   "norad_id": 49055,
+   "start": "2022-06-21",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:01:53.078016+00:00",
+   "sma_scatter_km": 0.2306
+  },
+  {
+   "norad_id": 49056,
+   "start": "2021-08-25",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T06:14:56.458752+00:00",
+   "sma_scatter_km": 0.0521
+  },
+  {
+   "norad_id": 49062,
+   "start": "2021-08-25",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:02:58.390944+00:00",
+   "sma_scatter_km": 0.0454
+  },
+  {
+   "norad_id": 49115,
+   "start": "2022-12-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:33.793632+00:00",
+   "sma_scatter_km": 0.0091
+  },
+  {
+   "norad_id": 49125,
+   "start": "2021-09-24",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T03:04:44.675904+00:00",
+   "sma_scatter_km": 0.0477
+  },
+  {
+   "norad_id": 49333,
+   "start": "2022-05-22",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:05:17.161728+00:00",
+   "sma_scatter_km": 0.1015
+  },
+  {
+   "norad_id": 49505,
+   "start": "2023-09-14",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:12:05.017824+00:00",
+   "sma_scatter_km": 0.0477
+  },
+  {
+   "norad_id": 49817,
+   "start": "2021-12-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T20:55:54.958368+00:00",
+   "sma_scatter_km": 0.0118
+  },
+  {
+   "norad_id": 50001,
+   "start": "2022-03-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:20:35.295936+00:00",
+   "sma_scatter_km": 0.096
+  },
+  {
+   "norad_id": 50002,
+   "start": "2022-03-23",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-30T10:32:00.369024+00:00",
+   "sma_scatter_km": 0.2119
+  },
+  {
+   "norad_id": 50005,
+   "start": "2021-12-23",
+   "end": "2024-11-07",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:53:38.750208+00:00",
+   "sma_scatter_km": 0.0157
+  },
+  {
+   "norad_id": 50212,
+   "start": "2022-05-22",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:04:17.258016+00:00",
+   "sma_scatter_km": 0.0955
+  },
+  {
+   "norad_id": 50319,
+   "start": "2023-01-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:16:08.622048+00:00",
+   "sma_scatter_km": 0.1131
+  },
+  {
+   "norad_id": 50574,
+   "start": "2022-01-22",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T05:18:38.579040+00:00",
+   "sma_scatter_km": 0.0432
+  },
+  {
+   "norad_id": 52255,
+   "start": "2022-05-22",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T08:59:23.058816+00:00",
+   "sma_scatter_km": 0.1433
+  },
+  {
+   "norad_id": 52817,
+   "start": "2022-07-21",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:32:46.284000+00:00",
+   "sma_scatter_km": 0.0126
+  },
+  {
+   "norad_id": 52903,
+   "start": "2022-07-21",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T23:34:09.799968+00:00",
+   "sma_scatter_km": 0.0193
+  },
+  {
+   "norad_id": 52904,
+   "start": "2022-07-21",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:18:23.406912+00:00",
+   "sma_scatter_km": 0.0345
+  },
+  {
+   "norad_id": 52933,
+   "start": "2022-08-20",
+   "end": "2024-05-11",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:55:19.869312+00:00",
+   "sma_scatter_km": 0.0513
+  },
+  {
+   "norad_id": 52940,
+   "start": "2022-10-19",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:26:15.152640+00:00",
+   "sma_scatter_km": 0.0572
+  },
+  {
+   "norad_id": 53100,
+   "start": "2022-07-21",
+   "end": "2025-06-05",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:38:00.781728+00:00",
+   "sma_scatter_km": 0.0404
+  },
+  {
+   "norad_id": 53355,
+   "start": "2024-01-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:28:51.760416+00:00",
+   "sma_scatter_km": 0.0289
+  },
+  {
+   "norad_id": 53765,
+   "start": "2023-02-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:27:30.518208+00:00",
+   "sma_scatter_km": 0.0732
+  },
+  {
+   "norad_id": 53813,
+   "start": "2024-01-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:58:13.844640+00:00",
+   "sma_scatter_km": 0.0118
+  },
+  {
+   "norad_id": 53960,
+   "start": "2022-12-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T14:05:33.889056+00:00",
+   "sma_scatter_km": 0.1777
+  },
+  {
+   "norad_id": 53961,
+   "start": "2022-12-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:37.165920+00:00",
+   "sma_scatter_km": 0.1476
+  },
+  {
+   "norad_id": 54026,
+   "start": "2022-10-19",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:56:57.213600+00:00",
+   "sma_scatter_km": 0.0479
+  },
+  {
+   "norad_id": 54027,
+   "start": "2022-12-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:05:49.093152+00:00",
+   "sma_scatter_km": 0.0639
+  },
+  {
+   "norad_id": 54033,
+   "start": "2022-11-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T07:50:39.791616+00:00",
+   "sma_scatter_km": 0.0734
+  },
+  {
+   "norad_id": 54048,
+   "start": "2023-09-14",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T07:47:47.567040+00:00",
+   "sma_scatter_km": 0.0863
+  },
+  {
+   "norad_id": 54225,
+   "start": "2023-06-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T07:47:47.567040+00:00",
+   "sma_scatter_km": 0.1102
+  },
+  {
+   "norad_id": 54230,
+   "start": "2022-11-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:53:38.750208+00:00",
+   "sma_scatter_km": 0.0098
+  },
+  {
+   "norad_id": 54243,
+   "start": "2023-02-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:00:26.878752+00:00",
+   "sma_scatter_km": 0.0269
+  },
+  {
+   "norad_id": 54244,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T07:18:05.409792+00:00",
+   "sma_scatter_km": 0.0325
+  },
+  {
+   "norad_id": 54259,
+   "start": "2023-07-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:29:30.325632+00:00",
+   "sma_scatter_km": 0.1451
+  },
+  {
+   "norad_id": 54741,
+   "start": "2023-05-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:08:26.115360+00:00",
+   "sma_scatter_km": 0.0195
+  },
+  {
+   "norad_id": 54742,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:09:33.507360+00:00",
+   "sma_scatter_km": 0.0282
+  },
+  {
+   "norad_id": 54743,
+   "start": "2024-02-11",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:34:53.580576+00:00",
+   "sma_scatter_km": 0.0157
+  },
+  {
+   "norad_id": 55239,
+   "start": "2024-07-10",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-25T12:45:07.166880+00:00",
+   "sma_scatter_km": 0.134
+  },
+  {
+   "norad_id": 55263,
+   "start": "2024-08-09",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T13:01:00.412032+00:00",
+   "sma_scatter_km": 0.3438
+  },
+  {
+   "norad_id": 55506,
+   "start": "2023-05-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T06:16:56.273088+00:00",
+   "sma_scatter_km": 0.0207
+  },
+  {
+   "norad_id": 55508,
+   "start": "2024-09-08",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:06:51.206400+00:00",
+   "sma_scatter_km": 0.1676
+  },
+  {
+   "norad_id": 55686,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:10:42.650112+00:00",
+   "sma_scatter_km": 0.1679
+  },
+  {
+   "norad_id": 55912,
+   "start": "2023-03-18",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:18:03.949920+00:00",
+   "sma_scatter_km": 0.0261
+  },
+  {
+   "norad_id": 55970,
+   "start": "2023-06-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:05:33.889056+00:00",
+   "sma_scatter_km": 0.0137
+  },
+  {
+   "norad_id": 55971,
+   "start": "2023-05-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T13:56:27.261312+00:00",
+   "sma_scatter_km": 0.0435
+  },
+  {
+   "norad_id": 56174,
+   "start": "2023-05-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:08:56.066784+00:00",
+   "sma_scatter_km": 0.0314
+  },
+  {
+   "norad_id": 56370,
+   "start": "2023-11-13",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T11:17:23.361792+00:00",
+   "sma_scatter_km": 0.2428
+  },
+  {
+   "norad_id": 56564,
+   "start": "2023-05-17",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:11:56.234976+00:00",
+   "sma_scatter_km": 0.0078
+  },
+  {
+   "norad_id": 56757,
+   "start": "2023-10-14",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T11:16:42.560256+00:00",
+   "sma_scatter_km": 0.1113
+  },
+  {
+   "norad_id": 56759,
+   "start": "2023-06-16",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:58:38.714592+00:00",
+   "sma_scatter_km": 0.0527
+  },
+  {
+   "norad_id": 57045,
+   "start": "2023-11-13",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:09:28.375200+00:00",
+   "sma_scatter_km": 0.0768
+  },
+  {
+   "norad_id": 57213,
+   "start": "2023-08-15",
+   "end": "2024-11-07",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:35:08.557152+00:00",
+   "sma_scatter_km": 0.0964
+  },
+  {
+   "norad_id": 57214,
+   "start": "2024-01-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:32:53.772288+00:00",
+   "sma_scatter_km": 0.0844
+  },
+  {
+   "norad_id": 57479,
+   "start": "2023-10-14",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-30T23:42:10.708416+00:00",
+   "sma_scatter_km": 0.1362
+  },
+  {
+   "norad_id": 57493,
+   "start": "2023-10-14",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:06:50.493888+00:00",
+   "sma_scatter_km": 0.0359
+  },
+  {
+   "norad_id": 57624,
+   "start": "2023-08-15",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T13:19:43.619808+00:00",
+   "sma_scatter_km": 0.0328
+  },
+  {
+   "norad_id": 58204,
+   "start": "2024-02-11",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T17:07:00.778944+00:00",
+   "sma_scatter_km": 0.0135
+  },
+  {
+   "norad_id": 58253,
+   "start": "2023-12-13",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:07:57.912960+00:00",
+   "sma_scatter_km": 0.0558
+  },
+  {
+   "norad_id": 58582,
+   "start": "2024-01-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:10:05.208672+00:00",
+   "sma_scatter_km": 0.0516
+  },
+  {
+   "norad_id": 58698,
+   "start": "2024-06-10",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:09:16.780032+00:00",
+   "sma_scatter_km": 0.0936
+  },
+  {
+   "norad_id": 58990,
+   "start": "2024-07-10",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:15:38.669760+00:00",
+   "sma_scatter_km": 0.0123
+  },
+  {
+   "norad_id": 58995,
+   "start": "2024-03-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:24:30.320928+00:00",
+   "sma_scatter_km": 0.0555
+  },
+  {
+   "norad_id": 59020,
+   "start": "2024-03-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T17:44:51.770976+00:00",
+   "sma_scatter_km": 0.0429
+  },
+  {
+   "norad_id": 59069,
+   "start": "2024-03-12",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:01:47.496576+00:00",
+   "sma_scatter_km": 0.1633
+  },
+  {
+   "norad_id": 59346,
+   "start": "2024-10-08",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:19:34.784832+00:00",
+   "sma_scatter_km": 0.0939
+  },
+  {
+   "norad_id": 59915,
+   "start": "2024-06-10",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:45:52.529184+00:00",
+   "sma_scatter_km": 0.0844
+  },
+  {
+   "norad_id": 60086,
+   "start": "2025-02-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:57:40.390848+00:00",
+   "sma_scatter_km": 0.1127
+  },
+  {
+   "norad_id": 60133,
+   "start": "2025-04-06",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:13:25.637376+00:00",
+   "sma_scatter_km": 0.0411
+  },
+  {
+   "norad_id": 60179,
+   "start": "2024-07-10",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T11:38:32.968320+00:00",
+   "sma_scatter_km": 0.0535
+  },
+  {
+   "norad_id": 60233,
+   "start": "2025-01-06",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:46:59.921184+00:00",
+   "sma_scatter_km": 0.0491
+  },
+  {
+   "norad_id": 60327,
+   "start": "2024-08-09",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:51:18.816192+00:00",
+   "sma_scatter_km": 0.0404
+  },
+  {
+   "norad_id": 60606,
+   "start": "2024-09-08",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:26:00.176928+00:00",
+   "sma_scatter_km": 0.0594
+  },
+  {
+   "norad_id": 61503,
+   "start": "2024-10-08",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:04:47.692128+00:00",
+   "sma_scatter_km": 0.1284
+  },
+  {
+   "norad_id": 61733,
+   "start": "2024-12-07",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:02:10.244256+00:00",
+   "sma_scatter_km": 0.0308
+  },
+  {
+   "norad_id": 61910,
+   "start": "2024-12-07",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:25:22.737216+00:00",
+   "sma_scatter_km": 0.0549
+  },
+  {
+   "norad_id": 62028,
+   "start": "2024-12-07",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T09:45:58.749408+00:00",
+   "sma_scatter_km": 0.0123
+  },
+  {
+   "norad_id": 62259,
+   "start": "2025-02-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T12:53:22.543872+00:00",
+   "sma_scatter_km": 0.1824
+  },
+  {
+   "norad_id": 62374,
+   "start": "2025-01-06",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:16:42.075840+00:00",
+   "sma_scatter_km": 0.0394
+  },
+  {
+   "norad_id": 62455,
+   "start": "2025-07-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T10:48:55.338336+00:00",
+   "sma_scatter_km": 0.0356
+  },
+  {
+   "norad_id": 62456,
+   "start": "2025-08-04",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T14:35:21.484320+00:00",
+   "sma_scatter_km": 0.0196
+  },
+  {
+   "norad_id": 62457,
+   "start": "2025-07-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": false,
+   "last_set": "2025-12-31T10:48:55.344384+00:00",
+   "sma_scatter_km": 0.0457
+  },
+  {
+   "norad_id": 62483,
+   "start": "2025-06-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T13:04:54.697728+00:00",
+   "sma_scatter_km": 0.062
+  },
+  {
+   "norad_id": 62485,
+   "start": "2025-02-05",
+   "end": "2025-06-05",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T21:22:02.632800+00:00",
+   "sma_scatter_km": 0.0521
+  },
+  {
+   "norad_id": 62804,
+   "start": "2025-02-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T04:42:38.768256+00:00",
+   "sma_scatter_km": 0.0395
+  },
+  {
+   "norad_id": 62876,
+   "start": "2025-03-07",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T15:00:43.606080+00:00",
+   "sma_scatter_km": 0.0374
+  },
+  {
+   "norad_id": 63075,
+   "start": "2025-07-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T13:23:45.392928+00:00",
+   "sma_scatter_km": 0.0449
+  },
+  {
+   "norad_id": 63157,
+   "start": "2025-03-07",
+   "end": "2025-08-04",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-30T21:54:41.827104+00:00",
+   "sma_scatter_km": 0.0219
+  },
+  {
+   "norad_id": 63361,
+   "start": "2025-04-06",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T08:07:00.726240+00:00",
+   "sma_scatter_km": 0.0119
+  },
+  {
+   "norad_id": 63397,
+   "start": "2025-04-06",
+   "end": "2025-08-04",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T17:03:31.112928+00:00",
+   "sma_scatter_km": 0.01
+  },
+  {
+   "norad_id": 63524,
+   "start": "2025-09-03",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T17:04:38.505792+00:00",
+   "sma_scatter_km": 0.0062
+  },
+  {
+   "norad_id": 63662,
+   "start": "2025-05-06",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:57:40.390848+00:00",
+   "sma_scatter_km": 0.0493
+  },
+  {
+   "norad_id": 63924,
+   "start": "2025-05-06",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T16:57:54.152064+00:00",
+   "sma_scatter_km": 0.0356
+  },
+  {
+   "norad_id": 64062,
+   "start": "2025-06-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T12:26:38.800896+00:00",
+   "sma_scatter_km": 0.0474
+  },
+  {
+   "norad_id": 64290,
+   "start": "2025-08-04",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T14:57:18.780192+00:00",
+   "sma_scatter_km": 0.1069
+  },
+  {
+   "norad_id": 64470,
+   "start": "2025-07-05",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": true,
+   "last_set": "2025-12-31T15:01:13.558368+00:00",
+   "sma_scatter_km": 0.0255
+  },
+  {
+   "norad_id": 64723,
+   "start": "2025-08-04",
+   "end": "2026-01-01",
+   "mode": "controlled_lon",
+   "split": "test",
+   "quiet": true,
+   "last_set": "2025-12-31T07:43:03.020736+00:00",
+   "sma_scatter_km": 0.0073
+  },
+  {
+   "norad_id": 64784,
+   "start": "2025-08-04",
+   "end": "2026-01-01",
+   "mode": "controlled_lon_inc",
+   "split": "dev",
+   "quiet": false,
+   "last_set": "2025-12-31T14:33:38.700288+00:00",
+   "sma_scatter_km": 0.0087
+  }
+ ]
+}
