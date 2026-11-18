@@ -370,9 +370,11 @@ def _arrival_day(tr: Track, held: Segment, j: int | None) -> float | None:
     return None if j is None else _through_gap(tr, j, j - 1, _held_rate(tr, held))
 
 
-def _open_move(tr: Track, held: Segment, left: float | None) -> bool:
+def _open_move(tr: Track, held: Segment, left: float | None, burn_days: np.ndarray, steps: np.ndarray) -> bool:
     if left is None or tr.days[-1] - left > OPEN_DAYS:
         return False
+    if ((burn_days > left) & (burn_days <= left + CLIMB_DAYS) & (np.abs(steps) >= FREE_BURN_MIN_M)).any():
+        return True
     rel = np.abs(tr.rate - _held_rate(tr, held))
     i = _sustained(tr, rel >= FAST_RATE, left - 1.0, float(tr.days[-1]) + 1.0)
     calm = np.flatnonzero(rel[:i] < FAST_RATE / 2) if i is not None else []
@@ -453,7 +455,7 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
             kind, rise = _departure_type(tr, a, rest)
             lon_after = _slot(nxt) if nxt else _lon_near(tr, _day(rest[-1].end), True)
             left, signal, burn = _departure(tr, a, b, _day(nxt.start) if nxt else _day(rest[-1].end), burn_days)
-            if kind == "keeping_stop" and _open_move(tr, a, left):
+            if kind == "keeping_stop" and _open_move(tr, a, left, burn_days, steps):
                 kind = "relocation_start"
             departed = left if left is not None else _day(b.start)
             if signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
