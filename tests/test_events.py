@@ -338,6 +338,21 @@ def test_a_keeping_stop_on_a_slow_burn_cycle_is_dated_between_the_last_burn_and_
     assert found[0].signal == "burn_gap" and abs(E._day(found[0].date) - 107.0) <= 1
 
 
+def test_a_move_whose_burn_follows_a_slow_drift_out_of_the_box_starts_at_the_burn(monkeypatch):
+    days = np.arange(0.0, 220.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    free = days >= 100.0
+    rate = np.where(free, -0.002 * (days - 100.0), rate)
+    rate = np.where(days >= 115.0, -0.3, rate)
+    rate = np.where(days >= 130.0, 0.0, rate)
+    lon = np.where(free, lon[free.argmax()] + np.cumsum(np.where(free, rate, 0.0)) * 0.25, lon)
+    segs = [held(0, 120, 9.98, 10.02), held(120, 135, 5.0, 9.98, "drifting"), held(135, 220, lon[-1] - 0.02, lon[-1] + 0.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([115.0]), np.array([9000.0]))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert found[0].signal == "a_step" and abs(E._day(found[0].date) - 115.0) <= 1
+
+
 def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():
     days = np.arange(0.0, EDGES[14], 0.25)
     start, kick = EDGES[5] + 7.0, EDGES[14] - 6.0

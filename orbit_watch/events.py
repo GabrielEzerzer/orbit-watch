@@ -419,6 +419,17 @@ def _departure(tr: Track, a: Segment, b: Segment, limit: float,
     return missed, "burn_gap", float(tr.days[fast[0]]) if len(fast) else None
 
 
+def _burn_after_drift(tr: Track, left: float, limit: float, burn_days: np.ndarray, steps: np.ndarray) -> float | None:
+    if (np.abs(tr.rate[(tr.days >= left) & (tr.days <= left + SUSTAIN_DAYS)]) >= FAST_RATE).any():
+        return None
+    fast = np.flatnonzero((tr.days > left) & (tr.days < min(limit, left + REACH_DAYS)) & (np.abs(tr.rate) >= FAST_RATE))
+    if not len(fast):
+        return None
+    lo, hi = float(tr.days[fast[0]]) - STEP_REACH_DAYS, float(tr.days[fast[0]])
+    big = burn_days[(burn_days > max(left, lo)) & (burn_days <= hi) & (np.abs(steps) >= FREE_BURN_MIN_M)]
+    return float(big.min()) if len(big) else None
+
+
 def _climb_burns(found: Sequence[Event], burn_days: np.ndarray, steps: np.ndarray) -> set[float]:
     out: set[float] = set()
     big = np.sort(burn_days[np.abs(steps) >= FREE_BURN_MIN_M])
@@ -480,9 +491,13 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 continue
             kind, rise = _departure_type(tr, a, rest)
             lon_after = _slot(nxt) if nxt else _lon_near(tr, _day(rest[-1].end), True)
-            left, signal, burn = _departure(tr, a, b, _day(nxt.start) if nxt else _day(rest[-1].end), burn_days)
+            limit = _day(nxt.start) if nxt else _day(rest[-1].end)
+            left, signal, burn = _departure(tr, a, b, limit, burn_days)
             if kind == "keeping_stop" and _open_move(tr, a, left, burn_days, steps):
                 kind = "relocation_start"
+            pushed = _burn_after_drift(tr, left, limit, burn_days, steps) if signal == "rate_exit" and kind != "keeping_stop" else None
+            if pushed is not None:
+                left, signal = pushed, "a_step"
             climb = _climb_start(tr, a, left, burn_days, steps) if kind == "graveyard" and left is not None else None
             if climb is not None:
                 out.append(_event(tr, "graveyard", b, b, lon_after, rise, climb, "a_step"))
