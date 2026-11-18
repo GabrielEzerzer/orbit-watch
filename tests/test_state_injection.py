@@ -98,3 +98,12 @@ def test_the_frozen_hosts_hold_no_holdout_or_test_event_object_and_read_back_exa
     assert hosts and not set(hosts) & excluded
     assert all(h.end - h.start >= si.MIN_HOLD_DAYS and h.split == si.host_split(n) for n, h in hosts.items())
     assert all(si.read_host(si.host_record(h)) == h for h in hosts.values())
+
+
+def test_the_dev_split_runs_the_same_dev_plants_and_only_dev_hosts():
+    hosts = {n: si.Host(n, 0.0, 1500.0, "controlled_lon", si.host_split(n)) for n in range(100, 140)}
+    full = si.plan(list(hosts.values()), {n: 1800.0 for n in hosts})
+    plants, cands = si.chosen(full, hosts, ("dev",))
+    assert plants == [p for p in full if p.split == "dev"] and plants
+    assert set(cands) == {n for n, h in hosts.items() if h.split == "dev"}
+    assert si.chosen(full, hosts, si.SPLITS) == (full, hosts)

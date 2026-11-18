@@ -1,5 +1,6 @@
-# Hand audit of the belt's dated state changes: a fixed, stratified sample of findings/state_changes/events.csv,
-# one chart and one numeric digest per sampled event from its element sets, and a summary of the hand verdicts.
+# Hand audit of the belt's dated state changes: a fixed, stratified sample of the belt list as audited
+# (findings/state_audit/events.csv, or with --fresh the out-of-sample draw from findings/state_audit_fresh/events.csv),
+# one chart and digest per sampled event, and a summary of the hand verdicts.
 
 from __future__ import annotations
 
@@ -24,10 +25,12 @@ from orbit_watch.sources import data_dir
 from orbit_watch.truth import GROUNDTRUTH, load_splits, read_event_rows
 
 REPO = Path(__file__).resolve().parents[2]
-EVENTS = REPO / "findings" / "state_changes" / "events.csv"
 GEO_EVENTS = GROUNDTRUTH / "geo_events.csv"
 OUT = REPO / "findings" / "state_audit"
+EVENTS = OUT / "events.csv"
 SEED = "orbit-watch state audit 2026-11-18"
+FRESH = REPO / "findings" / "state_audit_fresh"
+FRESH_SEED = "orbit-watch fresh audit 2026-11-18"
 SAMPLE_SIZE = 50
 MIN_PER_TYPE = 5
 HALF_WINDOW_DAYS = 60
@@ -61,6 +64,14 @@ def excluded_objects(splits_path: Path | None = None, geo_events: Path = GEO_EVE
 
 def read_events(path: Path = EVENTS) -> list[dict]:
     return read_event_rows(path)[1]
+
+
+def fresh_excluded() -> set[int]:
+    return excluded_objects() | {int(r["norad_id"]) for r in read_events(OUT / "audit.csv")}
+
+
+def fresh_sample() -> list[dict]:
+    return draw(read_events(FRESH / "events.csv"), fresh_excluded(), seed=FRESH_SEED)
 
 
 def quotas(available: dict[str, int], total: int = SAMPLE_SIZE, floor: int = MIN_PER_TYPE) -> dict[str, int]:
@@ -229,28 +240,36 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Hand audit of the belt's dated state changes: draw the fixed sample, "
                                 "chart each sampled event, or summarise the hand verdicts.")
     p.add_argument("step", choices=("sample", "chart", "summary"))
-    p.add_argument("--out", type=Path, default=OUT, help="folder for audit.csv and summary.json")
+    p.add_argument("--out", type=Path, help="folder for audit.csv and summary.json (default findings/state_audit), "
+                   "or for the charts and digests.json (default $ORBIT_WATCH_DATA/state_audit)")
+    p.add_argument("--fresh", action="store_true", help="draw or chart the out-of-sample audit of "
+                   "findings/state_audit_fresh/events.csv instead; its summary.json is committed as judged")
     a = p.parse_args(argv)
-    sample = draw(read_events(), excluded_objects())
+    if a.fresh and a.step == "summary":
+        p.error("--fresh supports sample and chart; the fresh summary.json is committed as judged")
+    events_path = FRESH / "events.csv" if a.fresh else EVENTS
+    sample = fresh_sample() if a.fresh else draw(read_events(), excluded_objects())
     if a.step == "sample":
         w = csv.DictWriter(sys.stdout, fieldnames=list(sample[0]), lineterminator="\n")
         w.writeheader()
         w.writerows(sample)
         return 0
     if a.step == "summary":
-        rows = read_events(a.out / "audit.csv")
+        out = a.out or OUT
+        rows = read_events(out / "audit.csv")
         problems = check_rows(rows, sample)
         if problems:
             print("\n".join(problems), file=sys.stderr)
             return 1
         summary = {"sample_seed": SEED, **summarise(rows), "public_sources": PUBLIC_SOURCES}
-        (a.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
+        (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n")
         print(json.dumps(summary, indent=2))
         return 0
     geo = data_dir() / "geo"
-    scratch = data_dir() / "state_audit"
+    scratch = a.out or data_dir() / "state_audit"
+    scratch.mkdir(parents=True, exist_ok=True)
     names = _names(geo)
-    every = read_events()
+    every = read_events(events_path)
     digests = []
     for k, e in enumerate(sample):
         norad = int(e["norad_id"])

@@ -69,3 +69,16 @@ def test_summarise_counts_real_and_errors():
     assert s["real_median_abs_error_days"] == 4.0
     assert s["corrected_types"] == {"graveyard": 1}
     assert s["verdicts_by_type"]["free_burn"] == {"wrong_type": 1, "duplicate": 1}
+
+
+def test_fresh_redraw_matches_the_committed_out_of_sample_audit():
+    sample = sa.fresh_sample()
+    rows = sa.read_events(sa.FRESH / "audit.csv")
+    assert sa.check_rows(rows, sample) == []
+    first_audit = {int(r["norad_id"]) for r in sa.read_events(sa.OUT / "audit.csv")}
+    assert first_audit and first_audit <= sa.fresh_excluded() and sa.excluded_objects() <= sa.fresh_excluded()
+    assert not {int(e["norad_id"]) for e in sample} & sa.fresh_excluded()
+    with open(sa.FRESH / "summary.json", encoding="utf-8") as f:
+        summary = json.load(f)
+    assert summary["sample_seed"] == sa.FRESH_SEED
+    assert all(summary[k] == v for k, v in sa.summarise(rows).items())

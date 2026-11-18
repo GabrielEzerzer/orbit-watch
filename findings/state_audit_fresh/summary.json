@@ -1,0 +1,48 @@
+{
+  "events": 50,
+  "verdicts": {
+    "real": 47,
+    "artefact": 1,
+    "duplicate": 1,
+    "wrong_type": 1
+  },
+  "verdicts_by_type": {
+    "relocation_start": {
+      "real": 11
+    },
+    "graveyard": {
+      "real": 6,
+      "artefact": 1
+    },
+    "keeping_stop": {
+      "real": 3,
+      "duplicate": 1,
+      "wrong_type": 1
+    },
+    "relocation_end": {
+      "real": 14
+    },
+    "ns_keeping_stop": {
+      "real": 7
+    },
+    "free_burn": {
+      "real": 6
+    }
+  },
+  "real_right_type": 47,
+  "real_any_type": 48,
+  "real_date_dated": 45,
+  "real_date_unclear": 2,
+  "real_median_abs_error_days": 0.0,
+  "real_p90_abs_error_days": 3.0,
+  "real_within_3_days": 42,
+  "corrected_types": {
+    "relocation_start": 1
+  },
+  "sample_seed": "orbit-watch fresh audit 2026-11-18",
+  "events_list": "findings/state_changes/events.csv",
+  "excluded": "excluded_objects() plus every norad_id in findings/state_audit/audit.csv",
+  "date_error_sign": "event date minus estimated date (positive = listed late)",
+  "real_max_abs_error_days": 50,
+  "real_within_7_days": 43
+}
