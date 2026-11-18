@@ -401,6 +401,8 @@ def _through_gap(tr: Track, i: int, moving: int, held_rate: float) -> float:
     if abs(rel) < FAST_RATE:
         return float(tr.days[i])
     lag = shift / rel
+    if lag < 0 and abs(shift) >= MOVE_MIN_DEG:
+        return float(tr.days[i])
     when = tr.days[i] - lag if moving == i else tr.days[p] + lag
     return float(np.clip(when, tr.days[p], tr.days[i]))
 

@@ -433,3 +433,24 @@ def test_a_held_window_between_stretches_of_an_inclined_orbit_gives_no_events(mo
     monkeypatch.setattr(E, "segments", lambda tr: segs)
     found = E.events_from_track(M.track(element_sets(days, lon, rate, inc=30.0)), np.array([120.0]), np.array([-4000.0]))
     assert found == []
+
+
+def test_one_wild_element_set_next_to_a_normal_one_at_the_end_of_the_data_gives_no_event():
+    days = np.concatenate([np.arange(0.0, EDGES[9], 0.25), np.arange(EDGES[9], EDGES[10], 3.0)])
+    lon, rate = keeper_track(days, 10.0, 8)
+    days = np.insert(days, len(days) - 1, days[-1] - 0.02)
+    lon, rate = np.insert(lon, len(lon) - 1, lon[-1] + 5.2), np.insert(rate, len(rate) - 1, -7.3)
+    assert E.state_changes(element_sets(days, lon, rate)) == []
+
+
+def test_an_arrival_after_a_gap_in_which_the_drift_reverses_is_dated_at_the_first_set_after_it(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    drift = np.where(days < 60.0, -0.6, 0.0)
+    lon = lon + np.where(days < 60.0, 0.6 * (60.0 - days), 0.0) + np.where(days >= 60.0, 1.5, 0.0)
+    rate = rate + drift
+    keep = (days < 60.0) | (days >= 65.0)
+    segs = [held(0, 60, 10.0, 46.0, "drifting"), held(60, 150, 11.48, 11.52)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days[keep], lon[keep], rate[keep])))
+    assert [f.event_type for f in found] == ["relocation_end"] and abs(E._day(found[0].date) - 65.0) <= 0.5
