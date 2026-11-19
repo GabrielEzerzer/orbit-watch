@@ -40,6 +40,23 @@ def test_a_cited_list_without_a_source_column_is_refused(tmp_path):
         ev.read_cited(tmp_path / "x.csv")
 
 
+def test_the_hand_audit_counts_each_groups_classes_and_refuses_unknown_ones(tmp_path):
+    key, verdicts = tmp_path / "key.csv", tmp_path / "verdicts.csv"
+    key.write_text("audit_id,group,rank,bits_per_year\nA01,top,1,9\nA02,top,2,8\nA03,middle,200,0\n",
+                   encoding="utf-8")
+    verdicts.write_text("audit_id,norad_id,class,departures_real,evidence\nA01,1,irregular,yes,e\n"
+                        "A02,2,end_of_life,partly,e\nA03,3,none,n/a,e\n", encoding="utf-8")
+    out = ev.hand_audit(key, verdicts)
+    assert out["top"]["objects"] == 2 and out["top"]["class"]["irregular"] == 1
+    assert out["top"]["class"]["end_of_life"] == 1 and out["top"]["departures_real"] == {"partly": 1, "yes": 1}
+    assert out["middle"]["class"]["none"] == 1 and out["middle"]["class"]["irregular"] == 0
+    assert ev.hand_audit(key, tmp_path / "none.csv") == {"status": "no audit verdicts yet"}
+    verdicts.write_text("audit_id,norad_id,class,departures_real,evidence\nA01,1,odd,yes,e\n"
+                        "A02,2,none,no,e\nA03,3,none,n/a,e\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="odd"):
+        ev.hand_audit(key, verdicts)
+
+
 def test_a_cited_row_with_unknown_evidence_is_refused(tmp_path):
     (tmp_path / "x.csv").write_text("norad_id,name,claim,source_url,quote,evidence\n1,A,c,u,q,rumour\n",
                                     encoding="utf-8")

@@ -10,7 +10,7 @@ import json
 import pickle
 import random
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import replace
@@ -56,6 +56,8 @@ SETTLE_DAYS = 60.0
 ON_MAX_BITS = 2.0
 AUDIT_TOP, AUDIT_MIDDLE = 30, 20
 AUDIT_SEED = "orbit-watch routine audit 2026-11-19"
+AUDIT_CLASSES = ("none", "end_of_life", "rhythm", "irregular", "unclear")
+AUDIT_TARGET_IRREGULAR = 24
 TRIAL_FIELDS = ["trial", "variant", "split", "norad_id", "rhythm", "stay_days", "last_stay_days", "move_days",
                 "drift_rate", "rhythm_caught", "caught", "found_date", "scored", "model", "past_stays", "bits"]
 
@@ -257,6 +259,23 @@ def cited_lists(rank: Sequence[dict], irregular: Path | None, steady: Path | Non
     return out or {"status": "no cited irregular or steady list yet"}
 
 
+def hand_audit(key: Path, verdicts: Path) -> dict:
+    if not verdicts.is_file():
+        return {"status": "no audit verdicts yet"}
+    group = {r["audit_id"]: r["group"] for r in rows_of(key)}
+    rows = rows_of(verdicts)
+    bad = sorted({r["class"] for r in rows} - set(AUDIT_CLASSES))
+    if bad or sorted(r["audit_id"] for r in rows) != sorted(group):
+        raise ValueError(f"{verdicts}: unknown classes {bad} or audit ids that differ from {key}")
+    out = {}
+    for g in ("top", "middle"):
+        sub = [r for r in rows if group[r["audit_id"]] == g]
+        out[g] = {"objects": len(sub), "class": {c: sum(r["class"] == c for r in sub) for c in AUDIT_CLASSES},
+                  "departures_real": dict(sorted(Counter(r["departures_real"] for r in sub).items()))}
+    out["top"]["target_irregular"] = AUDIT_TARGET_IRREGULAR
+    return out
+
+
 def checks(a, geo_dir: Path, cache: Path) -> int:
     d = load(a.out, geo_dir, cache)
     splits = ("dev", "test") if a.split == "all" else ("dev",)
@@ -265,6 +284,7 @@ def checks(a, geo_dir: Path, cache: Path) -> int:
               "dead_objects": dead_objects(d), "logged_keepers": logged_keepers(d, geo_dir),
               "cited_departures": cited_departures(d, a.events, splits), "stability": stability(d, rows, overruns),
               "causality": causality(d, rows, overruns),
+              "hand_audit": hand_audit(a.out / "audit_key.csv", a.out / "audit_verdicts.csv"),
               "cited_lists": cited_lists(d["rank"], a.irregular, a.steady)}
     path = a.out / f"checks_{a.split}.json"
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8", newline="\n")

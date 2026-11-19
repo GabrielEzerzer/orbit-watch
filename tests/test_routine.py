@@ -75,6 +75,28 @@ def test_the_belt_prior_uses_only_departures_before_its_date():
     assert rt.prior_lookup(base)(10.0) is None and rt.prior_lookup(base)(65.0).day == 60.0
 
 
+def test_the_belt_prior_counts_held_years_only_up_to_its_date():
+    holds = {1: [(0.0, 1800.0)], 2: [(0.0, 1800.0)], 3: [(0.0, 900.0)]}
+    base = rt.belt_priors(holds, {1: [100.0]}, 1800.0)
+    assert base[0].day == 30.0 and base[0].held_years == pytest.approx(3 * 30 / rt.YEAR_DAYS)
+    longer = rt.belt_priors({**holds, 3: [(0.0, 5000.0)]}, {1: [100.0]}, 1800.0)
+    early = [p for p in base if p.day <= 900.0]
+    assert longer[:len(early)] == early
+
+
+def test_the_belt_prior_strength_by_hand_on_three_objects():
+    holds = {1: [(0.0, 1000.0)], 2: [(0.0, 1000.0)], 3: [(900.0, 1000.0)]}
+    deps = {1: [100.0, 200.0, 300.0, 400.0, 500.0, 600.0]}
+    prior = rt.prior_lookup(rt.belt_priors(holds, deps, 1000.0))(960.0)
+    h_long, h_short = 960.0 / rt.YEAR_DAYS, 60.0 / rt.YEAR_DAYS
+    m = 6 / (2 * h_long + h_short)
+    variance = (6 / h_long / 2) ** 2 - m / h_long
+    assert prior.day == 960.0 and prior.objects == 2
+    assert prior.rate == pytest.approx(m)
+    assert prior.beta == pytest.approx(m / variance)
+    assert prior.alpha == pytest.approx(m * m / variance)
+
+
 def test_departures_in_the_first_180_days_are_not_scored():
     rows, _ = rt.score_object(1, [(150.0, "keeping_stop"), (200.0, "graveyard")], HELD, 10.0, 3000.0, at)
     assert [r.scored for r in rows] == [False, True]

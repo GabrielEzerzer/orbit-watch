@@ -86,7 +86,7 @@ def object_pass(task: tuple[Path, bool]) -> dict:
     (recs,) = distinct_epochs(parse_tle(path.read_text(encoding="utf-8"))).values()
     kept, _ = drop_snapback_blocks(recs)
     out = {"norad": norad, "first_day": day_of(recs[0].epoch), "last_day": day_of(recs[-1].epoch), "sets": len(recs),
-           "holds": [], "steps": 0, "steps_outside": 0, "events": [], "days": np.array([], dtype=np.int16),
+           "holds": [], "steps_outside": 0, "events": [], "days": np.array([], dtype=np.int16),
            "lon": np.array([], dtype=np.float32), "sma": np.array([], dtype=np.float32)}
     if kept:
         tr = track(kept)
@@ -95,7 +95,7 @@ def object_pass(task: tuple[Path, bool]) -> dict:
         dayi = np.floor(tr.days).astype(int)
         _, first = np.unique(dayi, return_index=True)
         ok = (dayi[first] >= 0) & (dayi[first] < N_DAYS)
-        out.update(holds=holds, steps=len(burn_days), steps_outside=outside(burn_days, holds),
+        out.update(holds=holds, steps_outside=outside(burn_days, holds),
                    events=[as_row(e) for e in events_from_track(tr, burn_days, steps)],
                    days=dayi[first][ok].astype(np.int16), lon=tr.lon[first][ok].astype(np.float32),
                    sma=tr.semi_major_axis_km[first][ok].astype(np.float32))
