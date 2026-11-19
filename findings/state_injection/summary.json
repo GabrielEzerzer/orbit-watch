@@ -1,5 +1,5 @@
 {
-  "commit": "d8bd4e004dea958aafd4d153c756469fc6ce3347",
+  "commit": "9eb916b31ee7f3664d385e5467887c1960a74acd",
   "dirty": false,
   "seed": 20261118,
   "window_days": 45,
@@ -705,11 +705,11 @@
         "by_truth_type": {
           "keeping_stop": {
             "trials": 80,
-            "caught": 59,
-            "recall": 0.7375,
-            "median_abs_error_days": 8.0,
-            "p90_abs_error_days": 26.2,
-            "same_type": 58,
+            "caught": 60,
+            "recall": 0.75,
+            "median_abs_error_days": 7.5,
+            "p90_abs_error_days": 26.1,
+            "same_type": 59,
             "mistyped": 1
           },
           "free_burn": {

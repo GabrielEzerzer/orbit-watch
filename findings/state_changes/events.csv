@@ -6,7 +6,7 @@ norad_id,event_type,date,signal,size,lon_before,lon_after,mode_before,mode_after
 21639,relocation_start,2025-02-13,rate_exit,90.372,-62.335,-167.441,controlled_lon,drifting,2025-02-05
 21639,relocation_end,2025-05-22,rate_entry,0.0,-165.674,-167.441,librating_105W,controlled_lon,2025-07-05
 23331,graveyard,2021-11-07,rate_exit,375.527,-73.003,-63.834,controlled_lon,drifting,2021-10-24
-23435,graveyard,2023-02-26,a_step,339.887,-96.59,136.943,controlled_lon,drifting,2023-02-16
+23435,graveyard,2023-02-26,rate_exit,339.887,-96.59,136.943,controlled_lon,drifting,2023-02-16
 23448,relocation_end,2022-01-27,rate_entry,0.0,79.67,80.006,librating_75E,controlled_lon,2022-01-22
 23448,keeping_stop,2022-05-03,rate_exit,3.579,80.006,77.721,controlled_lon,librating_75E,2022-04-22
 23553,relocation_start,2021-04-22,rate_exit,11.519,-106.486,-107.51,controlled_lon,drifting,2021-04-22
@@ -183,8 +183,8 @@ norad_id,event_type,date,signal,size,lon_before,lon_after,mode_before,mode_after
 28946,relocation_end,2024-12-05,rate_entry,0.0,-3.028,-17.974,drifting,controlled_lon,2024-12-07
 28946,graveyard,2025-06-02,rate_exit,637.93,-17.974,10.506,controlled_lon,drifting,2025-06-05
 29045,ns_keeping_stop,2025-05-22,ns_gap,0.674,132.045,132.07,controlled_lon_inc,controlled_lon,2025-08-04
-29155,relocation_start,2021-07-08,a_step,-0.092,61.656,61.514,controlled_lon_inc,librating_75E,2021-05-27
-29155,relocation_end,2021-07-08,rate_entry,0.0,61.215,61.514,librating_75E,controlled_lon_inc,2021-07-26
+29155,relocation_start,2021-06-05,burn_gap,0.9,61.656,61.514,controlled_lon_inc,librating_75E,2021-05-27
+29155,relocation_end,2021-06-11,rate_entry,0.0,61.581,61.514,librating_75E,controlled_lon_inc,2021-07-26
 29155,graveyard,2023-11-09,rate_exit,423.026,61.523,-112.952,controlled_lon,drifting,2023-10-14
 29155,free_burn,2024-04-27,a_step,1507.6,106.287,70.172,drifting,drifting,2024-04-27
 29155,free_burn,2024-04-30,a_step,1163.9,93.51,60.21,drifting,drifting,2024-04-30
@@ -618,7 +618,7 @@ norad_id,event_type,date,signal,size,lon_before,lon_after,mode_before,mode_after
 54741,relocation_end,2023-05-05,rate_entry,0.0,-93.846,-93.098,drifting,controlled_lon_inc,2023-05-17
 54742,relocation_start,2023-01-28,rate_exit,-187.139,-149.959,-89.13,controlled_lon,drifting,2023-01-18
 54742,relocation_end,2023-02-26,rate_entry,0.0,-94.581,-89.13,drifting,controlled_lon_inc,2023-03-18
-54743,relocation_end,2022-12-19,rate_entry,0.0,-49.632,-3.405,drifting,controlled_lon,2023-01-17
+54743,relocation_end,2022-12-19,rate_entry,0.0,-47.608,-3.405,drifting,controlled_lon,2023-01-17
 54743,relocation_start,2024-01-24,rate_exit,-38.5,-3.405,-0.358,controlled_lon,drifting,2024-01-12
 54743,relocation_end,2024-01-30,rate_entry,0.0,-3.563,-0.358,drifting,controlled_lon,2024-02-11
 55131,relocation_end,2023-02-28,rate_entry,0.0,33.191,20.278,drifting,controlled_lon,2023-02-28
@@ -698,7 +698,7 @@ norad_id,event_type,date,signal,size,lon_before,lon_after,mode_before,mode_after
 58204,relocation_start,2024-05-15,rate_exit,16.329,173.295,173.276,controlled_lon,drifting,2024-05-15
 58204,relocation_end,2024-05-19,rate_entry,0.0,173.321,173.276,drifting,controlled_lon,2024-05-19
 58253,relocation_end,2023-12-05,rate_entry,0.0,122.028,115.494,drifting,controlled_lon_inc,2023-12-13
-58582,relocation_end,2023-12-16,rate_entry,0.0,-59.801,123.145,drifting,controlled_lon,2024-01-12
+58582,relocation_end,2023-12-16,rate_entry,0.0,-73.962,123.145,drifting,controlled_lon,2024-01-12
 58698,relocation_end,2024-05-30,rate_entry,0.0,65.644,59.72,drifting,controlled_lon_inc,2024-06-10
 58990,relocation_end,2024-03-13,rate_entry,0.0,178.671,82.983,out_of_region,controlled_lon_inc,2024-03-12
 58990,relocation_start,2024-06-16,a_step,0.556,82.983,82.1,controlled_lon_inc,librating_75E,2024-06-10
