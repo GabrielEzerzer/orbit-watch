@@ -567,7 +567,8 @@ def _departure(tr: Track, a: Segment, b: Segment, limit: float, burn_days: np.nd
     fast = bool((np.abs(tr.rate[(tr.days >= tr.days[i]) & (tr.days <= tr.days[i] + SUSTAIN_DAYS)]) >= FAST_RATE).any())
     missed = _stop_before_odd_burns(tr, i, burn_days, steps, _day(a.start), _slot(a))
     exit_day = float(tr.days[i])
-    natural = (fast and not _jumps(tr, a, exit_day, exit_day + SUSTAIN_DAYS)
+    natural = (fast and not ((burn_days > exit_day) & (burn_days <= exit_day + SUSTAIN_DAYS)).any()
+               and not _jumps(tr, a, exit_day, exit_day + SUSTAIN_DAYS)
                and _drifting_from(tr, a, exit_day - DRIFT_START_DAYS, exit_day))
     if missed is None and (natural or not fast):
         missed = _missed_burn_day(tr, i, burn_days, _day(a.start), fast)

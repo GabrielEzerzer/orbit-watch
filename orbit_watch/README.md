@@ -351,7 +351,7 @@ Steps 31 to 34 came from the issues left open after step 30, checked the same wa
 
 31. **A natural exit long after the last burn.** An exit that is already fast is otherwise dated
     at the exit. When the drift reaches 0.05 deg/day within 5 days of the exit with no jump
-    (step 9's test fails) and the
+    (step 9's test fails) and no detected burn in those 5 days, and the
     median drift relative to the hold over the 10 days before the exit is already at least 0.02
     deg/day toward it, the drift built up on its own, which takes weeks: the burns stopped first.
     If at least 3 burns (detections within 2 days of each other count as one) fall in the 60
