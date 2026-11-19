@@ -312,7 +312,8 @@ cited events and dev planted trials in the same way.
     dropped, leaving only the move, when a later burn of at least 1 km holds the object again:
     the first set after the burn comes within 5 days of it, and every set from there to the move
     drifts at most 0.02 deg/day inside a 0.3 deg box, for at least 5 sets and 10 days. These are
-    the short-hold test of step 3, so a slow drift away after the burn does not count. GOES 16
+    the short-hold test of step 3, so a drift after the burn counts as a hold only while it stays
+    under 0.02 deg/day and inside the 0.3 deg box; a slower drift away is read as a hold. GOES 16
     (41866) stopped its burns in February 2025, was held again by a burn, and moved on 2025-04-10.
 28. **Size toward the net move.** A run of moving sets ends where the drift relative to the hold
     changes sign, so one run never joins sets drifting both ways. When the size span (see the
@@ -328,7 +329,8 @@ cited events and dev planted trials in the same way.
     the last set below 10% of the rise, or across the gap from that set as in step 7, and both
     sets must be in readable mode segments. 34779 climbs 1,694 km on 2022-01-22.
 30. **Already drifting when the burns stop.** A relocation or graveyard departure dated by the
-    burns (step 4) on a normal burn cycle is one departure at that date, not a keeping stop and
+    burns (step 4), whose first fast set comes at least one burn interval later, is one
+    departure at that date, not a keeping stop and
     then a move, when the median drift relative to the hold over the first 10 days after it (at
     least 3 sets, and before the first fast set) is at least 0.02 deg/day toward the move. A
     held object's drift stays inside 0.02 deg/day (step 3), and an object that just stopped
