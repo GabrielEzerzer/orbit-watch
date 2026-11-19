@@ -488,14 +488,19 @@ the checks are in `findings/routine/checks_all.json`, `planted_all.json` and `pl
 
 The scorer rebuilt `findings/state_changes/events.csv` from the element sets with no row missing
 or added either way. Of the 1,799 objects, 532 are rated (held at least 2 years) and 1,267 are not;
-1,172 of those were never held. The 339 departures on the list give 285 scored ones, 252 from the
-rate model and 33 from the stay model, plus 54 in an object's first 180 days, which are not
-scored. 203 scored departures are off-routine (5 bits or more): most objects have fewer than three
-measured stays, and a first departure after years on station scores about 9 bits under the rate
-model. 135 rated objects have any bits; the other 397 have no scored departure. There are 8 stay
-overruns, and 35 of the 338 arrivals, on 29 objects, are flagged by the proximity rule. The belt
-rate is 0.1336 departures per held year at the end (`belt_prior.csv`; by year 0.1197, 0.1163,
-0.153, 0.1258 and 0.1523 for 2021 to 2025).
+1,172 of those were never held. The 339 departures on the list give 285 scored ones plus 54 in an
+object's first 180 days, which are not scored. 135 rated objects have any bits; the other 397 have
+no scored departure. There are 8 stay overruns, and 35 of the 338 arrivals, on 29 objects, are
+flagged by the proximity rule. The belt rate is 0.1336 departures per held year at the end
+(`belt_prior.csv`; by year 0.1197, 0.1163, 0.153, 0.1258 and 0.1523 for 2021 to 2025).
+
+**What the order means.** Only 33 of the 285 scored departures have a stay record (three
+measured stays before them). The other 252 are scored by the rate model, where an object's first
+departure scores about 7 to 10 bits (6.78 to 10.02 on the 161 first departures). 203 departures
+are off-routine. Below about rank 7, the order mostly reflects how many times an object left in
+2021-2025 and how late, and end-of-life graveyard moves and keeping stops count as departures like
+relocations ([#87](../../../issues/87)). The blind hand audit (check 7) nonetheless judged 25 of
+the top 30 irregular.
 
 The top 20 of `rank.csv`:
 
@@ -527,32 +532,40 @@ per year: the top 5% cut is 3.0 bits per year and 27 objects reach it.
 
 ### Checks
 
-| Check | Result | Target |
-|---|---|---|
-| 1. Off-routine rows on rocket bodies and debris | 1 row (43917, a graveyard move on 2021-11-20) in 1,898.2 object-years on 445 objects, 0.0005 per object-year; none rated | at most 0.01 per object-year, none rated |
-| 2. Off-routine rows on QZS-3, QZS-6 and Fengyun-2H on station | 0 in 6.46 object-years | 0 |
-| 3. Cited departures on objects held a year before them | dev: 7 held, 7 caught, 5 flagged; test: 8 held, 7 caught, 4 flagged | most of those caught flagged |
-| 5. Top 30 on 2021 to mid-2023 in the top 60 on the rest | 6 of 24 (only 24 objects have bits in the first half; 412 rated in both), Spearman 0.086 | none set |
-| 8. Cited irregular objects in the top 5% | 4 of 6 rateable (18 listed); `evidence` = `object` only: 4 of 6 rateable (15 listed) | none set |
-| 9. Cited steady keepers in the lower half | 31 of 31 rateable | none set |
+Each target below was set in the design before the first run, and the score was not tuned to any
+of them.
 
-**Cited departures (check 3).** Of the 14 caught, 9 are flagged. The five that are not:
-26638's graveyard move (4.759 bits) and SJ-17's move in February 2023 (4.81 bits) fall just under
-5 bits on the rate model; SJ-17 in November 2024 (1.395 bits), Luch (Olymp) 2 in February 2025
-(4.97 bits) and Luch (Olymp)'s graveyard move in October 2025 (2.637 bits) come from the stay
-model, because those objects' earlier stays make the timing unsurprising. The one cited departure
-not caught is 27400's graveyard move in January 2023, which is not on the list.
+| Check | Result | Target | Verdict |
+|---|---|---|---|
+| 1. Off-routine rows on rocket bodies and debris | 1 row (43917, a graveyard move on 2021-11-20) in 1,898.2 object-years on 445 objects, 0.0005 per object-year; none rated | about 0.01 per object-year | pass |
+| 2. Off-routine rows on QZS-3, QZS-6 and Fengyun-2H on station | 0 in 6.46 object-years | 0 | pass |
+| 3. Cited departures on objects held a year before them, flagged when caught | 9 of 14 (dev: 7 held, 7 caught, 5 flagged; test: 8 held, 7 caught, 4 flagged) | 90% | fail |
+| 4. Planted rhythm, 4 moves then 1, both on- and off-rhythm right | 0.708 (dev), 0.725 (test); the test as first specified (3 then 1) gives 0.086 and 0.044 | 90% of trials | fail |
+| 5. Top 30 on 2021 to mid-2023 in the top 60 on the rest | 6 of 24 (only 24 objects have bits in the first half; 412 rated in both), Spearman 0.086 | half | fail |
+| 6. Spearman of as-of reruns against the full run cut at the same date | 0.573 (2022, one object with bits), 1.0, 1.0, 0.987 | 0.9 | pass at the 2023-2025 cuts, fail at 2022 |
+| 6. The same against the final run | 0.093, 0.335, 0.653, 0.814 | 0.9 | fail |
+| 7. Top 30 judged irregular in the blind hand audit | 25 of 30 | 24 of 30 | pass |
+| 8. Cited irregular objects in the top 5% | 4 of 6 rateable (18 listed); `evidence` = `object` only: 4 of 6 rateable (15 listed) | 75% | fail |
+| 9. Cited steady keepers in the lower half | 31 of 31 rateable | 90% | pass, but weak (see below) |
+
+**Cited departures (check 3).** The five caught but not flagged: 26638's graveyard move (4.759
+bits) and SJ-17's move in February 2023 (4.81 bits) fall just under 5 bits on the rate model;
+SJ-17 in November 2024 (1.395 bits), Luch (Olymp) 2 in February 2025 (4.97 bits) and Luch
+(Olymp)'s graveyard move in October 2025 (2.637 bits) come from the stay model, because those
+objects' earlier stays make the timing unsurprising. The one cited departure not caught is
+27400's graveyard move in January 2023, which is not on the list.
 
 **Cited lists (checks 8 and 9).** `groundtruth/irregular_objects.csv` and
 `groundtruth/steady_objects.csv`, read once after the score was final. The four irregular objects
 in the top 5% are Luch (Olymp) (rank 1), SJ-17 (2), TJS-3 (5) and Luch (Olymp) 2 (7). MEV-1 is
 rank 53 (2.098 bits per year, one scored departure) and MEV-2 rank 475 (no scored departure). The
-other 12 are unrated: five of the six GSSAP satellites have no held span in the element sets and the sixth
-is held 0.028 years, and SJ-21, SJ-23, SJ-25, Shiyan-12 01 and 02 and LDPE-3A are held under 2 years.
-`unrated.csv` lists 15 to 54 unchecked steps outside holds for those six. All six rateable
-irregular objects have `object` evidence, so the two shares are the same. The steady result is
-weak: the median of bits per year among rated objects is 0, since 397 of 532 have no scored
-departure, so any object without one is in the lower half. None of the 31 has a scored departure.
+other 12 are unrated: five of the six GSSAP satellites have no held span in the element sets and
+the sixth is held 0.028 years, and SJ-21, SJ-23, SJ-25, Shiyan-12 01 and 02 and LDPE-3A are held
+under 2 years. `unrated.csv` lists 15 to 54 unchecked steps outside holds for those six. All six
+rateable irregular objects have `object` evidence, so the two shares are the same. The steady
+result is weak: the median of bits per year among rated objects is 0, since 397 of 532 have no
+scored departure, so any object without one is in the lower half ([#90](../../../issues/90)). None
+of the 31 has a scored departure.
 
 **Causality (check 6).** The list and held spans rebuilt from element sets cut at each date,
 against the full run cut at the same date (the effect of look-ahead alone) and against the final
@@ -565,44 +578,74 @@ run:
 | 2024-01-01 | 2.0 | 478 | 63 | 1.0 | 0.653 | 2 |
 | 2025-01-01 | 2.0 | 503 | 99 | 0.987 | 0.814 | 3 |
 
-At the end of 2021 only one object has bits, so its correlation means little. Where look-ahead
-changes an object, it changes a whole departure (the largest gap is 9.611 bits in the 2025 cut):
-a departure typed or dated differently once later sets arrive.
+Against the 0.9 target, look-ahead alone passes from the 2023 cut on; at the end of 2021 only one
+object has bits, so that correlation means little. Against the final run every cut fails: a rank
+built on one to four years of data does not predict the five-year rank. Where look-ahead changes
+an object, it changes a whole departure (the largest gap is 9.611 bits in the 2025 cut): a
+departure typed or dated differently once later sets arrive.
 
 **Planted rhythm (check 4).** 100 trials per split and variant, seed 20261119. "On" counts last
 departures under 2 bits on rhythm; "off" counts 5 bits or more off it. Only trials whose last
-planted departure was caught and scored are counted.
+planted departure was caught and scored are counted. The target is both right in 90% of trials;
+`4+1` fails it at 0.708 and 0.725 ([#88](../../../issues/88)).
 
-| split | variant | caught and scored | on rhythm under 2 bits | off rhythm at least 5 bits | both targets | scored by the stay model |
-|---|---|---|---|---|---|---|
-| dev | 3+1 | 81 | 2 of 40 | 5 of 41 | 0.086 | 12 |
-| dev | 4+1 | 72 | 31 of 38 | 20 of 34 | 0.708 | 61 |
-| test | 3+1 | 90 | 3 of 48 | 1 of 42 | 0.044 | 13 |
-| test | 4+1 | 80 | 33 of 44 | 25 of 36 | 0.725 | 67 |
+| split | variant | caught and scored | on rhythm under 2 bits | off rhythm at least 5 bits | both targets | scored by the stay model | verdict |
+|---|---|---|---|---|---|---|---|
+| dev | 3+1 | 81 | 2 of 40 | 5 of 41 | 0.086 | 12 | fail |
+| dev | 4+1 | 72 | 31 of 38 | 20 of 34 | 0.708 | 61 | fail |
+| test | 3+1 | 90 | 3 of 48 | 1 of 42 | 0.044 | 13 | fail |
+| test | 4+1 | 80 | 33 of 44 | 25 of 36 | 0.725 | 67 | fail |
 
-With three planted moves the last departure has two past stays and falls to the rate model, which
-ignores timing, so `3+1` fails by design. With four, where every rhythm move was caught and the
-stay model scored it, on-rhythm departures are under 2 bits in 31 of 33 (dev) and 32 of 33 (test),
-and off-rhythm ones reach 5 bits in 19 of 27 and 24 of 30. Off-rhythm stays that are longer are
-flagged far more often than shorter ones (scored `4+1` trials with the last stay more than 1.3
+`3+1` is the test as first specified. Its last departure has only 2 past stays and falls to the
+rate model, which ignores timing, so it cannot pass. With `4+1`, where every rhythm move was caught
+and the stay model scored it, on-rhythm departures are under 2 bits in 31 of 33 (dev) and 32 of 33
+(test), and off-rhythm ones reach 5 bits in 19 of 27 and 24 of 30. Off-rhythm stays that are longer
+are flagged far more often than shorter ones (scored `4+1` trials with the last stay more than 1.3
 times the rhythm: 16 of 21 dev, 18 of 24 test; less than 1/1.3 of it: 4 of 13, 7 of 12), because
 the ±15-day window is wide next to a short stay. 28 (dev) and 20 (test) of the `4+1` last moves are
 not caught at all. In the two cases examined, a held stay between two planted moves was read as
 `undetermined` by the 30-day mode window and the two moves merged into one.
 
-**Hand-audit sample (check 7).** `audit_sample.csv` lists 50 objects (the top 30 and 20 from the
-middle of the rank) in a fixed shuffled order with a chart file name and no score;
-`audit_key.csv` maps each audit id to its group, rank and bits per year. The charts are written to
-`$ORBIT_WATCH_DATA/routine/audit_charts/` and are not committed. The sample has not been judged.
+**Hand audit (check 7).** `audit_sample.csv` lists 50 objects (the top 30 and 20 from the middle of
+the rank) in a fixed shuffled order, each with a chart of its longitude, drift rate, semi-major axis
+and inclination with holds shaded and every listed change marked. A blind judge saw only the
+charts, never the ranks or groups, and gave each object one class:
+
+- `none`: no real departure;
+- `end_of_life`: only ending keeping and/or a graveyard climb;
+- `rhythm`: relocations on a roughly steady interval;
+- `irregular`: uneven moves, a move after a long hold that is not end of life, or drifting between
+  short stays;
+- `unclear`.
+
+It also said whether the listed departures are real. The verdicts are `audit_verdicts.csv`;
+`audit_key.csv` maps each audit id to its group, rank and bits per year, and the checks count them
+per group (`hand_audit` in `checks_all.json`):
+
+| group | irregular | end_of_life | rhythm | none | unclear | departures real (yes / partly / no) |
+|---|---|---|---|---|---|---|
+| top 30 | 25 | 2 | 1 | 1 | 1 | 25 / 3 / 2 |
+| middle 20 | 0 | 0 | 0 | 20 | 0 | not applicable |
+
+In the top 30, XM-3 (rank 15) and EUTE 113 WEST A (rank 24) are end of life, WGS F3 (rank 4)
+keeps a rhythm, TJS-10 (rank 10) shows no departure and GAOFEN 13 02 (rank 17) is unclear. The two
+`no` verdicts are TJS-10 and GAOFEN 13 02, whose listed relocations are too small to see on the
+chart. Two event-list suspects came out of the audit: TJS-10's relocation moves it about 0.02°
+(173.295° to 173.276°), and 27168's 2024-09-05 start comes about a month after its longitude
+starts to rise on the chart ([#91](../../../issues/91)). The charts are written to
+`$ORBIT_WATCH_DATA/routine/audit_charts/` and are not committed.
 
 Known limits:
 
 - Only objects held at least 2 years are rated, so recently launched inspectors and objects that
   are rarely held (12 of the 18 cited irregular objects) are on the unrated list instead.
 - Most departures are scored by the rate model, which says only that an object left, not whether
-  it left on its own schedule; three measured stays are needed before timing counts.
-- The proximity flag's owner code is coarse (all US operators share `US`) and reads 10 days past
-  the arrival.
+  it left on its own schedule. Held years start at the start of the data for objects already held
+  then, and end-of-life moves count like relocations ([#87](../../../issues/87)).
+- Planted moves merged by the 30-day mode window, and short off-rhythm stays, keep the planted test
+  under target ([#88](../../../issues/88)).
+- The proximity flag's owner code is per country (all US operators share `US`) and it reads 10
+  days past the arrival ([#89](../../../issues/89)).
 
 ## ISS leads
 

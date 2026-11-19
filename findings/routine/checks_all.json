@@ -1,5 +1,5 @@
 {
-  "commit": "59ba83baa0a1224c2de30d3b8760b2b6eb8dca75",
+  "commit": "8bed9795ba9cea7a2c81a33bbdb54221e0b8616b",
   "dirty": false,
   "events_file": "findings/state_changes/events.csv",
   "splits": [
@@ -305,6 +305,37 @@
       "objects_whose_bits_differ_from_full_run_cut_by_0.1_or_more": 3,
       "largest_bits_difference": 9.611,
       "largest_bits_per_year_difference": 2.416
+    }
+  },
+  "hand_audit": {
+    "top": {
+      "objects": 30,
+      "class": {
+        "none": 1,
+        "end_of_life": 2,
+        "rhythm": 1,
+        "irregular": 25,
+        "unclear": 1
+      },
+      "departures_real": {
+        "no": 2,
+        "partly": 3,
+        "yes": 25
+      },
+      "target_irregular": 24
+    },
+    "middle": {
+      "objects": 20,
+      "class": {
+        "none": 20,
+        "end_of_life": 0,
+        "rhythm": 0,
+        "irregular": 0,
+        "unclear": 0
+      },
+      "departures_real": {
+        "n/a": 20
+      }
     }
   },
   "cited_lists": {
