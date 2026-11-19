@@ -460,6 +460,9 @@ Known limits of the list:
 - A climb that has risen less than 150 km when the data end reads as a move under way: SJ-17
   (41838) is listed as a `relocation_start` in November 2025, 115 km above its slot at the end.
 - A climb by an object never held in the data is listed as free burns.
+- `size` on a relocation start describes the first run of moving sets, which can go the other way
+  from the net move: 43874 drifts west for 13 days from 2022-07-05 and then east to 88.4° E, and
+  55131 hops west on 2023-03-17 a month before its eastward move.
 
 All open limits are [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
 
