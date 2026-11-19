@@ -14,7 +14,7 @@ from orbit_watch.detect import detect
 from orbit_watch.elements import ElementSet
 from orbit_watch.generalise import FROZEN
 from orbit_watch.geo import wrap180
-from orbit_watch.modes import GRID_START, Segment, Track, _arc, segments, track
+from orbit_watch.modes import GRID_START, REGION_A_KM, REGION_E_MAX, Segment, Track, _arc, segments, track
 from orbit_watch.series import to_series
 
 HELD = ("controlled_lon_inc", "controlled_lon")
@@ -58,6 +58,9 @@ MOVE_MIN_DEG = 0.5
 MOVE_SIDE_DAYS = 10.0
 MOVE_MERGE_DAYS = 2.0
 MOVE_SIDE_SETS = 3
+REFERENCE_DAYS = 90.0
+CLIMB_START_SHARE = 0.1
+DRIFT_START_DAYS = 10.0
 ROW_FIELDS = ["norad_id", "event_type", "date", "signal", "size", "lon_before", "lon_after", "mode_before",
               "mode_after", "mode_change"]
 
@@ -404,10 +407,15 @@ def _departure_type(tr: Track, held: Segment, rest: Sequence[Segment]) -> tuple[
 def _move_sma(tr: Track, held: Segment, lo: float, hi: float) -> float:
     held_a = _a_between(tr, _day(held.start), _day(held.end))
     sel = (tr.days >= lo) & (tr.days < hi)
-    moving = sel & (np.abs(tr.rate - _held_rate(tr, held)) >= FAST_RATE)
+    rel = tr.rate - _held_rate(tr, held)
+    moving = sel & (np.abs(rel) >= FAST_RATE)
     idx = np.flatnonzero(sel)
-    runs = np.split(idx, np.flatnonzero(np.diff(moving[idx].astype(int))) + 1) if len(idx) else []
-    first = next((r for r in runs if moving[r[0]] and len(r) >= MOVE_SIDE_SETS), None)
+    way = np.where(moving, np.sign(rel), 0.0)
+    runs = np.split(idx, np.flatnonzero(np.diff(way[idx])) + 1) if len(idx) else []
+    fast = [r for r in runs if moving[r[0]] and len(r) >= MOVE_SIDE_SETS]
+    net = float(np.sum(wrap180(np.diff(tr.lon[idx])))) if len(idx) else 0.0
+    ahead = [r for r in fast if abs(net) >= MOVE_MIN_DEG and way[r[0]] == np.sign(net)]
+    first = (ahead or fast or [None])[0]
     if first is not None:
         moving = np.zeros_like(moving)
         moving[first] = True
@@ -500,6 +508,25 @@ def _burns_on(tr: Track, held: Segment, left: float | None, limit: float, burn_d
     if left is None or not _jumps(tr, held, left, left + STEP_REACH_DAYS):
         return False
     return bool(((burn_days > left + CLIMB_DAYS) & (burn_days < limit) & (np.abs(steps) >= FREE_BURN_MIN_M)).any())
+
+
+def _held_again(tr: Track, left: float, move: float, burn_days: np.ndarray, steps: np.ndarray) -> bool:
+    for burn in burn_days[(burn_days > left) & (burn_days < move) & (np.abs(steps) >= FREE_BURN_MIN_M)]:
+        idx = np.flatnonzero((tr.days > burn) & (tr.days < move))
+        if (len(idx) >= HOLD_MIN_SETS and tr.days[idx[0]] - burn <= STEP_REACH_DAYS
+                and tr.days[idx[-1]] - tr.days[idx[0]] >= HOLD_MIN_DAYS and (np.abs(tr.rate[idx]) <= SLOW_RATE).all()
+                and np.degrees(np.ptp(np.unwrap(np.radians(tr.lon[idx])))) <= HOLD_BOX_DEG):
+            return True
+    return False
+
+
+def _drifting_from(tr: Track, held: Segment, left: float, move: float) -> bool:
+    sel = (tr.days >= left) & (tr.days < min(move, left + DRIFT_START_DAYS))
+    nxt = np.flatnonzero(tr.days >= move)
+    if sel.sum() < MOVE_SIDE_SETS or not len(nxt):
+        return False
+    rel = tr.rate - _held_rate(tr, held)
+    return bool(np.sign(rel[nxt[0]]) * np.median(rel[sel]) >= SLOW_RATE)
 
 
 def _jumps(tr: Track, held: Segment, left: float, hi: float) -> bool:
@@ -596,6 +623,34 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
     return out
 
 
+def _first_climb(tr: Track, det: Sequence[Segment], burn_days: np.ndarray, steps: np.ndarray) -> list[Event]:
+    if not len(tr.days) or not det or any(s.mode in HELD for s in det):
+        return []
+    a = tr.semi_major_axis_km
+    first = tr.days < tr.days[0] + REFERENCE_DAYS
+    ref = float(np.median(a[first]))
+    if not REGION_A_KM[0] <= ref <= REGION_A_KM[1] or np.median(tr.eccentricity[first]) > REGION_E_MAX:
+        return []
+    med = np.array([np.median(a[max(k - 1, 0):k + 2]) for k in range(len(a))])
+    stays = np.flip(np.logical_and.accumulate(np.flip(med - ref >= GRAVEYARD_RISE_KM)))
+    if not stays.any():
+        return []
+    i = int(np.argmax(stays))
+    rise = float(np.max(a[i:]) - ref)
+    low = np.flatnonzero(a[:i] - ref < CLIMB_START_SHARE * rise)
+    if not len(low) or tr.days[low[-1]] < tr.days[0] + REFERENCE_DAYS:
+        return []
+    pre = int(low[-1])
+    seg = {k: next((s for s in det if _day(s.start) <= tr.days[k] < _day(s.end)), None) for k in (pre, i)}
+    if seg[pre] is None or seg[i] is None:
+        return []
+    climb = burn_days[(burn_days > tr.days[pre]) & (burn_days <= tr.days[i]) & (np.abs(steps) >= FREE_BURN_MIN_M)]
+    day = float(climb.min()) if len(climb) else _through_gap(tr, pre + 1, pre + 1, float(tr.rate[pre]))
+    when = GRID_START + timedelta(days=day)
+    return [Event(tr.norad_id, "graveyard", when, "a_step", round(rise, 3), round(_lon_near(tr, day, True), 3),
+                  round(_lon_near(tr, _day(det[-1].end), True), 3), seg[pre].mode, seg[i].mode, when)]
+
+
 def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.ndarray | None = None) -> list[Event]:
     burn_days = np.array([]) if burn_days is None else burn_days
     steps = np.zeros(len(burn_days)) if steps is None else steps
@@ -653,8 +708,11 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, kind, a, b, lon_after, rise, _through_gap(tr, first, first, _held_rate(tr, a)),
                                   "rate_exit"))
                 departed = burn
+            elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None and _drifting_from(tr, a, left, burn):
+                out.append(_event(tr, kind, a, b, lon_after, rise, left, signal))
             elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
-                out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
+                if not _held_again(tr, left, burn, burn_days, steps):
+                    out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
                 out.append(_event(tr, kind, a, b, lon_after, rise, burn, "rate_exit"))
                 departed = burn
             elif kind != "keeping_stop" or a.windows or ((burn_days >= _day(a.start)) & (burn_days <= departed)).any():
@@ -665,7 +723,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _arrival_day(tr, b, j), "rate_entry"))
             departed, same_slot = None, None
     out = _merge_pauses(sorted(out, key=lambda e: e.date))
-    return sorted(out + _free_burns(tr, det, out, burn_days, steps), key=lambda e: e.date)
+    return sorted(out + _free_burns(tr, det, out, burn_days, steps) + _first_climb(tr, det, burn_days, steps),
+                  key=lambda e: e.date)
 
 
 def _merge_pauses(found: list[Event]) -> list[Event]:

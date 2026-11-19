@@ -1,5 +1,5 @@
 {
-  "commit": "9eb916b31ee7f3664d385e5467887c1960a74acd",
+  "commit": "32794564d87978723f9ef2afd5c7ebe4d0bd9ddb",
   "dirty": false,
   "seed": 20261118,
   "window_days": 45,
@@ -27,8 +27,8 @@
               "recall": 0.82,
               "median_abs_error_days": 2.0,
               "p90_abs_error_days": 13.0,
-              "same_type": 37,
-              "mistyped": 4
+              "same_type": 41,
+              "mistyped": 0
             },
             "relocation_end": {
               "trials": 50,
@@ -40,11 +40,11 @@
               "mistyped": 0
             }
           },
-          "extra_near_per_trial": 0.24,
+          "extra_near_per_trial": 0.16,
           "extra_later_per_trial": 0.0,
           "extra_median_per_trial": 0.0,
           "extra_types": {
-            "relocation_start": 8,
+            "relocation_start": 4,
             "relocation_end": 4
           },
           "all_caught": {
@@ -61,8 +61,8 @@
               "recall": 0.96,
               "median_abs_error_days": 0.0,
               "p90_abs_error_days": 1.6,
-              "same_type": 46,
-              "mistyped": 2
+              "same_type": 48,
+              "mistyped": 0
             },
             "relocation_end": {
               "trials": 50,
@@ -74,12 +74,10 @@
               "mistyped": 0
             }
           },
-          "extra_near_per_trial": 0.04,
+          "extra_near_per_trial": 0.0,
           "extra_later_per_trial": 0.0,
           "extra_median_per_trial": 0.0,
-          "extra_types": {
-            "relocation_start": 2
-          },
+          "extra_types": {},
           "all_caught": {
             "trials": 48,
             "fraction": 0.96
@@ -189,8 +187,8 @@
               "recall": 0.89,
               "median_abs_error_days": 1.0,
               "p90_abs_error_days": 7.2,
-              "same_type": 83,
-              "mistyped": 6
+              "same_type": 89,
+              "mistyped": 0
             },
             "relocation_end": {
               "trials": 100,
@@ -202,11 +200,11 @@
               "mistyped": 0
             }
           },
-          "extra_near_per_trial": 0.14,
+          "extra_near_per_trial": 0.08,
           "extra_later_per_trial": 0.0,
           "extra_median_per_trial": 0.0,
           "extra_types": {
-            "relocation_start": 10,
+            "relocation_start": 4,
             "relocation_end": 4
           },
           "all_caught": {
