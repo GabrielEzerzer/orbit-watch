@@ -52,7 +52,9 @@ By type on test: relocation starts 3 of 4, relocation ends 5 of 5, graveyard mov
   a burn that lowers the orbit by about 50 km and starts an eastward drift, became a
   `relocation_start` instead of a `keeping_stop`. After steps 27 to 30 the test split, the
   planted test hosts and the held-out check were scored once more (3279456): every number is
-  the same as before them.
+  the same as before them. After steps 31 to 34, two rounds of review fixes and the merge of the
+  mode-layer changes they were scored once more (83cd62d): the cited test split and the held-out
+  check are unchanged, and the planted test changes are listed under Planted changes.
 - **Graveyard moves are the worst dated** (dev median 9 days, mostly early), because sources
   variously date the start of the climb, its end or the decommissioning; three of the 13 dev
   events are dated only to the month.
@@ -160,7 +162,7 @@ days of the plant (near) and, for kinds that leave the object free, any after it
 | dev | keeping stop | | 80 | - | keeping_stop | 68/80 | 7.5 | 30.3 | 0 | 0 / 0.325 |
 | dev | graveyard climb | | 80 | - | graveyard | 80/80 | 0 | 1 | 0 | 0.037 / 0.25 |
 | dev | free burn | | 80 | 51/80 = 0.64 | keeping_stop | 64/80 | 10.5 | 29.7 | 4 | 0.3 / 0.362 |
-| dev | free burn | | 80 | 51/80 = 0.64 | free_burn | 54/80 | 0 | 1 | 0 | 0.3 / 0.362 |
+| dev | free burn | | 80 | 51/80 = 0.64 | free_burn | 53/80 | 0 | 1 | 0 | 0.3 / 0.362 |
 | test | relocation | 0.02-0.1 | 100 | 91/100 = 0.91 | start | 96/100 | 1 | 8 | 0 | 0.07 / 0 |
 | test | relocation | 0.02-0.1 | 100 | 91/100 = 0.91 | end | 93/100 | 0 | 7.8 | 0 | 0.07 / 0 |
 | test | relocation | 0.1-3 | 150 | 147/150 = 0.98 | start | 147/150 | 0 | 1 | 0 | 0 / 0 |
@@ -191,8 +193,10 @@ of 25258 that the first hand audit dates a day earlier. On test, 33750 and 55912
 and 26638's graveyard move is dated inside a gap; the keeping stop of 29162 (trial 301's host) is
 now dated 2024-01-31 by step 25, inside its host stretch. Step 31 dates a keeping stop of 47851
 (trial 639's host) on 2022-12-09, inside its host stretch and 59 days before the planted stop,
-which that trial now misses: its burns come in clusters with a large burn between, so the median
-interval reads 14.5 days and the gap before the plant looks like a stop. Two are not real: a 0.1° keeping excursion of
+which that trial now misses. The planted free path leaves the box 71 days after the host's last
+burn, about four of its 17.46-day burn intervals, and step 31 sets no upper limit on that gap,
+so it dates the stop half an interval after the last burn. The dev trials step 31 improves have
+gaps of 1.0 to 6.1 intervals, so they cannot set a limit that would exclude this one. Two are not real: a 0.1° keeping excursion of
 26880 on 2025-03-31, and a 10° jump in a day on 52903 on 2022-11-17, a mix-up between element
 sets.
 
@@ -239,8 +243,10 @@ What the trials show:
   little about the belt, and **the free-burn threshold must not be tuned on these trials**. Three
   planted free burns count as caught 4 to 29 days off (trials 829, 868 and 919), most likely
   through such noise rather than the planted burn.
-- **Steps the detector misses.** Step 34 finds 6 dev free burns the detector misses because the
-  step ramps over several sets or sits next to a gap (trials 866, 910, 912, 948, 950 and 966).
+- **Steps the detector misses.** Step 34 finds 5 dev free burns the detector misses because the
+  step ramps over several sets or sits next to a gap (trials 866, 910, 912, 948 and 966). Trial
+  950 (host 23553), caught before the mode-layer changes were merged, now misses both its stop
+  and its burn.
   Two more (824 and 852) stay missed: their steps are under 12 times the host's set-to-set
   scatter, the detector's frozen threshold.
 - **Slow moves read as a stop then a move.** Six dev slow relocations (trials 2, 54, 58, 62, 122
@@ -248,6 +254,12 @@ What the trials show:
   fast set. Step 30 lists one relocation start at the stop's date; their dates did not change.
 - **Stop then burn.** A free burn soon after a stop near the slot can split the stop with a short
   hold, so the stop is typed `relocation_start` (trials 834, 861, 906, 928 and 930).
+- **Planted stops read as moves on test.** Two test trials now read the free drift after a planted
+  stop as a move: trial 909 (host 48618) types the stop `relocation_start` with an extra
+  `relocation_end`, so the test free-burn trials' mistyped stops go from 1 to 2, and trial 957
+  (host 38977) gains a relocation pair near a stop it still misses. The same pattern shows on 11
+  dev keeping-stop and free-burn trials both before and after steps 31 to 34, with no new dev
+  case, so the dev trials cannot choose a fix.
 
 ## Hand audits
 
@@ -299,7 +311,9 @@ The 6 sampled rows that changed in the final list, against the verdicts above (n
 late, now 6 early); GOES 16's (41866) keeping stop on 2025-02-13 is gone (verdict duplicate).
 Only the size changed on two more: TJS-3's (43874) start on 2024-11-12 (31.317 to 31.323 km) and
 ChinaSat 6C's (44067) on 2023-04-29 (-24.123 to -24.13 km). Step 33 moves `lon_before` or
-`lon_after` on 7 sampled rows, by up to 1.04° (62006's arrival); no date or type changed.
+`lon_after` on 9 sampled rows, by up to 5.81°: 41937's start on 2025-01-16 now reads -96.81°,
+where its sets sit for the month before it, instead of the wide hold's centre at -102.62°. No date
+or type changed.
 
 ### In-sample audit
 
@@ -324,7 +338,9 @@ a gap dated at its end. The 5 real north-south stops were dated 82 to 114 days l
 Steps 19 to 26 moved three sampled rows further: 58990's start to 2024-06-16 (verdict: the change
 falls between the 06-14 and 06-18 sets), 32478's keeping stop to 2022-08-17 (estimate 08-17) and
 54225's arrival to 2023-05-26 (estimate 05-25). Step 33 moves `lon_before` or `lon_after` on 6
-sampled rows, by up to 0.71° (44910's arrival on 2023-09-25); no date or type changed.
+sampled rows, by up to 7.83°: 25954's graveyard move on 2023-02-11 now starts from -134.92°, where
+its sets sit before the climb, instead of the wide hold's centre at -142.75°. No date or type
+changed.
 
 Four sampled rows are corroborated by public pages, quoted in `summary.json` under
 `public_sources`: Intelsat 33E (41748), COMS 1 (36744), Astra 2D (26638) and Astra 5B (39617).
@@ -460,7 +476,7 @@ checked against anything else.
 ## The belt list
 
 `findings/state_changes/summary.json` (which records the commit it was run at): 1,799 objects,
-762 events on 301 of them. The list is `findings/state_changes/events.csv`.
+768 events on 301 of them. The list is `findings/state_changes/events.csv`.
 
 | type | 2021 | 2022 | 2023 | 2024 | 2025 | total |
 |---|---|---|---|---|---|---|
@@ -469,34 +485,44 @@ checked against anything else.
 | graveyard | 16 | 12 | 21 | 15 | 19 | 83 |
 | keeping_stop | 2 | 7 | 0 | 2 | 3 | 14 |
 | ns_keeping_stop | 9 | 7 | 14 | 14 | 13 | 57 |
-| free_burn | 0 | 0 | 5 | 10 | 9 | 24 |
+| free_burn | 0 | 0 | 5 | 11 | 14 | 30 |
 
 One row is dated at the mode-layer boundary (`signal` is `mode_change`) because no sustained
 exit or entry was found within 45 days of it, and five have an empty `lon_before` or `lon_after`
 because the 10 days used for it hold no element set.
 
+Two free burns sit at the edge of other changes. 28790's on 2025-01-23 is a +3.47 km step in the
+semi-major axis across a three-day gap in the sets (01-22 to 01-25), the third of three small
+raises of an object drifting at -4.86°/day above the belt; the first two, on 01-16 and 01-18, were
+listed before. 62852's on 2025-12-13 (-138 km) is the burn that ends a westward move at
+1.78°/day and stops the object at 29.04°; the burns that started that move, between 2025-12-04
+and 12-09, fall in gaps between sets and are not listed, and the move is not typed a relocation
+because the last mode window, from 2025-12-02 to the end of the data, reads as drifting.
+
 Known limits of the list:
 
 - Arrivals outnumber starts because 108 objects' first relocation event is an arrival: mostly
   objects launched in 2021-2025 or already moving at the start of 2021.
-- A keeping stop followed weeks later by a move is listed as a stop and a departure. In the five
-  such pairs (28884, 29162, 31800, 37150 and 45465) the object drifts at most 0.005°/day between
-  them, so the stop and the move are separate changes.
+- A slow keeping stop followed by a move more than one burn interval later, with no burn at the
+  move, gives two departures for one physical move: 28884 (keeping stop 2022-08-10, relocation
+  start 2022-09-27) and 31800 (2025-04-22 and 2025-05-17), whose drift relative to the hold
+  reaches 0.057 and 0.040°/day between them ([#81](../../../issues/81)). In the three other
+  stop-then-move pairs (29162, 37150 and 45465) a large burn starts the move.
 - A move made entirely inside one gap is dated at the gap's end at both ends, as Meteosat-11
   (40732) is in April 2023.
 - A climb that has risen less than 150 km when the data end reads as a move under way: SJ-17
   (41838) is listed as a `relocation_start` in November 2025, 115 km above its slot at the end.
 - 9 of the 244 relocation starts have a `size` whose sign disagrees with the shorter way round
   from `lon_before` to `lon_after`. Five are moves the long way round (26719, 27632 twice, 28707
-  and 41937), 56370 goes out and comes back to the same slot, and 27380, 40732 and 44076 move
-  inside a gap with no fast set, so the size uses every set in the span.
+  and 41937), 40732 in 2021 goes out and comes back to the same slot, and 27380, 40732 in 2023
+  and 44076 move inside a gap with no fast set, so the size uses every set in the span.
 
 All open limits are [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
 
 ## Routine score and irregularity rank
 
 The numbers in this section, and the routine rows in the top-level README, were computed on the
-previous state-change list (760 rows; the current one has 762) and are rerun separately.
+previous state-change list (760 rows; the current one has 768) and are rerun separately.
 
 `findings/routine/summary.json` (which records the commit it was run at) and the files beside it.
 The method is in [orbit_watch/README.md](../orbit_watch/README.md#routine-score-and-irregularity-rank);
