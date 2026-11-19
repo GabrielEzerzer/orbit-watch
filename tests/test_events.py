@@ -157,7 +157,7 @@ def test_an_arrival_is_never_dated_before_its_departure(monkeypatch):
     lon = np.where(days >= 65.0, lon + 1.0, lon)
     segs = [held(0, 60, 9.98, 10.02), held(60, 90, 9.98, 11.02, "drifting"), held(90, 150, 10.98, 11.02)]
     monkeypatch.setattr(E, "segments", lambda tr: segs)
-    monkeypatch.setattr(E, "_departure", lambda *a: (80.0, "rate_exit", None, 0.0, 80.0))
+    monkeypatch.setattr(E, "_departure", lambda *a: (80.0, "rate_exit", None, 0.0, 80.0, False))
     start, end = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert (start.event_type, end.event_type) == ("relocation_start", "relocation_end")
     assert E._day(end.date) >= E._day(start.date) == 80.0
@@ -708,3 +708,45 @@ def test_a_burn_gap_stop_already_drifting_toward_the_move_is_one_relocation_star
         found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
         assert [f.event_type for f in found] == kinds
         assert abs(E._day(found[0].date) - 95.0) <= 1 and found[0].signal == "burn_gap"
+
+
+def test_a_natural_drift_long_after_the_last_burn_is_one_relocation_start_at_the_missed_burn(monkeypatch):
+    days = np.arange(0.0, 260.0, 0.25)
+    keep = days < 100.0
+    ramp = np.clip(days - 100.0, 0.0, 60.0)
+    lon = 10.0 + np.where(keep, 0.021 * np.sin(2 * np.pi * days / 14.0), 0.0) + 0.0015 * ramp ** 2
+    rate = np.where(keep, 0.021 * 2 * np.pi / 14.0 * np.cos(2 * np.pi * days / 14.0), 0.0) + 0.003 * ramp
+    rate = np.where(days > 160.0, 0.0, rate)
+    end = lon[-1]
+    segs = [held(0, 112, 9.65, 10.35), held(112, 165, 10.35, end, "drifting"), held(165, 260, end - 0.02, end + 0.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    burn_days, steps = np.array([50.0, 60.0, 70.0, 80.0, 90.0]), np.array([500.0] * 5)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[0].date) - 95.0) <= 1 and found[0].signal == "burn_gap"
+
+
+def test_a_slow_move_inside_a_hold_is_found_across_a_gap_in_the_sets(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    days = days[(days < 104.0) | (days >= 108.0)]
+    lon, rate = quiet_keeper(days)
+    lon = lon + 0.04 * np.clip(days - 95.0, 0.0, 30.0)
+    rate = rate + np.where((days >= 95.0) & (days < 125.0), 0.04, 0.0)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 200, 9.98, 11.22)])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[0].date) - 95.0) <= 1 and abs(E._day(found[1].date) - 125.0) <= 1
+
+
+def test_the_longitude_before_a_move_comes_from_the_end_of_a_wide_hold(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    creep = np.where(days < 100.0, 0.008, 0.0) + np.where((days >= 100.0) & (days < 117.0), 0.3, 0.0)
+    lon = lon + np.cumsum(creep) * 0.25
+    rate = rate + creep
+    segs = [held(0, 100, 10.0, 10.8), held(100, 117, 10.8, lon[-1], "drifting"),
+            held(117, 200, lon[-1] - 0.02, lon[-1] + 0.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert abs(found[0].lon_before - 10.68) < 0.05

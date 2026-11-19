@@ -88,10 +88,10 @@ def _slot(s: Segment) -> float:
     return _centre(s.lon_min, s.lon_max)
 
 
-def _edge_slot(tr: Track, s: Segment, edge: str) -> float:
+def _edge_slot(tr: Track, s: Segment, edge: str, until: float | None = None) -> float:
     if (s.lon_max - s.lon_min) % 360.0 <= SAME_SLOT_DEG:
         return _slot(s)
-    lo, hi = _day(s.start), _day(s.end)
+    lo, hi = _day(s.start), _day(s.end) if until is None else min(_day(s.end), until)
     near = (tr.days >= lo) & (tr.days < hi) & ((tr.days >= hi - EDGE_DAYS) if edge == "end" else (tr.days < lo + EDGE_DAYS))
     return _centre(*_arc(tr.lon[near])) if near.sum() >= HOLD_MIN_SETS else _slot(s)
 
@@ -378,7 +378,7 @@ def _stop_before_odd_burns(tr: Track, i: int, burns: np.ndarray, steps: np.ndarr
                            slot: float) -> tuple[float, float] | None:
     if (np.abs(tr.rate[(tr.days >= tr.days[i]) & (tr.days <= tr.days[i] + SUSTAIN_DAYS)]) >= FAST_RATE).any():
         return None
-    sel =(burns >= max(floor, tr.days[i] - SLOW_CYCLE_DAYS)) & (burns < tr.days[i])
+    sel = (burns >= max(floor, tr.days[i] - SLOW_CYCLE_DAYS)) & (burns < tr.days[i])
     order = np.argsort(burns[sel])
     days, size = burns[sel][order], steps[sel][order]
     sign = np.sign(size)
@@ -472,7 +472,7 @@ def _event(tr: Track, kind: str, a: Segment, b: Segment, lon_after: float, size:
            day: float | None = None, signal: str = "") -> Event:
     when = b.start if day is None else GRID_START + timedelta(days=float(day))
     signal = "mode_change" if day is None else signal
-    lon_before = _edge_slot(tr, a, "end") if a.mode in HELD else _lon_near(tr, _day(when), True)
+    lon_before = _edge_slot(tr, a, "end", _day(when)) if a.mode in HELD else _lon_near(tr, _day(when), True)
     return Event(tr.norad_id, kind, when, signal, round(size, 3), round(lon_before, 3),
                  round(lon_after, 3), a.mode, b.mode, b.start)
 
@@ -560,24 +560,27 @@ def _jumps(tr: Track, held: Segment, left: float, hi: float) -> bool:
 
 
 def _departure(tr: Track, a: Segment, b: Segment, limit: float, burn_days: np.ndarray,
-               steps: np.ndarray) -> tuple[float | None, str, float | None, float, float | None]:
+               steps: np.ndarray) -> tuple[float | None, str, float | None, float, float | None, bool]:
     i = _departure_date(tr, a, b, limit)
     if i is None:
-        return None, "", None, 0.0, None
+        return None, "", None, 0.0, None, False
     fast = bool((np.abs(tr.rate[(tr.days >= tr.days[i]) & (tr.days <= tr.days[i] + SUSTAIN_DAYS)]) >= FAST_RATE).any())
     missed = _stop_before_odd_burns(tr, i, burn_days, steps, _day(a.start), _slot(a))
     exit_day = float(tr.days[i])
+    soon = (tr.days >= exit_day) & (tr.days <= exit_day + SUSTAIN_DAYS)
     natural = (fast and not ((burn_days > exit_day) & (burn_days <= exit_day + SUSTAIN_DAYS)).any()
+               and np.abs(tr.rate[soon] - _held_rate(tr, a)).max() <= 2 * FAST_RATE
                and not _jumps(tr, a, exit_day, exit_day + SUSTAIN_DAYS)
                and _drifting_from(tr, a, exit_day - DRIFT_START_DAYS, exit_day))
     if missed is None and (natural or not fast):
         missed = _missed_burn_day(tr, i, burn_days, _day(a.start), fast)
     if missed is None:
-        return _through_gap(tr, i, i, _held_rate(tr, a)), "rate_exit", None, 0.0, float(tr.days[i])
+        return _through_gap(tr, i, i, _held_rate(tr, a)), "rate_exit", None, 0.0, float(tr.days[i]), False
+    late = fast and natural
     fast = np.flatnonzero((tr.days > tr.days[i]) & (tr.days < limit) & (np.abs(tr.rate) >= FAST_RATE))
     if not len(fast):
-        return missed[0], "burn_gap", None, missed[1], float(tr.days[i])
-    return missed[0], "burn_gap", float(tr.days[fast[0]]), missed[1], float(tr.days[i])
+        return missed[0], "burn_gap", None, missed[1], float(tr.days[i]), late
+    return missed[0], "burn_gap", float(tr.days[fast[0]]), missed[1], float(tr.days[i]), late
 
 
 def _burn_after_drift(tr: Track, left: float, limit: float, burn_days: np.ndarray, steps: np.ndarray) -> float | None:
@@ -738,7 +741,7 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 if ns is not None:
                     out.append(_event(tr, "ns_keeping_stop", a, b, _edge_slot(tr, b, "start"), b.inc_max, ns, "ns_gap"))
             elif not _arcs_overlap(a, b):
-                left, signal, _, _, _ = _departure(tr, a, b, _day(b.end), burn_days, steps)
+                left, signal, _, _, _, _ = _departure(tr, a, b, _day(b.end), burn_days, steps)
                 j = _arrival_date(tr, b, left if left is not None else _day(b.start))
                 out.append(_event(tr, "relocation_start", a, b, _edge_slot(tr, b, "start"), 0.0, left, signal))
                 out.append(_event(tr, "relocation_end", a, b, _edge_slot(tr, b, "start"), 0.0, _arrival_day(tr, b, j), "rate_entry"))
@@ -750,7 +753,7 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
             kind, rise = _departure_type(tr, a, rest)
             lon_after = _edge_slot(tr, nxt, "start") if nxt else _lon_near(tr, _day(rest[-1].end), True)
             limit = _day(nxt.start) if nxt else _day(rest[-1].end)
-            left, signal, burn, cycle, exit_day = _departure(tr, a, b, limit, burn_days, steps)
+            left, signal, burn, cycle, exit_day, late = _departure(tr, a, b, limit, burn_days, steps)
             if kind == "keeping_stop" and (_open_move(tr, a, left, burn_days, steps)
                                            or _burns_on(tr, a, left, limit, burn_days, steps)):
                 kind = "relocation_start"
@@ -780,7 +783,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, kind, a, b, lon_after, rise, _through_gap(tr, first, first, _held_rate(tr, a)),
                                   "rate_exit"))
                 departed = burn
-            elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None and _drifting_from(tr, a, left, burn):
+            elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None and (
+                    _drifting_from(tr, a, left, burn) or (late and kind == "relocation_start")):
                 out.append(_event(tr, kind, a, b, lon_after, rise, left, signal))
             elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
                 if not _held_again(tr, a, left, burn, burn_days, steps):

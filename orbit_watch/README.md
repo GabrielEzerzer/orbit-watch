@@ -210,7 +210,9 @@ part of the climb (step 10): an object in a graveyard orbit can keep manoeuvring
 The rules were built on the dev split of the cited events (`groundtruth/geo_events.csv`), the first
 hand audit and the dev trials of the planted-change test; steps 12 to 18 came from a second hand
 reading of the belt list after steps 6 to 11, and steps 19 to 34 from the issues left open on it. Each was kept only if none of these got worse. The test split, the out-of-sample audit and the held-out Fengyun satellites were not
-used to choose a rule (see [findings/README.md](../findings/README.md)).
+used to choose a rule (see [findings/README.md](../findings/README.md)), with two exceptions: step 27
+was written for GOES 16 (41866) and step 34 for SJ-23 (55131), both objects in the out-of-sample
+audit, so their audit rows no longer count as independent.
 
 1. **Snap-back blocks** are dropped first (see [Cleaning](#cleaning)).
 2. **Dating from the drift rate.** The mode layer dates a change at a 30-day window boundary; the
@@ -359,30 +361,34 @@ cited events and dev planted trials in the same way.
     held object's drift stays inside 0.02 deg/day (step 3), and an object that just stopped
     keeping starts drifting from about zero, so the move had already begun. In the dev trials
     the six slow planted moves listed as a stop then a move drift 0.024-0.057 deg/day over those
-    10 days; the five such pairs in the belt list (28884, 29162, 31800, 37150 and 45465) and one
-    planted free-burn trial drift 0.005 deg/day or less, and keep both rows. It applies on a
-    slow burn cycle too, which is what keeps a slow stop well before a move from giving two
-    departures for one move.
+    10 days; in the five stop-then-move pairs in the belt list (28884, 29162, 31800, 37150 and
+    45465) and one planted free-burn trial the median over those 10 days is 0.005 deg/day or
+    less, and they keep both rows. It applies on a slow burn cycle too.
 
 Steps 31 to 34 came from the issues left open after step 30, checked the same way.
 
 31. **A natural exit long after the last burn.** An exit that is already fast is otherwise dated
-    at the exit. When the drift reaches 0.05 deg/day within 5 days of the exit with no jump
-    (step 9's test fails) and no detected burn in those 5 days, and the
-    median drift relative to the hold over the 10 days before the exit is already at least 0.02
-    deg/day toward it, the drift built up on its own, which takes weeks: the burns stopped first.
-    If at least 3 burns (detections within 2 days of each other count as one) fall in the 60
-    days up to the last burn in the hold, and the exit comes more than one median interval after
-    that burn, the stop is the last burn plus half the interval. 27168 burned about every 29 days
-    until 2024-07-19 and left its box on 2024-09-08; it is listed as a keeping stop on 2024-08-02
-    and a relocation start at the exit. Exits that are fast but reached from inside the band are
-    left alone: on the belt list they are moves whose burns came days before the exit.
+    at the exit. The exit is a natural drift when, in the 5 days from it, some set drifts at
+    least 0.05 deg/day (not relative to the hold), no set drifts more than 0.1 deg/day relative
+    to the hold (twice the fast rate; a natural drift cannot get faster within days), no burn is
+    detected, and step 9's jump test fails, and when the median drift relative to the hold over
+    the 10 days before the exit is already at least 0.02 deg/day toward it: the drift built up on
+    its own, which takes weeks, so the burns stopped first. If at least 3 burns (detections
+    within 2 days of each other count as one) fall in the 60 days up to the last burn in the
+    hold, and the exit comes more than one median interval after that burn, the stop is the last
+    burn plus half the interval. When a later hold follows, the stop and the move are one
+    relocation start at the stop, as in step 30. Otherwise the stop is a keeping stop, and a
+    graveyard climb after it keeps its own row, dated at the first set after the exit that drifts
+    at least 0.05 deg/day, unless step 30 joins them. 27168 burned about every 29 days until
+    2024-07-19 and left its box on 2024-09-08 at 0.05 deg/day; it is listed as one relocation
+    start on 2024-08-02. AEHF 4 (43651) leaves its box on 2021-08-11 and drifts 0.55 to 2 deg/day
+    within days, a burn the detector misses, so its start stays at the exit.
 32. **A slow move across a gap.** Out-of-band sets that follow each other in the hold are one
     run in step 6 however far apart in time they are; before, a gap of more than 2 days split
     them, and a slow move with a gap in it gave runs too short to shift 0.5 deg.
 33. **Longitudes from the hold's edge.** When a hold's longitude range is wider than 0.5 deg (the
-    one-slot rule), a departure's `lon_before` is the centre of the range of the hold's last 30
-    days and an arrival's `lon_after` the centre of its first 30 days (at least 5 sets each),
+    one-slot rule), a departure's `lon_before` is the centre of the range of the 30 days before
+    the departure or the hold's end, whichever is earlier, and an arrival's `lon_after` the centre of its first 30 days (at least 5 sets each),
     instead of the whole hold's centre. TJS-10 (58204) moved from 173.30 to 172.73 deg on
     2024-05-15; its next hold wanders up to 173.9 deg, and the whole-hold centre (173.28 deg) made
     it a 0.02 deg move.
@@ -396,7 +402,7 @@ Steps 31 to 34 came from the issues left open after step 30, checked the same wa
     times the robust scatter of the set-to-set changes within 10 days (the detector's own
     `|z| >= 12`). It is dated between the last set before and the first set after; of candidates
     within 2 days, the largest is kept. SJ-23 (55131) reverses its drift with burns of about
-    100 km on 2024-07-13 and 2025-10-16, and burns 4.7 km on 2025-11-03 and 2025-12-16.
+    100 km on 2024-07-13 and 2025-10-16, and burns 4.7 km on 2025-11-03 and 4.8 km on 2025-12-16.
 
 ## Routine score and irregularity rank
 
