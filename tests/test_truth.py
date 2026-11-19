@@ -189,3 +189,32 @@ def test_geo_fallback_refuses_holdout_objects(tmp_path, mock_dir):
         generalise.load_series(QZS2, tle_dir)
     series, label, _ = generalise.load_series(QZS2, tle_dir, final=True)
     assert label == f"geo/{QZS2}.tle" and len(series) == 2
+
+
+CITED_OBJECT_FILES = ("irregular_objects.csv", "steady_objects.csv")
+
+
+def _cited_rows(name):
+    import csv
+
+    with open(Path(truth.GROUNDTRUTH) / name, encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        return reader.fieldnames, list(reader)
+
+
+@pytest.mark.parametrize("name", CITED_OBJECT_FILES)
+def test_cited_object_lists_parse_with_unique_norad_ids(name):
+    fields, rows = _cited_rows(name)
+    assert fields == ["norad_id", "name", "claim", "source_url", "quote"]
+    assert rows
+    ids = [int(r["norad_id"]) for r in rows]
+    assert len(ids) == len(set(ids))
+    assert all(1 <= i <= 99999 for i in ids)
+    for r in rows:
+        assert all(r[k].strip() for k in ("name", "claim", "source_url", "quote"))
+        assert len(r["source_url"].split(" ; ")) == len(r["quote"].split(" || "))
+
+
+def test_cited_object_lists_do_not_overlap():
+    irregular, steady = ({int(r["norad_id"]) for r in _cited_rows(n)[1]} for n in CITED_OBJECT_FILES)
+    assert not irregular & steady

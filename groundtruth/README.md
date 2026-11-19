@@ -135,6 +135,62 @@ Caveats:
 - No source with a stated date was found for an end of north-south keeping, so that type has no rows.
 - Dropped during checking: Intelsat 33e (the source dates its breakup, not an end of keeping), GOES-19 (the date is when it became operational, not its arrival), Thaicom-9A (its catalogue object could not be identified), Eutelsat 113 West A and the SJ-21 tow of Compass G2 (the quotes did not appear on the pages).
 
+## Irregular GEO objects (`irregular_objects.csv`)
+
+18 GEO-region objects that public sources describe as inspecting, approaching or docking with other satellites, or moving along the belt without a fixed station, during 2021-2025. It is a check set for scores that rank objects by how irregular their moves are. It was compiled without looking at any score output and is never used to build or tune a score.
+
+Columns: `norad_id`, `name` (the Space-Track SATCAT name), `claim` (in a few words, what the quote supports), `source_url` and `quote` (copied from the page). A quote may join two passages of one page with `...`. Quotes from different pages are separated by ` || `, and their URLs by ` ; ` in the same order.
+
+How it was compiled and checked:
+
+- Candidates came from web searches of news, analysis and tracker sites and of Secure World Foundation fact sheets. Only objects with a sentence that states the behaviour plainly were kept.
+- Every object was matched by NORAD number to the 1,804-object GEO-region manifest built by `orbit_watch.jobs.geo_belt`. Objects that are not in the manifest were left out (listed below).
+- Every quote was checked by script: each page was downloaded again, its text extracted (HTML, or PDF through pdfminer), and each quoted passage was tested against it with whitespace, typographic quotes and dashes normalised and case ignored. All 18 rows pass, and no row was dropped at this step. A row whose quote did not appear, or whose page could not be downloaded, would have been dropped.
+- The GSSAP rows also cite Wikipedia's list of GSSAP designations (for example "GSSAP 1, Hornet 1, USA 253") to match each programme number to its catalogue name.
+
+Sources: the Secure World Foundation's 2026 fact sheet *U.S. Military and Intelligence Rendezvous and Proximity Operations* (6 rows, linked from swfound.org), Wikipedia (4, for GSSAP names only), KeepTrack (3), ISR University (3), Defense One (3), Space.com (2), SpaceWar (2) and China in Space (1).
+
+Caveats:
+
+- Most rows rest on commercial trackers and analysts (COMSPOC, Slingshot, s2a systems, Satellite Dashboard, ExoAnalytic) as reported by these pages. The operators of the Russian, Chinese and US military satellites publish nothing about these moves.
+- USA 253, USA 254 and USA 325 rest on the fact sheet's description of the GSSAP programme ("these satellites drift east and west and provide close inspections of objects in the GEO region"). No source found names a specific 2021-2025 approach by any of the three. USA 254 was retired to a graveyard orbit in 2023.
+- SJ-23 is the weakest row: Defense One lists it among "Chinese maneuvering satellites" as having "moved coincident with GSSAP" in 2023, and no source found describes it approaching another satellite.
+- MEV-1 and MEV-2 are servicers. While docked they hold their client's slot, so long stretches of their records look like ordinary station-keeping.
+
+Left out:
+
+- **No source for 2021-2025:** TJS-3 AKM (43917). The only 2021-2025 mentions found are that it moved to a graveyard orbit in December 2021 and that a GSSAP satellite approached it, so it is not described as inspecting anything.
+- **Behaviour not stated plainly:** TJS-10 (58204). It sat within 50 km of TJS-3 from November 2023 to November 2024, but the source says TJS-10 made no manoeuvres and does not say which satellite closed in. SJ-20 (44910) is described as a satellite that GSSAP approached and that moved away.
+- **Outside the period:** the only specific event found for USA 325 (watching the Shijian-29 pair) took place in 2026, and the Shijian-29 pair itself launched at the end of December 2025.
+- **Not in the belt manifest:** PAN (USA 207), CLIO (USA 257) and Mentor-4 (USA 202), which the fact sheet names as GEO proximity-operations satellites. They have no public element sets.
+- **Pages that could not be downloaded**, so they are not cited: Breaking Defense (403), spaceforce.mil and other US military sites, including the Space Force GSSAP fact sheet (403), the China Aerospace Studies Institute paper on airuniversity.af.edu (403), older Secure World Foundation fact-sheet URLs (404), the SeeSat-L archive (412), and the Ukrainian State Space Agency (certificate error).
+
+## Steady GEO objects (`steady_objects.csv`)
+
+30 GEO communication satellites and one weather satellite (Himawari-9) that operator pages or other public sources describe as operating at a fixed orbital slot. The list spans 117° W to 142° E and 13 operators. It is the counterpart check set to `irregular_objects.csv`: it was compiled without looking at any score output and is never used to build or tune a score. The columns and quote rules are the same as in `irregular_objects.csv`, and `claim` gives the slot.
+
+How it was compiled and checked:
+
+- Satellites came from operator fleet pages and brochures that give the slot (APSTAR, HispaSat, Türksat, Eutelsat, Es'hailSat) and from English Wikipedia articles that state it (18 rows). Every satellite was launched before 2020, so it was on station for the whole period.
+- Each satellite's English Wikipedia article (where one exists) was also scanned for relocation, drift, graveyard, retirement, replacement or failure wording, to leave out satellites that moved or retired in 2021-2025.
+- NORAD numbers were matched to the belt manifest, and every satellite is in it. Telstar 18V also cites Wikipedia for its operator name APSTAR-5C.
+- Every quote was checked by the same script as `irregular_objects.csv`. All 31 rows pass, and no row was dropped at this step.
+
+Caveats:
+
+- A fleet page or article is a snapshot: it states the slot today, not that the satellite never left it. The list therefore rests on no source found saying the satellite moved, not on a source saying it stayed put for the whole period.
+- Wikipedia is a secondary source, and the Wikipedia quotes were not traced back to the articles' own references.
+- EUTELSAT 117 West A's brochure gives its position as "116..8 degrees West" (sic), so the row quotes the 117° West neighbourhood text instead.
+
+Left out after reading the sources:
+
+- **Astra 1L:** moved to 19.4° E in March 2025 ahead of retirement.
+- **MEASAT-3a:** its article says it was moved from 91.5° E to 160° E.
+- **Anik F2:** its article says it lost two of its four thrusters and that a replacement is being bought, so whether it held its slot is unclear.
+- **Optus D2:** a copy of its Wikipedia article reports it decommissioned in March 2023. It was not checked further.
+- **Satellites launched in 2021 or later**, such as Türksat 5A, which drifted to its slot during 2021.
+- **Operator pages that could not be downloaded:** Telesat, Arabsat, Thaicom, Intelsat and Spacecom refused the request or returned 404; Yahsat timed out, and the SKY Perfect JSAT pages tried returned no text.
+
 ## Train and holdout (`splits.json`, `objects.md`)
 
 `splits.json` assigns every labelled object to `train` or `holdout`. It is written by `python -m orbit_watch.truth --write`, and `tests/test_truth.py` checks that the committed file still follows the rule, which was fixed before any detector output existed for the new objects:
