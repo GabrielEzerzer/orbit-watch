@@ -363,6 +363,11 @@ def _move_sma(tr: Track, held: Segment, lo: float, hi: float) -> float:
     held_a = _a_between(tr, _day(held.start), _day(held.end))
     sel = (tr.days >= lo) & (tr.days < hi)
     moving = sel & (np.abs(tr.rate - _held_rate(tr, held)) >= FAST_RATE)
+    if moving.any():
+        first = int(np.argmax(moving))
+        calm = np.flatnonzero(sel[first:] & ~moving[first:])
+        if len(calm):
+            moving[first + calm[0]:] = False
     pick = moving if moving.any() else sel
     return float(np.median(tr.semi_major_axis_km[pick]) - np.median(held_a)) if pick.any() and len(held_a) else 0.0
 

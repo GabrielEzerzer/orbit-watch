@@ -509,3 +509,16 @@ def test_a_burn_into_fast_drift_followed_by_more_burns_is_a_relocation_start_not
     found = E.events_from_track(tr, np.array([250.0]), np.array([-50000.0]))
     assert [f.event_type for f in found] == ["relocation_start", "free_burn"]
     assert abs(E._day(found[0].date) - 100.0) <= 1 and abs(E._day(found[1].date) - 250.0) <= 1
+
+
+def test_a_relocation_start_size_comes_from_the_first_fast_run_not_a_longer_later_drift(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    push = np.where((days >= 70.0) & (days < 75.0), 1.0, 0.0) + np.where((days >= 83.0) & (days < 130.0), -0.3, 0.0)
+    rate = rate + push
+    lon = lon + np.cumsum(push) * 0.25
+    segs = [held(0, 60, 9.98, 10.02), held(60, 140, 3.0, 15.02, "drifting"), held(140, 200, 2.98, 3.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert found[0].event_type == "relocation_start" and abs(E._day(found[0].date) - 70.0) <= 1
+    assert abs(found[0].size + 1.0 / (1.5 * 360.98) * 42164.0) < 3.0
