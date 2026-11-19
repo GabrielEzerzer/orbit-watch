@@ -22,6 +22,8 @@ def test_cited_lists_count_rateable_irregular_objects_in_the_top_5_percent_and_s
     out = ev.cited_lists(_rank(values), mock_dir / "routine" / "irregular_objects.csv",
                          mock_dir / "routine" / "steady_objects.csv")
     assert (out["irregular"]["listed"], out["irregular"]["rateable"], out["irregular"]["in_top_5_percent"]) == (4, 3, 2)
+    own = out["irregular"]["evidence_object"]
+    assert (own["listed"], own["rateable"], own["in_top_5_percent"]) == (3, 2, 1)
     assert (out["steady"]["rateable"], out["steady"]["in_lower_half"]) == (3, 2)
 
 
@@ -33,6 +35,13 @@ def test_cited_lists_wait_for_the_files(tmp_path):
 def test_a_cited_list_without_a_source_column_is_refused(tmp_path):
     (tmp_path / "x.csv").write_text("norad_id,name\n1,A\n", encoding="utf-8")
     with pytest.raises(ValueError, match="source_url"):
+        ev.read_cited(tmp_path / "x.csv")
+
+
+def test_a_cited_row_with_unknown_evidence_is_refused(tmp_path):
+    (tmp_path / "x.csv").write_text("norad_id,name,claim,source_url,quote,evidence\n1,A,c,u,q,rumour\n",
+                                    encoding="utf-8")
+    with pytest.raises(ValueError, match="evidence"):
         ev.read_cited(tmp_path / "x.csv")
 
 

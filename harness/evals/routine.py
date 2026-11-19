@@ -35,7 +35,8 @@ from orbit_watch.truth import GROUNDTRUTH, load_splits, read_event_rows
 OUT = Path("findings/routine")
 IRREGULAR = GROUNDTRUTH / "irregular_objects.csv"
 STEADY = GROUNDTRUTH / "steady_objects.csv"
-CITED_FIELDS = ("norad_id", "name", "source_url", "quote")
+CITED_FIELDS = ("norad_id", "name", "claim", "source_url", "quote", "evidence")
+EVIDENCE = ("object", "programme")
 SPLIT_DAY = date(2023, 7, 1)
 STABLE_TOP, STABLE_WIDE = 30, 60
 TOP_SHARE = 0.05
@@ -218,24 +219,32 @@ def _round(x: float | None) -> float | None:
     return None if x is None else round(x, 3)
 
 
-def read_cited(path: Path) -> list[int]:
+def read_cited(path: Path) -> list[tuple[int, str]]:
     rows = rows_of(path)
     missing = [f for f in CITED_FIELDS if rows and f not in rows[0]]
     if missing:
         raise ValueError(f"{path}: missing columns {missing}")
-    return [int(r["norad_id"]) for r in rows]
+    bad = sorted({r["evidence"] for r in rows} - set(EVIDENCE))
+    if bad:
+        raise ValueError(f"{path}: evidence must be one of {EVIDENCE}, found {bad}")
+    return [(int(r["norad_id"]), r["evidence"]) for r in rows]
+
+
+def _top(values: dict[int, float], ids: Sequence[int]) -> dict:
+    hit, n = rt.top_share(values, ids, TOP_SHARE)
+    return {"listed": len(ids), "rateable": n, f"in_top_{int(TOP_SHARE * 100)}_percent": hit,
+            "share": round(hit / n, 3) if n else None}
 
 
 def cited_lists(rank: Sequence[dict], irregular: Path | None, steady: Path | None) -> dict:
     values = {int(r["norad_id"]): float(r["bits_per_year"]) for r in rank}
     out = {}
     if irregular is not None and irregular.is_file():
-        ids = read_cited(irregular)
-        hit, n = rt.top_share(values, ids, TOP_SHARE)
-        out["irregular"] = {"file": irregular.as_posix(), "listed": len(ids), "rateable": n,
-                            f"in_top_{int(TOP_SHARE * 100)}_percent": hit, "share": round(hit / n, 3) if n else None}
+        rows = read_cited(irregular)
+        out["irregular"] = {"file": irregular.as_posix(), **_top(values, [n for n, _ in rows]),
+                            "evidence_object": _top(values, [n for n, e in rows if e == "object"])}
     if steady is not None and steady.is_file():
-        ids = read_cited(steady)
+        ids = [n for n, _ in read_cited(steady)]
         hit, n = rt.lower_half(values, ids)
         out["steady"] = {"file": steady.as_posix(), "listed": len(ids), "rateable": n, "in_lower_half": hit,
                          "share": round(hit / n, 3) if n else None}

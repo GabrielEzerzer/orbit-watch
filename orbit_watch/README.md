@@ -434,7 +434,9 @@ and a separate file, never part of the score.
    seed, with one chart per object that shows the holds and every listed change but no score.
 8. Cited irregular objects in the top 5% and cited steady keepers in the lower half, by bits per
    year among rated objects; an object tied with the cut counts as inside, and an irregular
-   object with no bits never counts.
+   object with no bits never counts. Each list row has an `evidence` column: `object` when the
+   cited quote is about that satellite, `programme` when it only describes its programme. The
+   irregular share is reported for the whole list and for `object` rows alone.
 
 **Planted rhythm test.** In the quiet host stretches of `harness/evals/state_injection_hosts.json`,
 plant `n` relocations on a fixed rhythm, then one more. The stay before the last move is the
