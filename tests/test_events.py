@@ -726,6 +726,22 @@ def test_a_natural_drift_long_after_the_last_burn_is_one_relocation_start_at_the
     assert abs(E._day(found[0].date) - 95.0) <= 1 and found[0].signal == "burn_gap"
 
 
+def test_a_drift_that_reaches_burn_speed_within_days_of_the_exit_is_dated_at_the_exit(monkeypatch):
+    days = np.arange(0.0, 260.0, 0.25)
+    keep = days < 100.0
+    rate = np.where(keep, 0.021 * 2 * np.pi / 14.0 * np.cos(2 * np.pi * days / 14.0), 0.0)
+    rate = rate + np.interp(days, [100.0, 100.01, 112.0, 115.0, 135.0, 135.01], [0.0, 0.03, 0.03, 0.5, 0.5, 0.0],
+                            left=0.0, right=0.0)
+    lon = 10.0 + np.where(keep, 0.021 * np.sin(2 * np.pi * days / 14.0), 0.0) + np.cumsum(np.where(keep, 0.0, rate)) * 0.25
+    end = lon[-1]
+    segs = [held(0, 112, 9.65, 10.35), held(112, 140, 10.35, end, "drifting"), held(140, 260, end - 0.02, end + 0.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    burn_days, steps = np.array([50.0, 60.0, 70.0, 80.0, 90.0]), np.array([500.0] * 5)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
+    assert [(f.event_type, f.signal) for f in found] == [("relocation_start", "rate_exit"), ("relocation_end", "rate_entry")]
+    assert abs(E._day(found[0].date) - 112.0) <= 1
+
+
 def test_a_slow_move_inside_a_hold_is_found_across_a_gap_in_the_sets(monkeypatch):
     days = np.arange(0.0, 200.0, 0.25)
     days = days[(days < 104.0) | (days >= 108.0)]
@@ -744,9 +760,10 @@ def test_the_longitude_before_a_move_comes_from_the_end_of_a_wide_hold(monkeypat
     creep = np.where(days < 100.0, 0.008, 0.0) + np.where((days >= 100.0) & (days < 117.0), 0.3, 0.0)
     lon = lon + np.cumsum(creep) * 0.25
     rate = rate + creep
-    segs = [held(0, 100, 10.0, 10.8), held(100, 117, 10.8, lon[-1], "drifting"),
-            held(117, 200, lon[-1] - 0.02, lon[-1] + 0.02)]
-    monkeypatch.setattr(E, "segments", lambda tr: segs)
-    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
-    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
-    assert abs(found[0].lon_before - 10.68) < 0.05
+    for end in (100, 108):
+        segs = [held(0, end, 10.0, 10.8), held(end, 117, 10.8, lon[-1], "drifting"),
+                held(117, 200, lon[-1] - 0.02, lon[-1] + 0.02)]
+        monkeypatch.setattr(E, "segments", lambda tr: segs)
+        found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+        assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+        assert abs(E._day(found[0].date) - 100.0) <= 1 and abs(found[0].lon_before - 10.68) < 0.05
