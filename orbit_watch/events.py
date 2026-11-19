@@ -60,6 +60,7 @@ MOVE_MERGE_DAYS = 2.0
 MOVE_SIDE_SETS = 3
 REFERENCE_DAYS = 90.0
 CLIMB_START_SHARE = 0.1
+DRIFT_START_DAYS = 10.0
 ROW_FIELDS = ["norad_id", "event_type", "date", "signal", "size", "lon_before", "lon_after", "mode_before",
               "mode_after", "mode_change"]
 
@@ -519,6 +520,15 @@ def _held_again(tr: Track, left: float, move: float, burn_days: np.ndarray, step
     return False
 
 
+def _drifting_from(tr: Track, held: Segment, left: float, move: float) -> bool:
+    sel = (tr.days >= left) & (tr.days < min(move, left + DRIFT_START_DAYS))
+    nxt = np.flatnonzero(tr.days >= move)
+    if sel.sum() < MOVE_SIDE_SETS or not len(nxt):
+        return False
+    rel = tr.rate - _held_rate(tr, held)
+    return bool(np.sign(rel[nxt[0]]) * np.median(rel[sel]) >= SLOW_RATE)
+
+
 def _jumps(tr: Track, held: Segment, left: float, hi: float) -> bool:
     rel = np.abs(tr.rate - _held_rate(tr, held))
     i = _sustained(tr, rel >= FAST_RATE, left - 1.0, hi)
@@ -698,6 +708,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, kind, a, b, lon_after, rise, _through_gap(tr, first, first, _held_rate(tr, a)),
                                   "rate_exit"))
                 departed = burn
+            elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None and _drifting_from(tr, a, left, burn):
+                out.append(_event(tr, kind, a, b, lon_after, rise, left, signal))
             elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
                 if not _held_again(tr, left, burn, burn_days, steps):
                     out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))

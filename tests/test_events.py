@@ -652,3 +652,20 @@ def test_a_climb_by_an_object_never_held_is_a_graveyard_move_from_its_first_mont
     rate = -0.5 - 1.5 * back / 42164.0 * 360.98
     found = E.events_from_track(M.track(element_sets(days, 10.0 + np.cumsum(rate) * 0.25, rate)))
     assert found == []
+
+
+def test_a_burn_gap_stop_already_drifting_toward_the_move_is_one_relocation_start(monkeypatch):
+    days = np.arange(0.0, 260.0, 0.25)
+    burn_days, steps = np.array([50.0, 60.0, 70.0, 80.0, 90.0]), np.array([500.0] * 5)
+    for slow, kinds in ((-0.03, ["relocation_start", "relocation_end"]),
+                        (-0.01, ["keeping_stop", "relocation_start", "relocation_end"])):
+        lon, rate = quiet_keeper(days)
+        drift = np.where((days >= 95.0) & (days < 165.0), slow, 0.0) + np.where((days >= 165.0) & (days < 185.0), -0.5, 0.0)
+        rate = rate + drift
+        lon = lon + np.cumsum(drift) * 0.25
+        segs = [held(0, 120, 9.98, 10.02), held(120, 185, lon[-1], 9.98, "drifting"),
+                held(185, 260, lon[-1] - 0.02, lon[-1] + 0.02)]
+        monkeypatch.setattr(E, "segments", lambda tr: segs)
+        found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
+        assert [f.event_type for f in found] == kinds
+        assert abs(E._day(found[0].date) - 95.0) <= 1 and found[0].signal == "burn_gap"
