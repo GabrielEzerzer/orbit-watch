@@ -1,6 +1,6 @@
 event_id,split,event_type,status,found_type,found_date,error_days,signal,size,mode_change
 40258-relocation_start-2021-02,test,relocation_start,missed,,,,,,
-40258-relocation_end-2021-02-17,test,relocation_end,caught,relocation_end,2021-02-18,1,rate_entry,0.0,2021-02-18
+40258-relocation_end-2021-02-17,test,relocation_end,caught,relocation_end,2021-02-18,1,rate_entry,0.0,2021-02-26
 28902-graveyard-2021-06,test,graveyard,caught,graveyard,2021-06-02,-13,rate_exit,319.179,2021-06-26
 29648-keeping_stop-2021-06-21,test,keeping_stop,caught,graveyard,2021-06-26,5,rate_exit,150.219,2021-06-26
 32478-relocation_end-2021-08-17,dev,relocation_end,caught,relocation_end,2021-08-17,0,rate_entry,0.0,2021-08-17
@@ -30,5 +30,5 @@ event_id,split,event_type,status,found_type,found_date,error_days,signal,size,mo
 55841-relocation_end-2025-03-07,dev,relocation_end,caught,relocation_end,2025-03-07,0,rate_entry,0.0,2025-03-07
 26824-graveyard-2025-04-09,dev,graveyard,caught,graveyard,2025-03-31,-9,rate_exit,416.641,2025-03-07
 25462-graveyard-2025-05,dev,graveyard,caught,graveyard,2025-04-20,-25,rate_exit,458.612,2025-04-06
-40258-relocation_end-2025-08-24,dev,relocation_end,caught,relocation_end,2025-08-24,0,rate_entry,0.0,2025-08-24
-40258-graveyard-2025-10,test,graveyard,caught,graveyard,2025-10-08,-7,rate_exit,327.619,2025-10-06
+40258-relocation_end-2025-08-24,dev,relocation_end,caught,relocation_end,2025-08-24,0,rate_entry,0.0,2025-09-03
+40258-graveyard-2025-10,test,graveyard,caught,graveyard,2025-10-08,-7,rate_exit,327.644,2025-10-03

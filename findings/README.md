@@ -65,17 +65,19 @@ The mode layer alone (30-day windows, no dating step) is the baseline, from
 
 | split | events | caught | median \|error\| (days) | 90th percentile (days) |
 |---|---|---|---|---|
-| dev | 13 | 11 | 10 | 33 |
-| test | 20 | 15 | 14 | 30.8 |
-| all | 33 | 26 | 11.5 | 33.5 |
+| dev | 13 | 12 | 10 | 32.9 |
+| test | 20 | 18 | 13 | 34.3 |
+| all | 33 | 30 | 11.5 | 34.1 |
 
-By type over both splits: relocation starts 7 of 8, relocation ends 5 of 8, graveyard moves 12 of
-15, ends of keeping 2 of 2. Caught graveyard moves are dated early (median 22 days, 10 of 12
+By type over both splits: relocation starts 8 of 8, relocation ends 7 of 8, graveyard moves 13 of
+15, ends of keeping 2 of 2. Caught graveyard moves are dated early (median 22 days, 11 of 13
 before the source date): several sources date the end of disposal, and the layer dates a change
-at the start of its window. Five of the 7 misses are on objects the layer reads as drifting on
-both sides of the event, such as Luch (Olymp), whose short moves never hold a 30-day window, and
+at the start of its window. Luch (Olymp)'s short stays between moves read as control because a
+burn brackets them on both sides, so its four events are caught. The 3 misses: Express-AM33's
+arrival, whose hold ends in a keeping stop rather than a burn and so stays undetermined;
 Express-AM3, already free before a climb the layer cannot see because it does not use the
-semi-major axis.
+semi-major axis; and Astra 3A, whose change the layer dates 2022-11-18, 58 days before the middle
+of the month the source gives.
 
 ## False events on satellites with burn logs
 
@@ -192,9 +194,10 @@ now dated 2024-01-31 by step 25, inside its host stretch. Two are not real: a 0.
 sets.
 
 **Inside all 594 candidate held stretches, before any plant**, with 45 days trimmed from each end:
-52 events over 2,131.9 object-years (0.024 per object-year): 9 relocation pairs and 34 ends of
+50 events over 2,131.9 object-years (0.023 per object-year): 9 relocation pairs and 32 ends of
 north-south keeping. The relocation pairs are on 23553, 27168, 28626, 28885, 35755, 37237, 52903 (the element-set mix-up), 55912 and 58204; most are real moves that
-the 30-day windows hid when the hosts were chosen. The 34 north-south stops are real: they were
+the 30-day windows hid when the hosts were chosen. The 32 north-south stops are real (two more on
+41911 and 44978, keepers on an inclination sawtooth at the end of the record, are gone): they were
 listed before too, about 100 days later and outside the stretch, and step 8 now dates them at the
 last inclination correction, inside it. This is an upper bound on false events on held satellites.
 
@@ -368,14 +371,14 @@ class's opening sentence in section 4) beside ours at the end of 2021
 | class | ESA, 1 Jan 2019 | source | ours, 31 Dec 2021 |
 |---|---|---|---|
 | C1 | 372 | 4.1, p. 51 | 347 |
-| C2 | 150 | 4.2, p. 83 | 146 |
+| C2 | 150 | 4.2, p. 83 | 148 |
 | C4 | 7 | 4.3, p. 96 | (in drifting or librating) |
 | D | 831 | 4.4, p. 97 | 876 |
 | L1 | 127 | 4.5, p. 167 | 113 |
 | L2 | 46 | 4.6, p. 178 | 41 |
 | L3 | 22 | 4.7, p. 182 | 18 |
 | I | 21 | 4.8, p. 191 | 21 |
-| Ind | 2 | 4.9, p. 193 | 35 |
+| Ind | 2 | 4.9, p. 193 | 33 |
 | total | 1,578 | p. 3, p. 216 | 1,597 (1,799 less 190 with no data and 12 out of region) |
 
 The populations differ: ESA classifies everything in DISCOS, including 206 objects from JSC
@@ -448,15 +451,15 @@ checked against anything else.
 ## The belt list
 
 `findings/state_changes/summary.json` (which records the commit it was run at): 1,799 objects,
-760 events on 301 of them. The list is `findings/state_changes/events.csv`.
+762 events on 301 of them. The list is `findings/state_changes/events.csv`.
 
 | type | 2021 | 2022 | 2023 | 2024 | 2025 | total |
 |---|---|---|---|---|---|---|
-| relocation_start | 41 | 39 | 57 | 48 | 57 | 242 |
-| relocation_end | 65 | 58 | 84 | 64 | 67 | 338 |
+| relocation_start | 41 | 39 | 58 | 48 | 58 | 244 |
+| relocation_end | 65 | 58 | 85 | 64 | 68 | 340 |
 | graveyard | 16 | 12 | 21 | 15 | 19 | 83 |
 | keeping_stop | 2 | 7 | 0 | 2 | 3 | 14 |
-| ns_keeping_stop | 9 | 7 | 14 | 14 | 15 | 59 |
+| ns_keeping_stop | 9 | 7 | 14 | 14 | 13 | 57 |
 | free_burn | 0 | 0 | 5 | 10 | 9 | 24 |
 
 One row is dated at the mode-layer boundary (`signal` is `mode_change`) because no sustained
@@ -473,7 +476,7 @@ Known limits of the list:
   (40732) is in April 2023.
 - A climb that has risen less than 150 km when the data end reads as a move under way: SJ-17
   (41838) is listed as a `relocation_start` in November 2025, 115 km above its slot at the end.
-- 9 of the 242 relocation starts have a `size` whose sign disagrees with the shorter way round
+- 9 of the 244 relocation starts have a `size` whose sign disagrees with the shorter way round
   from `lon_before` to `lon_after`. Five are moves the long way round (26719, 27632 twice, 28707
   and 41937), 56370 goes out and comes back to the same slot, and 27380, 40732 and 44076 move
   inside a gap with no fast set, so the size uses every set in the span.
