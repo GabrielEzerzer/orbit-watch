@@ -37,9 +37,15 @@ By type on test: relocation starts 3 of 4, relocation ends 5 of 5, graveyard mov
 - **How often the test split was used.** The rules were built on the dev events, the first hand
   audit, a second hand reading of the belt list and the dev planted trials. The test split was
   scored at six rule states while steps 6 to 18 were built, the last after the step 14 change
-  below, and its score was never used to choose a rule. Steps 19 to 26 were built without it and
-  it was scored once after them: the one event that moved is the arrival of 28912 (dated only to
-  May 2022), now 24 days early instead of 2, because step 19 dates it where a fast move stops. One test object's belt row was looked at
+  below, and its score was never used to choose a rule. Steps 19 to 26 were built without it.
+  After them the test split, the planted test hosts and the held-out check were scored at three
+  commits (3098372, 3b56a09 and d8bd4e0) with the same numbers each time, the later changes
+  coming from belt rows, and once more after two review fixes (9eb916b), where only the planted
+  test trial 835 moved (see Planted changes). The one cited test event that moved is the arrival of
+  28912, cited only to May 2022 and so scored as 15 May. Its sets show a 48.7 km burn on
+  2022-04-21 that stops a 0.59°/day drift at 45.56°, 0.06° from the slot, after which the object
+  only settles within ±0.04°/day; step 19 dates the arrival at that burn, 24 days before the
+  mid-month date instead of 2. One test object's belt row was looked at
   while building step 14: the graveyard move of 28707, now dated 17 days before its cited date. Its
   date moved by one day as a result (from 18 to 17 days early), and its departure on 2021-11-09,
   a burn that lowers the orbit by about 50 km and starts an eastward drift, became a
@@ -88,7 +94,7 @@ mean the log shows it away, and would be dropped; none is in 2021-2025.
 - The Fengyun logs end in January and February 2022 and have no stated provenance (see
   [groundtruth/README.md](../groundtruth/README.md)), so the count on them supports the QZSS count
   rather than standing alone.
-- The held-out count was run at four rule states, 0 events each time, and never used to choose a
+- The held-out count was run at eight rule states, 0 events each time, and never used to choose a
   rule. It is measured, not gated.
   `events.state_changes` builds its series without `final=True`, which refuses held-out objects,
   so the evaluation runs a copy of `events.burns` that passes it; a test checks that the copy
@@ -166,7 +172,7 @@ days of the plant (near) and, for kinds that leave the object free, any after it
 | test | relocation | 1-3 | 50 | 50/50 = 1.00 | end | 50/50 | 0 | 1 | 0 | 0 / 0 |
 | test | keeping stop | | 80 | - | keeping_stop | 62/80 | 7 | 25.8 | 0 | 0 / 0.338 |
 | test | graveyard climb | | 80 | - | graveyard | 80/80 | 0 | 1 | 0 | 0.037 / 0.163 |
-| test | free burn | | 80 | 45/80 = 0.56 | keeping_stop | 59/80 | 8 | 26.2 | 1 | 0.263 / 0.2 |
+| test | free burn | | 80 | 45/80 = 0.56 | keeping_stop | 60/80 | 7.5 | 26.1 | 1 | 0.263 / 0.2 |
 | test | free burn | | 80 | 45/80 = 0.56 | free_burn | 49/80 | 0 | 1 | 0 | 0.263 / 0.2 |
 
 The 0.02-0.1 and 0.1-3 rows pool the five bins below them. "All truths caught" counts trials where
@@ -323,7 +329,7 @@ burn by burn against them; a change has to pass these gates instead (scores in
 | GEO east-west recall >= 0.9 | met: train 36/39 = 0.923, dev 33/34 = 0.971 |
 | ISS recall >= 0.95 | dev 35/35 = 1.000 met; train 45/48 = 0.938 not met |
 | At most 0.2 false state-change events per object-year on logged satellites | met: 0 in 6.459 object-years (see above) |
-| The same on the held-out Fengyun-2F and Fengyun-4A | measured, not gated: 0 in 2.15 object-years at each of four rule states |
+| The same on the held-out Fengyun-2F and Fengyun-4A | measured, not gated: 0 in 2.15 object-years at each of eight rule states |
 | Planted changes in held satellites | measured, not gated (see above) |
 | Recall and dating error on cited GEO events | dev 13/13, median 2 days; test 18/20, median 5 days |
 | Hand audit of about 50 belt events | out of sample: 47 of 50 real with the right type |
@@ -461,7 +467,8 @@ Known limits of the list:
   (41838) is listed as a `relocation_start` in November 2025, 115 km above its slot at the end.
 - A climb by an object never held in the data is listed as free burns.
 - `size` on a relocation start describes the first run of moving sets, which can go the other way
-  from the net move: 43874 drifts west for 13 days from 2022-07-05 and then east to 88.4° E, and
+  from the net move: 12 of the 242 starts have a size whose sign disagrees with the shorter way
+  round from `lon_before` to `lon_after`. Two of them come from the first-run rule: 43874 drifts west for 13 days from 2022-07-05 and then east to 88.4° E, and
   55131 hops west on 2023-03-17 a month before its eastward move.
 
 All open limits are [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
