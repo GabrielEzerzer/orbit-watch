@@ -1,0 +1,5 @@
+norad_id,name,source_url,quote,role
+900001,INVENTED INSPECTOR 1,https://example.org/invented-1,invented row for the check's test,inspector
+900002,INVENTED INSPECTOR 2,https://example.org/invented-2,invented row for the check's test,inspector
+900003,INVENTED INSPECTOR 3,https://example.org/invented-3,invented row for the check's test,rendezvous
+900099,INVENTED NEVER HELD,https://example.org/invented-99,invented row for the check's test,inspector

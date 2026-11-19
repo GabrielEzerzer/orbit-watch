@@ -1,7 +1,7 @@
 # Test fixtures
 
 Every element set here is a real, published one. Nothing is invented apart from the event rows
-in `geo_events/`, which are marked as invented below. The tests read these files; package code
+in `geo_events/` and `routine/`, which are marked as invented below. The tests read these files; package code
 never does.
 
 ## `elements/`
@@ -82,3 +82,11 @@ AIAA 2006-6753) as shipped in the `sgp4` 2.27 package.
   and they cover each event type and each unscored reason of `harness.evals.mode_events`. The tests
   check only the file's rules (event ids, splits, types and date precision) on it; the scoring
   tests use hand-built segments.
+
+## `routine/`
+
+- `irregular_objects.csv`, `steady_objects.csv`: **invented fixtures, not real objects.** Rows in
+  the layout of the cited irregular and steady object lists the routine checks read
+  (`norad_id`, `name`, `source_url`, `quote`, plus one extra column), with made-up NORAD ids,
+  placeholder source URLs and `invented row for the check's test` as the quote. The tests score
+  them against a hand-built rank.
