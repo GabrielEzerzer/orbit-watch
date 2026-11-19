@@ -35,8 +35,8 @@ Not built yet: a ranking of the objects that have no real routine.
    in ESA's GEO region (mean motion 0.9-1.1 rev/day, eccentricity at most 0.2, inclination at most
    70°). When two element sets share an epoch, the later one is kept.
 2. **Clean.** Drop snap-back blocks: runs of up to 10 days whose semi-major axis or inclination
-   vector jumps away and comes back while the mean longitude carries on. They are alternate orbit
-   solutions, not burns.
+   vector jumps away and comes back while the mean longitude carries on, and lone sets 10 km or
+   more off their neighbours. They are alternate orbit solutions, not burns.
 3. **Label the mode.** Classify each 30-day window with ESA's classes from the mean longitude, the
    drift rate and the inclination: held in longitude (with or without inclination control),
    drifting, librating around 75° E, 105° W or both, or inclined.
@@ -58,14 +58,14 @@ Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/READM
 | Check | Result |
 |---|---|
 | Real GEO events from cited public sources, dev split | 13 of 13 found, median date error 2 days |
-| The same, test split | 18 of 20 found, median date error 5 days |
+| The same, test split | 18 of 20 found, median date error 5.5 days |
 | 500 relocations planted in held satellites' element sets | at 0.1-3°/day, both ends found in 148 of 150 (dev) and 147 of 150 (test), median date error 0 days; at 0.02-0.1°/day, 86 of 100 and 87 of 100 |
 | False events on satellites with published burn logs while on station | 0 in 6.46 object-years (QZS-3, QZS-6, Fengyun-2H) and 0 in 2.15 object-years on the held-out Fengyun-2F and Fengyun-4A |
-| 50 events drawn from a frozen copy of the list, judged by hand from the element sets; none of the 50 changed in the final list | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days |
+| 50 events drawn from a frozen copy of the list, judged by hand from the element sets | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days; 5 rows changed in the final list, each toward the hand reading |
 | ISS burns in 2024-2025, held out from tuning the step detector | all 35 covered NASA and Roscosmos burns found; 35 of 42 detections match a listed burn |
 
-Across the belt: **764 changes on 301 objects**: 242 relocation starts, 339 relocation ends, 83
-graveyard moves, 17 keeping stops, 59 ends of north-south keeping and 24 free burns.
+Across the belt: **760 changes on 300 objects**: 242 relocation starts, 338 relocation ends, 82
+graveyard moves, 15 keeping stops, 59 ends of north-south keeping and 24 free burns.
 
 How each number was measured, with the full breakdowns and caveats:
 [findings/README.md](findings/README.md), which also lists the leads from the ISS work.
@@ -73,7 +73,7 @@ How each number was measured, with the full breakdowns and caveats:
 ## Known limits
 
 - Very slow moves (0.02-0.05°/day) are missed more often and dated later.
-- A keeping stop on a slow burn cycle, or after a small burn, can be dated weeks late.
+- A keeping stop on a slow burn cycle can be dated weeks late.
 - Near the stable longitudes at 75° E and 105° W a free object barely drifts, so a stop there is
   dated late or missed.
 - A change inside a long gap in the element sets is dated at the edge of the gap.
