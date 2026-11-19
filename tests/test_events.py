@@ -533,3 +533,18 @@ def test_a_keeping_stop_whose_last_burn_drives_it_across_the_box_is_dated_at_tha
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([40.0, 100.0]), np.array([500.0, -500.0]))
     assert [f.event_type for f in found] == ["keeping_stop"]
     assert found[0].signal == "a_step" and abs(E._day(found[0].date) - 100.0) <= 1
+
+
+def test_a_keeping_stop_is_dated_from_the_last_keeping_burn_not_a_later_small_burn_that_pushes_it_away(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    free, kicked = days >= 100.0, days >= 150.0
+    rate = np.where(free, 4e-5 * (days - 100.0), rate) + np.where(kicked, 0.009, 0.0)
+    lon = np.where(free, lon[free.argmax()] + 2e-5 * (days - 100.0) ** 2, lon)
+    lon = lon + np.where(kicked, 0.009 * (days - 150.0), 0.0)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 150, 9.94, 10.06), held(150, 200, 9.94, 11.0, "drifting")])
+    burn_days = np.array([20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 150.0, 151.0])
+    steps = np.array([500.0] * 9 + [-350.0, -350.0])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
+    assert [f.event_type for f in found] == ["keeping_stop"]
+    assert found[0].signal == "burn_gap" and abs(E._day(found[0].date) - 105.0) <= 1
