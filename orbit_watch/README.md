@@ -113,7 +113,9 @@ built on the detector evaluation's QZS-3 and QZS-6 false alarms; blocks are abou
 A lone set is dropped too: one whose semi-major axis is at least 10 km off the line between its
 two neighbours (both within 3 days, differing by at most a quarter of that) while the longitude
 carries on between them. One wild set can make a graveyard climb that never happened (45986 at the end of
-its data).
+its data). The wild sets behind that issue were 13 to 578 km off with neighbours 1 to 3 days
+away; 10 km is below the smallest of them and ten times the 1 km burn floor, and neighbours that
+agree within a quarter of the offset rule out a real burn, after which the orbit does not return.
 
 ## Operating modes
 
@@ -172,7 +174,7 @@ semi-major axis at the frozen ISS setting (`k = 4`, `|z| >= 12`, `|step| >= 200 
 
 | type | what it is | dated by (`signal`) | `size` |
 |---|---|---|---|
-| `relocation_start` | a held object leaves its slot and is held again later, is still moving at relocation speed when the data end, or moves at relocation speed until a graveyard climb (step 14) | `rate_exit`: the first set that leaves the held drift band or longitude box and stays out 5 days (inside a gap, see step 7); `a_step` when that exit is slow drift and a burn starts the move later (step 16), or at a step in the semi-major axis after a slow burn cycle (step 26); `burn_gap` when the exit is slow and the burns stop first (steps 4 and 15) | median semi-major axis of the first run of at least 3 moving sets (drift at least 0.05 deg/day away from the hold's) after the start, before the next held mode segment, the end of the data or the climb, minus the hold's median, km: negative for an eastward move. All sets in that span are used when none moves that fast; 0 when the next mode segment is already held |
+| `relocation_start` | a held object leaves its slot and is held again later, is still moving at relocation speed when the data end, or moves at relocation speed until a graveyard climb (step 14) | `rate_exit`: the first set that leaves the held drift band or longitude box and stays out 5 days (inside a gap, see step 7); `a_step` when that exit is slow drift and a burn starts the move later (step 16), or at a step in the semi-major axis after a slow burn cycle (step 26); `burn_gap` when the exit is slow and the burns stop first (steps 4 and 15) | median semi-major axis of the first run of at least 3 moving sets (drift at least 0.05 deg/day away from the hold's) after the start, before the next held mode segment, the end of the data or the climb, minus the hold's median, km: negative when that first run drifts east, which for a move that first goes the other way is not the direction of the net move. All sets in that span are used when none moves that fast; 0 when the next mode segment is already held |
 | `relocation_end` | a moving object starts to hold a slot | `rate_entry`: the first set that stays inside the new slot's band (inside a gap, see step 7), or the set where a fast move stops near the slot (step 19) | 0 |
 | `graveyard` | a held object leaves and its semi-major axis rises at least 150 km, with no later hold | `rate_exit`; `a_step` when the climb starts with a burn after a slow drift or a stall (steps 14 and 16) | highest semi-major axis from the end of the held mode segment to the end of the data, minus the hold's median, km |
 | `keeping_stop` | a held object leaves with no climb, no later hold and no move under way at the end of the data, or drifts slowly for more than 90 days before a climb (step 14) | `burn_gap`: the last east-west burn plus half the burn interval (step 4, step 15 on a slow cycle, or step 25 after small burns of the other sign); `a_step` at a last burn that drives the object across the box (step 24); `rate_exit` when the burns give no date | highest semi-major axis from the end of the held mode segment to the end of the data (to the climb under step 14), minus the hold's median, km; 0 when a move or climb follows it (step 4) |
@@ -276,9 +278,9 @@ Steps 19 to 26 came from the belt-list issues left open after step 18, each chec
 cited events and dev planted trials in the same way.
 
 19. **Arrival before a trim.** When a fast move (0.05 deg/day or more relative to the new hold)
-    enters a sustained run of sets within 0.5 deg of the slot that starts before the band entry and
-    stays in that box, the arrival is the start of that run: a trim inside the slot after the
-    move stops is not the arrival.
+    enters a sustained run of sets inside the new hold's drift band and within 0.5 deg of its
+    box, starting before the band entry and staying there, the arrival is the start of that run:
+    a trim inside the slot after the move stops is not the arrival.
 20. **A pause in a move.** A relocation end followed within 10 days by a start in the same
     direction is a pause, not a stop: the pair is dropped and the move is one start and one end.
 21. **A move within one slow cycle.** A relocation or graveyard departure dated by step 15 whose
@@ -297,10 +299,15 @@ cited events and dev planted trials in the same way.
     to the usual keeping burns (at least 80% of the earlier burns in the 180 days before), are no
     larger, and push the drift away from the slot on the side the object is on, the stop is the
     last usual burn plus half the median interval of the usual burns in the 60 days before it.
+    80% asks for a clear usual sign; it was the only share tried, and adding it changed one dev
+    trial (a stop 21 days late became 13).
 26. **A step after a slow cycle.** A move or climb dated by step 15 is dated at a step of at least
     0.3 km in the semi-major axis between that date and the next mode segment, when there is one:
     3-set medians on each side differ by that much, and the date is between the two sets of the
-    first single jump of that size.
+    first single jump of that size. The search stops at the day the departure was detected, so a
+    later burn that ends the move is not taken. 0.3 km is a drift change of about 0.004 deg/day,
+    six times the median scatter of a held host's semi-major axis (0.048 km); taking the largest
+    jump instead of the first dated 58990 at a jump across a gap (2024-06-29).
 
 ## Step detector
 
