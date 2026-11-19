@@ -502,6 +502,16 @@ def _burns_on(tr: Track, held: Segment, left: float | None, limit: float, burn_d
     return bool(((burn_days > left + CLIMB_DAYS) & (burn_days < limit) & (np.abs(steps) >= FREE_BURN_MIN_M)).any())
 
 
+def _held_again(tr: Track, left: float, move: float, burn_days: np.ndarray, steps: np.ndarray) -> bool:
+    for burn in burn_days[(burn_days > left) & (burn_days < move) & (np.abs(steps) >= FREE_BURN_MIN_M)]:
+        idx = np.flatnonzero((tr.days > burn) & (tr.days < move))
+        if (len(idx) >= HOLD_MIN_SETS and tr.days[idx[0]] - burn <= STEP_REACH_DAYS
+                and tr.days[idx[-1]] - tr.days[idx[0]] >= HOLD_MIN_DAYS and (np.abs(tr.rate[idx]) <= SLOW_RATE).all()
+                and np.degrees(np.ptp(np.unwrap(np.radians(tr.lon[idx])))) <= HOLD_BOX_DEG):
+            return True
+    return False
+
+
 def _jumps(tr: Track, held: Segment, left: float, hi: float) -> bool:
     rel = np.abs(tr.rate - _held_rate(tr, held))
     i = _sustained(tr, rel >= FAST_RATE, left - 1.0, hi)
@@ -654,7 +664,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                                   "rate_exit"))
                 departed = burn
             elif signal == "burn_gap" and kind != "keeping_stop" and burn is not None:
-                out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
+                if not _held_again(tr, left, burn, burn_days, steps):
+                    out.append(_event(tr, "keeping_stop", a, b, _lon_near(tr, burn, True), 0.0, left, signal))
                 out.append(_event(tr, kind, a, b, lon_after, rise, burn, "rate_exit"))
                 departed = burn
             elif kind != "keeping_stop" or a.windows or ((burn_days >= _day(a.start)) & (burn_days <= departed)).any():

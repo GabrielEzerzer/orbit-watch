@@ -593,3 +593,19 @@ def test_a_relocation_start_size_skips_a_two_set_burst_before_the_first_fast_run
     found = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert found[0].event_type == "relocation_start"
     assert abs(found[0].size + 1.0 / (1.5 * 360.98) * 42164.0) < 3.0
+
+
+def test_a_keeping_stop_is_dropped_when_a_burn_holds_the_object_again_until_it_moves(monkeypatch):
+    days = np.arange(0.0, 260.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    drift = np.where((days >= 95.0) & (days < 140.0), -0.01, 0.0) + np.where((days >= 165.0) & (days < 185.0), -0.5, 0.0)
+    rate = rate + drift
+    lon = lon + np.cumsum(drift) * 0.25
+    segs = [held(0, 120, 9.98, 10.02), held(120, 185, lon[-1], 9.98, "drifting"),
+            held(185, 260, lon[-1] - 0.02, lon[-1] + 0.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    burn_days = np.array([50.0, 60.0, 70.0, 80.0, 90.0, 140.0])
+    steps = np.array([500.0] * 5 + [1500.0])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[0].date) - 165.0) <= 1
