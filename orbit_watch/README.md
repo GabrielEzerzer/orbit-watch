@@ -112,8 +112,7 @@ built on the detector evaluation's QZS-3 and QZS-6 false alarms; blocks are abou
 
 A lone set is dropped too: one whose semi-major axis is at least 10 km off the line between its
 two neighbours (both within 3 days, differing by at most a quarter of that) while the longitude
-carries on between them, or, at either end of the data, at least 10 km off its one neighbour
-within 3 days when that neighbour and the next set agree in the same way. One wild set can make a graveyard climb that never happened (45986 at the end of
+carries on between them. One wild set can make a graveyard climb that never happened (45986 at the end of
 its data).
 
 ## Operating modes

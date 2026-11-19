@@ -3,7 +3,6 @@ from datetime import timedelta
 
 import numpy as np
 
-from orbit_watch import clean
 from orbit_watch import events as E
 from orbit_watch import modes as M
 from orbit_watch.elements import _build
@@ -436,7 +435,7 @@ def test_a_held_window_between_stretches_of_an_inclined_orbit_gives_no_events(mo
     assert found == []
 
 
-def test_one_wild_element_set_next_to_a_normal_one_at_the_end_of_the_data_gives_no_event():
+def test_one_wild_element_set_between_two_normal_ones_just_before_the_last_set_gives_no_event():
     days = np.concatenate([np.arange(0.0, EDGES[9], 0.25), np.arange(EDGES[9], EDGES[10], 3.0)])
     lon, rate = keeper_track(days, 10.0, 8)
     days = np.insert(days, len(days) - 1, days[-1] - 0.02)
@@ -580,13 +579,6 @@ def test_a_move_after_a_slow_burn_cycle_is_not_dated_at_a_step_after_the_departu
                                                    held(110, 200, 8.9, 9.09)])
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 48.0]), np.array([500.0, 500.0]))
     assert found[0].event_type == "relocation_start" and E._day(found[0].date) < 72.0
-
-
-def test_two_transfer_orbit_sets_at_the_start_of_the_data_are_not_lone_sets():
-    days = np.r_[0.0, 0.08, np.arange(11.0, 60.0, 0.25)]
-    lon, rate = quiet_keeper(days)
-    rate = np.r_[460.0, 452.0, rate[2:]]
-    assert clean.lone_sets(element_sets(days, lon, rate)) == []
 
 
 def test_a_relocation_start_size_skips_a_two_set_burst_before_the_first_fast_run(monkeypatch):

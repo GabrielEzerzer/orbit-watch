@@ -160,16 +160,6 @@ def lone_sets(records: Sequence[ElementSet]) -> list[int]:
     out = []
     for i in range(len(records)):
         near = [j for j in (i - 1, i + 1) if 0 <= j < len(records) and abs(days[j] - days[i]) <= LONE_REACH_DAYS]
-        if len(near) == 1 and 0 < i < len(records) - 1:
-            continue
-        if len(near) == 1:
-            j = near[0]
-            k = 2 * j - i
-            dev = abs(a[i] - a[j])
-            if (dev >= LONE_MIN_KM and 0 <= k < len(records) and abs(days[k] - days[j]) <= LONE_REACH_DAYS
-                    and abs(a[k] - a[j]) <= LONE_SHARE * dev):
-                out.append(i)
-            continue
         if len(near) < 2:
             continue
         p, n = near
