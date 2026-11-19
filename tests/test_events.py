@@ -467,3 +467,16 @@ def test_an_arrival_is_dated_when_the_move_stops_even_when_a_trim_inside_the_slo
     found = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
     assert abs(E._day(found[1].date) - 70.0) <= 1
+
+
+def test_a_move_whose_drift_pauses_for_a_few_days_is_one_start_and_one_end(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    push = np.where((days >= 70.0) & (days < 72.0), 0.25, 0.0) + np.where((days >= 76.0) & (days < 84.0), 0.5, 0.0)
+    rate = rate + push
+    lon = lon + np.cumsum(push) * 0.25
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 150, 9.9, 14.6)])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[0].date) - 70.0) <= 1 and abs(E._day(found[1].date) - 84.0) <= 1
+    assert abs(found[0].lon_after - 14.5) < 0.2

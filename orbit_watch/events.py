@@ -577,7 +577,29 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 j = _arrival_date(tr, b, departed if departed is not None else _day(a.start))
                 out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _arrival_day(tr, b, j), "rate_entry"))
             departed, same_slot = None, None
+    out = _merge_pauses(sorted(out, key=lambda e: e.date))
     return sorted(out + _free_burns(tr, det, out, burn_days, steps), key=lambda e: e.date)
+
+
+def _merge_pauses(found: list[Event]) -> list[Event]:
+    out: list[Event] = []
+    carry: tuple[float, float] | None = None
+    for e in found:
+        moves = [k for k, x in enumerate(out) if x.event_type in ("relocation_start", "relocation_end")]
+        if (e.event_type == "relocation_start" and len(moves) >= 2 and out[moves[-1]].event_type == "relocation_end"
+                and out[moves[-2]].event_type == "relocation_start"
+                and (e.date - out[moves[-1]].date).total_seconds() < MOVE_SIDE_DAYS * 86400.0):
+            first, pause = out[moves[-2]], out[moves[-1]]
+            if np.sign(wrap180(pause.lon_after - first.lon_before)) == np.sign(wrap180(e.lon_after - e.lon_before)):
+                out[moves[-2]] = replace(first, lon_after=e.lon_after)
+                del out[moves[-1]]
+                carry = (e.lon_before, first.lon_before)
+                continue
+        if e.event_type == "relocation_end" and carry is not None:
+            e = replace(e, lon_before=carry[1]) if e.lon_before == carry[0] else e
+            carry = None
+        out.append(e)
+    return out
 
 
 def state_changes(records: Sequence[ElementSet]) -> list[Event]:
