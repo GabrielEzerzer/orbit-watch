@@ -1,6 +1,6 @@
 {
-  "commit": "64b7d3c454081a74c219e88af3d0ef31e603dbc6",
-  "dirty": true,
+  "commit": "c84b5d95c1ed94140fa633ccb79830a259dec2a2",
+  "dirty": false,
   "seed": 20261118,
   "window_days": 45,
   "splits": [
@@ -26,7 +26,7 @@
               "caught": 41,
               "recall": 0.82,
               "median_abs_error_days": 2.0,
-              "p90_abs_error_days": 14.0,
+              "p90_abs_error_days": 13.0,
               "same_type": 37,
               "mistyped": 4
             },
@@ -94,8 +94,8 @@
               "recall": 1.0,
               "median_abs_error_days": 0.0,
               "p90_abs_error_days": 1.0,
-              "same_type": 49,
-              "mistyped": 1
+              "same_type": 50,
+              "mistyped": 0
             },
             "relocation_end": {
               "trials": 50,
@@ -166,7 +166,7 @@
               "caught": 50,
               "recall": 1.0,
               "median_abs_error_days": 0.0,
-              "p90_abs_error_days": 1.2,
+              "p90_abs_error_days": 1.0,
               "same_type": 50,
               "mistyped": 0
             }
@@ -223,8 +223,8 @@
               "recall": 0.9933,
               "median_abs_error_days": 0.0,
               "p90_abs_error_days": 1.0,
-              "same_type": 148,
-              "mistyped": 1
+              "same_type": 149,
+              "mistyped": 0
             },
             "relocation_end": {
               "trials": 150,
@@ -262,10 +262,10 @@
           }
         },
         "extra_near_per_trial": 0.0,
-        "extra_later_per_trial": 0.338,
+        "extra_later_per_trial": 0.325,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "keeping_stop": 10,
+          "keeping_stop": 9,
           "free_burn": 5,
           "relocation_start": 6,
           "relocation_end": 6
@@ -282,9 +282,9 @@
           "held-era SMA scatter >= 0.1 km": {
             "trials": 12,
             "hosts": 10,
-            "extra_events": 11,
+            "extra_events": 10,
             "extra_free_burns": 5,
-            "extras_per_trial": 0.917,
+            "extras_per_trial": 0.833,
             "extras_median_per_trial": 0.0
           }
         }
@@ -572,7 +572,7 @@
               "caught": 89,
               "recall": 0.89,
               "median_abs_error_days": 0.0,
-              "p90_abs_error_days": 8.0,
+              "p90_abs_error_days": 10.0,
               "same_type": 89,
               "mistyped": 0
             }
@@ -705,11 +705,11 @@
         "by_truth_type": {
           "keeping_stop": {
             "trials": 80,
-            "caught": 60,
-            "recall": 0.75,
+            "caught": 59,
+            "recall": 0.7375,
             "median_abs_error_days": 8.0,
-            "p90_abs_error_days": 30.0,
-            "same_type": 59,
+            "p90_abs_error_days": 26.2,
+            "same_type": 58,
             "mistyped": 1
           },
           "free_burn": {
@@ -722,8 +722,8 @@
             "mistyped": 0
           }
         },
-        "extra_near_per_trial": 0.25,
-        "extra_later_per_trial": 0.212,
+        "extra_near_per_trial": 0.263,
+        "extra_later_per_trial": 0.2,
         "extra_median_per_trial": 0.0,
         "extra_types": {
           "keeping_stop": 21,
@@ -757,11 +757,12 @@
     },
     "untouched": {
       "object_years": 1315.906,
-      "events": 12,
-      "per_object_year": 0.0091,
+      "events": 13,
+      "per_object_year": 0.0099,
       "by_type": {
         "relocation_start": 6,
         "relocation_end": 4,
+        "keeping_stop": 1,
         "graveyard": 2
       }
     }
@@ -790,11 +791,11 @@
     "what": "every event the current code dates inside a candidate held stretch, 45 days trimmed from each end, before hosts are chosen; an upper bound on false events on held satellites",
     "stretches": 594,
     "object_years": 2131.937,
-    "events": 54,
-    "per_object_year": 0.0253,
+    "events": 52,
+    "per_object_year": 0.0244,
     "by_type": {
-      "relocation_start": 10,
-      "relocation_end": 10,
+      "relocation_start": 9,
+      "relocation_end": 9,
       "ns_keeping_stop": 34
     },
     "list": [
@@ -982,18 +983,6 @@
         "norad_id": 35755,
         "event_type": "relocation_start",
         "date": "2022-03-14",
-        "signal": "rate_exit"
-      },
-      {
-        "norad_id": 35755,
-        "event_type": "relocation_end",
-        "date": "2022-03-16",
-        "signal": "mode_change"
-      },
-      {
-        "norad_id": 35755,
-        "event_type": "relocation_start",
-        "date": "2022-03-20",
         "signal": "rate_exit"
       },
       {
