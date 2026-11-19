@@ -1,5 +1,5 @@
 {
-  "commit": "bc45e2deb240aa7b1441515f4ead1ef12ff9df6d",
+  "commit": "68e48c084a02d9bd168d77641bced90a144a928c",
   "dirty": false,
   "geo_dir_object_count": 1804,
   "skipped_not_by_rule": [],
@@ -12,13 +12,13 @@
   ],
   "objects_processed": 1799,
   "objects_with_events": 301,
-  "events": 760,
+  "events": 768,
   "events_by_type": {
     "relocation_start": 242,
     "relocation_end": 338,
     "graveyard": 83,
-    "keeping_stop": 14,
-    "free_burn": 24,
+    "keeping_stop": 16,
+    "free_burn": 30,
     "ns_keeping_stop": 59
   },
   "events_by_type_and_year": {
@@ -37,10 +37,10 @@
       "2025": 19
     },
     "keeping_stop": {
-      "2021": 2,
+      "2021": 3,
       "2022": 7,
       "2023": 0,
-      "2024": 2,
+      "2024": 3,
       "2025": 3
     },
     "relocation_end": {
@@ -61,11 +61,11 @@
       "2021": 0,
       "2022": 0,
       "2023": 5,
-      "2024": 10,
-      "2025": 9
+      "2024": 11,
+      "2025": 14
     }
   },
-  "events_csv_bytes": 76460,
+  "events_csv_bytes": 77175,
   "events_csv_committed": true,
-  "run_seconds": 209.2
+  "run_seconds": 300.1
 }
