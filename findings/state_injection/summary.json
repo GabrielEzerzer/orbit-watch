@@ -1,5 +1,5 @@
 {
-  "commit": "32794564d87978723f9ef2afd5c7ebe4d0bd9ddb",
+  "commit": "0ec21ec6253f2902b7736cd6211463acc086f09c",
   "dirty": false,
   "seed": 20261118,
   "window_days": 45,
@@ -789,12 +789,12 @@
     "what": "every event the current code dates inside a candidate held stretch, 45 days trimmed from each end, before hosts are chosen; an upper bound on false events on held satellites",
     "stretches": 594,
     "object_years": 2131.937,
-    "events": 52,
-    "per_object_year": 0.0244,
+    "events": 50,
+    "per_object_year": 0.0235,
     "by_type": {
       "relocation_start": 9,
       "relocation_end": 9,
-      "ns_keeping_stop": 34
+      "ns_keeping_stop": 32
     },
     "list": [
       {
@@ -1056,21 +1056,9 @@
         "signal": "ns_gap"
       },
       {
-        "norad_id": 41911,
-        "event_type": "ns_keeping_stop",
-        "date": "2025-07-31",
-        "signal": "ns_gap"
-      },
-      {
         "norad_id": 43874,
         "event_type": "ns_keeping_stop",
         "date": "2023-10-26",
-        "signal": "ns_gap"
-      },
-      {
-        "norad_id": 44978,
-        "event_type": "ns_keeping_stop",
-        "date": "2025-08-05",
         "signal": "ns_gap"
       },
       {
