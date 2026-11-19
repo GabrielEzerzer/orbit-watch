@@ -52,8 +52,8 @@ By type on test: relocation starts 3 of 4, relocation ends 5 of 5, graveyard mov
   a burn that lowers the orbit by about 50 km and starts an eastward drift, became a
   `relocation_start` instead of a `keeping_stop`. After steps 27 to 30 the test split, the
   planted test hosts and the held-out check were scored once more (3279456): every number is
-  the same as before them. After steps 31 to 34, two rounds of review fixes and the merge of the
-  mode-layer changes they were scored once more (83cd62d): the cited test split and the held-out
+  the same as before them. After steps 31 to 34 and the merge of the mode-layer changes they were
+  scored once more, at the commit each result file records: the cited test split and the held-out
   check are unchanged, and the planted test changes are listed under Planted changes.
 - **Graveyard moves are the worst dated** (dev median 9 days, mostly early), because sources
   variously date the start of the climb, its end or the decommissioning; three of the 13 dev
