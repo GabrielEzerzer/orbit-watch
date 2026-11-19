@@ -571,3 +571,17 @@ def test_two_transfer_orbit_sets_at_the_start_of_the_data_are_not_lone_sets():
     lon, rate = quiet_keeper(days)
     rate = np.r_[460.0, 452.0, rate[2:]]
     assert clean.lone_sets(element_sets(days, lon, rate)) == []
+
+
+def test_a_relocation_start_size_skips_a_two_set_burst_before_the_first_fast_run(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    push = np.where((days >= 70.0) & (days < 79.0), 0.03, 0.0) + np.where((days >= 72.0) & (days < 72.5), -0.33, 0.0)
+    push = push + np.where((days >= 74.0) & (days < 79.0), 0.97, 0.0) + np.where((days >= 85.0) & (days < 130.0), -0.3, 0.0)
+    rate = rate + push
+    lon = lon + np.cumsum(push) * 0.25
+    segs = [held(0, 60, 9.98, 10.02), held(60, 140, 3.0, 15.02, "drifting"), held(140, 200, 2.98, 3.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert found[0].event_type == "relocation_start"
+    assert abs(found[0].size + 1.0 / (1.5 * 360.98) * 42164.0) < 3.0
