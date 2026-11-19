@@ -118,6 +118,9 @@ class Layers(unittest.TestCase):
                 "tests/test_z.py": "def test_x(tmp_path):\n    tmp_path.joinpath(\"x\").joinpath(\"data\").mkdir(parents=True)\n",
                 "tests/test_za.py": "def test_x(tmp_path):\n    (tmp_path.joinpath(\"x\") / \"data\").mkdir(parents=True)\n",
                 "tests/test_zb.py": "def test_x(tmp_path):\n    return f\"{tmp_path}\" + \"/data-free/x\"\n",
+                "tests/test_zc.py": "def test_x(tmp_path):\n    open(f\"{tmp_path}/data/x\", \"w\").close()\n",
+                "tests/test_zd.py": "def test_x(tmp_path):\n    open(str(tmp_path) + \"/data/x\", \"w\").close()\n",
+                "tests/test_ze.py": "def test_x(mock_dir):\n    return open(f\"{mock_dir!s}/mock/x\").read()\n",
             },
         )
 

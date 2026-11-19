@@ -81,6 +81,15 @@ rule:
   any:
     - regex: '^[rRbBuUfF]*["'']+(?:\.{1,2}[/\\])*(?:mock|data)[/\\]'
     - regex: '^[rRbBuUfF]*["'']+(?:[/\\]+|.*\}[/\\]+)(?:mock|data)(?:[/\\]|["'']+$)'
+      not:
+        any:
+          - regex: '^[rRbBuUfF]*["'']+[^{"'']*\{\s*(?:tmp_path|mock_dir)\s*[}!:]'
+          - inside:
+              kind: binary_operator
+              field: right
+              has:
+                field: left
+                regex: '^str\(\s*(?:tmp_path|mock_dir)\s*\)$'
     - regex: '^[rRbBuU]*["'']+(?:\.{1,2}[/\\])*(?:mock|data)["'']+$'
       any:
         - inside:
