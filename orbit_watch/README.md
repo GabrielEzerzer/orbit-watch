@@ -143,9 +143,21 @@ below that justify each threshold come from one-off runs whose outputs are not c
   No. 22.6 sets ±0.1 deg east-west for geostationary stations; 0.3 leaves room for TLE noise and
   sits in the gap of the spread histogram (150 sampled objects: 2,627 windows below 0.15 deg, 147
   between 0.15 and 0.5 deg). A held window counts as control only if a 90-day run of three windows
-  that includes it is held too, or it is stiller than a free object could be.
+  that includes it is held too, it is stiller than a free object could be, or the held windows
+  around it are bracketed on both sides by windows with a burn: a stop between two moves. A free
+  object cannot stop without one, so a park shorter than 90 days between two moves is control,
+  not `undetermined`. A bracketed window must have every set within 0.3 deg, not just the 5th to
+  95th percentile: a window that still holds the tail of the arrival, or a free drift after
+  keeping stopped, stays `undetermined`, and the event steps date the hold from its sets.
 - A held window is `controlled_lon_inc` when its median inclination is at most 0.3 deg, or when it
-  lies between two such windows less than a year apart; otherwise `controlled_lon`.
+  lies between two such windows less than a year apart; otherwise `controlled_lon`. At the start
+  or end of the record an excursion above 0.3 deg has no low window on one side. It stays
+  `controlled_lon_inc` when the object has made at least two closed excursions (low windows on
+  both sides, less than a year apart) and the open one is no longer than the longest of them and
+  no higher than their highest inclination, counting the low windows that bound each excursion;
+  otherwise it is `controlled_lon` from the crossing. A keeper on an inclination sawtooth whose
+  record ends partway up a rise is not read as having stopped, while a stop that rises from a flat
+  baseline, or past every earlier peak, still is.
 - `BOX_DEG` 1.5: a window with a spread of up to 1.5 deg also counts as held when a 90-day run
   that includes it spreads at most 1.5 deg and contains a burn. Among 90-day runs with a burn in
   250 sampled objects, 933 spread under 1 deg, 10 spread 1-3 deg and the rest 3 deg or more.
