@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import numpy as np
 
+from orbit_watch import clean
 from orbit_watch import events as E
 from orbit_watch import modes as M
 from orbit_watch.elements import _build
@@ -563,3 +564,10 @@ def test_a_move_after_a_slow_burn_cycle_is_dated_at_the_step_in_the_sets_not_the
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 48.0]), np.array([500.0, 500.0]))
     assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
     assert found[0].signal == "a_step" and abs(E._day(found[0].date) - 70.0) <= 1
+
+
+def test_two_transfer_orbit_sets_at_the_start_of_the_data_are_not_lone_sets():
+    days = np.r_[0.0, 0.08, np.arange(11.0, 60.0, 0.25)]
+    lon, rate = quiet_keeper(days)
+    rate = np.r_[460.0, 452.0, rate[2:]]
+    assert clean.lone_sets(element_sets(days, lon, rate)) == []

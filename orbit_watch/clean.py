@@ -163,7 +163,11 @@ def lone_sets(records: Sequence[ElementSet]) -> list[int]:
         if len(near) == 1 and 0 < i < len(records) - 1:
             continue
         if len(near) == 1:
-            if abs(a[i] - a[near[0]]) >= LONE_MIN_KM:
+            j = near[0]
+            k = 2 * j - i
+            dev = abs(a[i] - a[j])
+            if (dev >= LONE_MIN_KM and 0 <= k < len(records) and abs(days[k] - days[j]) <= LONE_REACH_DAYS
+                    and abs(a[k] - a[j]) <= LONE_SHARE * dev):
                 out.append(i)
             continue
         if len(near) < 2:
