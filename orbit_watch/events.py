@@ -404,10 +404,15 @@ def _departure_type(tr: Track, held: Segment, rest: Sequence[Segment]) -> tuple[
 def _move_sma(tr: Track, held: Segment, lo: float, hi: float) -> float:
     held_a = _a_between(tr, _day(held.start), _day(held.end))
     sel = (tr.days >= lo) & (tr.days < hi)
-    moving = sel & (np.abs(tr.rate - _held_rate(tr, held)) >= FAST_RATE)
+    rel = tr.rate - _held_rate(tr, held)
+    moving = sel & (np.abs(rel) >= FAST_RATE)
     idx = np.flatnonzero(sel)
-    runs = np.split(idx, np.flatnonzero(np.diff(moving[idx].astype(int))) + 1) if len(idx) else []
-    first = next((r for r in runs if moving[r[0]] and len(r) >= MOVE_SIDE_SETS), None)
+    way = np.where(moving, np.sign(rel), 0.0)
+    runs = np.split(idx, np.flatnonzero(np.diff(way[idx])) + 1) if len(idx) else []
+    fast = [r for r in runs if moving[r[0]] and len(r) >= MOVE_SIDE_SETS]
+    net = float(np.sum(wrap180(np.diff(tr.lon[idx])))) if len(idx) else 0.0
+    ahead = [r for r in fast if abs(net) >= MOVE_MIN_DEG and way[r[0]] == np.sign(net)]
+    first = (ahead or fast or [None])[0]
     if first is not None:
         moving = np.zeros_like(moving)
         moving[first] = True
