@@ -113,8 +113,8 @@ built on the detector evaluation's QZS-3 and QZS-6 false alarms; blocks are abou
 A lone set is dropped too: one whose semi-major axis is at least 10 km off the line between its
 two neighbours (both within 3 days, differing by at most a quarter of that) while the longitude
 carries on between them. One wild set can make a graveyard climb that never happened (45986 at the end of
-its data). The wild sets behind that issue were 13 to 578 km off with neighbours 1 to 3 days
-away; 10 km is below the smallest of them and ten times the 1 km burn floor, and neighbours that
+its data). The two wild sets behind that issue were about 212 km (45985) and 577 km (45986)
+off, with neighbours 1 to 3 days away; 10 km is far below both and ten times the 1 km burn floor, and neighbours that
 agree within a quarter of the offset rule out a real burn, after which the orbit does not return.
 
 ## Operating modes

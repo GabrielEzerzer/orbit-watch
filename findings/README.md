@@ -331,7 +331,7 @@ burn by burn against them; a change has to pass these gates instead (scores in
 | At most 0.2 false state-change events per object-year on logged satellites | met: 0 in 6.459 object-years (see above) |
 | The same on the held-out Fengyun-2F and Fengyun-4A | measured, not gated: 0 in 2.15 object-years at each of eight rule states |
 | Planted changes in held satellites | measured, not gated (see above) |
-| Recall and dating error on cited GEO events | dev 13/13, median 2 days; test 18/20, median 5 days |
+| Recall and dating error on cited GEO events | dev 13/13, median 2 days; test 18/20, median 5.5 days |
 | Hand audit of about 50 belt events | out of sample: 47 of 50 real with the right type |
 
 - GEO north-south recall is reported, not gated: train 6/17, dev 4/14. The inclination channel's
@@ -460,7 +460,7 @@ Known limits of the list:
 - Arrivals outnumber starts because 108 objects' first relocation event is an arrival: mostly
   objects launched in 2021-2025 or already moving at the start of 2021.
 - A slow keeping stop followed by a move more than one burn interval later gives two departures
-  for one physical move.
+  for one physical move ([#81](../../../issues/81)).
 - A move made entirely inside one gap is dated at the gap's end at both ends, as Meteosat-11
   (40732) is in April 2023.
 - A climb that has risen less than 150 km when the data end reads as a move under way: SJ-17
