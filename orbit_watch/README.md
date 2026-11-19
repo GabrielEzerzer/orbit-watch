@@ -139,25 +139,30 @@ below that justify each threshold come from one-off runs whose outputs are not c
   ±1 deg at 15 deg inclination. The drift rate of a set is 360 times the difference between its mean
   motion and one sidereal revolution per day (1.00273790935 rev/day), in deg/day.
 - A window needs at least 5 sets spanning at least 10 days; otherwise it is `undetermined`.
-- Held: the 5th-95th percentile longitude spread is at most 0.3 deg. ITU Radio Regulations
-  No. 22.6 sets ±0.1 deg east-west for geostationary stations; 0.3 leaves room for TLE noise and
-  sits in the gap of the spread histogram (150 sampled objects: 2,627 windows below 0.15 deg, 147
-  between 0.15 and 0.5 deg). A held window counts as control only if a 90-day run of three windows
-  that includes it is held too, it is stiller than a free object could be, or the held windows
-  around it are bracketed on both sides by windows with a burn: a stop between two moves. A free
-  object cannot stop without one, so a park shorter than 90 days between two moves is control,
-  not `undetermined`. A bracketed window must have every set within 0.3 deg, not just the 5th to
-  95th percentile: a window that still holds the tail of the arrival, or a free drift after
+- Held: the 5th-95th percentile longitude spread is at most 0.3 deg. ITU Radio Regulations No. 22.6
+  sets ±0.1 deg east-west for geostationary stations; 0.3 leaves room for TLE noise and sits in the
+  gap of the spread histogram (150 sampled objects: 2,627 windows below 0.15 deg, 147 between 0.15
+  and 0.5 deg). A held window counts as control only if a 90-day run of three windows that includes
+  it is held too, it is stiller than a free object could be, or the chain of held windows around it
+  is bracketed: the window just before the chain and the one just after it each have at least five
+  sets spanning ten days and a burn. A sparse neighbour window does not count as a burn window. A
+  free object cannot stop between two moves without a burn, so a park between two moves is control,
+  not `undetermined`, whatever its length, unless the chain is a free hold longer than a year (no
+  held 90-day run through it has a burn, a free path fits it and its inclination is not held): that
+  is a librator, not a stop. A bracketed window must have every set within 0.3 deg, not just the 5th
+  to 95th percentile: a window that still holds the tail of the arrival, or a free drift after
   keeping stopped, stays `undetermined`, and the event steps date the hold from its sets.
 - A held window is `controlled_lon_inc` when its median inclination is at most 0.3 deg, or when it
-  lies between two such windows less than a year apart; otherwise `controlled_lon`. At the start
-  or end of the record an excursion above 0.3 deg has no low window on one side. It stays
-  `controlled_lon_inc` when the object has made at least two closed excursions (low windows on
-  both sides, less than a year apart) and the open one is no longer than the longest of them and
-  no higher than their highest inclination, counting the low windows that bound each excursion;
-  otherwise it is `controlled_lon` from the crossing. A keeper on an inclination sawtooth whose
-  record ends partway up a rise is not read as having stopped, while a stop that rises from a flat
-  baseline, or past every earlier peak, still is.
+  lies between two such windows less than a year apart; otherwise `controlled_lon`. At the start or
+  end of the record an excursion above 0.3 deg has no low window on one side. It stays
+  `controlled_lon_inc` when the object has made at least two closed excursions above 0.3 deg (low
+  windows on both sides, less than a year apart) and the open one is no longer than the longest of
+  them and no higher than their highest inclination, counting the low windows that bound each
+  excursion; otherwise it is `controlled_lon` from the crossing. So a keeper whose record ends
+  partway up a rise keeps `controlled_lon_inc` only when it has such closed excursions to compare
+  with. A keeper whose usual peaks stay under 0.3 deg has none, and a rise at its record edge reads
+  `controlled_lon`, as does a stop that rises from a flat baseline, or one that goes longer or
+  higher than every earlier excursion.
 - `BOX_DEG` 1.5: a window with a spread of up to 1.5 deg also counts as held when a 90-day run
   that includes it spreads at most 1.5 deg and contains a burn. Among 90-day runs with a burn in
   250 sampled objects, 933 spread under 1 deg, 10 spread 1-3 deg and the rest 3 deg or more.

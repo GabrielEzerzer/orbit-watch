@@ -270,6 +270,18 @@ def test_rise_after_a_single_earlier_excursion_is_c2_at_the_record_end():
     assert found[-1] == "controlled_lon" and found[0] == "controlled_lon_inc"
 
 
+@pytest.mark.parametrize("rise", [
+    lambda d: 0.02 + 0.03 * np.clip(d - 570.0, 0.0, None),
+    lambda d: np.minimum(0.02 + 0.01 * np.clip(d - 400.0, 0.0, None), 0.4),
+], ids=["higher", "longer"])
+def test_rise_past_two_earlier_excursions_is_c2_at_the_record_end(rise):
+    days = np.arange(0.0, EDGES[20], 0.5)
+    inc = np.where(days < 400.0, 0.45 * (days % 200.0) / 200.0, rise(days))
+    found = modes_of(element_sets(days, kept(days, 10.0), inc=inc))
+    tail = window_of(days[np.argmax((days > 400.0) & (inc > M.C1_MAX_INCLINATION_DEG))])
+    assert found[tail:] == ["controlled_lon"] * (len(found) - tail) and found[0] == "controlled_lon_inc"
+
+
 def crossing_window(days, inc):
     return window_of(days[np.argmax(inc > M.C1_MAX_INCLINATION_DEG)])
 
@@ -365,6 +377,18 @@ def test_park_window_holding_the_arrival_tail_is_not_bracketed():
                      park + 0.4 * (days - back)], kept(days, slot, box=0.01, seed=2))
     found = modes_of(element_sets(days, lon))
     assert found[4] == "undetermined" and found[5] == "drifting"
+
+
+def test_free_libration_over_a_year_between_two_moves_is_not_bracketed():
+    out, back = EDGES[3] + 15, EDGES[20] + 10
+    days = np.arange(EDGES[0], EDGES[24], 0.5)
+    lib = free_motion(stable_point(6.0) + 0.15, np.clip(days - out - 6, 0.0, None), inc=6.0)
+    slot, end = lib[0] + 2.4, lib[np.argmax(days >= back)]
+    lon = np.select([days < out, days < out + 6, days < back, days < back + 6],
+                    [kept(days, slot, box=0.01), slot - 0.4 * (days - out), lib, end + 0.4 * (days - back)],
+                    kept(days, end + 2.4, box=0.01, seed=2))
+    found = modes_of(element_sets(days, lon, inc=6.0))
+    assert found[3] == found[20] == "drifting" and set(found[4:20]) == {"librating_75E"}
 
 
 def test_wide_box_keeper_is_controlled_by_its_burns():

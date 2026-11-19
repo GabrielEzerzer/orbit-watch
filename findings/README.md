@@ -485,6 +485,9 @@ All open limits are [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Ao
 
 ## Routine score and irregularity rank
 
+The numbers in this section, and the routine rows in the top-level README, were computed on the
+previous state-change list (760 rows; the current one has 762) and are rerun separately.
+
 `findings/routine/summary.json` (which records the commit it was run at) and the files beside it.
 The method is in [orbit_watch/README.md](../orbit_watch/README.md#routine-score-and-irregularity-rank);
 the checks are in `findings/routine/checks_all.json`, `planted_all.json` and `planted_all.csv`.
