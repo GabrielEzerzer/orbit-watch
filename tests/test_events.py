@@ -548,3 +548,18 @@ def test_a_keeping_stop_is_dated_from_the_last_keeping_burn_not_a_later_small_bu
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
     assert [f.event_type for f in found] == ["keeping_stop"]
     assert found[0].signal == "burn_gap" and abs(E._day(found[0].date) - 105.0) <= 1
+
+
+def test_a_move_after_a_slow_burn_cycle_is_dated_at_the_step_in_the_sets_not_the_predicted_stop(monkeypatch):
+    days = np.r_[np.arange(0.0, 68.1, 0.25), 72.0, 72.5, np.arange(88.0, 200.0, 0.25)]
+    lon, rate = quiet_keeper(days)
+    moved, after = days >= 70.0, days >= 88.0
+    rate = np.where(moved, -0.03, rate)
+    rate = np.where(after, -0.005, rate)
+    lon = np.where(moved, 10.0 - 0.03 * (days - 70.0), lon)
+    lon = np.where(after, 9.1 - 0.005 * (days - 88.0), lon)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 70, 9.98, 10.02), held(70, 88, 9.1, 10.0, "drifting"),
+                                                   held(88, 200, 8.5, 9.1)])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 48.0]), np.array([500.0, 500.0]))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert found[0].signal == "a_step" and abs(E._day(found[0].date) - 70.0) <= 1

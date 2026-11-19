@@ -38,6 +38,7 @@ BURN_LOOKBACK_DAYS = 60.0
 SLOW_CYCLE_DAYS = 180.0
 MIN_BURNS = 3
 USUAL_SHARE = 0.8
+SET_STEP_KM = 0.3
 CLIMB_DAYS = 15.0
 CLIMB_GAP_DAYS = 30.0
 CLIMB_STALL_DAYS = 90.0
@@ -377,6 +378,17 @@ def _stop_before_odd_burns(tr: Track, i: int, burns: np.ndarray, steps: np.ndarr
     return (stop, 0.0) if stop < days[len(sign) - odd] else None
 
 
+def _set_step(tr: Track, lo: float, hi: float) -> float | None:
+    a, t, n = tr.semi_major_axis_km, tr.days, MOVE_SIDE_SETS
+    for k in np.flatnonzero((t > lo) & (t <= hi))[:-1]:
+        if k + 1 < n or k + 1 + n > len(t):
+            continue
+        if abs(np.median(a[k + 1:k + 1 + n]) - np.median(a[k + 1 - n:k + 1])) >= SET_STEP_KM:
+            j = k + int(np.argmax(np.abs(np.diff(a[k:k + n + 1])) >= SET_STEP_KM))
+            return float(t[j] + t[j + 1]) / 2.0
+    return None
+
+
 def _departure_type(tr: Track, held: Segment, rest: Sequence[Segment]) -> tuple[str, float]:
     held_a = _a_between(tr, _day(held.start), _day(held.end))
     end = next((s for s in rest if s.mode in HELD), None)
@@ -628,6 +640,9 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
             crossing = _crossing_burn(tr, a, left, burn_days) if kind == "keeping_stop" and signal == "rate_exit" else None
             if crossing is not None:
                 left, signal = crossing, "a_step"
+            step = _set_step(tr, left, limit) if signal == "burn_gap" and kind != "keeping_stop" and cycle else None
+            if step is not None:
+                left, signal = step, "a_step"
             departed = left if left is not None else _day(b.start)
             if kind == "relocation_start":
                 moved = burn if signal == "burn_gap" and burn is not None else departed
