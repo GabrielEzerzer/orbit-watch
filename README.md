@@ -61,11 +61,11 @@ Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/READM
 | The same, test split | 18 of 20 found, median date error 5.5 days |
 | 500 relocations planted in held satellites' element sets | at 0.1-3°/day, both ends found in 148 of 150 (dev) and 147 of 150 (test), median date error 0 days; at 0.02-0.1°/day, 86 of 100 and 87 of 100 |
 | False events on satellites with published burn logs while on station | 0 in 6.46 object-years (QZS-3, QZS-6, Fengyun-2H) and 0 in 2.15 object-years on the held-out Fengyun-2F and Fengyun-4A |
-| 50 events drawn from a frozen copy of the list, judged by hand from the element sets | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days; 5 rows changed in the final list, each toward the hand reading |
+| 50 events drawn from a frozen copy of the list, judged by hand from the element sets | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days; 6 rows changed in the final list, each toward the hand reading |
 | ISS burns in 2024-2025, held out from tuning the step detector | all 35 covered NASA and Roscosmos burns found; 35 of 42 detections match a listed burn |
 
-Across the belt: **760 changes on 300 objects**: 242 relocation starts, 338 relocation ends, 82
-graveyard moves, 15 keeping stops, 59 ends of north-south keeping and 24 free burns.
+Across the belt: **760 changes on 301 objects**: 242 relocation starts, 338 relocation ends, 83
+graveyard moves, 14 keeping stops, 59 ends of north-south keeping and 24 free burns.
 
 How each number was measured, with the full breakdowns and caveats:
 [findings/README.md](findings/README.md), which also lists the leads from the ISS work.

@@ -6,7 +6,7 @@ event_id,split,event_type,status,found_type,found_date,error_days,signal,size,mo
 27509-graveyard-2022-10-06,dev,graveyard,caught,graveyard,2022-10-08,2,rate_exit,721.184,2022-09-19
 26638-graveyard-2023-01-27,dev,graveyard,caught,graveyard,2023-01-14,-13,rate_exit,360.923,2023-01-17
 41838-relocation_start-2023-02,dev,relocation_start,caught,relocation_start,2023-02-25,10,rate_exit,-42.458,2023-02-16
-55841-relocation_start-2023-09-26,dev,relocation_start,caught,relocation_start,2023-09-25,-1,rate_exit,37.956,2023-09-14
+55841-relocation_start-2023-09-26,dev,relocation_start,caught,relocation_start,2023-09-25,-1,rate_exit,43.239,2023-09-14
 40258-relocation_start-2025-03,dev,relocation_start,caught,relocation_start,2025-03-28,13,rate_exit,-44.179,2025-03-07
 55841-relocation_end-2025-03-07,dev,relocation_end,caught,relocation_end,2025-03-07,0,rate_entry,0.0,2025-03-07
 26824-graveyard-2025-04-09,dev,graveyard,caught,graveyard,2025-03-31,-9,rate_exit,416.641,2025-03-07
