@@ -14,7 +14,7 @@ from orbit_watch.detect import detect
 from orbit_watch.elements import ElementSet
 from orbit_watch.generalise import FROZEN
 from orbit_watch.geo import wrap180
-from orbit_watch.modes import GRID_START, Segment, Track, _arc, segments, track
+from orbit_watch.modes import GRID_START, REGION_A_KM, REGION_E_MAX, Segment, Track, _arc, segments, track
 from orbit_watch.series import to_series
 
 HELD = ("controlled_lon_inc", "controlled_lon")
@@ -58,6 +58,8 @@ MOVE_MIN_DEG = 0.5
 MOVE_SIDE_DAYS = 10.0
 MOVE_MERGE_DAYS = 2.0
 MOVE_SIDE_SETS = 3
+REFERENCE_DAYS = 90.0
+CLIMB_START_SHARE = 0.1
 ROW_FIELDS = ["norad_id", "event_type", "date", "signal", "size", "lon_before", "lon_after", "mode_before",
               "mode_after", "mode_change"]
 
@@ -611,6 +613,34 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
     return out
 
 
+def _first_climb(tr: Track, det: Sequence[Segment], burn_days: np.ndarray, steps: np.ndarray) -> list[Event]:
+    if not len(tr.days) or not det or any(s.mode in HELD for s in det):
+        return []
+    a = tr.semi_major_axis_km
+    first = tr.days < tr.days[0] + REFERENCE_DAYS
+    ref = float(np.median(a[first]))
+    if not REGION_A_KM[0] <= ref <= REGION_A_KM[1] or np.median(tr.eccentricity[first]) > REGION_E_MAX:
+        return []
+    med = np.array([np.median(a[max(k - 1, 0):k + 2]) for k in range(len(a))])
+    stays = np.flip(np.logical_and.accumulate(np.flip(med - ref >= GRAVEYARD_RISE_KM)))
+    if not stays.any():
+        return []
+    i = int(np.argmax(stays))
+    rise = float(np.max(a[i:]) - ref)
+    low = np.flatnonzero(a[:i] - ref < CLIMB_START_SHARE * rise)
+    if not len(low) or tr.days[low[-1]] < tr.days[0] + REFERENCE_DAYS:
+        return []
+    pre = int(low[-1])
+    seg = {k: next((s for s in det if _day(s.start) <= tr.days[k] < _day(s.end)), None) for k in (pre, i)}
+    if seg[pre] is None or seg[i] is None:
+        return []
+    climb = burn_days[(burn_days > tr.days[pre]) & (burn_days <= tr.days[i]) & (np.abs(steps) >= FREE_BURN_MIN_M)]
+    day = float(climb.min()) if len(climb) else _through_gap(tr, pre + 1, pre + 1, float(tr.rate[pre]))
+    when = GRID_START + timedelta(days=day)
+    return [Event(tr.norad_id, "graveyard", when, "a_step", round(rise, 3), round(_lon_near(tr, day, True), 3),
+                  round(_lon_near(tr, _day(det[-1].end), True), 3), seg[pre].mode, seg[i].mode, when)]
+
+
 def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.ndarray | None = None) -> list[Event]:
     burn_days = np.array([]) if burn_days is None else burn_days
     steps = np.zeros(len(burn_days)) if steps is None else steps
@@ -681,7 +711,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 out.append(_event(tr, "relocation_end", a, b, _slot(b), 0.0, _arrival_day(tr, b, j), "rate_entry"))
             departed, same_slot = None, None
     out = _merge_pauses(sorted(out, key=lambda e: e.date))
-    return sorted(out + _free_burns(tr, det, out, burn_days, steps), key=lambda e: e.date)
+    return sorted(out + _free_burns(tr, det, out, burn_days, steps) + _first_climb(tr, det, burn_days, steps),
+                  key=lambda e: e.date)
 
 
 def _merge_pauses(found: list[Event]) -> list[Event]:

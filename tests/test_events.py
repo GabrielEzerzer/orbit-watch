@@ -635,3 +635,20 @@ def test_a_relocation_start_size_stops_where_the_fast_drift_turns_back(monkeypat
     found = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert found[0].event_type == "relocation_start" and abs(E._day(found[0].date) - 70.0) <= 1
     assert abs(found[0].size - 1.0 / (1.5 * 360.98) * 42164.0) < 3.0
+
+
+def test_a_climb_by_an_object_never_held_is_a_graveyard_move_from_its_first_months(monkeypatch):
+    days = np.arange(0.0, 400.0, 0.25)
+    climb = 200.0
+    up = np.clip((days - climb) / 3.0, 0.0, 1.0) * 300.0
+    rate = -0.5 - 1.5 * up / 42164.0 * 360.98
+    lon = 10.0 + np.cumsum(rate) * 0.25
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 400, -180.0, 180.0, "drifting")])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [f.event_type for f in found] == ["graveyard"]
+    assert abs(E._day(found[0].date) - climb) <= 1 and abs(found[0].size - 300.0) < 5.0
+
+    back = np.where(days < 300.0, up, 0.0)
+    rate = -0.5 - 1.5 * back / 42164.0 * 360.98
+    found = E.events_from_track(M.track(element_sets(days, 10.0 + np.cumsum(rate) * 0.25, rate)))
+    assert found == []
