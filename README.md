@@ -27,7 +27,8 @@ objects held out for scoring are left out, so the list covers 1,799 objects.
 Each row has the date, the signal that dated it, the size of the change and the longitude before
 and after. The list is [`findings/state_changes/events.csv`](findings/state_changes/events.csv).
 
-Not built yet: a ranking of the objects that have no real routine.
+It also ranks the 532 objects held at least two years by how far their departures break their own
+record of stays and moves, in bits per year: [`findings/routine/rank.csv`](findings/routine/rank.csv).
 
 ## How it works
 
@@ -63,6 +64,8 @@ Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/READM
 | False events on satellites with published burn logs while on station | 0 in 6.46 object-years (QZS-3, QZS-6, Fengyun-2H) and 0 in 2.15 object-years on the held-out Fengyun-2F and Fengyun-4A |
 | 50 events drawn from a frozen copy of the list, judged by hand from the element sets | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days; 6 rows changed in the final list, each toward the hand reading |
 | ISS burns in 2024-2025, held out from tuning the step detector | all 35 covered NASA and Roscosmos burns found; 35 of 42 detections match a listed burn |
+| Routine rank: objects cited as irregular in the top 5%, cited fixed-slot keepers in the lower half | 4 of the 6 irregular objects held long enough to rate (12 of 18 are not); 31 of 31 keepers, none with a scored departure |
+| Planted rhythm: 4 relocations on a fixed rhythm, then one on or off it | on rhythm under 2 bits in 31 of 38 (dev) and 33 of 44 (test); off rhythm 5 bits or more in 20 of 34 and 25 of 36 |
 
 Across the belt: **760 changes on 301 objects**: 242 relocation starts, 338 relocation ends, 83
 graveyard moves, 14 keeping stops, 59 ends of north-south keeping and 24 free burns.

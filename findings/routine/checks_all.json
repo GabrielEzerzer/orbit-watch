@@ -1,0 +1,332 @@
+{
+  "commit": "59ba83baa0a1224c2de30d3b8760b2b6eb8dca75",
+  "dirty": false,
+  "events_file": "findings/state_changes/events.csv",
+  "splits": [
+    "dev",
+    "test"
+  ],
+  "dead_objects": {
+    "objects": 445,
+    "object_years": 1898.2,
+    "rated": 0,
+    "off_routine_rows": 1,
+    "per_object_year": 0.0005,
+    "target_per_object_year": 0.01,
+    "rows": [
+      {
+        "norad_id": 43917,
+        "date": "2021-11-20",
+        "kind": "graveyard"
+      }
+    ]
+  },
+  "logged_keepers": {
+    "objects": {
+      "QZS-3": {
+        "norad_id": 42917,
+        "object_years": 4.998,
+        "off_routine_rows": 0,
+        "departures_listed": 0
+      },
+      "QZS-6": {
+        "norad_id": 62876,
+        "object_years": 0.414,
+        "off_routine_rows": 0,
+        "departures_listed": 0
+      },
+      "Fengyun-2H": {
+        "norad_id": 43491,
+        "object_years": 1.047,
+        "off_routine_rows": 0,
+        "departures_listed": 0
+      }
+    },
+    "object_years": 6.46,
+    "off_routine_rows": 0,
+    "target": 0
+  },
+  "cited_departures": {
+    "dev": {
+      "cited_departures": 10,
+      "held_a_year_before": 7,
+      "caught": 7,
+      "flagged": 5,
+      "caught_unscored": 0,
+      "flagged_by_model": {
+        "stays": [
+          1,
+          1
+        ],
+        "rate": [
+          4,
+          6
+        ]
+      }
+    },
+    "test": {
+      "cited_departures": 15,
+      "held_a_year_before": 8,
+      "caught": 7,
+      "flagged": 4,
+      "caught_unscored": 0,
+      "flagged_by_model": {
+        "stays": [
+          0,
+          3
+        ],
+        "rate": [
+          4,
+          4
+        ]
+      }
+    },
+    "events": [
+      {
+        "event_id": "28884-keeping_stop-2022-08-10",
+        "split": "dev",
+        "held_years_before": 1.6,
+        "status": "caught",
+        "found_date": "2022-08-10",
+        "scored": true,
+        "model": "rate",
+        "bits": 8.839,
+        "flagged": true
+      },
+      {
+        "event_id": "27509-graveyard-2022-10-06",
+        "split": "dev",
+        "held_years_before": 1.71,
+        "status": "caught",
+        "found_date": "2022-10-08",
+        "scored": true,
+        "model": "rate",
+        "bits": 9.034,
+        "flagged": true
+      },
+      {
+        "event_id": "27400-graveyard-2023-01",
+        "split": "test",
+        "held_years_before": 1.88,
+        "status": "missed",
+        "found_date": "",
+        "scored": false,
+        "model": "",
+        "bits": null,
+        "flagged": false
+      },
+      {
+        "event_id": "27460-graveyard-2023-01-13",
+        "split": "test",
+        "held_years_before": 1.96,
+        "status": "caught",
+        "found_date": "2023-01-07",
+        "scored": true,
+        "model": "rate",
+        "bits": 9.044,
+        "flagged": true
+      },
+      {
+        "event_id": "26638-graveyard-2023-01-27",
+        "split": "dev",
+        "held_years_before": 1.8,
+        "status": "caught",
+        "found_date": "2023-01-14",
+        "scored": true,
+        "model": "rate",
+        "bits": 4.759,
+        "flagged": false
+      },
+      {
+        "event_id": "41838-relocation_start-2023-02",
+        "split": "dev",
+        "held_years_before": 1.88,
+        "status": "caught",
+        "found_date": "2023-02-25",
+        "scored": true,
+        "model": "rate",
+        "bits": 4.81,
+        "flagged": false
+      },
+      {
+        "event_id": "37746-graveyard-2023-03-23",
+        "split": "test",
+        "held_years_before": 1.97,
+        "status": "caught",
+        "found_date": "2023-03-16",
+        "scored": true,
+        "model": "rate",
+        "bits": 9.079,
+        "flagged": true
+      },
+      {
+        "event_id": "25071-graveyard-2023-06",
+        "split": "test",
+        "held_years_before": 2.3,
+        "status": "caught",
+        "found_date": "2023-06-14",
+        "scored": true,
+        "model": "rate",
+        "bits": 9.074,
+        "flagged": true
+      },
+      {
+        "event_id": "26853-graveyard-2024-06",
+        "split": "test",
+        "held_years_before": 2.95,
+        "status": "caught",
+        "found_date": "2024-06-01",
+        "scored": true,
+        "model": "rate",
+        "bits": 5.332,
+        "flagged": true
+      },
+      {
+        "event_id": "41838-relocation_start-2024-11-01",
+        "split": "test",
+        "held_years_before": 3.08,
+        "status": "caught",
+        "found_date": "2024-11-02",
+        "scored": true,
+        "model": "stays",
+        "bits": 1.395,
+        "flagged": false
+      },
+      {
+        "event_id": "55841-relocation_start-2025-02-07",
+        "split": "test",
+        "held_years_before": 1.52,
+        "status": "caught",
+        "found_date": "2025-02-07",
+        "scored": true,
+        "model": "stays",
+        "bits": 4.97,
+        "flagged": false
+      },
+      {
+        "event_id": "40258-relocation_start-2025-03",
+        "split": "dev",
+        "held_years_before": 3.38,
+        "status": "caught",
+        "found_date": "2025-03-28",
+        "scored": true,
+        "model": "stays",
+        "bits": 13.288,
+        "flagged": true
+      },
+      {
+        "event_id": "26824-graveyard-2025-04-09",
+        "split": "dev",
+        "held_years_before": 4.18,
+        "status": "caught",
+        "found_date": "2025-03-31",
+        "scored": true,
+        "model": "rate",
+        "bits": 9.661,
+        "flagged": true
+      },
+      {
+        "event_id": "25462-graveyard-2025-05",
+        "split": "dev",
+        "held_years_before": 4.1,
+        "status": "caught",
+        "found_date": "2025-04-20",
+        "scored": true,
+        "model": "rate",
+        "bits": 5.737,
+        "flagged": true
+      },
+      {
+        "event_id": "40258-graveyard-2025-10",
+        "split": "test",
+        "held_years_before": 3.5,
+        "status": "caught",
+        "found_date": "2025-10-08",
+        "scored": true,
+        "model": "stays",
+        "bits": 2.637,
+        "flagged": false
+      }
+    ]
+  },
+  "stability": {
+    "periods": [
+      "2021-01-01..2023-07-01",
+      "2023-07-01..2025-12-31"
+    ],
+    "rated_in_both": 412,
+    "with_bits_first": 24,
+    "with_bits_second": 47,
+    "top_30_first_in_top_60_second": 6,
+    "of": 24,
+    "spearman": 0.08614807755659336
+  },
+  "causality": {
+    "2022-01-01": {
+      "held_years_bar": 0.9,
+      "objects": 443,
+      "errors": 0,
+      "with_bits_as_of": 1,
+      "spearman_vs_full_run_cut_at_same_date": 0.573,
+      "spearman_vs_full_run_final": 0.093,
+      "objects_whose_bits_differ_from_full_run_cut_by_0.1_or_more": 2,
+      "largest_bits_difference": 8.732,
+      "largest_bits_per_year_difference": 8.738
+    },
+    "2023-01-01": {
+      "held_years_bar": 1.8,
+      "objects": 446,
+      "errors": 0,
+      "with_bits_as_of": 16,
+      "spearman_vs_full_run_cut_at_same_date": 1.0,
+      "spearman_vs_full_run_final": 0.335,
+      "objects_whose_bits_differ_from_full_run_cut_by_0.1_or_more": 0,
+      "largest_bits_difference": 0.022,
+      "largest_bits_per_year_difference": 0.011
+    },
+    "2024-01-01": {
+      "held_years_bar": 2.0,
+      "objects": 478,
+      "errors": 0,
+      "with_bits_as_of": 63,
+      "spearman_vs_full_run_cut_at_same_date": 1.0,
+      "spearman_vs_full_run_final": 0.653,
+      "objects_whose_bits_differ_from_full_run_cut_by_0.1_or_more": 2,
+      "largest_bits_difference": 7.656,
+      "largest_bits_per_year_difference": 2.555
+    },
+    "2025-01-01": {
+      "held_years_bar": 2.0,
+      "objects": 503,
+      "errors": 0,
+      "with_bits_as_of": 99,
+      "spearman_vs_full_run_cut_at_same_date": 0.987,
+      "spearman_vs_full_run_final": 0.814,
+      "objects_whose_bits_differ_from_full_run_cut_by_0.1_or_more": 3,
+      "largest_bits_difference": 9.611,
+      "largest_bits_per_year_difference": 2.416
+    }
+  },
+  "cited_lists": {
+    "irregular": {
+      "file": "groundtruth/irregular_objects.csv",
+      "listed": 18,
+      "rateable": 6,
+      "in_top_5_percent": 4,
+      "share": 0.667,
+      "evidence_object": {
+        "listed": 15,
+        "rateable": 6,
+        "in_top_5_percent": 4,
+        "share": 0.667
+      }
+    },
+    "steady": {
+      "file": "groundtruth/steady_objects.csv",
+      "listed": 31,
+      "rateable": 31,
+      "in_lower_half": 31,
+      "share": 1.0
+    }
+  }
+}
