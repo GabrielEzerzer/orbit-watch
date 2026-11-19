@@ -394,6 +394,18 @@ def test_a_detected_burn_with_no_step_in_the_sets_or_a_split_detection_is_not_a_
     assert abs(E._day(found[1].date) - kick) <= 1
 
 
+def test_a_step_in_the_sets_after_a_graveyard_move_is_a_free_burn_when_no_burn_is_detected():
+    days = np.arange(0.0, EDGES[14], 0.25)
+    start, kick = EDGES[5] + 7.0, EDGES[9] + 3.0
+    lon, rate = retired_track(days, start, 4)
+    up = np.clip((days - start) / 10.0, 0.0, 1.0) * 300.0 + np.clip((days - kick) / 1.0, 0.0, 1.0) * 2.0
+    drift = -1.5 * up / 42164.0 * 360.98
+    tr = M.track(element_sets(days, lon + np.cumsum(drift) * 0.25, rate + drift))
+    found = E.events_from_track(tr, np.array([start]), np.array([5000.0]))
+    assert [f.event_type for f in found] == ["graveyard", "free_burn"]
+    assert abs(E._day(found[1].date) - kick) <= 1 and 1800 < found[1].size < 2200
+
+
 def test_a_kilometre_burn_in_the_last_days_of_data_is_not_a_free_burn():
     days = np.arange(0.0, EDGES[14], 0.25)
     start, kick = EDGES[5] + 7.0, EDGES[14] - 6.0
@@ -611,6 +623,23 @@ def test_a_keeping_stop_is_dropped_when_a_burn_holds_the_object_again_until_it_m
     assert abs(E._day(found[0].date) - 165.0) <= 1
 
 
+def test_a_keeping_stop_stays_when_the_burn_after_it_starts_a_slow_drift_away(monkeypatch):
+    days = np.arange(0.0, 260.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    drift = (np.where((days >= 95.0) & (days < 140.0), -0.01, 0.0) + np.where((days >= 140.0) & (days < 165.0), 0.011, 0.0)
+             + np.where((days >= 165.0) & (days < 185.0), -0.5, 0.0))
+    rate = rate + drift
+    lon = lon + np.cumsum(drift) * 0.25
+    segs = [held(0, 120, 9.98, 10.02), held(120, 185, lon[-1], 9.98, "drifting"),
+            held(185, 260, lon[-1] - 0.02, lon[-1] + 0.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    burn_days = np.array([50.0, 60.0, 70.0, 80.0, 90.0, 140.0])
+    steps = np.array([500.0] * 5 + [1500.0])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), burn_days, steps)
+    assert [f.event_type for f in found] == ["keeping_stop", "relocation_start", "relocation_end"]
+    assert abs(E._day(found[0].date) - 95.0) <= 1 and abs(E._day(found[1].date) - 165.0) <= 1
+
+
 def test_a_relocation_start_size_follows_the_net_move_when_a_short_hop_goes_the_other_way_first(monkeypatch):
     days = np.arange(0.0, 200.0, 0.25)
     lon, rate = quiet_keeper(days)
@@ -652,6 +681,16 @@ def test_a_climb_by_an_object_never_held_is_a_graveyard_move_from_its_first_mont
     rate = -0.5 - 1.5 * back / 42164.0 * 360.98
     found = E.events_from_track(M.track(element_sets(days, 10.0 + np.cumsum(rate) * 0.25, rate)))
     assert found == []
+
+
+def test_a_climb_by_an_object_never_held_that_ends_below_the_graveyard_is_not_a_graveyard_move(monkeypatch):
+    days = np.arange(0.0, 400.0, 0.25)
+    up = np.clip((days - 200.0) / 3.0, 0.0, 1.0) * 287.0
+    rate = (42164.17 - 41868.0 - up) / 42164.17 * 1.5 * 360.98
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 400, -180.0, 180.0, "drifting")])
+    tr = M.track(element_sets(days, 10.0 + np.cumsum(rate) * 0.25, rate))
+    assert abs(np.median(tr.semi_major_axis_km[:100]) - 41868.0) < 5.0
+    assert E.events_from_track(tr) == []
 
 
 def test_a_burn_gap_stop_already_drifting_toward_the_move_is_one_relocation_start(monkeypatch):

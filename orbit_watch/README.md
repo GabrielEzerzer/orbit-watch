@@ -168,7 +168,8 @@ GEO-region object except the 5 holdout objects: `norad_id`, `event_type`, `date`
 mode-layer boundary the event came from). On an arrival from a stretch that is not held,
 `lon_before` is the median longitude of the 10 days before it; for a departure with no later
 hold, `lon_after` is the median longitude of the last 10 days of the data. Either is empty when
-those 10 days hold no element set.
+those 10 days hold no element set. From or into a hold, it is the centre of the hold's longitude
+range, or of its 30 days next to the event when the range is wider than 0.5 deg (step 33).
 
 `orbit_watch.events` works on the cleaned element sets, the mode segments of `orbit_watch.modes`
 (with `undetermined` and `inclined` segments skipped) and the burns the step detector finds in the
@@ -176,12 +177,12 @@ semi-major axis at the frozen ISS setting (`k = 4`, `|z| >= 12`, `|step| >= 200 
 
 | type | what it is | dated by (`signal`) | `size` |
 |---|---|---|---|
-| `relocation_start` | a held object leaves its slot and is held again later, is still moving at relocation speed when the data end, or moves at relocation speed until a graveyard climb (step 14) | `rate_exit`: the first set that leaves the held drift band or longitude box and stays out 5 days (inside a gap, see step 7); `a_step` when that exit is slow drift and a burn starts the move later (step 16), or at a step in the semi-major axis after a slow burn cycle (step 26); `burn_gap` when the exit is slow and the burns stop first (steps 4, 15 and 30) | median semi-major axis of the first run of at least 3 moving sets (drift at least 0.05 deg/day away from the hold's, all one way) after the start, before the next held mode segment, the end of the data or the climb, minus the hold's median, km: negative when that run drifts east. When the span moves at least 0.5 deg net, the first run going that way is used (step 28). All sets in that span are used when none moves that fast; 0 when the next mode segment is already held |
+| `relocation_start` | a held object leaves its slot and is held again later, is still moving at relocation speed when the data end, or moves at relocation speed until a graveyard climb (step 14) | `rate_exit`: the first set that leaves the held drift band or longitude box and stays out 5 days (inside a gap, see step 7); `a_step` when that exit is slow drift and a burn starts the move later (step 16), or at a step in the semi-major axis after a slow burn cycle (step 26); `burn_gap` when the exit is slow and the burns stop first (steps 4, 15 and 30), or when a fast exit is reached by natural drift (step 31) | median semi-major axis of the first run of at least 3 moving sets (drift at least 0.05 deg/day away from the hold's, all one way) after the start, before the next held mode segment, the end of the data or the climb, minus the hold's median, km: negative when that run drifts east. When the span moves at least 0.5 deg net, the first run going that way is used (step 28). All sets in that span are used when none moves that fast; 0 when the next mode segment is already held |
 | `relocation_end` | a moving object starts to hold a slot | `rate_entry`: the first set that stays inside the new slot's band (inside a gap, see step 7), or the set where a fast move stops near the slot (step 19) | 0 |
 | `graveyard` | a held object leaves and its semi-major axis rises at least 150 km, with no later hold; or an object never held in the data climbs at least 150 km above its first 90 days and stays there (step 29) | `rate_exit`; `a_step` when the climb starts with a burn after a slow drift or a stall (steps 14 and 16), or for an object never held (step 29) | highest semi-major axis from the end of the held mode segment to the end of the data, minus the hold's median, km; for an object never held, from the climb, minus the median of its first 90 days |
-| `keeping_stop` | a held object leaves with no climb, no later hold and no move under way at the end of the data, or drifts slowly for more than 90 days before a climb (step 14) | `burn_gap`: the last east-west burn plus half the burn interval (step 4, step 15 on a slow cycle, or step 25 after small burns of the other sign); `a_step` at a last burn that drives the object across the box (step 24); `rate_exit` when the burns give no date | highest semi-major axis from the end of the held mode segment to the end of the data (to the climb under step 14), minus the hold's median, km; 0 when a move or climb follows it (step 4) |
+| `keeping_stop` | a held object leaves with no climb, no later hold and no move under way at the end of the data, or drifts slowly for more than 90 days before a climb (step 14) | `burn_gap`: the last east-west burn plus half the burn interval (step 4, step 15 on a slow cycle, step 25 after small burns of the other sign, or step 31 before a natural exit); `a_step` at a last burn that drives the object across the box (step 24); `rate_exit` when the burns give no date | highest semi-major axis from the end of the held mode segment to the end of the data (to the climb under step 14), minus the hold's median, km; 0 when a move or climb follows it (step 4) |
 | `ns_keeping_stop` | `controlled_lon_inc` to `controlled_lon` at the same slot, with at least 2 inclination corrections found | `ns_gap`: the last correction plus half the median interval between corrections (step 8) | largest inclination in the `controlled_lon` segment after it, deg |
-| `free_burn` | a semi-major-axis step of at least 1 km by an object that is never held again (steps 10 and 18) | `a_step`: the step detector's peak | the step detector's step, m: the change in median semi-major axis across the detection once the local linear trend of the 4 sets on each side is removed. On a steady climb it can have the opposite sign to the net change: 29155 on 2024-07-16 is listed at -1179 m while its semi-major axis climbs about 11 km between 8 and 20 July |
+| `free_burn` | a semi-major-axis step of at least 1 km by an object that is never held again (steps 10, 18 and 34) | `a_step`: the step detector's peak, or the middle of a step in the sets the detector missed (step 34) | the step detector's step, m: the change in median semi-major axis across the detection once the local linear trend of the 4 sets on each side is removed; for a step in the sets, the median offset of the 3 sets after it from the line through the 3 before. On a steady climb it can have the opposite sign to the net change: 29155 on 2024-07-16 is listed at -1179 m while its semi-major axis climbs about 11 km between 8 and 20 July |
 
 Any type except `ns_keeping_stop` and `free_burn` can carry `mode_change` instead: no sustained
 exit from the hold or entry into it was found within 45 days of the mode-layer boundary, so the
@@ -191,7 +192,7 @@ part of the climb (step 10): an object in a graveyard orbit can keep manoeuvring
 
 The rules were built on the dev split of the cited events (`groundtruth/geo_events.csv`), the first
 hand audit and the dev trials of the planted-change test; steps 12 to 18 came from a second hand
-reading of the belt list after steps 6 to 11, and steps 19 to 30 from the issues left open on it. Each was kept only if none of these got worse. The test split, the out-of-sample audit and the held-out Fengyun satellites were not
+reading of the belt list after steps 6 to 11, and steps 19 to 34 from the issues left open on it. Each was kept only if none of these got worse. The test split, the out-of-sample audit and the held-out Fengyun satellites were not
 used to choose a rule (see [findings/README.md](../findings/README.md)).
 
 1. **Snap-back blocks** are dropped first (see [Cleaning](#cleaning)).
@@ -313,10 +314,11 @@ cited events and dev planted trials in the same way.
 27. **Held again before the move.** A keeping stop dated by the burns (step 4) before a move is
     dropped, leaving only the move, when a later burn of at least 1 km holds the object again:
     the first set after the burn comes within 5 days of it, and every set from there to the move
-    drifts at most 0.02 deg/day inside a 0.3 deg box, for at least 5 sets and 10 days. These are
-    the short-hold test of step 3, so a drift after the burn counts as a hold only while it stays
-    under 0.02 deg/day and inside the 0.3 deg box; a slower drift away is read as a hold. GOES 16
-    (41866) stopped its burns in February 2025, was held again by a burn, and moved on 2025-04-10.
+    drifts at most 0.02 deg/day inside a box, for at least 5 sets and 10 days. The box is the
+    smaller of 0.3 deg (step 3's short hold) and the hold's own longitude range widened by 0.05 deg
+    each side, so a burn that starts a slow drift away (0.012 deg/day for 25 days moves 0.3 deg)
+    from a tightly kept slot is not read as held again. GOES 16 (41866) stopped its burns in
+    February 2025, was held again by a burn, and moved on 2025-04-10.
 28. **Size toward the net move.** A run of moving sets ends where the drift relative to the hold
     changes sign, so one run never joins sets drifting both ways. When the size span (see the
     table) moves at least 0.5 deg net (the shift that makes a move in step 6), the first run going that
@@ -327,7 +329,9 @@ cited events and dev planted trials in the same way.
     those sets are in the GEO region of the mode layer (37,948-46,380 km, eccentricity at most
     0.25). The climb starts at the first set from which the 3-set median stays at least 150 km
     (the graveyard rise) above that reference to the end of the data, so an inspector that
-    climbs and comes back is not listed. It is dated at the first burn of at least 1 km after
+    climbs and comes back is not listed, and whose median from there on is at least the GEO
+    radius (42,164 km) plus the graveyard rise, so a climb up to GEO is an arrival, not a
+    graveyard move. It is dated at the first burn of at least 1 km after
     the last set below 10% of the rise, or across the gap from that set as in step 7, and both
     sets must be in readable mode segments. 34779 climbs 1,694 km on 2022-01-22.
 30. **Already drifting when the burns stop.** A relocation or graveyard departure dated by the
@@ -339,7 +343,43 @@ cited events and dev planted trials in the same way.
     keeping starts drifting from about zero, so the move had already begun. In the dev trials
     the six slow planted moves listed as a stop then a move drift 0.024-0.057 deg/day over those
     10 days; the five such pairs in the belt list (28884, 29162, 31800, 37150 and 45465) and one
-    planted free-burn trial drift 0.005 deg/day or less, and keep both rows.
+    planted free-burn trial drift 0.005 deg/day or less, and keep both rows. It applies on a
+    slow burn cycle too, which is what keeps a slow stop well before a move from giving two
+    departures for one move.
+
+Steps 31 to 34 came from the issues left open after step 30, checked the same way.
+
+31. **A natural exit long after the last burn.** An exit that is already fast is otherwise dated
+    at the exit. When the drift reaches 0.05 deg/day within 5 days of the exit with no jump
+    (step 9's test fails) and the
+    median drift relative to the hold over the 10 days before the exit is already at least 0.02
+    deg/day toward it, the drift built up on its own, which takes weeks: the burns stopped first.
+    If at least 3 burns (detections within 2 days of each other count as one) fall in the 60
+    days up to the last burn in the hold, and the exit comes more than one median interval after
+    that burn, the stop is the last burn plus half the interval. 27168 burned about every 29 days
+    until 2024-07-19 and left its box on 2024-09-08; it is listed as a keeping stop on 2024-08-02
+    and a relocation start at the exit. Exits that are fast but reached from inside the band are
+    left alone: on the belt list they are moves whose burns came days before the exit.
+32. **A slow move across a gap.** Out-of-band sets that follow each other in the hold are one
+    run in step 6 however far apart in time they are; before, a gap of more than 2 days split
+    them, and a slow move with a gap in it gave runs too short to shift 0.5 deg.
+33. **Longitudes from the hold's edge.** When a hold's longitude range is wider than 0.5 deg (the
+    one-slot rule), a departure's `lon_before` is the centre of the range of the hold's last 30
+    days and an arrival's `lon_after` the centre of its first 30 days (at least 5 sets each),
+    instead of the whole hold's centre. TJS-10 (58204) moved from 173.30 to 172.73 deg on
+    2024-05-15; its next hold wanders up to 173.9 deg, and the whole-hold centre (173.28 deg) made
+    it a 0.02 deg move.
+34. **Steps the detector misses.** The detector needs 4 clean sets on each side of a step, so it
+    misses steps that ramp over several sets or sit next to a gap. In the stretch after the last
+    hold, a step in the sets also counts as a burn for steps 10 and 18 when no detection lies
+    within 2 days of it: the 3 sets before it lie within 250 m of a line over at most 5 days, the
+    first set after is more than 250 m off that line, and the first 3 later sets (ending within 5
+    days of the last set before) that lie within 250 m of a line whose slope is within 0.25
+    km/day of the first are, by their median, at least 1 km off the first line and at least 12
+    times the robust scatter of the set-to-set changes within 10 days (the detector's own
+    `|z| >= 12`). It is dated between the last set before and the first set after; of candidates
+    within 2 days, the largest is kept. SJ-23 (55131) reverses its drift with burns of about
+    100 km on 2024-07-13 and 2025-10-16, and burns 4.7 km on 2025-11-03 and 2025-12-16.
 
 ## Routine score and irregularity rank
 
