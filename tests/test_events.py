@@ -496,3 +496,16 @@ def test_a_move_within_one_slow_burn_cycle_of_the_missed_burn_has_no_keeping_sto
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 78.0]), np.array([1500.0, 1500.0]))
     assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
     assert abs(E._day(found[0].date) - 140.0) <= 1
+
+
+def test_a_burn_into_fast_drift_followed_by_more_burns_is_a_relocation_start_not_a_keeping_stop(monkeypatch):
+    days = np.arange(0.0, 400.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    push = np.where(days >= 100.0, -0.3, 0.0) + np.where(days >= 250.0, 0.6, 0.0)
+    rate = rate + push
+    lon = lon + np.cumsum(push) * 0.25
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 90, 9.98, 10.02), held(90, 400, -45.0, 10.02, "drifting")])
+    tr = M.track(element_sets(days, lon, rate))
+    found = E.events_from_track(tr, np.array([250.0]), np.array([-50000.0]))
+    assert [f.event_type for f in found] == ["relocation_start", "free_burn"]
+    assert abs(E._day(found[0].date) - 100.0) <= 1 and abs(E._day(found[1].date) - 250.0) <= 1

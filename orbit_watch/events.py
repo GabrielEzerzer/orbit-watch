@@ -431,6 +431,13 @@ def _open_move(tr: Track, held: Segment, left: float | None, burn_days: np.ndarr
     return _jumps(tr, held, left, float(tr.days[-1]) + 1.0)
 
 
+def _burns_on(tr: Track, held: Segment, left: float | None, limit: float, burn_days: np.ndarray,
+              steps: np.ndarray) -> bool:
+    if left is None or not _jumps(tr, held, left, left + STEP_REACH_DAYS):
+        return False
+    return bool(((burn_days > left + CLIMB_DAYS) & (burn_days < limit) & (np.abs(steps) >= FREE_BURN_MIN_M)).any())
+
+
 def _jumps(tr: Track, held: Segment, left: float, hi: float) -> bool:
     rel = np.abs(tr.rate - _held_rate(tr, held))
     i = _sustained(tr, rel >= FAST_RATE, left - 1.0, hi)
@@ -500,7 +507,8 @@ def _free_burns(tr: Track, det: Sequence[Segment], found: Sequence[Event], burn_
                 steps: np.ndarray) -> list[Event]:
     taken = np.array([_day(e.date) for e in found])
     moves = sorted((e for e in found if e.event_type in (*DEPARTURES, "relocation_end")), key=lambda e: e.date)
-    open_from = _day(moves[-1].date) if moves and moves[-1].event_type == "relocation_start" else np.inf
+    open_from = (_day(moves[-1].date) if moves and moves[-1].event_type == "relocation_start"
+                 and tr.days[-1] - _day(moves[-1].date) <= OPEN_DAYS else np.inf)
     climb = _climb_burns(found, burn_days, steps)
     picked: dict[float, float] = {}
     modes: dict[float, str] = {}
@@ -551,7 +559,8 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
             lon_after = _slot(nxt) if nxt else _lon_near(tr, _day(rest[-1].end), True)
             limit = _day(nxt.start) if nxt else _day(rest[-1].end)
             left, signal, burn, cycle = _departure(tr, a, b, limit, burn_days)
-            if kind == "keeping_stop" and _open_move(tr, a, left, burn_days, steps):
+            if kind == "keeping_stop" and (_open_move(tr, a, left, burn_days, steps)
+                                           or _burns_on(tr, a, left, limit, burn_days, steps)):
                 kind = "relocation_start"
             pushed = _burn_after_drift(tr, left, limit, burn_days, steps) if signal == "rate_exit" and kind != "keeping_stop" else None
             if pushed is not None:
