@@ -103,6 +103,25 @@ Writes:
 - SUMMARY-DIR/summary.json with counts per type and year (default findings/state_changes)
 - SUMMARY-DIR/events.csv when it is under 2 MB
 
+### Rank GEO objects by how far they break their own routine
+
+belt reads every GEO-region object's element sets once and caches its held spans, daily longitude and semi-major axis and steps outside holds (with --as-of, also the state changes and holds rebuilt on data cut at the end of 2021-2024); score turns the cache and the state-change list into each departure's surprise in bits against the object's own stays and moves, a per-object rank, stay overruns, proximity flags on arrivals and the unrated list.
+
+```
+python -m orbit_watch.jobs.routine belt|score [--as-of] [--events CSV] [--out DIR] [--geo-dir DIR] [--cache PATH]
+```
+
+Reads:
+
+- GEO-DIR/manifest.json and GEO-DIR/<norad>.tle from the GEO-region set (default $ORBIT_WATCH_DATA/geo)
+- groundtruth/splits.json, to skip holdout objects
+- for score: the state-change list (default findings/state_changes/events.csv)
+
+Writes:
+
+- belt: the cache (default $ORBIT_WATCH_DATA/routine/belt.pkl)
+- score: OUT/rank.csv, unrated.csv, departures.csv, off_routine.csv, overruns.csv, flagged_arrivals.csv, belt_prior.csv and summary.json (default findings/routine)
+
 ## Analyses
 
 ### Calibrate the detector on the ISS
@@ -320,6 +339,28 @@ Writes:
 - sample: the sample as CSV on stdout
 - chart: one PNG per event, with neighbouring events from the audited list, and digests.json in OUT (default $ORBIT_WATCH_DATA/state_audit)
 - summary: OUT/summary.json (default findings/state_audit)
+
+### Routine score checks
+
+checks: off-routine rows on dead objects and on QZS-3, QZS-6 and Fengyun-2H while on station, cited departures flagged, stability of the top of the rank across 2021 to mid-2023 and the rest, as-of reruns on cut data, and the cited irregular and steady lists when present; planted: three or four relocations planted on a fixed rhythm in a held satellite's element sets, then one more on or off rhythm, scored in bits; audit: the blind hand-audit sample of the top 30 and 20 from the middle, with one chart per object.
+
+```
+python -m harness.evals.routine checks|planted|audit [--split dev|all] [--events CSV] [--out DIR] [--geo-dir DIR] [--cache PATH] [--irregular CSV] [--steady CSV] [--charts DIR]
+```
+
+Reads:
+
+- OUT/rank.csv, departures.csv, overruns.csv and belt_prior.csv from the routine job (default findings/routine)
+- the belt cache from the routine job, built with --as-of for the causality check
+- GEO-DIR/<norad>.tle and manifest.json (default $ORBIT_WATCH_DATA/geo)
+- groundtruth/geo_events.csv, groundtruth/qzss_manoeuvres.csv, groundtruth/fengyun_manoeuvres.csv and harness/evals/state_injection_hosts.json
+- groundtruth/irregular_objects.csv and groundtruth/steady_objects.csv when present
+
+Writes:
+
+- checks: OUT/checks_<split>.json
+- planted: OUT/planted_<split>.json and OUT/planted_<split>.csv
+- audit: OUT/audit_sample.csv, OUT/audit_key.csv and one PNG per sampled object (default $ORBIT_WATCH_DATA/routine/audit_charts)
 
 ## Tools
 

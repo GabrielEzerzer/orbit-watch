@@ -1,0 +1,5 @@
+norad_id,name,claim,source_url,quote,evidence
+900001,INVENTED INSPECTOR 1,invented claim,https://example.org/invented-1,invented row for the check's test,object
+900002,INVENTED INSPECTOR 2,invented claim,https://example.org/invented-2,invented row for the check's test,programme
+900003,INVENTED INSPECTOR 3,invented claim,https://example.org/invented-3,invented row for the check's test,object
+900099,INVENTED NEVER HELD,invented claim,https://example.org/invented-99,invented row for the check's test,object

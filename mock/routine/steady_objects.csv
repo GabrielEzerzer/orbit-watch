@@ -1,0 +1,4 @@
+norad_id,name,claim,source_url,quote,evidence
+900010,INVENTED KEEPER 1,invented claim,https://example.org/invented-10,invented row for the check's test,object
+900011,INVENTED KEEPER 2,invented claim,https://example.org/invented-11,invented row for the check's test,object
+900012,INVENTED KEEPER 3,invented claim,https://example.org/invented-12,invented row for the check's test,object

@@ -1,0 +1,94 @@
+{
+  "commit": "8bed9795ba9cea7a2c81a33bbdb54221e0b8616b",
+  "dirty": false,
+  "seed": 20261119,
+  "splits": [
+    "dev",
+    "test"
+  ],
+  "trials_per_split_and_variant": 100,
+  "hosts": {
+    "dev": 138,
+    "test": 129
+  },
+  "dev 3+1": {
+    "trials": 100,
+    "last_move_caught_and_scored": 81,
+    "all_rhythm_moves_caught": 67,
+    "on_rhythm": {
+      "n": 40,
+      "under_2_bits": 2,
+      "median_bits": 3.74
+    },
+    "off_rhythm": {
+      "n": 41,
+      "at_least_5_bits": 5,
+      "median_bits": 3.87
+    },
+    "by_model": {
+      "stays": 12,
+      "rate": 69
+    },
+    "both_targets_share": 0.086
+  },
+  "dev 4+1": {
+    "trials": 100,
+    "last_move_caught_and_scored": 72,
+    "all_rhythm_moves_caught": 60,
+    "on_rhythm": {
+      "n": 38,
+      "under_2_bits": 31,
+      "median_bits": 0.45
+    },
+    "off_rhythm": {
+      "n": 34,
+      "at_least_5_bits": 20,
+      "median_bits": 5.93
+    },
+    "by_model": {
+      "stays": 61,
+      "rate": 11
+    },
+    "both_targets_share": 0.708
+  },
+  "test 3+1": {
+    "trials": 100,
+    "last_move_caught_and_scored": 90,
+    "all_rhythm_moves_caught": 69,
+    "on_rhythm": {
+      "n": 48,
+      "under_2_bits": 3,
+      "median_bits": 3.44
+    },
+    "off_rhythm": {
+      "n": 42,
+      "at_least_5_bits": 1,
+      "median_bits": 3.59
+    },
+    "by_model": {
+      "stays": 13,
+      "rate": 77
+    },
+    "both_targets_share": 0.044
+  },
+  "test 4+1": {
+    "trials": 100,
+    "last_move_caught_and_scored": 80,
+    "all_rhythm_moves_caught": 63,
+    "on_rhythm": {
+      "n": 44,
+      "under_2_bits": 33,
+      "median_bits": 0.62
+    },
+    "off_rhythm": {
+      "n": 36,
+      "at_least_5_bits": 25,
+      "median_bits": 7.62
+    },
+    "by_model": {
+      "stays": 67,
+      "rate": 13
+    },
+    "both_targets_share": 0.725
+  }
+}

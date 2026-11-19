@@ -10,6 +10,7 @@ every command is in [docs/features.md](../docs/features.md).
 - [Cleaning](#cleaning)
 - [Operating modes](#operating-modes)
 - [State changes](#state-changes)
+- [Routine score and irregularity rank](#routine-score-and-irregularity-rank)
 - [Step detector](#step-detector)
 - [Ground truth and splits](#ground-truth-and-splits)
 - [Notes per module](#notes-per-module)
@@ -32,8 +33,9 @@ every command is in [docs/features.md](../docs/features.md).
 | `orbit_watch.modes` | ESA operating mode of a GEO-region object per 30-day window |
 | `orbit_watch.clean` | Drops snap-back blocks |
 | `orbit_watch.events` | Dated station-keeping state changes of a GEO-region object, one per change, with the signal that dated it |
-| `orbit_watch.jobs.*` | Long jobs: `extract_tle_archive`, `geo_belt`, `geo_modes`, `state_changes` |
-| `harness.evals.*` | The evaluations: `detector`, `mode_events`, `state_changes`, `state_injection`, `state_audit`; nothing in `orbit_watch` imports `harness` |
+| `orbit_watch.routine` | Each departure's surprise in bits against the object's own stays and moves, the per-object rank and the proximity flag |
+| `orbit_watch.jobs.*` | Long jobs: `extract_tle_archive`, `geo_belt`, `geo_modes`, `state_changes`, `routine` |
+| `harness.evals.*` | The evaluations: `detector`, `mode_events`, `state_changes`, `state_injection`, `state_audit`, `routine`; nothing in `orbit_watch` imports `harness` |
 
 Tests never touch the network: every loader takes its fetch function or HTTP session as an
 argument, and the tests pass fakes. Fixtures live in `mock/`; `mock/README.md` says where each came
@@ -338,6 +340,136 @@ cited events and dev planted trials in the same way.
     the six slow planted moves listed as a stop then a move drift 0.024-0.057 deg/day over those
     10 days; the five such pairs in the belt list (28884, 29162, 31800, 37150 and 45465) and one
     planted free-burn trial drift 0.005 deg/day or less, and keep both rows.
+
+## Routine score and irregularity rank
+
+A departure counts as off-routine when it breaks the object's own record of stays and moves, not
+when it lacks a public record. A satellite that hops between two slots every 90 days is keeping a
+routine; a satellite that has held one slot for years and then leaves is not. `orbit_watch.routine`
+scores each departure on the state-change list against that record, and `jobs.routine` ranks the
+objects.
+
+**Inputs.** The state-change list (`findings/state_changes/events.csv`, read as an input, so the
+rank can be rerun whenever the list changes) and, per object, the held spans: the held mode
+segments `orbit_watch.events` works on (mode segments with short holds and inner moves split out),
+built from the cleaned element sets by `jobs.routine belt`. Holdout objects are skipped.
+
+**Per-departure score.** For each `relocation_start`, `graveyard` and `keeping_stop`, using only
+the object's events and held spans before the departure:
+
+- A *stay* runs from an arrival (`relocation_end`) to the next departure. A hold already under way
+  when the data start, or one that started without an arrival row, gives no stay length.
+- With 3 or more past stays, `p` is the probability that the object leaves within ±15 days of the
+  stay length it left at, under a log-normal fitted to its past stays, with the spread (standard
+  deviation of the log stay) floored at 0.15.
+- Otherwise `p` is the chance of at least one departure in 30 days under the object's own
+  departure rate shrunk to the belt's: a gamma prior on the rate with the belt's mean, updated by
+  the object's past departures `k` over its held years `H` before the departure, so
+  `p = 1 - (1 + w / (beta + H))^-(alpha + k)`, with `w` = 30 days in years.
+- `bits = -log2 p`, with `p` floored at 1e-4 (13.3 bits). A departure is off-routine at 5 bits
+  or more (`p` under about 3%).
+- Departures in the first 180 days after the object's first element set are listed but not
+  scored. For a satellite launched in the period this skips commissioning; for one already in
+  orbit in January 2021 it skips the first half of 2021, where no object has a record yet. They
+  still count in the object's record.
+- **Stay overrun.** A stay that starts with 3 or more past stays behind it gets one dated row when
+  it lasts past the 99th percentile of the fitted log-normal, `exp(mu + 2.326 sd)`. Overruns are
+  published beside the departures and do not add to the rank.
+
+**Belt prior, causal.** On a 30-day grid, the belt rate at day `t` is the departures on the list
+before `t` divided by the held object-years before `t`. The prior's strength comes from the spread
+of per-object rates before `t` among objects held at least 0.25 years: with `m` the belt rate, the
+prior variance is the variance of `k_i / H_i` minus `m` times the mean of `1 / H_i`, then
+`beta = m / variance` and `alpha = m * beta`. A departure uses the last grid point at or before
+it. The grid is written to `belt_prior.csv`.
+
+**Look-ahead in the inputs.** The scorer uses nothing after a departure, but its inputs do.
+`orbit_watch.events` types a departure as a relocation, a graveyard move or a keeping stop by
+reading the later holds and up to 90 days past it (`_departure_type`, `_open_move`), and dates
+some changes from sets after them. The held spans come from 30-day mode windows, so a span's end
+can move when later sets arrive. The causality check measures the effect by rebuilding the list
+and the spans on data cut at four year-ends.
+
+**Rank.** Per object, bits per year: the sum of its scored departures' bits divided by the years
+from the start of its first hold to its last element set. Only objects held at least 2 years in
+total are rated; the rest go to the unrated list with their number of events and the number of
+steps the step detector finds outside their holds. Those steps are unchecked: outside holds the
+detector also fires on dead objects, so they are not burns until shown to be. Ties are broken by
+departures per held year (scored departures over held years, also its own column), then NORAD id.
+Few objects have three measured stays, so most departures are scored by the rate model; held years
+start at the start of the data for objects already held then, and end-of-life graveyard moves and
+keeping stops count as departures like relocations ([#87](../../../issues/87)).
+
+**Proximity flag.** An arrival is flagged when, over the 10 days from the arrival day, another
+object's mean longitude is within 0.1° of the arriving object's (circular means of one set per
+day), and that object:
+
+- was already there: its mean longitude 30 to 40 days before the arrival is within 0.3° of its
+  own position after it;
+- is within 10 km in median semi-major axis over the same 10 days;
+- has another SATCAT owner code (`COUNTRY`); and
+- is not from the same launch (the first 8 characters of `INTLDES` differ).
+
+Longitude alone flags most of the belt, since dead objects pass at other altitudes; the
+semi-major axis and "already there" rules remove those. The owner code is coarse: all US
+operators share `US`, so a US satellite parking next to another US operator's is not flagged, and
+same-owner fleets are skipped by design ([#89](../../../issues/89)). Holdout objects are not in the table, so they are never
+the neighbour. The flag reads 10 days past the arrival. Flags are a separate column of the rank
+and a separate file, never part of the score.
+
+**Checks** (`harness/evals/routine.py`). Each target was set in the design before the first run,
+and the score was not tuned to any of them. Results and their breakdowns are in
+[findings/README.md](../findings/README.md#routine-score-and-irregularity-rank).
+
+1. Off-routine rows (off-routine departures and overruns) on rocket bodies and debris, per
+   object-year of their element sets, and whether any is rated. Target about 0.01 per
+   object-year: pass (0.0005, none rated).
+2. Off-routine rows on QZS-3, QZS-6 and Fengyun-2H inside the on-station spans the state-change
+   evaluation uses. Target 0: pass (0 in 6.46 object-years).
+3. Cited departures in `groundtruth/geo_events.csv` on objects held at least a year before them:
+   how many the list catches (the state-change evaluation's matching rule) and how many of those
+   are flagged off-routine. Target 90% of those caught: fail (9 of 14).
+4. The planted rhythm test, below. Target: on- and off-rhythm both right in 90% of trials: fail
+   (0.708 dev, 0.725 test with 4 moves then 1).
+5. The overlap of the top 30 on 2021 to mid-2023 with the top 60 on the rest, among objects rated
+   in both halves (held 2 years within each), and the Spearman correlation of the two. Target
+   half of the top 30: fail (6 of 24).
+6. The Spearman correlation of as-of bits per year on data cut at the end of 2021, 2022, 2023 and
+   2024 with the full run, both cut at the same date (the effect of look-ahead alone) and at the
+   end. The as-of population is objects held at least the smaller of 2 years and 0.9 times the
+   years of data before the cut, since no object can be held 2 years by the end of 2021. Target
+   0.9: against the run cut at the same date, pass at the 2023-2025 cuts and fail at 2022, where
+   one object has bits; against the final run, fail at every cut.
+7. The hand audit: the top 30 and 20 from the middle of the rank, shuffled with a fixed seed, with
+   one chart per object that shows the holds and every listed change but no score. A blind judge
+   saw only the charts, never the ranks or groups, and gave each object one class: `none` (no real
+   departure), `end_of_life` (only ending keeping and/or a graveyard climb), `rhythm` (relocations
+   on a roughly steady interval), `irregular` (uneven moves, a move after a long hold that is not
+   end of life, or drifting between short stays) or `unclear`, and said whether the listed
+   departures are real. The checks step counts `findings/routine/audit_verdicts.csv` per group from
+   `audit_key.csv`. Target 24 of the top 30 irregular: pass (25). The audit's event-list suspects
+   are [#91](../../../issues/91).
+8. Cited irregular objects in the top 5% by bits per year among rated objects; an object tied with
+   the cut counts as inside, and an object with no bits never counts. Each list row has an
+   `evidence` column: `object` when the cited quote is about that satellite, `programme` when it
+   only describes its programme. The share is reported for the whole list and for `object` rows
+   alone. Target 75% of rateable objects: fail (4 of 6, both ways).
+9. Cited steady keepers in the lower half by bits per year among rated objects. Target 90%: pass
+   (31 of 31), but weak: most rated objects have no scored departure, so the median is 0 and any
+   keeper without one is in the lower half ([#90](../../../issues/90)).
+
+**Planted rhythm test.** In the quiet host stretches of `harness/evals/state_injection_hosts.json`,
+plant `n` relocations on a fixed rhythm, then one more. The stay before the last move is the
+rhythm's (±5%) in half the trials, and 1.6 to 2.5 times longer or shorter in the other half. Each
+trial draws a stay of 45 to 120 days, a drift of 0.1 to 1°/day and a distance of 1 to 10°
+(log-uniform), and the moves go back and forth. The planted element sets go through
+`events.state_changes` and the held spans, and the last planted departure is matched with the
+state-change evaluation's rule and scored with the full run's belt prior. `n = 3` is the test as
+first specified: the last departure then has only 2 past stays and falls to the rate model, which
+does not look at timing, so it gives 0.086 (dev) and 0.044 (test). `n = 4` gives it 3 past stays.
+A trial is right when the last departure is under 2 bits on rhythm or 5 or more off it. Moves
+merged by the 30-day mode window and short off-rhythm stays keep `n = 4` under its target
+([#88](../../../issues/88)).
 
 ## Step detector
 
