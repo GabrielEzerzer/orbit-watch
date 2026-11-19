@@ -436,6 +436,22 @@ def _open_move(tr: Track, held: Segment, left: float | None, burn_days: np.ndarr
     return _jumps(tr, held, left, float(tr.days[-1]) + 1.0)
 
 
+def _crossing_burn(tr: Track, held: Segment, left: float | None, burn_days: np.ndarray) -> float | None:
+    if left is None:
+        return None
+    before = burn_days[(burn_days >= _day(held.start)) & (burn_days < left)]
+    pre = np.flatnonzero(tr.days < before.max()) if len(before) else []
+    post = np.flatnonzero(tr.days >= left)
+    if not len(pre) or not len(post):
+        return None
+    burn, slot = float(before.max()), _slot(held)
+    side = np.sign(wrap180(tr.lon[post[0]] - slot))
+    rel = tr.rate[(tr.days > burn) & (tr.days <= left)] - _held_rate(tr, held)
+    if side == 0 or np.sign(wrap180(tr.lon[pre[-1]] - slot)) != -side or not len(rel) or (np.sign(rel) != side).any():
+        return None
+    return burn
+
+
 def _burns_on(tr: Track, held: Segment, left: float | None, limit: float, burn_days: np.ndarray,
               steps: np.ndarray) -> bool:
     if left is None or not _jumps(tr, held, left, left + STEP_REACH_DAYS):
@@ -578,6 +594,9 @@ def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.
                 else:
                     before = _a_between(tr, left, climb)
                     kind, rise = "keeping_stop", float(np.max(before) - np.median(_a_between(tr, _day(a.start), _day(a.end))))
+            crossing = _crossing_burn(tr, a, left, burn_days) if kind == "keeping_stop" and signal == "rate_exit" else None
+            if crossing is not None:
+                left, signal = crossing, "a_step"
             departed = left if left is not None else _day(b.start)
             if kind == "relocation_start":
                 moved = burn if signal == "burn_gap" and burn is not None else departed

@@ -522,3 +522,14 @@ def test_a_relocation_start_size_comes_from_the_first_fast_run_not_a_longer_late
     found = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert found[0].event_type == "relocation_start" and abs(E._day(found[0].date) - 70.0) <= 1
     assert abs(found[0].size + 1.0 / (1.5 * 360.98) * 42164.0) < 3.0
+
+
+def test_a_keeping_stop_whose_last_burn_drives_it_across_the_box_is_dated_at_that_burn(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    lon, rate = lon - 0.05, np.where(days >= 100.0, 0.01, rate)
+    lon = np.where(days >= 100.0, lon[days < 100.0][-1] + 0.01 * (days - 100.0), lon)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 110, 9.94, 10.06), held(110, 200, 9.94, 11.0, "drifting")])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([40.0, 100.0]), np.array([500.0, -500.0]))
+    assert [f.event_type for f in found] == ["keeping_stop"]
+    assert found[0].signal == "a_step" and abs(E._day(found[0].date) - 100.0) <= 1
