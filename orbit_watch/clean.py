@@ -25,6 +25,9 @@ RETURN_SHARE = 0.4
 LOOSE_RETURN_SHARE = 0.75
 LON_RETURN_DEG = 0.05
 MIN_EXCURSION = {"a": 0.2, "i": 0.01}
+LONE_REACH_DAYS = 3.0
+LONE_MIN_KM = 10.0
+LONE_SHARE = 0.25
 NOISE_FLOOR = {"a": 0.005, "ix": 0.0005, "iy": 0.0005, "lon": 0.0005}
 
 
@@ -149,7 +152,29 @@ def snapback_blocks(records: Sequence[ElementSet]) -> list[tuple[int, int, Block
     return out
 
 
+def lone_sets(records: Sequence[ElementSet]) -> list[int]:
+    days = np.array([(r.epoch - records[0].epoch).total_seconds() / 86400.0 for r in records])
+    a = np.array([r.semi_major_axis_km for r in records])
+    lon = np.array([mean_longitude(r) for r in records])
+    rate = np.array([360.0 * (r.mean_motion - SIDEREAL_REV_PER_DAY) for r in records])
+    out = []
+    for i in range(len(records)):
+        near = [j for j in (i - 1, i + 1) if 0 <= j < len(records) and abs(days[j] - days[i]) <= LONE_REACH_DAYS]
+        if len(near) < 2:
+            continue
+        p, n = near
+        frac = (days[i] - days[p]) / (days[n] - days[p])
+        dev = abs(a[i] - (a[p] + frac * (a[n] - a[p])))
+        carried = abs(float(wrap180(lon[n] - lon[p] - 0.5 * (rate[p] + rate[n]) * (days[n] - days[p]))))
+        if dev >= LONE_MIN_KM and abs(a[n] - a[p]) <= LONE_SHARE * dev and carried <= LON_RETURN_DEG:
+            out.append(i)
+    return out
+
+
 def drop_snapback_blocks(records: Sequence[ElementSet]) -> tuple[list[ElementSet], list[Block]]:
     found = snapback_blocks(records)
     drop = {i for s, e, _ in found for i in range(s, e + 1)}
-    return [r for i, r in enumerate(records) if i not in drop], [b for _, _, b in found]
+    kept = [r for i, r in enumerate(records) if i not in drop]
+    lone = set(lone_sets(kept)) if len(kept) >= 2 else set()
+    blocks = [b for _, _, b in found] + [Block(kept[i].epoch, kept[i].epoch, 1, 0.0, 0.0, "lone") for i in sorted(lone)]
+    return [r for i, r in enumerate(kept) if i not in lone], sorted(blocks, key=lambda b: b.start)
