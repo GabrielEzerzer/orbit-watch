@@ -454,3 +454,16 @@ def test_an_arrival_after_a_gap_in_which_the_drift_reverses_is_dated_at_the_firs
     monkeypatch.setattr(E, "segments", lambda tr: segs)
     found = E.events_from_track(M.track(element_sets(days[keep], lon[keep], rate[keep])))
     assert [f.event_type for f in found] == ["relocation_end"] and abs(E._day(found[0].date) - 65.0) <= 0.5
+
+
+def test_an_arrival_is_dated_when_the_move_stops_even_when_a_trim_inside_the_slot_follows(monkeypatch):
+    days = np.arange(0.0, 150.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    push = np.where((days >= 60.0) & (days < 70.0), -1.0, 0.0) + np.where((days >= 78.0) & (days < 78.5), -0.4, 0.0)
+    rate = rate + push
+    lon = lon + 10.2 + np.cumsum(push) * 0.25
+    segs = [held(0, 60, 20.18, 20.22), held(60, 90, 10.0, 20.22, "drifting"), held(90, 150, 9.98, 10.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[1].date) - 70.0) <= 1

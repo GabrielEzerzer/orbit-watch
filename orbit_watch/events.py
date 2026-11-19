@@ -106,17 +106,23 @@ def _band(rate: np.ndarray) -> tuple[float, float]:
     return centre, max(RATE_TOL_MIN, RATE_TOL_MADS * 1.4826 * float(np.median(np.abs(rate - centre))))
 
 
-def _in_hold(tr: Track, held: Segment, edge: str = "") -> np.ndarray:
+def _in_hold(tr: Track, held: Segment, edge: str = "", margin: float = BOX_MARGIN_DEG) -> np.ndarray:
+    return _in_box(tr, held, edge, margin) & _in_band(tr, held)
+
+
+def _in_band(tr: Track, held: Segment) -> np.ndarray:
+    centre, tol = _band(tr.rate[(tr.days >= _day(held.start)) & (tr.days < _day(held.end))])
+    return np.abs(tr.rate - centre) <= tol
+
+
+def _in_box(tr: Track, held: Segment, edge: str = "", margin: float = BOX_MARGIN_DEG) -> np.ndarray:
     lo, hi = _day(held.start), _day(held.end)
     sel = (tr.days >= lo) & (tr.days < hi)
-    centre, tol = _band(tr.rate[sel])
     lon_min, lon_max = held.lon_min, held.lon_max
     near = sel & ((tr.days >= hi - EDGE_DAYS) if edge == "end" else (tr.days < lo + EDGE_DAYS))
     if edge and near.sum() >= HOLD_MIN_SETS:
         lon_min, lon_max = _arc(tr.lon[near])
-    width = (lon_max - lon_min) % 360.0 + 2 * BOX_MARGIN_DEG
-    in_box = (tr.lon - lon_min + BOX_MARGIN_DEG) % 360.0 <= width
-    return in_box & (np.abs(tr.rate - centre) <= tol)
+    return (tr.lon - lon_min + margin) % 360.0 <= (lon_max - lon_min) % 360.0 + 2 * margin
 
 
 def _sustained(tr: Track, flags: np.ndarray, lo: float, hi: float) -> int | None:
@@ -152,7 +158,13 @@ def _arrival_date(tr: Track, held: Segment, floor: float) -> int | None:
     lo = max(floor, _day(held.start) - REACH_DAYS)
     hi = min(_day(held.end), _day(held.start) + REACH_DAYS)
     i = _sustained(tr, _in_hold(tr, held), lo, hi)
-    return _sustained(tr, _in_hold(tr, held, "start"), lo, hi) if i is None else i
+    i = _sustained(tr, _in_hold(tr, held, "start"), lo, hi) if i is None else i
+    if i is None:
+        return None
+    k = _sustained(tr, _in_hold(tr, held, margin=SAME_SLOT_DEG), lo, float(tr.days[i]))
+    if k is None or not k or not _in_box(tr, held, margin=SAME_SLOT_DEG)[k:i].all():
+        return i
+    return k if abs(tr.rate[k - 1] - _held_rate(tr, held)) >= FAST_RATE else i
 
 
 def _at(tr: Track, i: int) -> datetime:
