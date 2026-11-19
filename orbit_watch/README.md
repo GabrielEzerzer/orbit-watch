@@ -316,7 +316,7 @@ cited events and dev planted trials in the same way.
     (41866) stopped its burns in February 2025, was held again by a burn, and moved on 2025-04-10.
 28. **Size toward the net move.** A run of moving sets ends where the drift relative to the hold
     changes sign, so one run never joins sets drifting both ways. When the size span (see the
-    table) moves at least 0.5 deg net (the move threshold of step 9), the first run going that
+    table) moves at least 0.5 deg net (the shift that makes a move in step 6), the first run going that
     way is used, so a short hop the other way before the move does not set the size's sign.
     This fixed 53355 (2023-10-11), 43874 (2022-07-05) and 55131 (2023-03-18).
 29. **A climb by an object never held.** An object with no held mode segment in the data has no
@@ -334,8 +334,8 @@ cited events and dev planted trials in the same way.
     held object's drift stays inside 0.02 deg/day (step 3), and an object that just stopped
     keeping starts drifting from about zero, so the move had already begun. In the dev trials
     the six slow planted moves listed as a stop then a move drift 0.024-0.057 deg/day over those
-    10 days; the six such pairs in the belt list and one planted free-burn trial drift 0.015
-    deg/day or less, and keep both rows.
+    10 days; the five such pairs in the belt list (28884, 29162, 31800, 37150 and 45465) and one
+    planted free-burn trial drift 0.005 deg/day or less, and keep both rows.
 
 ## Step detector
 

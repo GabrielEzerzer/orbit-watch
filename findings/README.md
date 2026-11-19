@@ -37,7 +37,7 @@ By type on test: relocation starts 3 of 4, relocation ends 5 of 5, graveyard mov
 - **How often the test split was used.** The rules were built on the dev events, the first hand
   audit, a second hand reading of the belt list and the dev planted trials. The test split was
   scored at six rule states while steps 6 to 18 were built, the last after the step 14 change
-  below, and its score was never used to choose a rule. Steps 19 to 26 were built without it.
+  below, and its score was never used to choose a rule. Steps 19 to 30 were built without it.
   After them the test split, the planted test hosts and the held-out check were scored at three
   commits (3098372, 3b56a09 and d8bd4e0) with the same numbers each time, the later changes
   coming from belt rows, and once more after two review fixes (9eb916b), where only the planted
@@ -49,7 +49,9 @@ By type on test: relocation starts 3 of 4, relocation ends 5 of 5, graveyard mov
   while building step 14: the graveyard move of 28707, now dated 17 days before its cited date. Its
   date moved by one day as a result (from 18 to 17 days early), and its departure on 2021-11-09,
   a burn that lowers the orbit by about 50 km and starts an eastward drift, became a
-  `relocation_start` instead of a `keeping_stop`.
+  `relocation_start` instead of a `keeping_stop`. After steps 27 to 30 the test split, the
+  planted test hosts and the held-out check were scored once more (3279456): every number is
+  the same as before them.
 - **Graveyard moves are the worst dated** (dev median 9 days, mostly early), because sources
   variously date the start of the climb, its end or the decommissioning; three of the 13 dev
   events are dated only to the month.
@@ -138,14 +140,14 @@ days of the plant (near) and, for kinds that leave the object free, any after it
 
 | split | planted | drift rate (°/day) | trials | all truths caught | truth | caught | median \|error\| (days) | p90 (days) | mistyped | extra per trial (near / later) |
 |---|---|---|---|---|---|---|---|---|---|---|
-| dev | relocation | 0.02-0.1 | 100 | 86/100 = 0.86 | start | 89/100 | 1 | 7.2 | 6 | 0.14 / 0 |
-| dev | relocation | 0.02-0.1 | 100 | 86/100 = 0.86 | end | 89/100 | 0 | 4.2 | 0 | 0.14 / 0 |
+| dev | relocation | 0.02-0.1 | 100 | 86/100 = 0.86 | start | 89/100 | 1 | 7.2 | 0 | 0.08 / 0 |
+| dev | relocation | 0.02-0.1 | 100 | 86/100 = 0.86 | end | 89/100 | 0 | 4.2 | 0 | 0.08 / 0 |
 | dev | relocation | 0.1-3 | 150 | 148/150 = 0.99 | start | 149/150 | 0 | 1 | 0 | 0.007 / 0 |
 | dev | relocation | 0.1-3 | 150 | 148/150 = 0.99 | end | 149/150 | 0 | 1 | 0 | 0.007 / 0 |
-| dev | relocation | 0.02-0.05 | 50 | 38/50 = 0.76 | start | 41/50 | 2 | 13 | 4 | 0.24 / 0 |
-| dev | relocation | 0.02-0.05 | 50 | 38/50 = 0.76 | end | 41/50 | 0 | 9 | 0 | 0.24 / 0 |
-| dev | relocation | 0.05-0.1 | 50 | 48/50 = 0.96 | start | 48/50 | 0 | 1.6 | 2 | 0.04 / 0 |
-| dev | relocation | 0.05-0.1 | 50 | 48/50 = 0.96 | end | 48/50 | 0 | 2 | 0 | 0.04 / 0 |
+| dev | relocation | 0.02-0.05 | 50 | 38/50 = 0.76 | start | 41/50 | 2 | 13 | 0 | 0.16 / 0 |
+| dev | relocation | 0.02-0.05 | 50 | 38/50 = 0.76 | end | 41/50 | 0 | 9 | 0 | 0.16 / 0 |
+| dev | relocation | 0.05-0.1 | 50 | 48/50 = 0.96 | start | 48/50 | 0 | 1.6 | 0 | 0 / 0 |
+| dev | relocation | 0.05-0.1 | 50 | 48/50 = 0.96 | end | 48/50 | 0 | 2 | 0 | 0 / 0 |
 | dev | relocation | 0.1-0.3 | 50 | 49/50 = 0.98 | start | 50/50 | 0 | 1 | 0 | 0.02 / 0 |
 | dev | relocation | 0.1-0.3 | 50 | 49/50 = 0.98 | end | 49/50 | 0 | 1.2 | 0 | 0.02 / 0 |
 | dev | relocation | 0.3-1 | 50 | 49/50 = 0.98 | start | 49/50 | 0 | 1 | 0 | 0 / 0 |
@@ -230,6 +232,9 @@ What the trials show:
   little about the belt, and **the free-burn threshold must not be tuned on these trials**. Three
   planted free burns count as caught 4 to 29 days off (trials 829, 868 and 919), most likely
   through such noise rather than the planted burn.
+- **Slow moves read as a stop then a move.** Six dev slow relocations (trials 2, 54, 58, 62, 122
+  and 154) were listed as a keeping stop at the planted start and a relocation start at the first
+  fast set. Step 30 lists one relocation start at the stop's date; their dates did not change.
 - **Stop then burn.** A free burn soon after a stop near the slot can split the stop with a short
   hold, so the stop is typed `relocation_start` (trials 834, 861, 906, 928 and 930).
 
@@ -251,8 +256,8 @@ each type's count.
 that folder's `events.csv`, leaving out every object in the first audit. One rule changed after
 the draw: step 14 now types the departures of 26719 and 28707 as `relocation_start` instead of
 `keeping_stop`, and 239 rows have a different `size`. Neither departure is in the sample (26719's
-sampled row is a later free burn). Steps 19 to 26 and the lone-set filter came after the verdicts
-and change 5 sampled rows, listed below the table. Two sampled objects were read while writing rules: HYLAS 1 (37237) for step 12, before
+sampled row is a later free burn). Steps 19 to 30 and the lone-set filter came after the verdicts
+and change 6 sampled rows (and the size of 2 more), listed below the table. Two sampled objects were read while writing rules: HYLAS 1 (37237) for step 12, before
 the draw, and EUTE 28A (26719) for the step 14 change, after it.
 
 | type | sampled | real | artefact | duplicate | wrong type |
@@ -275,12 +280,14 @@ anchors it ([#73](../../../issues/73)). DSN-3's (61733) arrival is dated at a tr
 settled ([#74](../../../issues/74)). The 2 real events left undated are arrivals after a transfer
 orbit, which the sets bound only to a window across a gap ([#70](../../../issues/70)).
 
-The 5 sampled rows that changed in the final list, against the verdicts above (not re-judged):
+The 6 sampled rows that changed in the final list, against the verdicts above (not re-judged):
 45986's graveyard move is gone (verdict artefact); 29162's keeping stop is dated 2024-01-31
 (estimate 2024-01-30, was 50 days late); 55131's departure is a `relocation_start` on the same day
 (verdict wrong type, correct type `relocation_start`); 45985's arrival is dated 2021-03-14
 (estimate 03-15, was 3 days late); 61733's arrival is dated 2024-11-12 (estimate 11-18, was 9 days
-late, now 6 early).
+late, now 6 early); GOES 16's (41866) keeping stop on 2025-02-13 is gone (verdict duplicate).
+Only the size changed on two more: TJS-3's (43874) start on 2024-11-12 (31.317 to 31.323 km) and
+ChinaSat 6C's (44067) on 2023-04-29 (-24.123 to -24.13 km).
 
 ### In-sample audit
 
@@ -440,14 +447,14 @@ checked against anything else.
 ## The belt list
 
 `findings/state_changes/summary.json` (which records the commit it was run at): 1,799 objects,
-760 events on 300 of them. The list is `findings/state_changes/events.csv`.
+760 events on 301 of them. The list is `findings/state_changes/events.csv`.
 
 | type | 2021 | 2022 | 2023 | 2024 | 2025 | total |
 |---|---|---|---|---|---|---|
 | relocation_start | 41 | 39 | 57 | 48 | 57 | 242 |
 | relocation_end | 65 | 58 | 84 | 64 | 67 | 338 |
-| graveyard | 16 | 11 | 21 | 15 | 19 | 82 |
-| keeping_stop | 2 | 7 | 0 | 2 | 4 | 15 |
+| graveyard | 16 | 12 | 21 | 15 | 19 | 83 |
+| keeping_stop | 2 | 7 | 0 | 2 | 3 | 14 |
 | ns_keeping_stop | 9 | 7 | 14 | 14 | 15 | 59 |
 | free_burn | 0 | 0 | 5 | 10 | 9 | 24 |
 
@@ -465,11 +472,10 @@ Known limits of the list:
   (40732) is in April 2023.
 - A climb that has risen less than 150 km when the data end reads as a move under way: SJ-17
   (41838) is listed as a `relocation_start` in November 2025, 115 km above its slot at the end.
-- A climb by an object never held in the data is listed as free burns.
-- `size` on a relocation start describes the first run of moving sets, which can go the other way
-  from the net move: 12 of the 242 starts have a size whose sign disagrees with the shorter way
-  round from `lon_before` to `lon_after`. Two of them come from the first-run rule: 43874 drifts west for 13 days from 2022-07-05 and then east to 88.4° E, and
-  55131 hops west on 2023-03-17 a month before its eastward move.
+- 9 of the 242 relocation starts have a `size` whose sign disagrees with the shorter way round
+  from `lon_before` to `lon_after`. Five are moves the long way round (26719, 27632 twice, 28707
+  and 41937), 56370 goes out and comes back to the same slot, and 27380, 40732 and 44076 move
+  inside a gap with no fast set, so the size uses every set in the span.
 
 All open limits are [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
 
