@@ -196,7 +196,8 @@ now dated 2024-01-31 by step 25, inside its host stretch. Step 31 dates a keepin
 which that trial now misses. The planted free path leaves the box 71 days after the host's last
 burn, about four of its 17.46-day burn intervals, and step 31 sets no upper limit on that gap,
 so it dates the stop half an interval after the last burn. The dev trials step 31 improves have
-gaps of 1.0 to 6.1 intervals, so they cannot set a limit that would exclude this one. Two are not real: a 0.1° keeping excursion of
+gaps of 1.0 to 6.1 intervals, so they cannot set a limit that would exclude this one
+([#97](../../../issues/97)). Two are not real: a 0.1° keeping excursion of
 26880 on 2025-03-31, and a 10° jump in a day on 52903 on 2022-11-17, a mix-up between element
 sets.
 
@@ -508,6 +509,8 @@ Known limits of the list:
   start 2022-09-27) and 31800 (2025-04-22 and 2025-05-17), whose drift relative to the hold
   reaches 0.057 and 0.040°/day between them ([#81](../../../issues/81)). In the three other
   stop-then-move pairs (29162, 37150 and 45465) a large burn starts the move.
+- 36411's relocation start is listed on 2022-12-19, but its sets show it kept inside a 1.1° box
+  until a 32 km burn on 2023-04-05 starts the move ([#96](../../../issues/96)).
 - A move made entirely inside one gap is dated at the gap's end at both ends, as Meteosat-11
   (40732) is in April 2023.
 - A climb that has risen less than 150 km when the data end reads as a move under way: SJ-17
