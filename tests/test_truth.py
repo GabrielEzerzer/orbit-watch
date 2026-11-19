@@ -205,13 +205,14 @@ def _cited_rows(name):
 @pytest.mark.parametrize("name", CITED_OBJECT_FILES)
 def test_cited_object_lists_parse_with_unique_norad_ids(name):
     fields, rows = _cited_rows(name)
-    assert fields == ["norad_id", "name", "claim", "source_url", "quote"]
+    assert fields == ["norad_id", "name", "claim", "source_url", "quote", "evidence"]
     assert rows
     ids = [int(r["norad_id"]) for r in rows]
     assert len(ids) == len(set(ids))
     assert all(1 <= i <= 99999 for i in ids)
     for r in rows:
         assert all(r[k].strip() for k in ("name", "claim", "source_url", "quote"))
+        assert r["evidence"] in ("object", "programme")
         assert len(r["source_url"].split(" ; ")) == len(r["quote"].split(" || "))
 
 
