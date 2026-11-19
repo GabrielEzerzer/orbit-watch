@@ -157,7 +157,7 @@ def test_an_arrival_is_never_dated_before_its_departure(monkeypatch):
     lon = np.where(days >= 65.0, lon + 1.0, lon)
     segs = [held(0, 60, 9.98, 10.02), held(60, 90, 9.98, 11.02, "drifting"), held(90, 150, 10.98, 11.02)]
     monkeypatch.setattr(E, "segments", lambda tr: segs)
-    monkeypatch.setattr(E, "_departure", lambda *a: (80.0, "rate_exit", None))
+    monkeypatch.setattr(E, "_departure", lambda *a: (80.0, "rate_exit", None, 0.0))
     start, end = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert (start.event_type, end.event_type) == ("relocation_start", "relocation_end")
     assert E._day(end.date) >= E._day(start.date) == 80.0
@@ -480,3 +480,19 @@ def test_a_move_whose_drift_pauses_for_a_few_days_is_one_start_and_one_end(monke
     assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
     assert abs(E._day(found[0].date) - 70.0) <= 1 and abs(E._day(found[1].date) - 84.0) <= 1
     assert abs(found[0].lon_after - 14.5) < 0.2
+
+
+def test_a_move_within_one_slow_burn_cycle_of_the_missed_burn_has_no_keeping_stop_before_it(monkeypatch):
+    days = np.arange(0.0, 220.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    free = days >= 107.0
+    rate = np.where(free, 0.001 * (days - 107.0), rate)
+    rate = np.where(days >= 140.0, 0.5, rate)
+    rate = np.where(days >= 160.0, 0.0, rate)
+    lon = np.where(free, lon[free.argmax()] + np.cumsum(np.where(free, rate, 0.0)) * 0.25, lon)
+    segs = [held(0, 120, 9.98, 10.02), held(120, 165, 10.0, lon[-1], "drifting"),
+            held(165, 220, lon[-1] - 0.02, lon[-1] + 0.02)]
+    monkeypatch.setattr(E, "segments", lambda tr: segs)
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 78.0]), np.array([1500.0, 1500.0]))
+    assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
+    assert abs(E._day(found[0].date) - 140.0) <= 1
