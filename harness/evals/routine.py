@@ -54,6 +54,7 @@ OFF_FACTOR = (1.6, 2.5)
 LEAD_DAYS = 60.0
 SETTLE_DAYS = 60.0
 ON_MAX_BITS = 2.0
+WINDOW_SHARES = (0.05, 0.1, 0.15, 0.2, 0.25)
 AUDIT_TOP, AUDIT_MIDDLE = 30, 20
 AUDIT_SEED = "orbit-watch routine audit 2026-11-19"
 AUDIT_CLASSES = ("none", "end_of_life", "rhythm", "irregular", "unclear")
@@ -132,22 +133,36 @@ def cited_departures(d: dict, events_csv: Path, splits: Sequence[str]) -> dict:
     out = []
     for r, (_, held) in zip(results, eligible):
         row = deps.get((r.found.norad_id, r.found.date.date().isoformat(), r.found.event_type)) if r.found else None
-        out.append({"event_id": r.event.event_id, "split": r.event.split, "held_years_before": round(held, 2),
-                    "status": r.status, "found_date": r.found.date.date().isoformat() if r.found else "",
+        out.append({"event_id": r.event.event_id, "split": r.event.split, "event_type": r.event.event_type,
+                    "held_years_before": round(held, 2), "status": r.status,
+                    "found_date": r.found.date.date().isoformat() if r.found else "",
+                    "found_type": r.found.event_type if r.found else "",
                     "scored": bool(row and row["scored"] == "1"), "model": row["model"] if row else "",
                     "bits": float(row["bits"]) if row and row["bits"] else None,
                     "flagged": bool(row and row["off_routine"] == "1")})
+    return {**cited_summary(out, Counter((e.split, e.event_type in rt.SCORED) for e in cited), splits),
+            "events": out}
+
+
+def cited_summary(rows: Sequence[dict], cited: Counter, splits: Sequence[str]) -> dict:
     summary = {}
     for split in splits:
-        rs = [x for x in out if x["split"] == split]
+        rs = [x for x in rows if x["split"] == split and x["event_type"] in rt.SCORED]
         caught = [x for x in rs if x["status"] == "caught"]
-        summary[split] = {"cited_departures": sum(e.split == split for e in cited),
+        ends = [x for x in rows if x["split"] == split and x["event_type"] in rt.END_OF_LIFE]
+        ends_caught = [x for x in ends if x["status"] == "caught"]
+        summary[split] = {"cited_relocation_starts": cited[(split, True)],
                           "held_a_year_before": len(rs), "caught": len(caught),
                           "flagged": sum(x["flagged"] for x in caught),
                           "caught_unscored": sum(not x["scored"] for x in caught),
+                          "caught_typed_end_of_life": sum(x["found_type"] in rt.END_OF_LIFE for x in caught),
                           "flagged_by_model": {m: [sum(x["flagged"] for x in caught if x["model"] == m),
-                                                   sum(x["model"] == m for x in caught)] for m in ("stays", "rate")}}
-    return {**summary, "events": out}
+                                                   sum(x["model"] == m for x in caught)] for m in ("stays", "rate")},
+                          "end_of_life": {"cited": cited[(split, False)], "held_a_year_before": len(ends),
+                                          "caught": len(ends_caught),
+                                          "typed_end_of_life": sum(x["found_type"] in rt.END_OF_LIFE
+                                                                   for x in ends_caught)}}
+    return summary
 
 
 def window_values(d: dict, rows, overruns, lo: float, hi: float, objects: dict) -> dict[int, float]:
@@ -246,6 +261,7 @@ def _shown(path: Path) -> str:
 
 def cited_lists(rank: Sequence[dict], irregular: Path | None, steady: Path | None) -> dict:
     values = {int(r["norad_id"]): float(r["bits_per_year"]) for r in rank}
+    departures = {int(r["norad_id"]): int(r["departures"]) for r in rank}
     out = {}
     if irregular is not None and irregular.is_file():
         rows = read_cited(irregular)
@@ -254,8 +270,13 @@ def cited_lists(rank: Sequence[dict], irregular: Path | None, steady: Path | Non
     if steady is not None and steady.is_file():
         ids = [n for n, _ in read_cited(steady)]
         hit, n = rt.lower_half(values, ids)
+        none, _, belt_none, rated, chance = rt.no_departure_share(departures, ids)
         out["steady"] = {"file": _shown(steady), "listed": len(ids), "rateable": n, "in_lower_half": hit,
-                         "share": round(hit / n, 3) if n else None}
+                         "share": round(hit / n, 3) if n else None,
+                         "no_scored_departure": none, "share_no_scored_departure": round(none / n, 3) if n else None,
+                         "rated": rated, "rated_no_scored_departure": belt_none,
+                         "rated_share_no_scored_departure": round(belt_none / rated, 3) if rated else None,
+                         "chance_of_at_least_as_many_in_a_random_draw": None if chance is None else float(f"{chance:.3g}")}
     return out or {"status": "no cited irregular or steady list yet"}
 
 
@@ -365,7 +386,7 @@ def _truth(norad: int, trial: int, k: int, day: float) -> Event:
 
 
 def run_trials(task) -> list[dict]:
-    path, host, trials, priors = task
+    path, host, trials, priors, share = task
     records = object_records(path)
     tr = track(records)
     sm = smooth(tr, burns(records)[0], host)
@@ -378,7 +399,7 @@ def run_trials(task) -> list[dict]:
         kept, _ = drop_snapback_blocks(planted)
         holds = holds_of(track(kept))
         rows, _ = rt.score_object(host.norad_id, [(day_of(f.date), f.event_type) for f in found], holds, first,
-                                  min(last, float(N_DAYS)), at)
+                                  min(last, float(N_DAYS)), at, share)
         truths = [_truth(host.norad_id, t["trial"], k, m[0]) for k, m in enumerate(t["moves"])]
         res = score(truths, {host.norad_id: found}, {host.norad_id}, set())
         last_res = res[-1]
@@ -440,10 +461,11 @@ def planted(a, geo_dir: Path) -> int:
     by_host = defaultdict(list)
     for t in trials:
         by_host[t["norad_id"]].append(t)
-    tasks = [(geo_dir / f"{n}.tle", ts[0]["host"], ts, priors) for n, ts in sorted(by_host.items())]
+    tasks = [(geo_dir / f"{n}.tle", ts[0]["host"], ts, priors, a.share) for n, ts in sorted(by_host.items())]
     with ProcessPoolExecutor() as pool:
         rows = sorted((r for rs in pool.map(run_trials, tasks) for r in rs), key=lambda r: r["trial"])
-    summary = {**_commit(), "seed": SEED, "splits": list(splits), "trials_per_split_and_variant": TRIALS,
+    summary = {**_commit(), "seed": SEED, "splits": list(splits), "stay_window_share": a.share,
+               "trials_per_split_and_variant": TRIALS,
                "hosts": {s: len({t["norad_id"] for t in trials if t["split"] == s}) for s in splits},
                **planted_summary(rows, splits)}
     a.out.mkdir(parents=True, exist_ok=True)
@@ -534,6 +556,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--irregular", type=Path, default=IRREGULAR, help="cited irregular objects (default %(default)s)")
     p.add_argument("--steady", type=Path, default=STEADY, help="cited steady keepers (default %(default)s)")
     p.add_argument("--charts", type=Path, help="audit chart folder; default $ORBIT_WATCH_DATA/routine/audit_charts")
+    p.add_argument("--share", type=float, choices=WINDOW_SHARES, default=rt.STAY_WINDOW_SHARE,
+                   help="planted: the stay window's share f of the stay length; the default was chosen from these "
+                   "values on the dev trials (default %(default)s)")
     a = p.parse_args(argv)
     geo_dir = a.geo_dir or data_dir() / "geo"
     cache = a.cache or data_dir() / "routine" / "belt.pkl"

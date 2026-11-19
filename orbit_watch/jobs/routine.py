@@ -33,10 +33,11 @@ AS_OF = (date(2022, 1, 1), date(2023, 1, 1), date(2024, 1, 1), date(2025, 1, 1))
 DEFAULT_EVENTS = Path("findings/state_changes/events.csv")
 DEFAULT_OUT = Path("findings/routine")
 DEAD_TYPES = ("ROCKET BODY", "DEBRIS")
-RANK_FIELDS = ["rank", "norad_id", "name", "owner", "bits_per_year", "departures_per_held_year", "held_years",
-               "years_since_first_hold", "departures", "off_routine", "overruns", "proximity_flags"]
-DEPARTURE_FIELDS = ["norad_id", "name", "event_type", "date", "scored", "model", "past_stays", "past_departures",
-                    "held_years_before", "stay_days", "p", "bits", "off_routine"]
+RANK_FIELDS = ["rank", "norad_id", "name", "owner", "bits_per_year", "stay_bits_per_year", "rate_bits_per_year",
+               "departures_per_held_year", "held_years", "years_since_first_hold", "departures", "end_of_life",
+               "off_routine", "overruns", "proximity_flags"]
+DEPARTURE_FIELDS = ["norad_id", "name", "event_type", "date", "scored", "end_of_life", "model", "past_stays",
+                    "past_departures", "held_years_before", "stay_days", "p", "bits", "off_routine"]
 OVERRUN_FIELDS = ["norad_id", "name", "date", "arrival_date", "p99_stay_days", "past_stays"]
 FLAG_FIELDS = ["norad_id", "name", "owner", "date", "other_norad_id", "other_name", "other_owner", "sep_deg",
                "sma_gap_km", "neighbours"]
@@ -140,7 +141,7 @@ def satcat(geo_dir: Path) -> dict[int, dict]:
 
 def run_scores(objects: list[dict], events: dict[int, list[tuple[float, str]]], end_day: float):
     holds = {o["norad"]: o["holds"] for o in objects}
-    deps = {n: [d for d, k in evs if k in rt.DEPARTURES] for n, evs in events.items()}
+    deps = {n: [d for d, k in evs if k in rt.SCORED] for n, evs in events.items()}
     priors = rt.belt_priors(holds, deps, end_day)
     at = rt.prior_lookup(priors)
     rows, overruns = {}, {}
@@ -205,9 +206,11 @@ def score(geo_dir: Path, cache: Path, events_path: Path, out: Path) -> int:
     order = rt.ranked(list(standings.values()))
     rank_rows = [{"rank": i, "norad_id": s.norad_id, "name": name.get(s.norad_id, ""),
                   "owner": sat.get(s.norad_id, {}).get("COUNTRY") or "", "bits_per_year": round(s.bits_per_year, 3),
+                  "stay_bits_per_year": round(s.stay_bits_per_year, 3),
+                  "rate_bits_per_year": round(s.rate_bits_per_year, 3),
                   "departures_per_held_year": round(s.departures_per_held_year, 3),
                   "held_years": round(s.held_years, 3), "years_since_first_hold": round(s.years, 3),
-                  "departures": s.departures, "off_routine": s.off_routine, "overruns": s.overruns,
+                  "departures": s.departures, "end_of_life": s.end_of_life, "off_routine": s.off_routine, "overruns": s.overruns,
                   "proximity_flags": flag_count[s.norad_id]} for i, s in enumerate(order, 1)]
     by_obj = {o["norad"]: o for o in objects}
     unrated = [{"norad_id": n, "name": name.get(n, ""), "object_type": sat.get(n, {}).get("OBJECT_TYPE") or "",
@@ -216,7 +219,7 @@ def score(geo_dir: Path, cache: Path, events_path: Path, out: Path) -> int:
                for n, s in sorted(standings.items()) if not s.rated]
     deps = [r for n in sorted(rows) for r in rows[n]]
     dep_rows = [{"norad_id": r.norad_id, "name": name.get(r.norad_id, ""), "event_type": r.event_type,
-                 "date": iso(r.day), "scored": int(r.scored), "model": r.model, "past_stays": r.past_stays,
+                 "date": iso(r.day), "scored": int(r.scored), "end_of_life": int(r.end_of_life), "model": r.model, "past_stays": r.past_stays,
                  "past_departures": r.past_departures, "held_years_before": round(r.held_years, 3),
                  "stay_days": _r(r.stay_days, 1), "p": _r(r.p, 6), "bits": _r(r.bits, 3),
                  "off_routine": int(r.off_routine)} for r in sorted(deps, key=lambda r: (r.day, r.norad_id))]
@@ -258,7 +261,8 @@ def score(geo_dir: Path, cache: Path, events_path: Path, out: Path) -> int:
         "rated_with_bits": sum(s.bits > 0 for s in order),
         "departures": len(deps),
         "departures_scored": len(scored),
-        "departures_unscored_commissioning": sum(not r.scored for r in deps),
+        "departures_end_of_life_unscored": sum(r.end_of_life for r in deps),
+        "departures_unscored_commissioning": sum(not r.scored and not r.end_of_life for r in deps),
         "scored_by_model": dict(Counter(r.model for r in scored)),
         "off_routine_departures": sum(r.off_routine for r in deps),
         "overruns": len(ovs),
@@ -267,7 +271,8 @@ def score(geo_dir: Path, cache: Path, events_path: Path, out: Path) -> int:
         "flagged_objects": len(flag_count),
         "belt_rate_per_held_year_at_end": round(priors[-1].rate, 4),
         "belt_rate_per_held_year_by_year": belt_rate_by_year(objects, events),
-        "top_20": [{k: r[k] for k in ("rank", "norad_id", "name", "bits_per_year", "departures_per_held_year",
+        "top_20": [{k: r[k] for k in ("rank", "norad_id", "name", "bits_per_year", "stay_bits_per_year",
+                                      "rate_bits_per_year", "departures_per_held_year", "end_of_life",
                                       "proximity_flags")} for r in rank_rows[:20]],
         "run_seconds": round(time.monotonic() - t0, 1),
     }
@@ -281,7 +286,7 @@ def belt_rate_by_year(objects: list[dict], events: dict[int, list[tuple[float, s
     for y in range(GRID_START.year, GRID_END.year):
         lo, hi = day_of(date(y, 1, 1)), day_of(date(y + 1, 1, 1))
         h = sum(rt.held_years(o["holds"], hi, lo) for o in objects)
-        k = sum(lo <= d < hi for evs in events.values() for d, kind in evs if kind in rt.DEPARTURES)
+        k = sum(lo <= d < hi for evs in events.values() for d, kind in evs if kind in rt.SCORED)
         out[str(y)] = round(k / h, 4) if h else None
     return out
 

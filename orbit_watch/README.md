@@ -354,14 +354,17 @@ rank can be rerun whenever the list changes) and, per object, the held spans: th
 segments `orbit_watch.events` works on (mode segments with short holds and inner moves split out),
 built from the cleaned element sets by `jobs.routine belt`. Holdout objects are skipped.
 
-**Per-departure score.** For each `relocation_start`, `graveyard` and `keeping_stop`, using only
-the object's events and held spans before the departure:
+**Per-departure score.** For each `relocation_start`, using only the object's events and held spans
+before the departure:
 
 - A *stay* runs from an arrival (`relocation_end`) to the next departure. A hold already under way
   when the data start, or one that started without an arrival row, gives no stay length.
-- With 3 or more past stays, `p` is the probability that the object leaves within ±15 days of the
-  stay length it left at, under a log-normal fitted to its past stays, with the spread (standard
-  deviation of the log stay) floored at 0.15.
+- With 3 or more past stays, `p` is the probability that the object leaves within a window around
+  the stay length `s` it left at, under a log-normal fitted to its past stays, with the spread
+  (standard deviation of the log stay) floored at 0.15. The window is the smaller of ±15 days and
+  ±`f s`, so it stays narrow next to a short stay. `f` = 0.2 was chosen from 0.05, 0.1, 0.15,
+  0.2 and 0.25 on the dev trials of the planted rhythm test alone, as the value with the most
+  trials right (ties to the larger `f`); the belt results played no part.
 - Otherwise `p` is the chance of at least one departure in 30 days under the object's own
   departure rate shrunk to the belt's: a gamma prior on the rate with the belt's mean, updated by
   the object's past departures `k` over its held years `H` before the departure, so
@@ -372,12 +375,18 @@ the object's events and held spans before the departure:
   scored. For a satellite launched in the period this skips commissioning; for one already in
   orbit in January 2021 it skips the first half of 2021, where no object has a record yet. They
   still count in the object's record.
+- **End of life is listed, not scored.** A `graveyard` or `keeping_stop` row is the most routine
+  thing a satellite does. It appears in `departures.csv` with `end_of_life` 1 and `scored` 0, and
+  no model, `p` or bits, so it is never in `off_routine.csv`. It closes the open stay (its
+  `stay_days` is shown) without adding that stay or a past departure to the object's record.
+  `summary.json` counts these rows apart from the commissioning ones.
 - **Stay overrun.** A stay that starts with 3 or more past stays behind it gets one dated row when
   it lasts past the 99th percentile of the fitted log-normal, `exp(mu + 2.326 sd)`. Overruns are
   published beside the departures and do not add to the rank.
 
-**Belt prior, causal.** On a 30-day grid, the belt rate at day `t` is the departures on the list
-before `t` divided by the held object-years before `t`. The prior's strength comes from the spread
+**Belt prior, causal.** On a 30-day grid, the belt rate at day `t` is the relocation starts on the
+list before `t` divided by the held object-years before `t`, so the prior is the rate of the thing
+being scored. The prior's strength comes from the spread
 of per-object rates before `t` among objects held at least 0.25 years: with `m` the belt rate, the
 prior variance is the variance of `k_i / H_i` minus `m` times the mean of `1 / H_i`, then
 `beta = m / variance` and `alpha = m * beta`. A departure uses the last grid point at or before
@@ -391,14 +400,15 @@ can move when later sets arrive. The causality check measures the effect by rebu
 and the spans on data cut at four year-ends.
 
 **Rank.** Per object, bits per year: the sum of its scored departures' bits divided by the years
-from the start of its first hold to its last element set. Only objects held at least 2 years in
+from the start of its first hold to its last element set. `stay_bits_per_year` and
+`rate_bits_per_year` split that sum by the model that scored each departure; the order is still
+by the total. `end_of_life` counts the object's end-of-life rows, which add no bits. Only objects held at least 2 years in
 total are rated; the rest go to the unrated list with their number of events and the number of
 steps the step detector finds outside their holds. Those steps are unchecked: outside holds the
 detector also fires on dead objects, so they are not burns until shown to be. Ties are broken by
 departures per held year (scored departures over held years, also its own column), then NORAD id.
-Few objects have three measured stays, so most departures are scored by the rate model; held years
-start at the start of the data for objects already held then, and end-of-life graveyard moves and
-keeping stops count as departures like relocations ([#87](../../../issues/87)).
+Few objects have three measured stays, so most departures are scored by the rate model, and held
+years start at the start of the data for objects already held then ([#87](../../../issues/87)).
 
 **Proximity flag.** An arrival is flagged when, over the 10 days from the arrival day, another
 object's mean longitude is within 0.1° of the arriving object's (circular means of one set per

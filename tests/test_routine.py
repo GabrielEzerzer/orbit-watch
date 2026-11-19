@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from orbit_watch import routine as rt
+from orbit_watch.jobs.routine import run_scores
 
 PRIOR = rt.Prior(0.0, 0.1, 0.2, 2.0, 100, 500.0, 50)
 HELD = [(0.0, 3000.0)]
@@ -44,7 +45,7 @@ def test_identical_stays_use_the_floored_spread():
 
 
 def test_a_first_departure_scores_at_the_belt_rate():
-    row = last_bits([(1000.0, "keeping_stop")])
+    row = last_bits([(1000.0, "relocation_start")])
     years = 1000.0 / rt.YEAR_DAYS
     expect = -math.log2(1 - (1 + (30 / rt.YEAR_DAYS) / (PRIOR.beta + years)) ** -PRIOR.alpha)
     assert row.model == "rate" and row.bits == pytest.approx(expect)
@@ -52,7 +53,7 @@ def test_a_first_departure_scores_at_the_belt_rate():
 
 
 def test_an_object_that_often_leaves_is_less_surprising_than_the_belt():
-    events = [(500.0 + 40 * i, "keeping_stop") for i in range(8)]
+    events = [(500.0 + 40 * i, "relocation_start") for i in range(8)]
     rows, _ = rt.score_object(1, events, [(400.0, 800.0)], 0.0, 3000.0, at)
     assert rows[-1].bits < 3.0 < rows[0].bits
 
@@ -62,6 +63,52 @@ def test_scores_never_change_when_later_events_are_added():
     before, _ = rt.score_object(1, events, HELD, 0.0, 3000.0, at)
     after, _ = rt.score_object(1, events + [(2500.0, "graveyard")], HELD, 0.0, 3000.0, at)
     assert after[:len(before)] == before
+
+
+def test_end_of_life_departures_are_listed_unscored_and_close_the_stay_without_joining_the_record():
+    events = hopper([90, 92, 88], 91)
+    events[-1] = (events[-1][0], "keeping_stop")
+    events += [(events[-1][0] + 200.0, "relocation_start"), (events[-1][0] + 300.0, "graveyard")]
+    rows, _ = rt.score_object(1, events, HELD, 0.0, 3000.0, at)
+    stop, move, grave = rows[-3:]
+    assert stop.end_of_life and not stop.scored and (stop.model, stop.p, stop.bits) == ("", None, None)
+    assert stop.stay_days == pytest.approx(91.0) and not stop.off_routine
+    assert move.model == "rate" and move.stay_days is None
+    assert (move.past_stays, move.past_departures) == (3, 3)
+    assert grave.end_of_life and (grave.past_stays, grave.past_departures) == (3, 4)
+    s = rt.standing(1, rows, [], HELD, 3000.0)
+    assert (s.departures, s.end_of_life) == (4, 2)
+    assert s.bits == pytest.approx(sum(r.bits for r in rows if r.scored))
+
+
+def test_the_rank_splits_bits_into_stay_and_rate_models():
+    events = hopper([90, 92, 88], 30)
+    rows, _ = rt.score_object(1, events, HELD, 0.0, 3000.0, at)
+    s = rt.standing(1, rows, [], HELD, 3000.0)
+    assert s.stay_bits == pytest.approx(rows[-1].bits) and rows[-1].model == "stays"
+    assert s.rate_bits == pytest.approx(sum(r.bits for r in rows[:-1]))
+    assert s.stay_bits_per_year + s.rate_bits_per_year == pytest.approx(s.bits_per_year)
+
+
+def test_the_stay_window_is_the_smaller_of_15_days_and_the_share_of_the_stay():
+    stays = [20.0, 20.0, 20.0]
+    mu, sd = math.log(20.0), rt.SD_FLOOR
+
+    def cdf(v):
+        return 0.5 * (1 + math.erf((math.log(v) - mu) / (sd * math.sqrt(2))))
+    assert rt.stay_window_p(stays, 20.0, 0.1) == pytest.approx(cdf(22.0) - cdf(18.0))
+    long = [400.0, 400.0, 400.0]
+    assert rt.stay_window_p(long, 400.0, 0.1) == rt.stay_window_p(long, 400.0, 0.25)
+    assert rt.stay_window_p(stays, 20.0, 0.25) > rt.stay_window_p(stays, 20.0, 0.05)
+
+
+def test_the_belt_prior_counts_relocation_starts_only():
+    objects = [{"norad": n, "holds": [(0.0, 900.0)], "first_day": 0.0, "last_day": 900.0} for n in (1, 2)]
+    events = {1: [(100.0, "relocation_start"), (200.0, "relocation_end")], 2: [(300.0, "graveyard"),
+                                                                             (400.0, "keeping_stop")]}
+    priors, rows, _ = run_scores(objects, events, 900.0)
+    assert priors[-1].departures == 1
+    assert [r.end_of_life for r in rows[2]] == [True, True]
 
 
 def test_the_belt_prior_uses_only_departures_before_its_date():
@@ -98,7 +145,7 @@ def test_the_belt_prior_strength_by_hand_on_three_objects():
 
 
 def test_departures_in_the_first_180_days_are_not_scored():
-    rows, _ = rt.score_object(1, [(150.0, "keeping_stop"), (200.0, "graveyard")], HELD, 10.0, 3000.0, at)
+    rows, _ = rt.score_object(1, [(150.0, "relocation_start"), (200.0, "relocation_start")], HELD, 10.0, 3000.0, at)
     assert [r.scored for r in rows] == [False, True]
     assert not rows[0].off_routine
 
@@ -153,5 +200,10 @@ def test_cited_list_shares_and_overlap():
     assert rt.top_share(values, [100, 99, 50, 999], 0.05) == (2, 3)
     assert rt.lower_half(values, [1, 120, 100]) == (2, 3)
     assert rt.overlap([1, 2, 3, 4], [4, 9, 2, 8, 7], 3, 4) == (1, 3)
+    deps = {n: 0 for n in range(1, 7)} | {n: 1 for n in range(7, 11)}
+    hit, n, none, total, chance = rt.no_departure_share(deps, [1, 2, 7, 999])
+    assert (hit, n, none, total) == (2, 3, 6, 10)
+    assert chance == pytest.approx((math.comb(6, 2) * 4 + math.comb(6, 3)) / math.comb(10, 3))
+    assert rt.no_departure_share(deps, [999])[4] is None
     assert rt.spearman([1, 2, 3, 4], [10, 20, 30, 40]) == pytest.approx(1.0)
     assert rt.spearman([1, 2, 3, 4], [4, 3, 2, 1]) == pytest.approx(-1.0)
