@@ -158,7 +158,7 @@ def test_an_arrival_is_never_dated_before_its_departure(monkeypatch):
     lon = np.where(days >= 65.0, lon + 1.0, lon)
     segs = [held(0, 60, 9.98, 10.02), held(60, 90, 9.98, 11.02, "drifting"), held(90, 150, 10.98, 11.02)]
     monkeypatch.setattr(E, "segments", lambda tr: segs)
-    monkeypatch.setattr(E, "_departure", lambda *a: (80.0, "rate_exit", None, 0.0))
+    monkeypatch.setattr(E, "_departure", lambda *a: (80.0, "rate_exit", None, 0.0, 80.0))
     start, end = E.events_from_track(M.track(element_sets(days, lon, rate)))
     assert (start.event_type, end.event_type) == ("relocation_start", "relocation_end")
     assert E._day(end.date) >= E._day(start.date) == 80.0
@@ -564,6 +564,22 @@ def test_a_move_after_a_slow_burn_cycle_is_dated_at_the_step_in_the_sets_not_the
     found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 48.0]), np.array([500.0, 500.0]))
     assert [f.event_type for f in found] == ["relocation_start", "relocation_end"]
     assert found[0].signal == "a_step" and abs(E._day(found[0].date) - 70.0) <= 1
+
+
+def test_a_move_after_a_slow_burn_cycle_is_not_dated_at_a_step_after_the_departure(monkeypatch):
+    days = np.arange(0.0, 200.0, 0.25)
+    lon, rate = quiet_keeper(days)
+    moved, turn, after = days >= 58.0, days >= 84.0, days >= 110.0
+    rate = np.where(moved, -0.005, rate)
+    rate = np.where(turn, -0.03, rate)
+    rate = np.where(after, -0.001, rate)
+    lon = np.where(moved, 10.0 - 0.005 * (days - 58.0), lon)
+    lon = np.where(turn, 9.87 - 0.03 * (days - 84.0), lon)
+    lon = np.where(after, 9.09 - 0.001 * (days - 110.0), lon)
+    monkeypatch.setattr(E, "segments", lambda tr: [held(0, 60, 9.98, 10.02), held(60, 110, 9.09, 10.0, "drifting"),
+                                                   held(110, 200, 8.9, 9.09)])
+    found = E.events_from_track(M.track(element_sets(days, lon, rate)), np.array([20.0, 48.0]), np.array([500.0, 500.0]))
+    assert found[0].event_type == "relocation_start" and E._day(found[0].date) < 72.0
 
 
 def test_two_transfer_orbit_sets_at_the_start_of_the_data_are_not_lone_sets():
