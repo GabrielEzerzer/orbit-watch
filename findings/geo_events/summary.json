@@ -1,15 +1,15 @@
 {
-  "commit": "285480271079fc25c469c89b7017e4e70d8edc96",
+  "commit": "0ec21ec6253f2902b7736cd6211463acc086f09c",
   "dirty": false,
   "events_file": "geo_events.csv",
   "window_days": 45,
   "dev": {
     "events": 13,
     "scored": 13,
-    "caught": 11,
-    "recall": 0.8462,
+    "caught": 12,
+    "recall": 0.9231,
     "median_abs_error_days": 10.0,
-    "p90_abs_error_days": 33.0,
+    "p90_abs_error_days": 32.9,
     "by_event_type": {
       "relocation_start": {
         "events": 4,
@@ -22,10 +22,10 @@
       "relocation_end": {
         "events": 3,
         "scored": 3,
-        "caught": 1,
-        "recall": 0.3333,
-        "median_abs_error_days": 0.0,
-        "p90_abs_error_days": 0.0
+        "caught": 2,
+        "recall": 0.6667,
+        "median_abs_error_days": 5.0,
+        "p90_abs_error_days": 9.0
       },
       "graveyard": {
         "events": 5,
@@ -56,34 +56,34 @@
   "test": {
     "events": 20,
     "scored": 20,
-    "caught": 15,
-    "recall": 0.75,
-    "median_abs_error_days": 14.0,
-    "p90_abs_error_days": 30.799999999999997,
+    "caught": 18,
+    "recall": 0.9,
+    "median_abs_error_days": 13.0,
+    "p90_abs_error_days": 34.3,
     "by_event_type": {
       "relocation_start": {
         "events": 4,
         "scored": 4,
-        "caught": 3,
-        "recall": 0.75,
-        "median_abs_error_days": 24.0,
-        "p90_abs_error_days": 32.0
+        "caught": 4,
+        "recall": 1.0,
+        "median_abs_error_days": 29.0,
+        "p90_abs_error_days": 38.9
       },
       "relocation_end": {
         "events": 5,
         "scored": 5,
-        "caught": 4,
-        "recall": 0.8,
-        "median_abs_error_days": 10.5,
-        "p90_abs_error_days": 20.3
+        "caught": 5,
+        "recall": 1.0,
+        "median_abs_error_days": 9.0,
+        "p90_abs_error_days": 19.400000000000002
       },
       "graveyard": {
         "events": 10,
         "scored": 10,
-        "caught": 7,
-        "recall": 0.7,
-        "median_abs_error_days": 22.0,
-        "p90_abs_error_days": 29.6
+        "caught": 8,
+        "recall": 0.8,
+        "median_abs_error_days": 17.0,
+        "p90_abs_error_days": 28.7
       },
       "ns_keeping_stop": {
         "events": 0,
@@ -106,34 +106,34 @@
   "overall": {
     "events": 33,
     "scored": 33,
-    "caught": 26,
-    "recall": 0.7879,
+    "caught": 30,
+    "recall": 0.9091,
     "median_abs_error_days": 11.5,
-    "p90_abs_error_days": 33.5,
+    "p90_abs_error_days": 34.1,
     "by_event_type": {
       "relocation_start": {
         "events": 8,
         "scored": 8,
-        "caught": 7,
-        "recall": 0.875,
-        "median_abs_error_days": 10.0,
-        "p90_abs_error_days": 28.000000000000004
+        "caught": 8,
+        "recall": 1.0,
+        "median_abs_error_days": 11.0,
+        "p90_abs_error_days": 36.1
       },
       "relocation_end": {
         "events": 8,
         "scored": 8,
-        "caught": 5,
-        "recall": 0.625,
-        "median_abs_error_days": 7.0,
-        "p90_abs_error_days": 19.400000000000002
+        "caught": 7,
+        "recall": 0.875,
+        "median_abs_error_days": 9.0,
+        "p90_abs_error_days": 17.6
       },
       "graveyard": {
         "events": 15,
         "scored": 15,
-        "caught": 12,
-        "recall": 0.8,
+        "caught": 13,
+        "recall": 0.8667,
         "median_abs_error_days": 22.0,
-        "p90_abs_error_days": 34.8
+        "p90_abs_error_days": 34.6
       },
       "ns_keeping_stop": {
         "events": 0,

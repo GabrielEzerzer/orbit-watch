@@ -255,10 +255,31 @@ def test_tight_keeper_near_a_stable_point_is_control():
     assert found == ["controlled_lon_inc"] * 8
 
 
-def test_inclination_sawtooth_under_control_stays_c1():
+@pytest.mark.parametrize("phase", [0.0, 150.0])
+def test_inclination_sawtooth_under_control_stays_c1(phase):
     days = np.arange(0.0, EDGES[20], 0.5)
-    inc = 0.45 * ((days - EDGES[20] + 20.0) % 200.0) / 200.0
+    inc = 0.45 * ((days + phase) % 200.0) / 200.0
+    assert inc[-1] > M.C1_MAX_INCLINATION_DEG
     assert set(modes_of(element_sets(days, kept(days, 10.0), inc=inc))) == {"controlled_lon_inc"}
+
+
+def test_rise_after_a_single_earlier_excursion_is_c2_at_the_record_end():
+    days = np.arange(0.0, EDGES[20], 0.5)
+    inc = np.where(days < 200.0, 0.45 * (days % 200.0) / 200.0, 0.02 + 0.8 * np.clip(days - 450.0, 0.0, None) / 365.25)
+    found = modes_of(element_sets(days, kept(days, 10.0), inc=inc))
+    assert found[-1] == "controlled_lon" and found[0] == "controlled_lon_inc"
+
+
+@pytest.mark.parametrize("rise", [
+    lambda d: 0.02 + 0.03 * np.clip(d - 570.0, 0.0, None),
+    lambda d: np.minimum(0.02 + 0.01 * np.clip(d - 400.0, 0.0, None), 0.4),
+], ids=["higher", "longer"])
+def test_rise_past_two_earlier_excursions_is_c2_at_the_record_end(rise):
+    days = np.arange(0.0, EDGES[20], 0.5)
+    inc = np.where(days < 400.0, 0.45 * (days % 200.0) / 200.0, rise(days))
+    found = modes_of(element_sets(days, kept(days, 10.0), inc=inc))
+    tail = window_of(days[np.argmax((days > 400.0) & (inc > M.C1_MAX_INCLINATION_DEG))])
+    assert found[tail:] == ["controlled_lon"] * (len(found) - tail) and found[0] == "controlled_lon_inc"
 
 
 def crossing_window(days, inc):
@@ -334,6 +355,40 @@ def test_short_park_far_from_a_stable_point_is_control():
     lon = np.where(days < EDGES[1], 45.0 - 0.6 * (days - EDGES[1]),
                    np.where(days < EDGES[2], kept(days, 45.0, box=0.02), 45.0 + 0.6 * (days - EDGES[2])))
     assert modes_of(element_sets(days, lon)) == ["drifting", "controlled_lon_inc", "drifting"]
+
+
+def test_short_park_between_two_moves_near_a_stable_point_is_control():
+    slot, park = M.STABLE_EAST_DEG + 1.0, M.STABLE_EAST_DEG - 1.4
+    out, back = EDGES[3] + 15, EDGES[6] + 10
+    days = np.arange(EDGES[0], EDGES[10], 0.5)
+    lon = np.select([days < out, days < out + 6, days < back, days < back + 6],
+                    [kept(days, slot, box=0.01), slot - 0.4 * (days - out), kept(days, park, box=0.01, seed=1),
+                     park + 0.4 * (days - back)], kept(days, slot, box=0.01, seed=2))
+    found = modes_of(element_sets(days, lon))
+    assert found[3] == found[6] == "drifting" and found[4:6] == ["controlled_lon_inc"] * 2
+
+
+def test_park_window_holding_the_arrival_tail_is_not_bracketed():
+    slot, park = M.STABLE_EAST_DEG + 1.0, M.STABLE_EAST_DEG - 1.4
+    out, back = EDGES[4] - 4.5, EDGES[5] + 10
+    days = np.arange(EDGES[0], EDGES[10], 0.5)
+    lon = np.select([days < out, days < out + 6, days < back, days < back + 6],
+                    [kept(days, slot, box=0.01), slot - 0.4 * (days - out), kept(days, park, box=0.01, seed=1),
+                     park + 0.4 * (days - back)], kept(days, slot, box=0.01, seed=2))
+    found = modes_of(element_sets(days, lon))
+    assert found[4] == "undetermined" and found[5] == "drifting"
+
+
+def test_free_libration_over_a_year_between_two_moves_is_not_bracketed():
+    out, back = EDGES[3] + 15, EDGES[20] + 10
+    days = np.arange(EDGES[0], EDGES[24], 0.5)
+    lib = free_motion(stable_point(6.0) + 0.15, np.clip(days - out - 6, 0.0, None), inc=6.0)
+    slot, end = lib[0] + 2.4, lib[np.argmax(days >= back)]
+    lon = np.select([days < out, days < out + 6, days < back, days < back + 6],
+                    [kept(days, slot, box=0.01), slot - 0.4 * (days - out), lib, end + 0.4 * (days - back)],
+                    kept(days, end + 2.4, box=0.01, seed=2))
+    found = modes_of(element_sets(days, lon, inc=6.0))
+    assert found[3] == found[20] == "drifting" and set(found[4:20]) == {"librating_75E"}
 
 
 def test_wide_box_keeper_is_controlled_by_its_burns():

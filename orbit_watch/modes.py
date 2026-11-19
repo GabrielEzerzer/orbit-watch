@@ -33,6 +33,7 @@ FREE_SCALE = (0.8, 1.25)
 MOVING_SWING = 4.0
 YEAR_DAYS = 365
 C1_MAX_INCLINATION_DEG = 0.3
+SAWTOOTH_MIN = 2
 INCLINED_MIN_DEG = 25.0
 REGION_A_KM = (37948.0, 46380.0)
 REGION_E_MAX = 0.25
@@ -267,6 +268,12 @@ def classify(tr: Track) -> list[Window]:
     def chain_days(a: int, b: int) -> float:
         return float(tr.days[idx[b][-1]] - tr.days[idx[a][0]])
 
+    def bracketed(k: int) -> bool:
+        a, b = chain(k)
+        u = _unwrapped(tr.days[idx[k]], tr.lon[idx[k]], float(np.median(tr.rate[idx[k]])))
+        return (float(np.ptp(u)) <= HELD_SPREAD_DEG
+                and all(0 <= j < len(idx) and enough(j) and burn(j) for j in (a - 1, b + 1)))
+
     inc_median = {k: float(np.median(tr.inclination[idx[k]])) for k in range(len(idx)) if enough(k)}
     low_inc = sorted(k for k, v in inc_median.items() if v <= C1_MAX_INCLINATION_DEG)
     low_groups = [[low_inc[0]]] if low_inc else []
@@ -279,11 +286,26 @@ def classify(tr: Track) -> list[Window]:
     def inclination_held(k: int) -> bool:
         return any(g[0] <= k <= g[-1] and (g[-1] - g[0] + 1) * WINDOW_DAYS > YEAR_DAYS for g in low_groups)
 
+    inc_peak = {k: float(tr.inclination[idx[k]].max()) for k in inc_median}
+    closed = [(b - a - 1, max(inc_peak[j] for j in range(a, b + 1) if j in inc_median))
+              for a, b in zip(low_inc, low_inc[1:])
+              if (b - a) * WINDOW_DAYS <= YEAR_DAYS and any(j in inc_median for j in range(a + 1, b))]
+
+    def open_edge_c1(i: int) -> bool:
+        if len(closed) < SAWTOOTH_MIN or 0 < i < len(low_inc):
+            return False
+        edge = [j for j in inc_median if (j >= low_inc[-1] if i else j <= low_inc[0])]
+        length = (max(edge) - low_inc[-1]) if i else (low_inc[0] - min(edge))
+        return (length <= max(n for n, _ in closed)
+                and max(inc_peak[j] for j in edge) <= max(p for _, p in closed))
+
     def c1(k: int) -> bool:
         if inc_median[k] <= C1_MAX_INCLINATION_DEG:
             return True
         i = bisect_left(low_inc, k)
-        return 0 < i < len(low_inc) and (low_inc[i] - low_inc[i - 1]) * WINDOW_DAYS <= YEAR_DAYS
+        if 0 < i < len(low_inc):
+            return (low_inc[i] - low_inc[i - 1]) * WINDOW_DAYS <= YEAR_DAYS
+        return open_edge_c1(i)
 
     rows, free, slow = [], {}, {}
     for k in range(first, last + 1):
@@ -312,7 +334,7 @@ def classify(tr: Track) -> list[Window]:
             free_chain = not burnt and not inclination_held(k) and chain_free(a, b)
             run_held = not free_chain
             free_hold = free_chain and chain_days(a, b) > YEAR_DAYS
-        tight = still and (run_held or spread(sel) < 0.5 * free_sag)
+        tight = still and (run_held or spread(sel) < 0.5 * free_sag or (not free_hold and bracketed(k)))
         wide = spread(sel) <= BOX_DEG and any(run_spread(j) <= BOX_DEG and any(burn(i) for i in range(j, j + HELD_RUN)) for j in runs)
         if not (REGION_A_KM[0] <= np.median(tr.semi_major_axis_km[sel]) <= REGION_A_KM[1]
                 and np.median(tr.eccentricity[sel]) <= REGION_E_MAX):
