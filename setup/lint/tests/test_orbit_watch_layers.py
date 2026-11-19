@@ -99,6 +99,11 @@ class Layers(unittest.TestCase):
                 "tests/test_p.py": "import os\nREPO = os.path.dirname(os.path.dirname(__file__))\nT = os.path.join(REPO, \"data\", \"x\")\n",
                 "tests/test_q.py": "import numpy as np\nT = np.loadtxt(\"data/x.txt\")\n",
                 "tests/test_r.py": "def test_x(name):\n    return open(f\"mock/geo/{name}\").read()\n",
+                "tests/test_u.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = open(f\"{REPO}/data/x\")\n",
+                "tests/test_v.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = open(str(REPO) + \"/data/x\")\n",
+                "tests/test_w.py": "from pathlib import PurePosixPath\nT = PurePosixPath(REPO, \"data\")\n",
+                "tests/test_x.py": "from pathlib import PureWindowsPath\nT = PureWindowsPath(REPO, \"mock\")\n",
+                "tests/test_y.py": "def test_x(tmp_path):\n    root = tmp_path / \"repo\"\n    (root / \"data\").mkdir()\n",
             },
             {
                 "tests/test_e.py": "def test_x(mock_dir):\n    return (mock_dir / \"geo\" / \"x.tle\").read_text()\n",
@@ -110,6 +115,12 @@ class Layers(unittest.TestCase):
                 "tests/test_n.py": "from pathlib import Path\nREPO = Path(__file__).parents[1]\nT = REPO / \"orbit_watch\"\n",
                 "tests/test_s.py": "def test_x(tmp_path):\n    (tmp_path / \"tle2025.txt\" / \"data\").mkdir(parents=True)\n",
                 "tests/test_t.py": "import os\ndef test_x(tmp_path):\n    os.makedirs(os.path.join(tmp_path, \"data\"))\n",
+                "tests/test_z.py": "def test_x(tmp_path):\n    tmp_path.joinpath(\"x\").joinpath(\"data\").mkdir(parents=True)\n",
+                "tests/test_za.py": "def test_x(tmp_path):\n    (tmp_path.joinpath(\"x\") / \"data\").mkdir(parents=True)\n",
+                "tests/test_zb.py": "def test_x(tmp_path):\n    return f\"{tmp_path}\" + \"/data-free/x\"\n",
+                "tests/test_zc.py": "def test_x(tmp_path):\n    open(f\"{tmp_path}/data/x\", \"w\").close()\n",
+                "tests/test_zd.py": "def test_x(tmp_path):\n    open(str(tmp_path) + \"/data/x\", \"w\").close()\n",
+                "tests/test_ze.py": "def test_x(mock_dir):\n    return open(f\"{mock_dir!s}/mock/x\").read()\n",
             },
         )
 

@@ -62,7 +62,7 @@
       "command": "python tools/fetch_truth_tles.py [--cache-dir DIR]",
       "inputs": ["Space-Track login in SPACETRACK_USER and SPACETRACK_PASSWORD", "groundtruth/splits.json"],
       "outputs": ["CACHE-DIR/gp_history-<norad>-2021-01-01--2026-01-01.json", "counts and file sizes on stdout"],
-      "test": "tests/test_feature_map.py"
+      "test": "tests/test_fetch_truth_tles.py"
     },
     {
       "name": "Write the labelled-objects table",
@@ -71,7 +71,7 @@
       "command": "python tools/truth_table.py [--tle-dir DIR]",
       "inputs": ["groundtruth/splits.json and the ground-truth CSVs", "cached Space-Track gp_history files in TLE-DIR"],
       "outputs": ["groundtruth/objects.md", "the same table on stdout"],
-      "test": "tests/test_feature_map.py"
+      "test": "tests/test_truth_table.py"
     },
     {
       "name": "Draw the belt relocation chart",
