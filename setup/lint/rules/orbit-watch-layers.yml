@@ -71,7 +71,7 @@ rule:
 id: tests-read-fixtures-through-mock-dir
 language: Python
 severity: error
-message: "Tests read fixture files through the mock_dir fixture in tests/conftest.py, which points at mock/. Take mock_dir as a test argument and join the file onto it, and build scratch trees on tmp_path. A string starting mock/ or data/, or a bare \"mock\" or \"data\" joined onto anything but mock_dir or tmp_path, is flagged. Add a new fixture under mock/ with its source in mock/README.md. Tests never read data/, which is git-ignored and absent in CI."
+message: "Tests read fixture files through the mock_dir fixture in tests/conftest.py, which points at mock/. Take mock_dir as a test argument and join the file onto it, and build scratch trees on tmp_path. A string starting mock/ or data/, a string with /mock/ or /data/ after a leading slash or an f-string interpolation, or a bare \"mock\" or \"data\" joined onto anything but mock_dir or tmp_path, is flagged. A variable holding a scratch path is not recognised: write tmp_path out in the expression that joins \"mock\" or \"data\". Add a new fixture under mock/ with its source in mock/README.md. Tests never read data/, which is git-ignored and absent in CI."
 files:
   - "tests/**"
 ignores:
@@ -80,6 +80,16 @@ rule:
   kind: string
   any:
     - regex: '^[rRbBuUfF]*["'']+(?:\.{1,2}[/\\])*(?:mock|data)[/\\]'
+    - regex: '^[rRbBuUfF]*["'']+(?:[/\\]+|.*\}[/\\]+)(?:mock|data)(?:[/\\]|["'']+$)'
+      not:
+        any:
+          - regex: '^[rRbBuUfF]*["'']+[^{"'']*\{\s*(?:tmp_path|mock_dir)\s*[}!:]'
+          - inside:
+              kind: binary_operator
+              field: right
+              has:
+                field: left
+                regex: '^str\(\s*(?:tmp_path|mock_dir)\s*\)$'
     - regex: '^[rRbBuU]*["'']+(?:\.{1,2}[/\\])*(?:mock|data)["'']+$'
       any:
         - inside:
@@ -92,17 +102,17 @@ rule:
               - not:
                   has:
                     field: left
-                    regex: '^\(*\s*(?:tmp_path|mock_dir)(?:\s*[/)]|$)'
+                    regex: '^\(*\s*(?:tmp_path|mock_dir)(?:\s*[/)]|\.joinpath\(|$)'
         - inside:
             kind: argument_list
             not:
-              regex: '^\(\s*(?:tmp_path|mock_dir)\s*[,)]'
+              regex: '^\(\s*(?:tmp_path|mock_dir)(?:\s*[,)]|\.joinpath\()'
             inside:
               kind: call
               has:
                 field: function
                 any:
-                  - regex: '^(?:os\.path\.join|(?:pathlib\.)?(?:Path|PurePath|PosixPath|WindowsPath)|open)$'
+                  - regex: '^(?:os\.path\.join|(?:pathlib\.)?(?:Path|PurePath|PosixPath|WindowsPath|PurePosixPath|PureWindowsPath)|open)$'
                   - kind: attribute
                     has:
                       field: attribute
@@ -110,4 +120,4 @@ rule:
                     not:
                       has:
                         field: object
-                        regex: '^\(*\s*(?:tmp_path|mock_dir)(?:\s*[/)]|$)'
+                        regex: '^\(*\s*(?:tmp_path|mock_dir)(?:\s*[/)]|\.joinpath\(|$)'
