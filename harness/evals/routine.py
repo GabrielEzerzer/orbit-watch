@@ -236,17 +236,23 @@ def _top(values: dict[int, float], ids: Sequence[int]) -> dict:
             "share": round(hit / n, 3) if n else None}
 
 
+def _shown(path: Path) -> str:
+    repo = GROUNDTRUTH.parent
+    full = path.resolve()
+    return full.relative_to(repo).as_posix() if full.is_relative_to(repo) else path.name
+
+
 def cited_lists(rank: Sequence[dict], irregular: Path | None, steady: Path | None) -> dict:
     values = {int(r["norad_id"]): float(r["bits_per_year"]) for r in rank}
     out = {}
     if irregular is not None and irregular.is_file():
         rows = read_cited(irregular)
-        out["irregular"] = {"file": irregular.as_posix(), **_top(values, [n for n, _ in rows]),
+        out["irregular"] = {"file": _shown(irregular), **_top(values, [n for n, _ in rows]),
                             "evidence_object": _top(values, [n for n, e in rows if e == "object"])}
     if steady is not None and steady.is_file():
         ids = [n for n, _ in read_cited(steady)]
         hit, n = rt.lower_half(values, ids)
-        out["steady"] = {"file": steady.as_posix(), "listed": len(ids), "rateable": n, "in_lower_half": hit,
+        out["steady"] = {"file": _shown(steady), "listed": len(ids), "rateable": n, "in_lower_half": hit,
                          "share": round(hit / n, 3) if n else None}
     return out or {"status": "no cited irregular or steady list yet"}
 

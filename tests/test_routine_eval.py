@@ -22,6 +22,7 @@ def test_cited_lists_count_rateable_irregular_objects_in_the_top_5_percent_and_s
     out = ev.cited_lists(_rank(values), mock_dir / "routine" / "irregular_objects.csv",
                          mock_dir / "routine" / "steady_objects.csv")
     assert (out["irregular"]["listed"], out["irregular"]["rateable"], out["irregular"]["in_top_5_percent"]) == (4, 3, 2)
+    assert out["irregular"]["file"] == "mock/routine/irregular_objects.csv"
     own = out["irregular"]["evidence_object"]
     assert (own["listed"], own["rateable"], own["in_top_5_percent"]) == (3, 2, 1)
     assert (out["steady"]["rateable"], out["steady"]["in_lower_half"]) == (3, 2)
