@@ -105,7 +105,7 @@ Writes:
 
 ### Rank GEO objects by how far they break their own routine
 
-belt reads every GEO-region object's element sets once and caches its held spans, daily longitude and semi-major axis and steps outside holds (with --as-of, also the state changes and holds rebuilt on data cut at the end of 2021-2024); score turns the cache and the state-change list into each departure's surprise in bits against the object's own stays and moves, a per-object rank, stay overruns, proximity flags on arrivals and the unrated list.
+belt reads every GEO-region object's element sets once and caches its held spans, daily longitude and semi-major axis and steps outside holds (with --as-of, also the state changes and holds rebuilt on data cut at the end of 2021-2024); score turns the cache and the state-change list into each relocation start's surprise in bits against the object's own stays and moves (end-of-life departures listed, not scored), a per-object rank, stay overruns, proximity flags on arrivals and the unrated list.
 
 ```
 python -m orbit_watch.jobs.routine belt|score [--as-of] [--events CSV] [--out DIR] [--geo-dir DIR] [--cache PATH]
@@ -342,7 +342,7 @@ Writes:
 
 ### Routine score checks
 
-checks: off-routine rows on dead objects and on QZS-3, QZS-6 and Fengyun-2H while on station, cited departures flagged, stability of the top of the rank across 2021 to mid-2023 and the rest, as-of reruns on cut data, and the cited irregular and steady lists when present; planted: three or four relocations planted on a fixed rhythm in a held satellite's element sets, then one more on or off rhythm, scored in bits; audit: the blind hand-audit sample of the top 30 and 20 from the middle, with one chart per object.
+checks: off-routine rows on dead objects and on QZS-3, QZS-6 and Fengyun-2H while on station, cited relocation starts flagged and cited end-of-life moves typed, stability of the top of the rank across 2021 to mid-2023 and the rest, as-of reruns on cut data, and the cited irregular and steady lists when present; planted: three or four relocations planted on a fixed rhythm in a held satellite's element sets, then one more on or off rhythm, scored in bits; audit: the blind hand-audit sample of the top 30 and 20 from the middle, with one chart per object.
 
 ```
 python -m harness.evals.routine checks|planted|audit [--split dev|all] [--events CSV] [--out DIR] [--geo-dir DIR] [--cache PATH] [--irregular CSV] [--steady CSV] [--charts DIR] [--share F]
