@@ -74,6 +74,14 @@ Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/READM
 Across the belt: **768 changes on 301 objects**: 244 relocation starts, 340 relocation ends, 83
 graveyard moves, 14 keeping stops, 57 ends of north-south keeping and 30 free burns.
 
+An independent cross-check of 50 objects (the top 30 of the rank and 20 drawn from the rest of the
+list) found few public sources: 37 objects have no dated claim from any source. All 15 dated claims
+from operators and the press match the list, on 10 objects, with a median date error of 2 days and
+a worst of 22. Analyses built on the same public element sets are counted apart: 12 of their 18
+claims match. Their 6 misses are two small Luch (Olymp) 2 moves (0.6° and 0.4°) held inside one
+listed stay, TJS-10's arrival from its transfer orbit, and an SJ-17 burn the list has as a
+departure.
+
 How each number was measured, with the full breakdowns and caveats:
 [findings/README.md](findings/README.md), which also lists the leads from the ISS work.
 
