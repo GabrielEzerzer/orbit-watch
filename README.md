@@ -5,20 +5,21 @@ dated list built only from public orbital elements: 768 changes on 301 of 1,799 
 
 **To use the results, start at [`dataset/`](dataset/README.md):** the changes with object names and
 owners, one row per object, a data card with every column and how good the numbers are, and a chart
-for each of the top 30 objects.
+for each of the top 30 objects of the rank.
 
 ![Where LUCH (OLYMP) and LUCH (OLYMP) 2 were parked, 2021-2025, and which satellite each stop was beside](docs/luch_stops.png)
 
-**One example from the list.** Most objects in the belt never move: 1,646 of the 1,799 started no
+**One example from the list.** Most objects in the belt never relocate: 1,646 of the 1,799 started no
 relocation in five years, and eight started five or more. Two of the eight are the Russian
 satellites LUCH (OLYMP) and LUCH (OLYMP) 2. The list has 13 stops for them, and at 8 the satellite
 arrived within 0.1° of another owner's satellite that was already there. The rest of the belt has
 27 such arrivals, one each on 27 objects. Analysts who follow the pair from the same public element
-sets name the same neighbours: Eutelsat 8 West B in February 2021
+sets name these neighbours: Eutelsat 8 West B in February 2021
 ([SatTrackCam](https://sattrackcam.blogspot.com/2021/04/luch-olymp-k.html)), Intelsat 37e at 18° W
-([RussianSpaceWeb](https://russianspaceweb.com/olymp.html)) and Eutelsat 9B in May 2023
-([SatTrackCam](https://sattrackcam.blogspot.com/2024/06/luch-olymp-2-is-on-move-again.html)).
-The name on each bar is that neighbour, with its SATCAT owner code. Redraw the chart with
+([RussianSpaceWeb](https://russianspaceweb.com/olymp.html)) and Eutelsat KA-SAT 9A and 9B in May 2023
+([SatTrackCam](https://sattrackcam.blogspot.com/2024/06/luch-olymp-2-is-on-move-again.html)). They
+also name neighbours at four LUCH (OLYMP) 2 stops that the 0.1° rule does not flag. The name beside
+each bar is the flagged neighbour, with its SATCAT owner code. Redraw the chart with
 `python tools/stops_chart.py`.
 
 ## What is in the list
@@ -43,7 +44,8 @@ and after. The list is [`findings/state_changes/events.csv`](findings/state_chan
 1. **Collect.** From yearly full-catalogue TLE bundles, keep every object with any element set in
    ESA's GEO region (mean motion 0.9-1.1 rev/day, eccentricity at most 0.2, inclination at most 70°).
 2. **Clean.** Drop alternate orbit solutions: runs of up to 10 days whose semi-major axis or
-   inclination jumps away and comes back while the mean longitude carries on.
+   inclination jumps away and comes back while the mean longitude carries on, and lone sets 10 km
+   or more off their neighbours.
 3. **Label the mode.** Classify each 30-day window with ESA's classes: held in longitude (with or
    without inclination control), drifting, librating around 75° E, 105° W or both, or inclined.
 4. **Find burns.** A step detector looks for steps in the mean semi-major axis against the local
@@ -87,29 +89,34 @@ first run, and the score misses most of them:
 | Check | Target | Result |
 |---|---|---|
 | Cited relocation starts scored as off-routine | 90% | 1 of 4 |
-| Planted rhythm of four moves, then one on or off it: both read right | 90% | 0.80 of held-out trials |
+| Planted rhythm of four moves, then one on or off it: both read right | 90% | 0.80 of the held-out trials whose last move was caught, 0.74 of all 100 |
 | Top 30 on the first half of the data in the top 60 on the second | half | 5 of 24 |
 | Rank built on data to an earlier date against the final rank (Spearman) | 0.9 | 0.089 to 0.841 |
 | Cited irregular objects in the top 5% | 75% | 4 of the 6 that could be rated |
 | Off-routine rows on rocket bodies, debris and logged keepers | about 0 | 0 |
 | Top 30 judged irregular in a blind hand audit of their charts | 24 | 27 |
 
-The cause is the data, not the model. Five years hold too little history per object: only 33 of
-the 197 scored departures have three earlier stays to compare with, and only eight objects get any
-score from their own record. They are the same eight that started five or more relocations. For
-every other object the score counts how often it left, so the rank is published as what it does
-measure, the most active movers ([`dataset/objects.csv`](dataset/objects.csv)):
+Most of the cause is the data. Five years hold too little history per object: only 33 of the 197
+scored departures have three earlier stays to compare with, and only eight objects get any score
+from their own stay lengths. They are the same eight that started five or more relocations. Every
+other departure is scored by how rarely held objects leave, which ignores timing, so a first
+departure after a long hold scores high whatever its timing. The model has faults too: with enough history, it
+still misreads about a fifth of the planted trials.
 
-| Object | Owner code | Relocation starts | Years held | Arrivals beside another owner's satellite |
-|---|---|---|---|---|
-| HYLAS 1 | UK | 13 | 2.75 | 0 |
-| WGS F3 (USA 211) | US | 9 | 3.68 | 0 |
-| SJ-17 | PRC | 8 | 3.99 | 0 |
-| SJ-20 | PRC | 7 | 4.02 | 0 |
-| LUCH (OLYMP) | CIS | 6 | 3.52 | 6 |
-| TJS-3 | PRC | 6 | 3.45 | 0 |
-| JCSAT 16 | JPN | 6 | 4.26 | 0 |
-| LUCH (OLYMP) 2 | CIS | 5 | 2.28 | 2 |
+So the rank does not measure broken routine. Below rank 7 its order is set by how many times an
+object left and how late. The eight objects that started five or more relocations, with their rank
+([`dataset/objects.csv`](dataset/objects.csv)):
+
+| Object | Owner code | Relocation starts | Years held | Arrivals beside another owner's satellite | Rank |
+|---|---|---|---|---|---|
+| HYLAS 1 | UK | 13 | 2.75 | 0 | 28 |
+| WGS F3 (USA 211) | US | 9 | 3.68 | 0 | 5 |
+| SJ-17 | PRC | 8 | 3.99 | 0 | 1 |
+| SJ-20 | PRC | 7 | 4.02 | 0 | 3 |
+| LUCH (OLYMP) | CIS | 6 | 3.52 | 6 | 2 |
+| TJS-3 | PRC | 6 | 3.45 | 0 | 4 |
+| JCSAT 16 | JPN | 6 | 4.26 | 0 | 7 |
+| LUCH (OLYMP) 2 | CIS | 5 | 2.28 | 2 | 6 |
 
 The method and every check are in
 [findings/README.md](findings/README.md#routine-score-and-irregularity-rank).

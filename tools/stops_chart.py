@@ -128,7 +128,7 @@ def draw(events: list[dict], flags: list[dict], out: Path) -> tuple[int, int]:
     axes[-1].xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
     handles = [
         Patch(facecolor=MOVE, edgecolor=MOVE,
-              label="Stop, flagged: arrived within 0.1° of another owner's satellite, named on the bar"),
+              label="Stop, flagged: arrived within 0.1° of another owner's satellite, named beside the bar"),
         Patch(facecolor=UNFLAGGED, edgecolor=MOVE, linewidth=1.5, label="Stop, not flagged"),
         plt.Line2D([], [], color=MOVE, linewidth=1.0, alpha=0.6, label="Move between stops"),
         plt.Line2D([], [], color=GRAVEYARD, marker="X", linestyle="none", markersize=9,
