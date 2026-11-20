@@ -304,6 +304,16 @@ def _brief(r: dict) -> dict:
     return row
 
 
+def search_effort(sample: list[dict]) -> dict:
+    rounds = []
+    for col in ("searches", "searches_2"):
+        n = [int(s[col]) for s in sample if s.get(col, "") != ""]
+        if n:
+            rounds.append({"objects": len(n), "searches": sum(n), "median_per_object": statistics.median(n),
+                           "max_per_object": max(n)})
+    return {"searches": sum(r["searches"] for r in rounds), "rounds": rounds}
+
+
 def summarise(results: list[dict], events: list[dict], sample: list[dict]) -> dict:
     info = {int(s["norad_id"]): s for s in sample}
     for r in results:
@@ -337,7 +347,7 @@ def summarise(results: list[dict], events: list[dict], sample: list[dict]) -> di
         **_commit(), "window_days": WINDOW_DAYS, "near_days": TIMELINE_DAYS,
         "period": [PERIOD[0].isoformat(), PERIOD[1].isoformat()],
         "claims": len(results), "claims_by_type": dict(Counter(r["claim"]["claim_type"] for r in results)),
-        "coverage": coverage,
+        "search": search_effort(sample), "coverage": coverage,
         "independent": {"all": _block(indep), "by_group": _split(indep, lambda r: r["group"]),
                         "by_already_cited": _split(indep, lambda r: r["cited"]),
                         "by_source_kind": _split(indep, lambda r: r["claim"]["source_kind"])},
