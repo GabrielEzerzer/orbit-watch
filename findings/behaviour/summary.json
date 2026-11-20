@@ -1,0 +1,18 @@
+{
+  "commit": "70e9ffea3729957a34c9cfa8d628424b23df5ce2",
+  "dirty": false,
+  "behaviour_cache_commit": "70e9ffea3729957a34c9cfa8d628424b23df5ce2",
+  "routine_cache_commit": "b405a3c198d8ec420c43e50c750e0f4e9a27d994",
+  "objects": 1799,
+  "scored": 1769,
+  "not_enough_data": 30,
+  "min_sets": 100,
+  "min_tracked_days": 180.0,
+  "neighbours": 10,
+  "outside_share": 0.05,
+  "score_cut": 2.2057,
+  "outside": 89,
+  "objects_whose_daily_samples_differ_from_the_routine_cache": 0,
+  "objects_whose_holds_differ_from_the_routine_cache": 0,
+  "run_seconds": 2.4
+}
