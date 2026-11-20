@@ -221,14 +221,14 @@ The list was checked against public sources that were not used to build it
 - **Search:** 179 web searches in 2 rounds:
   round 1, 72 for 50 objects (median 1 per object);
   round 2, 107 for 40 objects (median 3 per object).
-- **Coverage:** 36 of the 50 objects have no dated claim from any source found.
-- **Agreement:** 16 of the 16 dated claims from operators and the press match
-  the list, on 11 objects, with a median date error of 2 days and a worst of
-  22.
-- **Element-set analyses, counted apart:** 17 of their 23 dated claims match.
+- **Coverage:** for 38 of the 50 objects the search found no dated claim from any source.
+- **Agreement:** 9 of the 9 dated claims from operators and the press match
+  the list, on 7 objects, with median and worst date errors of 1 and
+  5 days.
+- **Element-set analyses, counted apart:** 20 of their 26 dated claims match.
 - **Disagreements:** 6 claims, 6 from element-set analyses and
-  0 from operators or the press. Two small LUCH (OLYMP) 2 moves are held inside one
-  stay ([#101](../../../issues/101)), TJS-10's first arrival on station is not listed
+  0 from operators or the press. Two small LUCH (OLYMP) 2 moves are each held inside a
+  listed stay ([#101](../../../issues/101)), TJS-10's first arrival on station is not listed
   ([#102](../../../issues/102)), and an SJ-17 burn the list has as a departure is a typing
   difference with no issue.
 

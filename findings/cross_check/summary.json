@@ -1,5 +1,5 @@
 {
-  "commit": "63a328f4c41229bee990d84daa1131674361f182",
+  "commit": "61818b72db4c2296e84cef566bf3fbd90710ded2",
   "dirty": false,
   "window_days": 45,
   "near_days": 90,
@@ -7,14 +7,15 @@
     "2021-01-01",
     "2025-12-31"
   ],
-  "claims": 49,
+  "claims": 45,
   "claims_by_type": {
     "relocation_start": 14,
     "behaviour": 9,
     "free_burn": 1,
-    "relocation_end": 19,
-    "graveyard": 5,
-    "stayed": 1
+    "relocation_end": 16,
+    "graveyard": 3,
+    "stayed": 1,
+    "keeping_stop": 1
   },
   "search": {
     "searches": 179,
@@ -36,94 +37,94 @@
   "coverage": {
     "top30": {
       "objects": 30,
-      "with_independent_dated_claim": 7,
-      "with_tle_derived_dated_claim_only": 3,
-      "without_dated_claim": 20,
+      "with_independent_dated_claim": 4,
+      "with_tle_derived_dated_claim_only": 5,
+      "without_dated_claim": 21,
       "listed_events": 212,
-      "events_matched_independent": 12,
-      "events_matched_tle_derived": 17
+      "events_matched_independent": 6,
+      "events_matched_tle_derived": 20
     },
     "drawn": {
       "objects": 20,
-      "with_independent_dated_claim": 4,
+      "with_independent_dated_claim": 3,
       "with_tle_derived_dated_claim_only": 0,
-      "without_dated_claim": 16,
+      "without_dated_claim": 17,
       "listed_events": 52,
-      "events_matched_independent": 4,
+      "events_matched_independent": 3,
       "events_matched_tle_derived": 0
     }
   },
   "independent": {
     "all": {
-      "claims": 16,
-      "matched": 16,
-      "objects": 11,
-      "median_abs_error_days": 2.0,
-      "worst_abs_error_days": 22,
+      "claims": 9,
+      "matched": 9,
+      "objects": 7,
+      "median_abs_error_days": 1,
+      "worst_abs_error_days": 5,
       "unmatched": {}
     },
     "by_group": {
       "drawn": {
-        "claims": 4,
-        "matched": 4,
-        "objects": 4,
-        "median_abs_error_days": 3.5,
-        "worst_abs_error_days": 9,
+        "claims": 3,
+        "matched": 3,
+        "objects": 3,
+        "median_abs_error_days": 2,
+        "worst_abs_error_days": 5,
         "unmatched": {}
       },
       "top30": {
-        "claims": 12,
-        "matched": 12,
-        "objects": 7,
-        "median_abs_error_days": 1.5,
-        "worst_abs_error_days": 22,
+        "claims": 6,
+        "matched": 6,
+        "objects": 4,
+        "median_abs_error_days": 0.5,
+        "worst_abs_error_days": 2,
         "unmatched": {}
       }
     },
     "by_already_cited": {
       "0": {
-        "claims": 10,
-        "matched": 10,
-        "objects": 8,
-        "median_abs_error_days": 1.5,
-        "worst_abs_error_days": 9,
+        "claims": 7,
+        "matched": 7,
+        "objects": 5,
+        "median_abs_error_days": 0,
+        "worst_abs_error_days": 2,
         "unmatched": {}
       },
       "1": {
-        "claims": 6,
-        "matched": 6,
-        "objects": 3,
-        "median_abs_error_days": 6.0,
-        "worst_abs_error_days": 22,
+        "claims": 2,
+        "matched": 2,
+        "objects": 2,
+        "median_abs_error_days": 3.0,
+        "worst_abs_error_days": 5,
         "unmatched": {}
       }
     },
     "by_source_kind": {
       "operator": {
-        "claims": 7,
-        "matched": 7,
-        "objects": 6,
+        "claims": 5,
+        "matched": 5,
+        "objects": 4,
         "median_abs_error_days": 2,
-        "worst_abs_error_days": 9,
+        "worst_abs_error_days": 5,
         "unmatched": {}
       },
       "press": {
-        "claims": 9,
-        "matched": 9,
-        "objects": 5,
-        "median_abs_error_days": 1,
-        "worst_abs_error_days": 22,
+        "claims": 4,
+        "matched": 4,
+        "objects": 3,
+        "median_abs_error_days": 0.0,
+        "worst_abs_error_days": 1,
         "unmatched": {}
       }
     }
   },
   "tle_derived": {
     "all": {
-      "claims": 23,
-      "matched": 17,
-      "objects": 4,
-      "median_abs_error_days": 1,
-      "worst_abs_error_days": 15,
+      "claims": 26,
+      "matched": 20,
+      "objects": 6,
+      "median_abs_error_days": 2.0,
+      "worst_abs_error_days": 22,
       "unmatched": {
         "listed_with_another_type": 1,
         "not_listed": 1,
@@ -132,11 +133,11 @@
     },
     "by_group": {
       "top30": {
-        "claims": 23,
-        "matched": 17,
-        "objects": 4,
-        "median_abs_error_days": 1,
-        "worst_abs_error_days": 15,
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
         "unmatched": {
           "listed_with_another_type": 1,
           "not_listed": 1,
@@ -146,21 +147,21 @@
     },
     "by_already_cited": {
       "0": {
-        "claims": 1,
-        "matched": 0,
-        "objects": 1,
-        "median_abs_error_days": null,
-        "worst_abs_error_days": null,
+        "claims": 2,
+        "matched": 1,
+        "objects": 2,
+        "median_abs_error_days": 9,
+        "worst_abs_error_days": 9,
         "unmatched": {
           "not_listed": 1
         }
       },
       "1": {
-        "claims": 22,
-        "matched": 17,
-        "objects": 3,
+        "claims": 24,
+        "matched": 19,
+        "objects": 4,
         "median_abs_error_days": 1,
-        "worst_abs_error_days": 15,
+        "worst_abs_error_days": 22,
         "unmatched": {
           "listed_with_another_type": 1,
           "listed_outside_window": 4
@@ -170,8 +171,8 @@
   },
   "top30_relocation_starts": {
     "listed": 101,
-    "confirmed_independent": 5,
-    "confirmed_tle_derived": 7
+    "confirmed_independent": 3,
+    "confirmed_tle_derived": 9
   },
   "behaviour": {
     "claims": 9,
@@ -307,5 +308,85 @@
         "offset_days": -79
       }
     }
-  ]
+  ],
+  "stricter": {
+    "pair_per_object": {
+      "independent": {
+        "claims": 9,
+        "matched": 8,
+        "objects": 7,
+        "median_abs_error_days": 0.5,
+        "worst_abs_error_days": 5,
+        "unmatched": {
+          "event_matched_to_another_claim": 1
+        }
+      },
+      "tle_derived": {
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "not_listed": 1,
+          "listed_outside_window": 4
+        }
+      },
+      "changed": [
+        "CC-040"
+      ]
+    },
+    "quarter_midpoint": {
+      "independent": {
+        "claims": 9,
+        "matched": 9,
+        "objects": 7,
+        "median_abs_error_days": 1,
+        "worst_abs_error_days": 15,
+        "unmatched": {}
+      },
+      "tle_derived": {
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "not_listed": 1,
+          "listed_outside_window": 4
+        }
+      },
+      "changed": [
+        "CC-043"
+      ]
+    },
+    "quarter_dropped": {
+      "independent": {
+        "claims": 8,
+        "matched": 8,
+        "objects": 6,
+        "median_abs_error_days": 1.0,
+        "worst_abs_error_days": 5,
+        "unmatched": {}
+      },
+      "tle_derived": {
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "not_listed": 1,
+          "listed_outside_window": 4
+        }
+      },
+      "changed": [],
+      "dropped": [
+        "CC-043"
+      ]
+    }
+  }
 }
