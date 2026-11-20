@@ -1,6 +1,6 @@
 {
-  "commit": "b405a3c198d8ec420c43e50c750e0f4e9a27d994",
-  "dirty": true,
+  "commit": "c260adf5eb9a71c0f9ebd106057c9f33d28c835e",
+  "dirty": false,
   "belt_cache_commit": "b405a3c198d8ec420c43e50c750e0f4e9a27d994",
   "events_file": "findings/state_changes/events.csv",
   "events_file_rows": 768,
@@ -254,5 +254,5 @@
       "proximity_flags": 0
     }
   ],
-  "run_seconds": 1.7
+  "run_seconds": 1.6
 }
