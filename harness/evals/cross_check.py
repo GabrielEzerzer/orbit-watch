@@ -24,7 +24,7 @@ from pathlib import Path
 from harness.evals.mode_events import PERIOD, TIMELINE_DAYS, WINDOW_DAYS, _commit, event_date
 from harness.evals.state_changes import ACCEPTS
 from orbit_watch.sources import data_dir
-from orbit_watch.truth import GROUNDTRUTH
+from orbit_watch.truth import GROUNDTRUTH, read_event_rows
 
 CLAIMS = GROUNDTRUTH / "cross_check.csv"
 CLAIM_FIELDS = ["claim_id", "norad_id", "name", "claim_type", "date", "date_end", "date_precision", "lon_from_deg",
@@ -50,8 +50,7 @@ SAMPLE_FIELDS = ["norad_id", "name", "group", "rank", "already_cited", "sources_
 
 
 def _rows(path: Path) -> list[dict]:
-    with open(path, encoding="utf-8", newline="") as f:
-        return list(csv.DictReader(f))
+    return read_event_rows(path)[1]
 
 
 def draw_sample(rank: list[dict], unrated: list[dict], event_norads: set[int], cited: set[int]) -> list[dict]:
