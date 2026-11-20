@@ -11,4 +11,4 @@ event_id,split,event_type,status,found_type,found_date,error_days,signal,size,mo
 55841-relocation_end-2025-03-07,dev,relocation_end,caught,relocation_end,2025-03-07,0,rate_entry,0.0,2025-03-07
 26824-graveyard-2025-04-09,dev,graveyard,caught,graveyard,2025-03-31,-9,rate_exit,416.641,2025-03-07
 25462-graveyard-2025-05,dev,graveyard,caught,graveyard,2025-04-20,-25,rate_exit,458.612,2025-04-06
-40258-relocation_end-2025-08-24,dev,relocation_end,caught,relocation_end,2025-08-24,0,rate_entry,0.0,2025-08-24
+40258-relocation_end-2025-08-24,dev,relocation_end,caught,relocation_end,2025-08-24,0,rate_entry,0.0,2025-09-03

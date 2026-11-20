@@ -1,6 +1,6 @@
 event_id,split,event_type,status,transition,transition_date,error_days,timeline
-40258-relocation_start-2021-02,test,relocation_start,missed,,,,drifting 2021-01-27..2021-02-26 | drifting 2021-03-28..
-40258-relocation_end-2021-02-17,test,relocation_end,missed,,,,drifting 2021-01-27..2021-02-26 | drifting 2021-03-28..
+40258-relocation_start-2021-02,test,relocation_start,caught,controlled_lon_inc->drifting,2021-03-28,41,drifting 2021-01-27..2021-02-26 | controlled_lon_inc 2021-02-26..2021-03-28 | drifting 2021-03-28..
+40258-relocation_end-2021-02-17,test,relocation_end,caught,drifting->controlled_lon_inc,2021-02-26,9,drifting 2021-01-27..2021-02-26 | controlled_lon_inc 2021-02-26..2021-03-28 | drifting 2021-03-28..
 28902-graveyard-2021-06,test,graveyard,caught,controlled_lon_inc->drifting,2021-06-26,11,controlled_lon_inc ..2021-05-27 | drifting 2021-06-26..
 29648-keeping_stop-2021-06-21,test,keeping_stop,caught,controlled_lon_inc->librating_75E,2021-06-26,5,controlled_lon_inc ..2021-06-26 | librating_75E 2021-06-26..2021-07-26 | drifting 2021-07-26..
 32478-relocation_end-2021-08-17,dev,relocation_end,missed,,,,drifting ..2021-08-25
@@ -11,7 +11,7 @@ event_id,split,event_type,status,transition,transition_date,error_days,timeline
 28707-graveyard-2022-03-17,test,graveyard,missed,,,,drifting ..
 28912-relocation_end-2022-05,test,relocation_end,caught,drifting->controlled_lon,2022-05-22,7,drifting ..2022-04-22 | controlled_lon 2022-05-22..
 49332-relocation_end-2022-05,test,relocation_end,caught,drifting->controlled_lon_inc,2022-05-22,7,out_of_region ..2022-03-23 | drifting 2022-03-23..2022-05-22 | controlled_lon_inc 2022-05-22..
-51850-relocation_end-2022-06-07,test,relocation_end,caught,drifting->controlled_lon_inc,2022-06-21,14,out_of_region ..2022-03-23 | drifting 2022-04-22..2022-06-21 | controlled_lon_inc 2022-06-21..
+51850-relocation_end-2022-06-07,test,relocation_end,caught,drifting->controlled_lon_inc,2022-06-21,14,out_of_region ..2022-03-23 | controlled_lon_inc 2022-03-23..2022-04-22 | drifting 2022-04-22..2022-06-21 | controlled_lon_inc 2022-06-21..
 28884-keeping_stop-2022-08-10,dev,keeping_stop,caught,controlled_lon_inc->librating_105W,2022-08-20,10,controlled_lon_inc ..2022-08-20 | librating_105W 2022-08-20..
 27509-graveyard-2022-10-06,dev,graveyard,caught,controlled_lon->drifting,2022-09-19,-17,controlled_lon ..2022-09-19 | drifting 2022-09-19..
 27400-graveyard-2023-01,test,graveyard,missed,,,,controlled_lon ..2022-11-18 | drifting 2022-11-18..
@@ -30,5 +30,5 @@ event_id,split,event_type,status,transition,transition_date,error_days,timeline
 55841-relocation_end-2025-03-07,dev,relocation_end,caught,drifting->controlled_lon_inc,2025-03-07,0,controlled_lon_inc ..2025-02-05 | drifting 2025-02-05..2025-03-07 | controlled_lon_inc 2025-03-07..
 26824-graveyard-2025-04-09,dev,graveyard,caught,controlled_lon_inc->drifting,2025-03-07,-33,controlled_lon_inc ..2025-03-07 | drifting 2025-03-07..
 25462-graveyard-2025-05,dev,graveyard,caught,controlled_lon->drifting,2025-04-06,-39,controlled_lon ..2025-04-06 | drifting 2025-04-06..
-40258-relocation_end-2025-08-24,dev,relocation_end,missed,,,,drifting ..2025-09-03 | drifting 2025-10-03..
-40258-graveyard-2025-10,test,graveyard,missed,,,,drifting ..2025-09-03 | drifting 2025-10-03..2026-01-01
+40258-relocation_end-2025-08-24,dev,relocation_end,caught,drifting->controlled_lon,2025-09-03,10,drifting ..2025-09-03 | controlled_lon 2025-09-03..2025-10-03 | drifting 2025-10-03..
+40258-graveyard-2025-10,test,graveyard,caught,controlled_lon->drifting,2025-10-03,-12,drifting ..2025-09-03 | controlled_lon 2025-09-03..2025-10-03 | drifting 2025-10-03..2026-01-01

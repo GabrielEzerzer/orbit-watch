@@ -1,5 +1,5 @@
 {
-  "commit": "32794564d87978723f9ef2afd5c7ebe4d0bd9ddb",
+  "commit": "c3740fffa4cd04cdcfbba32a7b276b48c470fd8d",
   "dirty": false,
   "seed": 20261118,
   "window_days": 45,
@@ -23,20 +23,20 @@
           "by_truth_type": {
             "relocation_start": {
               "trials": 50,
-              "caught": 41,
-              "recall": 0.82,
+              "caught": 43,
+              "recall": 0.86,
               "median_abs_error_days": 2.0,
-              "p90_abs_error_days": 13.0,
-              "same_type": 41,
+              "p90_abs_error_days": 10.4,
+              "same_type": 43,
               "mistyped": 0
             },
             "relocation_end": {
               "trials": 50,
-              "caught": 41,
-              "recall": 0.82,
+              "caught": 43,
+              "recall": 0.86,
               "median_abs_error_days": 0.0,
-              "p90_abs_error_days": 9.0,
-              "same_type": 41,
+              "p90_abs_error_days": 8.2,
+              "same_type": 43,
               "mistyped": 0
             }
           },
@@ -48,8 +48,8 @@
             "relocation_end": 4
           },
           "all_caught": {
-            "trials": 38,
-            "fraction": 0.76
+            "trials": 40,
+            "fraction": 0.8
           }
         },
         "0.05-0.1": {
@@ -57,20 +57,20 @@
           "by_truth_type": {
             "relocation_start": {
               "trials": 50,
-              "caught": 48,
-              "recall": 0.96,
+              "caught": 49,
+              "recall": 0.98,
               "median_abs_error_days": 0.0,
-              "p90_abs_error_days": 1.6,
-              "same_type": 48,
+              "p90_abs_error_days": 1.4,
+              "same_type": 49,
               "mistyped": 0
             },
             "relocation_end": {
               "trials": 50,
-              "caught": 48,
-              "recall": 0.96,
+              "caught": 49,
+              "recall": 0.98,
               "median_abs_error_days": 0.0,
               "p90_abs_error_days": 2.0,
-              "same_type": 48,
+              "same_type": 49,
               "mistyped": 0
             }
           },
@@ -79,8 +79,8 @@
           "extra_median_per_trial": 0.0,
           "extra_types": {},
           "all_caught": {
-            "trials": 48,
-            "fraction": 0.96
+            "trials": 49,
+            "fraction": 0.98
           }
         },
         "0.1-0.3": {
@@ -183,20 +183,20 @@
           "by_truth_type": {
             "relocation_start": {
               "trials": 100,
-              "caught": 89,
-              "recall": 0.89,
+              "caught": 92,
+              "recall": 0.92,
               "median_abs_error_days": 1.0,
-              "p90_abs_error_days": 7.2,
-              "same_type": 89,
+              "p90_abs_error_days": 6.0,
+              "same_type": 92,
               "mistyped": 0
             },
             "relocation_end": {
               "trials": 100,
-              "caught": 89,
-              "recall": 0.89,
+              "caught": 92,
+              "recall": 0.92,
               "median_abs_error_days": 0.0,
-              "p90_abs_error_days": 4.2,
-              "same_type": 89,
+              "p90_abs_error_days": 4.0,
+              "same_type": 92,
               "mistyped": 0
             }
           },
@@ -208,8 +208,8 @@
             "relocation_end": 4
           },
           "all_caught": {
-            "trials": 86,
-            "fraction": 0.86
+            "trials": 89,
+            "fraction": 0.89
           }
         },
         "normal (0.1-3)": {
@@ -253,7 +253,7 @@
             "trials": 80,
             "caught": 68,
             "recall": 0.85,
-            "median_abs_error_days": 8.0,
+            "median_abs_error_days": 7.5,
             "p90_abs_error_days": 30.3,
             "same_type": 68,
             "mistyped": 0
@@ -332,18 +332,18 @@
             "trials": 80,
             "caught": 64,
             "recall": 0.8,
-            "median_abs_error_days": 12.0,
-            "p90_abs_error_days": 30.0,
+            "median_abs_error_days": 10.5,
+            "p90_abs_error_days": 29.7,
             "same_type": 60,
             "mistyped": 4
           },
           "free_burn": {
             "trials": 80,
-            "caught": 48,
-            "recall": 0.6,
+            "caught": 53,
+            "recall": 0.6625,
             "median_abs_error_days": 0.0,
             "p90_abs_error_days": 1.0,
-            "same_type": 48,
+            "same_type": 53,
             "mistyped": 0
           }
         },
@@ -357,8 +357,8 @@
           "free_burn": 10
         },
         "all_caught": {
-          "trials": 46,
-          "fraction": 0.575
+          "trials": 51,
+          "fraction": 0.6375
         },
         "by_host_noise": {
           "held-era SMA scatter < 0.1 km": {
@@ -400,20 +400,20 @@
           "by_truth_type": {
             "relocation_start": {
               "trials": 50,
-              "caught": 44,
-              "recall": 0.88,
+              "caught": 46,
+              "recall": 0.92,
               "median_abs_error_days": 2.0,
-              "p90_abs_error_days": 9.7,
-              "same_type": 44,
+              "p90_abs_error_days": 10.0,
+              "same_type": 46,
               "mistyped": 0
             },
             "relocation_end": {
               "trials": 50,
-              "caught": 41,
-              "recall": 0.82,
+              "caught": 43,
+              "recall": 0.86,
               "median_abs_error_days": 1.0,
-              "p90_abs_error_days": 30.0,
-              "same_type": 41,
+              "p90_abs_error_days": 29.6,
+              "same_type": 43,
               "mistyped": 0
             }
           },
@@ -425,8 +425,8 @@
             "relocation_start": 2
           },
           "all_caught": {
-            "trials": 39,
-            "fraction": 0.78
+            "trials": 41,
+            "fraction": 0.82
           }
         },
         "0.05-0.1": {
@@ -434,20 +434,20 @@
           "by_truth_type": {
             "relocation_start": {
               "trials": 50,
-              "caught": 48,
-              "recall": 0.96,
+              "caught": 50,
+              "recall": 1.0,
               "median_abs_error_days": 0.0,
               "p90_abs_error_days": 2.0,
-              "same_type": 48,
+              "same_type": 50,
               "mistyped": 0
             },
             "relocation_end": {
               "trials": 50,
-              "caught": 48,
-              "recall": 0.96,
+              "caught": 50,
+              "recall": 1.0,
               "median_abs_error_days": 0.0,
               "p90_abs_error_days": 1.0,
-              "same_type": 48,
+              "same_type": 50,
               "mistyped": 0
             }
           },
@@ -456,8 +456,8 @@
           "extra_median_per_trial": 0.0,
           "extra_types": {},
           "all_caught": {
-            "trials": 48,
-            "fraction": 0.96
+            "trials": 50,
+            "fraction": 1.0
           }
         },
         "0.1-0.3": {
@@ -558,20 +558,20 @@
           "by_truth_type": {
             "relocation_start": {
               "trials": 100,
-              "caught": 92,
-              "recall": 0.92,
+              "caught": 96,
+              "recall": 0.96,
               "median_abs_error_days": 1.0,
               "p90_abs_error_days": 8.0,
-              "same_type": 92,
+              "same_type": 96,
               "mistyped": 0
             },
             "relocation_end": {
               "trials": 100,
-              "caught": 89,
-              "recall": 0.89,
+              "caught": 93,
+              "recall": 0.93,
               "median_abs_error_days": 0.0,
-              "p90_abs_error_days": 10.0,
-              "same_type": 89,
+              "p90_abs_error_days": 7.8,
+              "same_type": 93,
               "mistyped": 0
             }
           },
@@ -583,8 +583,8 @@
             "relocation_start": 2
           },
           "all_caught": {
-            "trials": 87,
-            "fraction": 0.87
+            "trials": 91,
+            "fraction": 0.91
           }
         },
         "normal (0.1-3)": {
@@ -624,38 +624,38 @@
         "by_truth_type": {
           "keeping_stop": {
             "trials": 80,
-            "caught": 62,
-            "recall": 0.775,
+            "caught": 64,
+            "recall": 0.8,
             "median_abs_error_days": 7.0,
-            "p90_abs_error_days": 25.8,
-            "same_type": 62,
+            "p90_abs_error_days": 28.8,
+            "same_type": 64,
             "mistyped": 0
           }
         },
         "extra_near_per_trial": 0.0,
-        "extra_later_per_trial": 0.338,
+        "extra_later_per_trial": 0.312,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "free_burn": 4,
+          "free_burn": 5,
           "relocation_start": 6,
           "relocation_end": 6,
-          "keeping_stop": 11
+          "keeping_stop": 8
         },
         "by_host_noise": {
           "held-era SMA scatter < 0.1 km": {
             "trials": 69,
             "hosts": 56,
-            "extra_events": 23,
+            "extra_events": 20,
             "extra_free_burns": 0,
-            "extras_per_trial": 0.333,
+            "extras_per_trial": 0.29,
             "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
             "trials": 11,
             "hosts": 10,
-            "extra_events": 4,
-            "extra_free_burns": 4,
-            "extras_per_trial": 0.364,
+            "extra_events": 5,
+            "extra_free_burns": 5,
+            "extras_per_trial": 0.455,
             "extras_median_per_trial": 0.0
           }
         }
@@ -703,43 +703,43 @@
         "by_truth_type": {
           "keeping_stop": {
             "trials": 80,
-            "caught": 60,
-            "recall": 0.75,
-            "median_abs_error_days": 7.5,
-            "p90_abs_error_days": 26.1,
-            "same_type": 59,
-            "mistyped": 1
+            "caught": 62,
+            "recall": 0.775,
+            "median_abs_error_days": 5.5,
+            "p90_abs_error_days": 23.0,
+            "same_type": 60,
+            "mistyped": 2
           },
           "free_burn": {
             "trials": 80,
-            "caught": 49,
-            "recall": 0.6125,
+            "caught": 55,
+            "recall": 0.6875,
             "median_abs_error_days": 0.0,
             "p90_abs_error_days": 1.0,
-            "same_type": 49,
+            "same_type": 55,
             "mistyped": 0
           }
         },
         "extra_near_per_trial": 0.263,
-        "extra_later_per_trial": 0.2,
+        "extra_later_per_trial": 0.225,
         "extra_median_per_trial": 0.0,
         "extra_types": {
-          "keeping_stop": 21,
+          "keeping_stop": 20,
           "free_burn": 9,
-          "relocation_start": 3,
-          "relocation_end": 4
+          "relocation_start": 4,
+          "relocation_end": 6
         },
         "all_caught": {
-          "trials": 45,
-          "fraction": 0.5625
+          "trials": 52,
+          "fraction": 0.65
         },
         "by_host_noise": {
           "held-era SMA scatter < 0.1 km": {
             "trials": 64,
             "hosts": 57,
-            "extra_events": 26,
+            "extra_events": 28,
             "extra_free_burns": 1,
-            "extras_per_trial": 0.406,
+            "extras_per_trial": 0.438,
             "extras_median_per_trial": 0.0
           },
           "held-era SMA scatter >= 0.1 km": {
@@ -755,12 +755,12 @@
     },
     "untouched": {
       "object_years": 1315.906,
-      "events": 13,
-      "per_object_year": 0.0099,
+      "events": 14,
+      "per_object_year": 0.0106,
       "by_type": {
         "relocation_start": 6,
         "relocation_end": 4,
-        "keeping_stop": 1,
+        "keeping_stop": 2,
         "graveyard": 2
       }
     }
@@ -789,12 +789,12 @@
     "what": "every event the current code dates inside a candidate held stretch, 45 days trimmed from each end, before hosts are chosen; an upper bound on false events on held satellites",
     "stretches": 594,
     "object_years": 2131.937,
-    "events": 52,
-    "per_object_year": 0.0244,
+    "events": 50,
+    "per_object_year": 0.0235,
     "by_type": {
       "relocation_start": 9,
       "relocation_end": 9,
-      "ns_keeping_stop": 34
+      "ns_keeping_stop": 32
     },
     "list": [
       {
@@ -1056,21 +1056,9 @@
         "signal": "ns_gap"
       },
       {
-        "norad_id": 41911,
-        "event_type": "ns_keeping_stop",
-        "date": "2025-07-31",
-        "signal": "ns_gap"
-      },
-      {
         "norad_id": 43874,
         "event_type": "ns_keeping_stop",
         "date": "2023-10-26",
-        "signal": "ns_gap"
-      },
-      {
-        "norad_id": 44978,
-        "event_type": "ns_keeping_stop",
-        "date": "2025-08-05",
         "signal": "ns_gap"
       },
       {
