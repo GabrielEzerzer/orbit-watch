@@ -1,0 +1,483 @@
+{
+  "commit": "d8c5602b9f60851068cc439ed459e296ac86091d",
+  "dirty": true,
+  "irregular_file": "groundtruth/irregular_objects.csv",
+  "steady_file": "groundtruth/steady_objects.csv",
+  "checks": {
+    "1_cited_irregular_outside": {
+      "listed": 18,
+      "scored": 18,
+      "outside": 10,
+      "target": "at least 75% of 18",
+      "pass": false
+    },
+    "2_cited_steady_outside": {
+      "listed": 31,
+      "scored": 31,
+      "outside": 0,
+      "target": "0",
+      "pass": true
+    },
+    "3_rocket_bodies_and_debris_outside": {
+      "objects": 429,
+      "outside": 14,
+      "share": 0.0326,
+      "target": "at most 1%",
+      "pass": false
+    },
+    "4_against_plain_rankings": {
+      "cut_objects": 89,
+      "outlier_score": 10,
+      "relocation_starts_per_year": 8,
+      "burns_per_year": 1,
+      "target": "outlier score higher than both",
+      "pass": true
+    }
+  },
+  "verdict": "fail",
+  "irregular_objects": [
+    {
+      "norad_id": 40099,
+      "name": "USA 253",
+      "rank": 383,
+      "score": 0.7937,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1375,
+      "rank_burns_per_year": 1652
+    },
+    {
+      "norad_id": 40100,
+      "name": "USA 254",
+      "rank": 453,
+      "score": 0.5794,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1376,
+      "rank_burns_per_year": 1653
+    },
+    {
+      "norad_id": 40258,
+      "name": "LUCH (OLYMP)",
+      "rank": 68,
+      "score": 2.1642,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 14,
+      "rank_burns_per_year": 83
+    },
+    {
+      "norad_id": 41744,
+      "name": "USA 270",
+      "rank": 90,
+      "score": 2.036,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1465,
+      "rank_burns_per_year": 1673
+    },
+    {
+      "norad_id": 41745,
+      "name": "USA 271",
+      "rank": 65,
+      "score": 2.1824,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 1466,
+      "rank_burns_per_year": 1674
+    },
+    {
+      "norad_id": 41838,
+      "name": "SJ-17",
+      "rank": 54,
+      "score": 2.2456,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 7,
+      "rank_burns_per_year": 375
+    },
+    {
+      "norad_id": 43874,
+      "name": "TJS-3",
+      "rank": 94,
+      "score": 1.9833,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 15,
+      "rank_burns_per_year": 421
+    },
+    {
+      "norad_id": 44625,
+      "name": "MEV-1",
+      "rank": 118,
+      "score": 1.7666,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 76,
+      "rank_burns_per_year": 653
+    },
+    {
+      "norad_id": 46113,
+      "name": "MEV-2",
+      "rank": 172,
+      "score": 1.4883,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1611,
+      "rank_burns_per_year": 624
+    },
+    {
+      "norad_id": 49330,
+      "name": "SJ-21",
+      "rank": 13,
+      "score": 3.4735,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 72,
+      "rank_burns_per_year": 517
+    },
+    {
+      "norad_id": 50321,
+      "name": "SHIYAN 12 01 (SY-12 01)",
+      "rank": 17,
+      "score": 3.2975,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 1644,
+      "rank_burns_per_year": 489
+    },
+    {
+      "norad_id": 50322,
+      "name": "SHIYAN 12 02 (SY-12 02)",
+      "rank": 19,
+      "score": 3.2747,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 1645,
+      "rank_burns_per_year": 522
+    },
+    {
+      "norad_id": 51280,
+      "name": "USA 324",
+      "rank": 107,
+      "score": 1.8721,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1647,
+      "rank_burns_per_year": 1718
+    },
+    {
+      "norad_id": 51281,
+      "name": "USA 325",
+      "rank": 100,
+      "score": 1.9068,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1648,
+      "rank_burns_per_year": 1719
+    },
+    {
+      "norad_id": 55131,
+      "name": "SJ-23",
+      "rank": 6,
+      "score": 4.4618,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 23,
+      "rank_burns_per_year": 504
+    },
+    {
+      "norad_id": 55264,
+      "name": "LDPE-3A",
+      "rank": 16,
+      "score": 3.298,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 1678,
+      "rank_burns_per_year": 507
+    },
+    {
+      "norad_id": 55841,
+      "name": "LUCH (OLYMP) 2",
+      "rank": 37,
+      "score": 2.5595,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 5,
+      "rank_burns_per_year": 216
+    },
+    {
+      "norad_id": 62485,
+      "name": "SJ-25",
+      "rank": 24,
+      "score": 3.0925,
+      "outside": 1,
+      "rank_relocation_starts_per_year": 3,
+      "rank_burns_per_year": 254
+    }
+  ],
+  "steady_objects": [
+    {
+      "norad_id": 33056,
+      "name": "TURKSAT 3A",
+      "rank": 727,
+      "score": 0.1335,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1173,
+      "rank_burns_per_year": 258
+    },
+    {
+      "norad_id": 33436,
+      "name": "ASTRA 1M",
+      "rank": 726,
+      "score": 0.1345,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1185,
+      "rank_burns_per_year": 158
+    },
+    {
+      "norad_id": 37264,
+      "name": "HISPASAT 30W-5",
+      "rank": 969,
+      "score": 0.0755,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1245,
+      "rank_burns_per_year": 178
+    },
+    {
+      "norad_id": 37775,
+      "name": "ASTRA 1N",
+      "rank": 930,
+      "score": 0.0802,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1258,
+      "rank_burns_per_year": 160
+    },
+    {
+      "norad_id": 38107,
+      "name": "APSTAR 7",
+      "rank": 704,
+      "score": 0.1464,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1284,
+      "rank_burns_per_year": 392
+    },
+    {
+      "norad_id": 38740,
+      "name": "INTELSAT 20",
+      "rank": 812,
+      "score": 0.1018,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1311,
+      "rank_burns_per_year": 419
+    },
+    {
+      "norad_id": 38778,
+      "name": "ASTRA 2F",
+      "rank": 939,
+      "score": 0.0791,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1313,
+      "rank_burns_per_year": 106
+    },
+    {
+      "norad_id": 39078,
+      "name": "AMAZONAS 3",
+      "rank": 882,
+      "score": 0.0877,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1328,
+      "rank_burns_per_year": 125
+    },
+    {
+      "norad_id": 39079,
+      "name": "AZERSPACE 1",
+      "rank": 802,
+      "score": 0.1051,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1329,
+      "rank_burns_per_year": 60
+    },
+    {
+      "norad_id": 39122,
+      "name": "EUTE 117 WEST A(SATMEX 8",
+      "rank": 924,
+      "score": 0.0816,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1330,
+      "rank_burns_per_year": 155
+    },
+    {
+      "norad_id": 39233,
+      "name": "ES'HAIL 1",
+      "rank": 1002,
+      "score": 0.0719,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1339,
+      "rank_burns_per_year": 102
+    },
+    {
+      "norad_id": 39285,
+      "name": "ASTRA 2E",
+      "rank": 1082,
+      "score": 0.0619,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1342,
+      "rank_burns_per_year": 112
+    },
+    {
+      "norad_id": 39481,
+      "name": "TKSAT 1",
+      "rank": 891,
+      "score": 0.086,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1352,
+      "rank_burns_per_year": 126
+    },
+    {
+      "norad_id": 39500,
+      "name": "THAICOM 6",
+      "rank": 1069,
+      "score": 0.0642,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1356,
+      "rank_burns_per_year": 170
+    },
+    {
+      "norad_id": 39522,
+      "name": "TURKSAT 4A",
+      "rank": 967,
+      "score": 0.076,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1360,
+      "rank_burns_per_year": 171
+    },
+    {
+      "norad_id": 40147,
+      "name": "MEASAT 3B",
+      "rank": 901,
+      "score": 0.085,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1381,
+      "rank_burns_per_year": 128
+    },
+    {
+      "norad_id": 40272,
+      "name": "ARSAT 1",
+      "rank": 957,
+      "score": 0.0774,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1386,
+      "rank_burns_per_year": 56
+    },
+    {
+      "norad_id": 40364,
+      "name": "ASTRA 2G",
+      "rank": 1093,
+      "score": 0.0604,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1393,
+      "rank_burns_per_year": 114
+    },
+    {
+      "norad_id": 40982,
+      "name": "APSTAR 9",
+      "rank": 836,
+      "score": 0.097,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1424,
+      "rank_burns_per_year": 213
+    },
+    {
+      "norad_id": 40984,
+      "name": "TURKSAT 4B",
+      "rank": 715,
+      "score": 0.14,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1425,
+      "rank_burns_per_year": 47
+    },
+    {
+      "norad_id": 41380,
+      "name": "SES 9",
+      "rank": 796,
+      "score": 0.1062,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1444,
+      "rank_burns_per_year": 422
+    },
+    {
+      "norad_id": 41552,
+      "name": "THAICOM 8",
+      "rank": 1079,
+      "score": 0.0623,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1455,
+      "rank_burns_per_year": 200
+    },
+    {
+      "norad_id": 41589,
+      "name": "EUTE 117W B",
+      "rank": 1049,
+      "score": 0.0666,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1460,
+      "rank_burns_per_year": 435
+    },
+    {
+      "norad_id": 41747,
+      "name": "INTELSAT 36",
+      "rank": 862,
+      "score": 0.0922,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1468,
+      "rank_burns_per_year": 347
+    },
+    {
+      "norad_id": 41836,
+      "name": "HIMAWARI 9",
+      "rank": 897,
+      "score": 0.0854,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1473,
+      "rank_burns_per_year": 57
+    },
+    {
+      "norad_id": 41942,
+      "name": "HISPASAT 36W-1",
+      "rank": 872,
+      "score": 0.0902,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1480,
+      "rank_burns_per_year": 307
+    },
+    {
+      "norad_id": 42818,
+      "name": "INTELSAT 35E",
+      "rank": 946,
+      "score": 0.0785,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1499,
+      "rank_burns_per_year": 97
+    },
+    {
+      "norad_id": 43228,
+      "name": "HISPASAT 30W-6",
+      "rank": 1007,
+      "score": 0.0712,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1516,
+      "rank_burns_per_year": 441
+    },
+    {
+      "norad_id": 43450,
+      "name": "APSTAR 6C",
+      "rank": 811,
+      "score": 0.1018,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1538,
+      "rank_burns_per_year": 288
+    },
+    {
+      "norad_id": 43611,
+      "name": "TELSTAR 18V",
+      "rank": 848,
+      "score": 0.0952,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1556,
+      "rank_burns_per_year": 299
+    },
+    {
+      "norad_id": 44476,
+      "name": "INTELSAT 39",
+      "rank": 725,
+      "score": 0.1352,
+      "outside": 0,
+      "rank_relocation_starts_per_year": 1587,
+      "rank_burns_per_year": 248
+    }
+  ]
+}
