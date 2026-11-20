@@ -127,6 +127,13 @@ def held_years(holds: Sequence[tuple[float, float]], until: float, since: float 
     return sum(max(0.0, min(e, until) - max(s, since)) for s, e in holds) / YEAR_DAYS
 
 
+def outside(days: np.ndarray, holds: Sequence[tuple[float, float]]) -> int:
+    inside = np.zeros(len(days), dtype=bool)
+    for s, e in holds:
+        inside |= (days >= s) & (days < e)
+    return int((~inside).sum())
+
+
 def belt_priors(holds: dict[int, Sequence[tuple[float, float]]], departures: dict[int, Sequence[float]],
                 end_day: float) -> list[Prior]:
     out = []

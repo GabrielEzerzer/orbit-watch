@@ -726,10 +726,18 @@ def _first_climb(tr: Track, det: Sequence[Segment], burn_days: np.ndarray, steps
                   round(_lon_near(tr, _day(det[-1].end), True), 3), seg[pre].mode, seg[i].mode, when)]
 
 
+def readable_segments(tr: Track) -> list[Segment]:
+    return [s for s in with_inner_moves(tr, with_short_holds(tr, segments(tr))) if s.mode not in UNREAD]
+
+
+def holds_of(tr: Track) -> list[tuple[float, float]]:
+    return [(_day(s.start), _day(s.end)) for s in readable_segments(tr) if s.mode in HELD]
+
+
 def events_from_track(tr: Track, burn_days: np.ndarray | None = None, steps: np.ndarray | None = None) -> list[Event]:
     burn_days = np.array([]) if burn_days is None else burn_days
     steps = np.zeros(len(burn_days)) if steps is None else steps
-    det = [s for s in with_inner_moves(tr, with_short_holds(tr, segments(tr))) if s.mode not in UNREAD]
+    det = readable_segments(tr)
     out: list[Event] = []
     departed: float | None = None
     same_slot: Segment | None = None

@@ -20,10 +20,9 @@ import numpy as np
 from orbit_watch import routine as rt
 from orbit_watch.clean import drop_snapback_blocks
 from orbit_watch.elements import parse_tle
-from orbit_watch.events import HELD, UNREAD, as_row, burns, events_from_track, state_changes, with_inner_moves, \
-    with_short_holds
+from orbit_watch.events import as_row, burns, events_from_track, holds_of, state_changes
 from orbit_watch.jobs.state_changes import commit
-from orbit_watch.modes import GRID_END, GRID_START, N_DAYS, day_of, segments, track
+from orbit_watch.modes import GRID_END, GRID_START, N_DAYS, day_of, track
 from orbit_watch.series import distinct_epochs
 from orbit_watch.sources import data_dir
 from orbit_watch.truth import load_splits, read_event_rows
@@ -47,18 +46,6 @@ PRIOR_FIELDS = ["date", "belt_rate_per_held_year", "alpha", "beta_held_years", "
 
 def iso(day: float) -> str:
     return (GRID_START + timedelta(days=float(day))).date().isoformat()
-
-
-def holds_of(tr) -> list[tuple[float, float]]:
-    det = [s for s in with_inner_moves(tr, with_short_holds(tr, segments(tr))) if s.mode not in UNREAD]
-    return [(day_of(s.start), day_of(s.end)) for s in det if s.mode in HELD]
-
-
-def outside(days: np.ndarray, holds: list[tuple[float, float]]) -> int:
-    inside = np.zeros(len(days), dtype=bool)
-    for s, e in holds:
-        inside |= (days >= s) & (days < e)
-    return int((~inside).sum())
 
 
 def as_of(recs, cut: date) -> dict:
@@ -89,7 +76,7 @@ def object_pass(task: tuple[Path, bool]) -> dict:
         dayi = np.floor(tr.days).astype(int)
         _, first = np.unique(dayi, return_index=True)
         ok = (dayi[first] >= 0) & (dayi[first] < N_DAYS)
-        out.update(holds=holds, steps_outside=outside(burn_days, holds),
+        out.update(holds=holds, steps_outside=rt.outside(burn_days, holds),
                    events=[as_row(e) for e in events_from_track(tr, burn_days, steps)],
                    days=dayi[first][ok].astype(np.int16), lon=tr.lon[first][ok].astype(np.float32),
                    sma=tr.semi_major_axis_km[first][ok].astype(np.float32))
