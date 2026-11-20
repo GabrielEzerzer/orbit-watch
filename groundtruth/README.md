@@ -214,7 +214,7 @@ These two files are the input to the independent cross-check in `findings/README
 
 - `rank` is empty for objects that are not rated.
 - `already_cited` is 1 when the object is in `geo_events.csv`, `irregular_objects.csv` or `steady_objects.csv`.
-- `searches` is the number of web searches made for the object in the first round, and `searches_2` the number in the second (empty for objects not in it). The second round covered the objects with no dated claim and the top-30 objects whose dated claims were all `tle_derived`.
+- `searches` is the number of web searches made for the object in the first round, and `searches_2` the number in the second (empty for objects not in it). The second round covered the objects with no dated claim and the top-30 objects whose dated claims were all `tle_derived`. Four objects changed status in review after the second round: GOES 17 and TDRS 9 now have no dated claim, and LUCH (OLYMP) and HOT BIRD 13C only `tle_derived` ones. Each had one search, in round 1, and none was searched in round 2, whose scope would now include them.
 - `sources_found` is the number of pages that gave at least one claim. A 0 means no source was found; it is not a disagreement.
 - `tried` names the kinds of pages searched, for objects still without a dated claim after the second round.
 

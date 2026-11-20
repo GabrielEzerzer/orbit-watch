@@ -8,6 +8,7 @@ import argparse
 import csv
 import io
 import json
+import math
 import pickle
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -167,6 +168,15 @@ def csv_text(fields: list[str], table: list[dict]) -> str:
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def binomial_lower(k: int, n: int, alpha: float = 0.05) -> float:
+    lo, hi = 0.0, 1.0
+    for _ in range(60):
+        p = (lo + hi) / 2
+        tail = sum(math.comb(n, i) * p ** i * (1 - p) ** (n - i) for i in range(k, n + 1))
+        lo, hi = (lo, p) if tail > alpha else (p, hi)
+    return lo if k else 0.0
 
 
 def num(x: float) -> str:
@@ -346,6 +356,7 @@ def card(findings: Path, events: list[dict], objects: list[dict]) -> str:
                                        f"{num(r['median_per_object'])} per object)" for i, r in enumerate(rounds, 1)),
         "cc_ind_claims": ind["claims"], "cc_ind_matched": ind["matched"], "cc_ind_objects": ind["objects"],
         "cc_ind_median": num(ind["median_abs_error_days"]), "cc_ind_worst": ind["worst_abs_error_days"],
+        "cc_ind_bound": f"{binomial_lower(ind['matched'], ind['claims']):.2f}",
         "cc_tle_claims": tle["claims"], "cc_tle_matched": tle["matched"],
         "cc_disagree": len(cc["disagreements"]),
         "cc_disagree_tle": sum(d["source_kind"] == "tle_derived" for d in cc["disagreements"]),
@@ -654,7 +665,8 @@ The list was checked against public sources that were not used to build it
 - **Coverage:** for $cc_none of the $cc_objects objects the search found no dated claim from any source.
 - **Agreement:** $cc_ind_matched of the $cc_ind_claims dated claims from operators and the press match
   the list, on $cc_ind_objects objects, with median and worst date errors of $cc_ind_median and
-  $cc_ind_worst days.
+  $cc_ind_worst days. The base is small: the one-sided 95% binomial lower bound on agreement is
+  $cc_ind_bound.
 - **Element-set analyses, counted apart:** $cc_tle_matched of their $cc_tle_claims dated claims match.
 - **Disagreements:** $cc_disagree claims, $cc_disagree_tle from element-set analyses and
   $cc_disagree_ind from operators or the press. Two small LUCH (OLYMP) 2 moves are each held inside a

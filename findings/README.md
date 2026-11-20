@@ -809,7 +809,10 @@ A page that refused an automated fetch was not forced. Where the Wayback Machine
 copy of the same page, that copy was read, with the archive URL as the source URL and the
 original publisher as the publisher. "No dated claim found" is therefore a statement about this
 search (about 4 searches per object, without the pages that refused), not about what public sources
-hold.
+hold. Four objects changed status in review after round 2: GOES 17 and TDRS 9 now have no dated
+claim, and LUCH (OLYMP) and HOT BIRD 13C only `tle_derived` ones. Each had one search, in round 1,
+and none was searched in round 2, whose scope would now include them; two of the 38 objects without
+a claim rest on that single search.
 
 **Coverage.** Sources are scarce. After both rounds 38 of the 50 objects have no dated claim found
 from any source. The tables show the final claims, after the review corrections listed under
@@ -968,9 +971,15 @@ Known limits:
 - Search effort is still modest: 179 searches for 50 objects over two rounds, a median of 4 for the
   40 objects searched again. The 12 objects with a dated claim are a lower bound on what public
   sources hold; the 38 without one are objects this search found nothing for.
-- No regulator or observer claims were found. Most independent claims are retirements and
-  well-announced moves of civil satellites. The small moves where the list is weakest are reported
+- No regulator or observer claims were found. CC-040 comes closest: SpaceNews reports LUCH (OLYMP)
+  2's 23 June 2024 manoeuvre as "flagged by Slingshot's automated tracking system", a named tracking
+  company's own tracking. It is classed `press` and is the one independent claim that is not
+  operator-sourced. Most independent claims are retirements and well-announced moves of civil
+  satellites. The small moves where the list is weakest are reported
   mainly by `tle_derived` sources.
+- 9 of 9 is a small base. Its one-sided 95% binomial lower bound, the bound used for the holdout in
+  `groundtruth/README.md`, is about 0.72. The 9 claims come from 7 objects; METEOSAT 12 and FENGYUN
+  4B give two claims each, each pair from one page.
 - Claims were recorded by one reader. In review a second reader read every quoted passage on the
   saved copies. All were there; the rows whose text did not support the claim as recorded were
   removed, reclassed or retyped as described above and in `groundtruth/README.md`.

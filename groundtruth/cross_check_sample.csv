@@ -18,7 +18,7 @@ norad_id,name,group,rank,already_cited,sources_found,searches,searches_2,tried
 27875,USA 170,top30,17,0,0,2,2,Space Force releases on DSCS retirements; trade press
 27168,USA 164,top30,18,0,0,2,2,Space Force releases on Milstar; trade press
 33459,EUTE HOT BIRD 13C (HB 9),top30,19,0,1,1,,
-43226,GOES 17,top30,20,0,1,1,,
+43226,GOES 17,top30,20,0,0,1,,NOAA OSPO satellite notices
 41937,SBIRS GEO 4 (USA 273),top30,21,0,0,1,3,Space Force releases and fact sheets; trade press
 35491,EWS-G3 (GOES 14),top30,22,0,0,2,4,NOAA and Space Force releases on the transfer; NESDIS status pages
 48808,FENGYUN 4B,top30,23,0,1,1,,
@@ -35,7 +35,7 @@ norad_id,name,group,rank,already_cited,sources_found,searches,searches_2,tried
 25462,ASTRA 2A,drawn,88,1,0,1,3,SES releases; Wikipedia dates rest on tracker pages only and were not used
 62259,SIRIUS XM-9,drawn,,0,0,2,2,SiriusXM releases and annual report (entry into service only)
 27632,NIMIQ 2,drawn,104,0,0,1,3,Telesat annual reports (undated note); trade press
-27389,TDRS 9,drawn,,0,1,1,,
+27389,TDRS 9,drawn,,0,0,1,,NASA releases; NASA technical reports on the TDRS fleet; Wikipedia's TDRS list
 35942,AMAZONAS 2,drawn,209,0,0,1,3,Hispasat releases and fleet pages; FCC filings; trade press
 55131,SJ-23,drawn,,1,0,2,2,"press and think-tank analyses of Chinese GEO movers (motion in a month, no start or stop); Chinese-language press"
 33051,CHINASAT 9,drawn,184,0,0,1,3,China Satcom releases and Chinese-language press on ChinaSat 9C replacing it
