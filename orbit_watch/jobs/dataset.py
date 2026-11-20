@@ -264,6 +264,7 @@ def card(findings: Path, events: list[dict], objects: list[dict]) -> str:
     checks = load_json(findings / "routine" / "checks_all.json")
     planted = load_json(findings / "routine" / "planted_all.json")
     rank = rows(findings / "routine" / "rank.csv")
+    cc = load_json(findings / "cross_check" / "summary.json")
     if len(events) != sc["events"] or len(objects) != sc["objects_processed"]:
         raise ValueError("dataset tables disagree with findings/state_changes/summary.json")
 
@@ -309,6 +310,8 @@ def card(findings: Path, events: list[dict], objects: list[dict]) -> str:
                           [[g, ha[g]["objects"]] + [ha[g]["class"].get(k, 0) for k in cls] for g in ("top", "middle")])
     check_rows, tally = routine_checks(checks, planted, rank)
     stay = [r for r in rank if float(r["stay_bits_per_year"]) > 0]
+    cov, ind, tle = cc["coverage"], cc["independent"]["all"], cc["tle_derived"]["all"]
+    rounds = cc["search"]["rounds"]
     values = {
         "objects": num(len(objects)), "region_objects": num(sc["geo_dir_object_count"]),
         "holdout": len(sc["skipped_holdout"]), "holdout_ids": ", ".join(map(str, sc["skipped_holdout"])),
@@ -335,6 +338,18 @@ def card(findings: Path, events: list[dict], objects: list[dict]) -> str:
         "no_catalogue": sum(not o["name"] for o in objects),
         "stay_objects": len(stay), "stay_ranks": ", ".join(r["rank"] for r in stay),
         "empty_lon": sum(not e["lon_before"] or not e["lon_after"] for e in events),
+        "cc_top": cov["top30"]["objects"], "cc_drawn": cov["drawn"]["objects"],
+        "cc_objects": sum(g["objects"] for g in cov.values()),
+        "cc_none": sum(g["without_dated_claim"] for g in cov.values()),
+        "cc_searches": cc["search"]["searches"], "cc_rounds": len(rounds),
+        "cc_round_text": ";\n  ".join(f"round {i}, {r['searches']} for {r['objects']} objects (median "
+                                       f"{num(r['median_per_object'])} per object)" for i, r in enumerate(rounds, 1)),
+        "cc_ind_claims": ind["claims"], "cc_ind_matched": ind["matched"], "cc_ind_objects": ind["objects"],
+        "cc_ind_median": num(ind["median_abs_error_days"]), "cc_ind_worst": ind["worst_abs_error_days"],
+        "cc_tle_claims": tle["claims"], "cc_tle_matched": tle["matched"],
+        "cc_disagree": len(cc["disagreements"]),
+        "cc_disagree_tle": sum(d["source_kind"] == "tle_derived" for d in cc["disagreements"]),
+        "cc_disagree_ind": sum(d["source_kind"] != "tle_derived" for d in cc["disagreements"]),
     }
     return CARD.substitute(values)
 
@@ -627,6 +642,26 @@ $routine_audit_table
 
 The [evidence page](evidence/README.md) shows each top-30 object with its class and the judge's note.
 
+### Independent cross-check
+
+The list was checked against public sources that were not used to build it
+([findings/README.md](../findings/README.md#independent-cross-check); numbers from
+`findings/cross_check/summary.json`).
+
+- **Sample:** the top $cc_top of the rank and $cc_drawn objects drawn at random from the rest of the list.
+- **Search:** $cc_searches web searches in $cc_rounds rounds:
+  $cc_round_text.
+- **Coverage:** $cc_none of the $cc_objects objects have no dated claim from any source found.
+- **Agreement:** $cc_ind_matched of the $cc_ind_claims dated claims from operators and the press match
+  the list, on $cc_ind_objects objects, with a median date error of $cc_ind_median days and a worst of
+  $cc_ind_worst.
+- **Element-set analyses, counted apart:** $cc_tle_matched of their $cc_tle_claims dated claims match.
+- **Disagreements:** $cc_disagree claims, $cc_disagree_tle from element-set analyses and
+  $cc_disagree_ind from operators or the press. Two small LUCH (OLYMP) 2 moves are held inside one
+  stay ([#101](../../../issues/101)), TJS-10's first arrival on station is not listed
+  ([#102](../../../issues/102)), and an SJ-17 burn the list has as a departure is a typing
+  difference with no issue.
+
 ## Known limits
 
 Each is an open issue labelled `debt`.
@@ -652,6 +687,10 @@ Each is an open issue labelled `debt`.
 - Check 9 is weak while the median rated object has 0 bits per year ([#90](../../../issues/90)).
 - The proximity flag's owner code is per country, so an arrival next to another operator of the same
   country is never flagged ([#89](../../../issues/89)).
+- Moves of 0.4-0.6 deg inside a hold are not listed, such as two LUCH (OLYMP) 2 repositionings
+  ([#101](../../../issues/101)).
+- TJS-10's (58204) first arrival on station, in November 2023, is not listed
+  ([#102](../../../issues/102)).
 
 All open limits: [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
 

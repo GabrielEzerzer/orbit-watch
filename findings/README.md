@@ -888,10 +888,11 @@ added none, and no independent claim disagrees.
 | CC-010 | TJS-10 | "By November 9, it had circularized its orbit and settled into GEO at 173.3 degrees east longitude" (2023; Secure World Foundation) | no event within 90 days; the first TJS-10 row is a relocation start on 2024-05-15 from 173.3° E |
 | CC-003 | SJ-17 | "it dropped its altitude by 76.2 km to move below the GEO belt on Nov. 1, 2024" (Secure World Foundation), recorded as a free burn | a relocation start on 2024-11-02, 1 day later; the type differs |
 
-The two LUCH (OLYMP) 2 moves are steps of 0.6° and 0.4° that the list holds inside one stay.
-TJS-10's November 2023 arrival is the end of its climb from the transfer orbit, which the list does
-not give. The SJ-17 row is a typing question: the claim was typed from the quote before the list was
-opened, and the list has the same move as a departure.
+The two LUCH (OLYMP) 2 moves are steps of 0.6° and 0.4° that the list holds inside one stay
+([#101](../../../issues/101)). TJS-10's November 2023 arrival is the end of its climb from the
+transfer orbit, which the list does not give ([#102](../../../issues/102)). The SJ-17 row is a typing
+difference with no issue: the claim was typed from the quote before the list was opened, and the
+list has the same move as a departure.
 
 **Choices and doubts.**
 

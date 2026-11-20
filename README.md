@@ -82,9 +82,9 @@ An independent cross-check of 50 objects (the top 30 of the rank and 20 drawn fr
 list) found few public sources: after two search rounds (179 searches) 36 objects have no dated
 claim from any source. All 16 dated claims from operators and the press match the list, on 11
 objects, with a median date error of 2 days and a worst of 22. Analyses built on the same public
-element sets are counted apart: 17 of their 23 claims match. Their 6 misses are two small Luch (Olymp) 2 moves (0.6° and 0.4°) held inside one
-listed stay, TJS-10's arrival from its transfer orbit, and an SJ-17 burn the list has as a
-departure.
+element sets are counted apart: 17 of their 23 claims match. Their 6 misses are two small Luch
+(Olymp) 2 moves (0.6° and 0.4°) held inside one listed stay, TJS-10's arrival from its transfer
+orbit, and an SJ-17 burn the list has as a departure.
 
 How each number was measured, with the full breakdowns and caveats:
 [findings/README.md](findings/README.md), which also lists the leads from the ISS work.

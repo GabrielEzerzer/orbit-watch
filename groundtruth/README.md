@@ -214,7 +214,7 @@ These two files are the input to the independent cross-check in `findings/README
 
 - `rank` is empty for objects that are not rated.
 - `already_cited` is 1 when the object is in `geo_events.csv`, `irregular_objects.csv` or `steady_objects.csv`.
-- `searches` is the number of web searches made for the object in the first round, and `searches_2` the number in the second. The second round covered the objects with no dated claim and the top-30 objects whose dated claims were all `tle_derived`.
+- `searches` is the number of web searches made for the object in the first round, and `searches_2` the number in the second (empty for objects not in it). The second round covered the objects with no dated claim and the top-30 objects whose dated claims were all `tle_derived`.
 - `sources_found` is the number of pages that gave at least one claim. A 0 means no source was found; it is not a disagreement.
 - `tried` names the kinds of pages searched, for objects still without a dated claim after the second round.
 
@@ -261,7 +261,7 @@ Sources:
   - SpaceNews (LUCH (OLYMP) 2).
   - ExecutiveGov (USA 113).
 - `tle_derived`:
-  - The Secure World Foundation's 2026 fact sheet *Chinese Military and Intelligence Rendezvous and Proximity Operations* (SJ-17, TJS-3, TJS-10). Its endnotes cite ISR University issue 110, which `geo_events.csv` and `irregular_objects.csv` use.
+  - The Secure World Foundation's 2026 fact sheet *Chinese Military and Intelligence Rendezvous and Proximity Operations* (SJ-17, TJS-3, TJS-10). Its endnotes cite ISR University issue 110, which `geo_events.csv` and `irregular_objects.csv` use. It is cited by the publisher's own page for the document on swfound.org. That page links to the PDF on a Dropbox share; the saved copy indexed under the page URL is that PDF, and the quotes are checked against it.
   - SatTrackCam Leiden (LUCH (OLYMP) 2).
   - The Orbital Focus satellite diary for the TJS series (TJS-3), which tabulates element sets.
   - The CSIS report *New Rhythms in GEO* (behaviour only for SJ-17, SJ-20 and TJS-3), built on Space-Track data.
