@@ -122,6 +122,26 @@ Writes:
 - belt: the cache (default $ORBIT_WATCH_DATA/routine/belt.pkl)
 - score: OUT/rank.csv, unrated.csv, departures.csv, off_routine.csv, overruns.csv, flagged_arrivals.csv, belt_prior.csv and summary.json (default findings/routine)
 
+### Write the published dataset
+
+Writes dataset/: the state-change events with object names, owners, types and departure scores, one row per object with its rank or why it is unrated, the data card, and the evidence page for the top 30 of the rank; with --charts also one longitude chart per evidence object.
+
+```
+python -m orbit_watch.jobs.dataset [--out DIR] [--catalogue MANIFEST] [--charts] [--geo-dir DIR] [--cache PATH]
+```
+
+Reads:
+
+- findings/state_changes, findings/state_injection, findings/state_audit_fresh and findings/routine result files
+- names, owners and types from OUT/objects.csv, or from a GEO-region manifest.json with SATCAT entries given as --catalogue
+- for --charts: GEO-DIR/<norad>.tle (default $ORBIT_WATCH_DATA/geo) and the belt cache (default $ORBIT_WATCH_DATA/routine/belt.pkl)
+
+Writes:
+
+- OUT/events.csv, OUT/objects.csv and OUT/README.md (default dataset)
+- OUT/evidence/README.md
+- with --charts: OUT/evidence/<norad>.png for the top 30
+
 ## Analyses
 
 ### Calibrate the detector on the ISS

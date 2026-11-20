@@ -7,7 +7,7 @@ from bisect import bisect_left
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 from math import cos, factorial, radians, sin, sqrt
 
@@ -19,6 +19,7 @@ from orbit_watch.geo import drift_rate, gmst_deg, wrap180
 WINDOW_DAYS = 30
 GRID_START = datetime(2021, 1, 1, tzinfo=timezone.utc)
 GRID_END = datetime(2026, 1, 1, tzinfo=timezone.utc)
+N_DAYS = (GRID_END - GRID_START).days
 MIN_SETS = 5
 MIN_SPAN_DAYS = 10.0
 HELD_SPREAD_DEG = 0.3
@@ -52,6 +53,12 @@ _EGM96 = {
 _MU_KM3_S2 = 398600.4415
 _R_EARTH_KM = 6378.1363
 _R_GEO_KM = 42164.17
+
+
+def day_of(t: datetime | date) -> float:
+    if not isinstance(t, datetime):
+        t = datetime(t.year, t.month, t.day, tzinfo=GRID_START.tzinfo)
+    return (t - GRID_START).total_seconds() / 86400.0
 
 
 def _inclination_function(n: int, m: int, inc_deg: float) -> float:
