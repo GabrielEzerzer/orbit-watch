@@ -477,6 +477,24 @@ Writes:
 - a PNG (default docs/belt_relocations.png)
 - the counts drawn on stdout
 
+### Draw the LUCH stops chart
+
+Draws where LUCH (OLYMP) and LUCH (OLYMP) 2 were parked, 2021-2025, one panel each: a bar per stop from arrival to departure, labelled with the other owner's satellite when the arrival was flagged.
+
+```
+python tools/stops_chart.py [--events CSV] [--flags CSV] [--out PNG]
+```
+
+Reads:
+
+- an events CSV from the state changes job (default findings/state_changes/events.csv)
+- a flagged arrivals CSV from the routine job (default findings/routine/flagged_arrivals.csv)
+
+Writes:
+
+- a PNG (default docs/luch_stops.png)
+- the counts drawn on stdout
+
 ### Write the feature map
 
 Writes docs/features.md from features.json, grouped into data jobs, analyses, evaluations and tools.

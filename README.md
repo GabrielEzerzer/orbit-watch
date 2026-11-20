@@ -1,64 +1,58 @@
 # orbit-watch
 
-A dated list of station-keeping changes for every object in the geostationary belt, 2021-2025,
-built only from public orbital elements.
+Every time an object in the geostationary belt changed how it was being flown, 2021-2025, as a
+dated list built only from public orbital elements: 768 changes on 301 of 1,799 objects.
 
-**To use the results, start at [`dataset/`](dataset/README.md):** the state changes with object names,
-owners and scores, one row per object with its rank, a data card with every column and how good the
-numbers are, and the evidence for the top 30 of the rank.
+**To use the results, start at [`dataset/`](dataset/README.md):** the changes with object names and
+owners, one row per object, a data card with every column and how good the numbers are, and a chart
+for each of the top 30 objects of the rank.
 
-![Relocations and graveyard moves in the GEO belt, 2021-2025](docs/belt_relocations.png)
+![Where LUCH (OLYMP) and LUCH (OLYMP) 2 were parked, 2021-2025, and which satellite each stop was beside](docs/luch_stops.png)
 
-Each line is one relocation from the list, from its start date and longitude to its end date and
-longitude. It goes the way the start's `size` says the object drifted when that drift covers more
-than 180°, and the short way otherwise. Crosses mark graveyard moves where the climb starts. Redraw
-it with `python tools/relocation_chart.py`.
+**One example from the list.** Most objects in the belt never relocate: 1,646 of the 1,799 started no
+relocation in five years, and eight started five or more. Two of the eight are the Russian
+satellites LUCH (OLYMP) and LUCH (OLYMP) 2. The list has 13 stops for them, and at 8 the satellite
+arrived within 0.1° of another owner's satellite that was already there. The rest of the belt has
+27 such arrivals, one each on 27 objects. Analysts who follow the pair from the same public element
+sets name these neighbours: Eutelsat 8 West B in February 2021
+([SatTrackCam](https://sattrackcam.blogspot.com/2021/04/luch-olymp-k.html)), Intelsat 37e at 18° W
+([RussianSpaceWeb](https://russianspaceweb.com/olymp.html)) and Eutelsat KA-SAT 9A and 9B in May 2023
+([SatTrackCam](https://sattrackcam.blogspot.com/2024/06/luch-olymp-2-is-on-move-again.html)). They
+also name neighbours at four LUCH (OLYMP) 2 stops that the 0.1° rule does not flag. The name beside
+each bar is the flagged neighbour, with its SATCAT owner code. Redraw the chart with
+`python tools/stops_chart.py`.
 
-## What it does
+## What is in the list
 
 It reads every published two-line element set (TLE) from 2021 to 2025 for the 1,804 objects in the
-GEO region and writes one row for each time an object changed how it was being flown. The five
-objects held out for scoring are left out, so the list covers 1,799 objects.
+GEO region and writes one row for each change. The five objects held out for scoring are left out,
+so the list covers 1,799 objects.
 
-| Change | What happened |
-|---|---|
-| `relocation_start` / `relocation_end` | left its slot / started to hold a new one |
-| `graveyard` | left its slot and raised its semi-major axis by 150 km or more, with no later hold |
-| `keeping_stop` | stopped east-west station keeping; a later move or climb is its own row |
-| `ns_keeping_stop` | stopped correcting its inclination but kept its longitude |
-| `free_burn` | changed its semi-major axis by 1 km or more after its last hold |
+| Change | What happened | Rows |
+|---|---|---|
+| `relocation_start` / `relocation_end` | left its slot / started to hold a new one | 244 / 340 |
+| `graveyard` | left its slot and raised its semi-major axis by 150 km or more, with no later hold | 83 |
+| `keeping_stop` | stopped east-west station keeping; a later move or climb is its own row | 14 |
+| `ns_keeping_stop` | stopped correcting its inclination but kept its longitude | 57 |
+| `free_burn` | changed its semi-major axis by 1 km or more after its last hold | 30 |
 
 Each row has the date, the signal that dated it, the size of the change and the longitude before
 and after. The list is [`findings/state_changes/events.csv`](findings/state_changes/events.csv).
 
-It also ranks the 532 objects held at least two years by how far their relocations break their own
-record of stays and moves, in bits per year: [`findings/routine/rank.csv`](findings/routine/rank.csv).
-Graveyard moves and keeping stops are listed but not ranked. Only 33 of the 197 scored departures
-have a stay record, and only eight rated objects, the top 7 and HYLAS 1 (rank 28), get any bits
-from it; below rank 7 the order is set by how often and how late an object left. A blind hand audit
-of the charts judged 27 of the top 30 irregular.
-
 ## How it works
 
-1. **Collect.** Read yearly full-catalogue TLE bundles and keep every object with any element set
-   in ESA's GEO region (mean motion 0.9-1.1 rev/day, eccentricity at most 0.2, inclination at most
-   70°). When two element sets share an epoch, the later one is kept.
-2. **Clean.** Drop snap-back blocks: runs of up to 10 days whose semi-major axis or inclination
-   vector jumps away and comes back while the mean longitude carries on, and lone sets 10 km or
-   more off their neighbours. They are alternate orbit solutions, not burns.
-3. **Label the mode.** Classify each 30-day window with ESA's classes from the mean longitude, the
-   drift rate and the inclination: held in longitude (with or without inclination control),
-   drifting, librating around 75° E, 105° W or both, or inclined.
-4. **Find burns.** A step detector looks for steps in the mean semi-major axis: at each gap
-   between element sets it removes one Theil-Sen slope fitted on the 4 sets either side, takes the
-   difference of the medians and scores it against the scatter. Its thresholds (robust z at least
-   12, step at least 200 m) were chosen on ISS reboosts and checked on QZSS operator logs.
+1. **Collect.** From yearly full-catalogue TLE bundles, keep every object with any element set in
+   ESA's GEO region (mean motion 0.9-1.1 rev/day, eccentricity at most 0.2, inclination at most 70°).
+2. **Clean.** Drop alternate orbit solutions: runs of up to 10 days whose semi-major axis or
+   inclination jumps away and comes back while the mean longitude carries on, and lone sets 10 km
+   or more off their neighbours.
+3. **Label the mode.** Classify each 30-day window with ESA's classes: held in longitude (with or
+   without inclination control), drifting, librating around 75° E, 105° W or both, or inclined.
+4. **Find burns.** A step detector looks for steps in the mean semi-major axis against the local
+   scatter. Its thresholds were chosen on ISS reboosts and checked on QZSS operator logs.
 5. **Date each change.** Where the mode changes, find the day. A departure is the first element
-   set that leaves the held drift band or longitude box and stays out for 5 days. The end of
-   keeping is the last east-west burn plus half the burn interval. The end of north-south keeping
-   is the last inclination correction plus half the median interval between corrections. A change
-   inside a gap of more than 2 days is placed in the gap by running the first set after it back at
-   its drift rate relative to the hold.
+   set that leaves the held drift band or longitude box and stays out for 5 days; the end of
+   keeping is the last burn plus half the usual interval between burns.
 
 Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/README.md).
 
@@ -67,32 +61,70 @@ Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/READM
 | Check | Result |
 |---|---|
 | Real GEO events from cited public sources, dev split | 13 of 13 found, median date error 2 days |
-| The same, test split | 18 of 20 found, median date error 5.5 days |
+| The same, held-out test split | 18 of 20 found, median date error 5.5 days |
 | 500 relocations planted in held satellites' element sets | at 0.1-3°/day, both ends found in 148 of 150 (dev) and 147 of 150 (test), median date error 0 days; at 0.02-0.1°/day, 89 of 100 and 91 of 100 |
 | False events on satellites with published burn logs while on station | 0 in 6.46 object-years (QZS-3, QZS-6, Fengyun-2H) and 0 in 2.15 object-years on the held-out Fengyun-2F and Fengyun-4A |
-| 50 events drawn from a frozen copy of the list, judged by hand from the element sets | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days; 6 rows changed in the final list, each toward the hand reading |
+| 50 events drawn from a frozen copy of the list, judged by hand from the element sets | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days |
+| Dated claims from operators and the press, searched for after the list was final (50 objects, 179 searches) | all 9 match, on 7 objects, median date error 1 day, worst 5; no dated claim was found for 38 of the 50 objects |
 | ISS burns in 2024-2025, held out from tuning the step detector | all 35 covered NASA and Roscosmos burns found; 35 of 42 detections match a listed burn |
-| Routine rank against outside judgement, with targets set before the run: the top 30 judged irregular by a blind hand audit of the charts (24); objects cited as irregular in the top 5% (75%); cited fixed-slot keepers in the lower half (90%) | audit: 27 of 30, pass; irregular: 4 of the 6 held long enough to rate, fail (12 of 18 are not rated); keepers: 31 of 31, pass, but the median is 0; none of the 31 has a scored departure, and 80.5% of rated objects (428 of 532) have none (chance 0.00094) |
-| Planted rhythm: 4 relocations on a fixed rhythm, then one on or off it; both right in 90% of trials as the target | 0.811 (dev) and 0.804 (test) of trials whose last move was caught and scored, 0.73 and 0.74 of all 100, fail; on rhythm under 2 bits in 41 of 48 and 39 of 47, off rhythm 5 bits or more in 32 of 42 and 35 of 45; 3 then 1, the test as first specified, gives 0.057 and 0.053 because the last departure has only 2 past stays |
 
-Across the belt: **768 changes on 301 objects**: 244 relocation starts, 340 relocation ends, 83
-graveyard moves, 14 keeping stops, 57 ends of north-south keeping and 30 free burns.
+Nine of nine is a small base: the one-sided 95% lower bound on agreement is about 0.72. Analyses
+built on the same public element sets are counted apart, and 20 of their 26 claims match.
 
-An independent cross-check of 50 objects (the top 30 of the rank and 20 drawn from the rest of the
-list) found few public sources: after two search rounds (179 searches), no dated claim was found
-for 38 objects. All 9 dated claims from operators and the press match the list, on 7 objects, with
-a median date error of 1 day and a worst of 5; on so small a base the one-sided 95% lower
-bound on agreement is about 0.72. Analyses built on the same public element sets are
-counted apart: 20 of their 26 claims match. Their 6 misses are two small Luch (Olymp) 2 moves (0.6°
-and 0.4°), each held inside a listed stay, TJS-10's arrival from its transfer orbit, and an SJ-17
-burn the list has as a departure.
+![Relocations and graveyard moves in the GEO belt, 2021-2025](docs/belt_relocations.png)
+
+Each line is one relocation from the list, from its start date and longitude to its end; crosses
+mark graveyard moves. Redraw it with `python tools/relocation_chart.py`.
 
 How each number was measured, with the full breakdowns and caveats:
 [findings/README.md](findings/README.md), which also lists the leads from the ISS work.
 
+## What did not work: a routine score
+
+The second goal was to rank objects by how far their relocations break their own routine. Each
+departure gets a surprise in bits: from the object's earlier stay lengths when it has three of
+them, and otherwise from how rarely a held object leaves at all. The targets were set before the
+first run, and the score misses most of them:
+
+| Check | Target | Result |
+|---|---|---|
+| Cited relocation starts scored as off-routine | 90% | 1 of 4 |
+| Planted rhythm of four moves, then one on or off it: both read right | 90% | 0.80 of the held-out trials whose last move was caught, 0.74 of all 100 |
+| Top 30 on the first half of the data in the top 60 on the second | half | 5 of 24 |
+| Rank built on data to an earlier date against the final rank (Spearman) | 0.9 | 0.089 to 0.841 |
+| Cited irregular objects in the top 5% | 75% | 4 of the 6 that could be rated |
+| Off-routine rows on rocket bodies, debris and logged keepers | about 0 | 0 |
+| Top 30 judged irregular in a blind hand audit of their charts | 24 | 27 |
+
+Most of the cause is the data. Five years hold too little history per object: only 33 of the 197
+scored departures have three earlier stays to compare with, and only eight objects get any score
+from their own stay lengths. They are the same eight that started five or more relocations. Every
+other departure is scored by how rarely held objects leave, which ignores timing, so a first
+departure after a long hold scores high whatever its timing. The model has faults too: with enough history, it
+still misreads about a fifth of the planted trials.
+
+So the rank does not measure broken routine. Below rank 7 its order is set by how many times an
+object left and how late. The eight objects that started five or more relocations, with their rank
+([`dataset/objects.csv`](dataset/objects.csv)):
+
+| Object | Owner code | Relocation starts | Years held | Arrivals beside another owner's satellite | Rank |
+|---|---|---|---|---|---|
+| HYLAS 1 | UK | 13 | 2.75 | 0 | 28 |
+| WGS F3 (USA 211) | US | 9 | 3.68 | 0 | 5 |
+| SJ-17 | PRC | 8 | 3.99 | 0 | 1 |
+| SJ-20 | PRC | 7 | 4.02 | 0 | 3 |
+| LUCH (OLYMP) | CIS | 6 | 3.52 | 6 | 2 |
+| TJS-3 | PRC | 6 | 3.45 | 0 | 4 |
+| JCSAT 16 | JPN | 6 | 4.26 | 0 | 7 |
+| LUCH (OLYMP) 2 | CIS | 5 | 2.28 | 2 | 6 |
+
+The method and every check are in
+[findings/README.md](findings/README.md#routine-score-and-irregularity-rank).
+
 ## Known limits
 
 - Very slow moves (0.02-0.05°/day) are missed more often and dated later.
+- A move of about half a degree between two nearby positions can be read as one stay.
 - A keeping stop on a slow burn cycle can be dated weeks late.
 - Near the stable longitudes at 75° E and 105° W a free object barely drifts, so a stop there is
   dated late or missed.
