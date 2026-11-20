@@ -3,6 +3,10 @@
 A dated list of station-keeping changes for every object in the geostationary belt, 2021-2025,
 built only from public orbital elements.
 
+**To use the results, start at [`dataset/`](dataset/README.md):** the state changes with object names,
+owners and scores, one row per object with its rank, a data card with every column and how good the
+numbers are, and the evidence for the top 30 of the rank.
+
 ![Relocations and graveyard moves in the GEO belt, 2021-2025](docs/belt_relocations.png)
 
 Each line is one relocation from the list, from its start date and longitude to its end date and

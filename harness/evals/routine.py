@@ -24,6 +24,7 @@ from harness.evals.mode_events import DEFAULT_EVENTS, Event, _commit, load_event
 from harness.evals.state_changes import KEPT_OBJECTS, kept_station, object_records, score
 from harness.evals.state_injection import Host, Plant, drift_base, load_hosts, smooth
 from orbit_watch import routine as rt
+from orbit_watch.charts import chart
 from orbit_watch.clean import drop_snapback_blocks
 from orbit_watch.events import Event as Found, burns, state_changes
 from orbit_watch.jobs.routine import (AS_OF, DEAD_TYPES, N_DAYS, day_of, holds_of, iso, read_events, run_scores,
@@ -487,37 +488,6 @@ def audit_sample(rank: Sequence[dict]) -> list[dict]:
     random.Random(AUDIT_SEED).shuffle(picked)
     return [{"audit_id": f"A{k:02d}", "norad_id": int(r["norad_id"]), "name": r["name"], "group": g,
              "rank": int(r["rank"]), "bits_per_year": r["bits_per_year"]} for k, (g, r) in enumerate(picked, 1)]
-
-
-def chart(path: Path, title: str, records, events: Sequence[dict], holds: Sequence[tuple[float, float]]) -> None:
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    kept, _ = drop_snapback_blocks(records)
-    tk = track(kept)
-    fig, ax = plt.subplots(4, 1, figsize=(12, 10), sharex=True)
-    series = [("mean longitude (deg)", tk.lon), ("drift rate (deg/day)", tk.rate),
-              ("semi-major axis - 42164 (km)", tk.semi_major_axis_km - 42164.0), ("inclination (deg)", tk.inclination)]
-    for a, (label, y) in zip(ax, series):
-        a.plot(tk.days, y, ".", color="#246", ms=2)
-        a.set_ylabel(label, fontsize=8)
-        for s, e in holds:
-            a.axvspan(s, e, alpha=0.1, color="#2a2")
-        for ev in events:
-            a.axvline(day_of(date.fromisoformat(ev["date"])), color="#c33" if ev["event_type"] in rt.DEPARTURES
-                      else "#888", lw=0.8, ls="-" if ev["event_type"] in rt.DEPARTURES else "--")
-    for ev in events:
-        ax[0].text(day_of(date.fromisoformat(ev["date"])), 1.01, ev["event_type"], rotation=90, fontsize=6,
-                   transform=ax[0].get_xaxis_transform(), va="bottom")
-    ticks = [day_of(date(y, 1, 1)) for y in range(2021, 2027)]
-    ax[-1].set_xticks(ticks, [str(y) for y in range(2021, 2027)])
-    ax[-1].set_xlim(0, N_DAYS)
-    fig.suptitle(title + "  (green: held; red: departures; grey dashed: other changes)", y=0.995, fontsize=10)
-    fig.tight_layout()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=80)
-    plt.close(fig)
 
 
 def audit(a, geo_dir: Path, cache: Path) -> int:
