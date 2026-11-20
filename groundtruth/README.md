@@ -233,36 +233,35 @@ These two files are the input to the independent cross-check in `findings/README
   - `regulator`.
   - `observer`: independent optical or radio tracking.
   - `press`.
-  - `tle_derived`: an analysis of the same public element sets the list is built from, including any source whose own citations lead to one. It is never counted as independent.
+  - `tle_derived`: an analysis of the same public element sets the list is built from, including any source whose own citations lead to one, and any source that gives positions and drift rates with no operator, agency, filing or named tracker behind them. It is never counted as independent.
 
 How it was compiled and checked:
 
 - **Searching:** each object was searched by name, alternative names, operator and catalogue number, never by a date from the list. Its list rows were not opened until its search was finished. Every dated claim found was recorded, whether or not the list has it. A page that refused an automated fetch was not forced; a public Wayback Machine copy of the same page was used instead where one existed, with the archive URL as `source_url` and the original publisher as `publisher`.
-- **Not claims:** entry into service at a slot, a regulator's grant or authorisation, a UN registry change-of-position note, a planned date, and a statement that gives no date for the move itself.
+- **Not claims:** entry into service at a slot, a regulator's grant or authorisation, a UN registry change-of-position note, a planned date, and a statement that gives no date for the move itself. A page's own issue date is not the date of a move it mentions.
 - **Excluded sources:**
   - A URL already in `groundtruth/`. A different page of the same publisher is allowed.
   - Content with no named publisher.
   - An encyclopedia, whose citation was followed to the original instead. Wikipedia statements whose citation could not be followed are not used.
 - **Saved copies:** every page used was fetched by `python -m harness.evals.cross_check fetch` and saved to `$ORBIT_WATCH_DATA/sources/cross_check/` with an `index.csv` (file, URL, fetch time, SHA-256). The copies are not in the repository.
-- **Quote check:** `python -m harness.evals.cross_check verify` finds every quoted passage on its saved copy and exits 1 if any is missing. HTML is read as visible text (scripts and styles dropped); a PDF is read from a `pdftotext -enc UTF-8` copy saved beside it. Whitespace, typographic quotes and dashes are normalised and case is ignored. A quote that could not be found again would have been dropped; all 49 pass.
+- **Quote check:** `python -m harness.evals.cross_check verify` finds every quoted passage on its saved copy and exits 1 if any is missing. HTML is read as visible text (scripts and styles dropped, a space at block tags such as paragraphs and table cells, none at inline tags such as links); a PDF is read from a `pdftotext -enc UTF-8` copy saved beside it. Whitespace, typographic quotes and dashes are normalised and case is ignored. A quote that could not be found again would have been dropped; all 45 pass.
+- **Second reader:** in review, a second reader read every passage on the saved copies. All were there, but some did not support the row as recorded, and those rows were corrected: two removed (GOES 17, TDRS 9) and two element-set stops removed (SJ-17, TJS-3) because the text does not date the event; six reclassed `tle_derived` (the five LUCH (OLYMP) rows from RussianSpaceWeb, one of them a behaviour quote, and HOT BIRD 13C from RXTV info); ASTRA 2D retyped from `graveyard` to `keeping_stop`. The removed IDs (CC-004, CC-009, CC-029, CC-033) are not reused.
 
 Sources:
 
 - Operators:
-  - NASA (TDRS 9).
-  - NOAA OSPO (GOES 17).
   - EUMETSAT, both its press page and its flight dynamics paper at ISSFD 2024 (MTG-I1, MTG-S1).
   - Boeing (ASTRA 2D).
   - Sirius XM Holdings, its Form 10-K for 2024 on its investor site (XM-4).
 - Press:
-  - RussianSpaceWeb (LUCH (OLYMP)).
   - Xinhua via gov.cn (FENGYUN 4B).
-  - RXTV info (HOT BIRD 13C).
   - SpaceNews (LUCH (OLYMP) 2).
   - ExecutiveGov (USA 113).
 - `tle_derived`:
   - The Secure World Foundation's 2026 fact sheet *Chinese Military and Intelligence Rendezvous and Proximity Operations* (SJ-17, TJS-3, TJS-10). Its endnotes cite ISR University issue 110, which `geo_events.csv` and `irregular_objects.csv` use. It is cited by the publisher's own page for the document on swfound.org. That page links to the PDF on a Dropbox share; the saved copy indexed under the page URL is that PDF, and the quotes are checked against it.
   - SatTrackCam Leiden (LUCH (OLYMP) 2).
+  - RussianSpaceWeb (LUCH (OLYMP)). It names no operator, agency or filing for the 2021-2025 positions, gives figures that element sets give (a drift of 0.5° per day, an inclination of 1.14°), and credits its earlier position history to NORAD radar and to an analyst who works from public element sets.
+  - RXTV info (HOT BIRD 13C). Its date and position rest on "was last tracked at 10°E", with no tracker named.
   - The Orbital Focus satellite diary for the TJS series (TJS-3), which tabulates element sets.
   - The CSIS report *New Rhythms in GEO* (behaviour only for SJ-17, SJ-20 and TJS-3), built on Space-Track data.
 

@@ -79,3 +79,22 @@ def test_verify_finds_each_quoted_passage_on_the_saved_copy_and_flags_the_rest(t
               _claim(2, "relocation_start", "2023-05-03") | {"quote": "hidden text"},
               _claim(3, "relocation_start", "2023-05-03", url="w") | {"quote": "moved"}]
     assert [c for c, _ in cc.verify(claims, tmp_path)] == ["C2", "C3"]
+
+
+def test_page_text_adds_no_space_at_an_inline_tag_inside_a_sentence():
+    raw = (b"<html><body><p>The <a href='x'>Lockheed Martin</a>-built <b>B7</b>, retired.</p>"
+           b"<td>A</td><td>B</td></body></html>")
+    text = cc.normalise(cc.page_text(raw))
+    assert "the lockheed martin-built b7, retired." in text
+    assert "a b" in text
+
+
+def test_stricter_readings_pair_across_pages_and_read_a_quarter_at_its_midpoint_or_drop_it():
+    events = [_event("relocation_start", "2023-03-10"), _event("graveyard", "2024-05-01")]
+    claims = [_claim(1, "relocation_start", "2023-03-09"), _claim(2, "relocation_start", "2023-03-12", url="v"),
+              _claim(3, "graveyard", "2024-01", "quarter", end="2024-03")]
+    s = cc.stricter_readings(claims, events)
+    assert s["pair_per_object"]["changed"] == ["C2"] and s["pair_per_object"]["independent"]["matched"] == 2
+    assert s["quarter_midpoint"]["changed"] == ["C3"]
+    assert s["quarter_midpoint"]["independent"]["unmatched"] == {"listed_outside_window": 1}
+    assert s["quarter_dropped"]["dropped"] == ["C3"] and s["quarter_dropped"]["independent"]["claims"] == 2

@@ -657,8 +657,8 @@ The list was checked against public sources that were not used to build it
   $cc_ind_worst.
 - **Element-set analyses, counted apart:** $cc_tle_matched of their $cc_tle_claims dated claims match.
 - **Disagreements:** $cc_disagree claims, $cc_disagree_tle from element-set analyses and
-  $cc_disagree_ind from operators or the press. Two small LUCH (OLYMP) 2 moves are held inside one
-  stay ([#101](../../../issues/101)), TJS-10's first arrival on station is not listed
+  $cc_disagree_ind from operators or the press. Two small LUCH (OLYMP) 2 moves are each held inside a
+  listed stay ([#101](../../../issues/101)), TJS-10's first arrival on station is not listed
   ([#102](../../../issues/102)), and an SJ-17 burn the list has as a departure is a typing
   difference with no issue.
 

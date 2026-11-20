@@ -751,19 +751,26 @@ first search:
   object's station-keeping state in 2021-2025 was recorded, whether or not the list has it.
 - **Sources:** new ones only; no URL already in `groundtruth/` is used. Each claim keeps a verbatim
   quote. A copy of every page is saved, and `python -m harness.evals.cross_check verify` finds every
-  quoted passage again on its saved copy. On the final commit all 49 quotes pass.
+  quoted passage again on its saved copy. On the final commit all 45 quotes pass.
 - **Source kind:** operator (including agency or manufacturer), regulator, observer, press, or
   `tle_derived`. A `tle_derived` source is an analysis of the same public element sets the list is
-  built from. It is reported apart and never counted as independent.
+  built from, or a source that gives positions and drift rates with no operator, agency, filing or
+  named tracker behind them. It is reported apart and never counted as independent.
 - **Matching:** the cited-event rule in `harness/evals/state_changes.py`. The type must be accepted:
   a departure claim (relocation start, graveyard move or keeping stop) matches any of the three.
   The date must be within 45 days of the claim's date (a month-only date counts as the 15th).
   Pairs are taken one to one, closest first. The rules left two cases open, and these choices were
-  made before scoring:
+  made before scoring. The stricter reading of each is scored too (`stricter` in `summary.json`):
   - A claim dated only to a quarter or a year matches within 45 days of the stated period's edges;
-    a date inside the period counts as 0 days of error.
+    a date inside the period counts as 0 days of error. One scored claim is dated this way, USA 113's
+    graveyard move in the fourth quarter of 2022. Read at the quarter's midpoint it still matches,
+    15 days off, and the independent worst error rises from 5 to 15 days. Dropped, the independent
+    result is 8 of 8 dated claims on 6 objects, median error 1 day, worst 5.
   - The one-to-one pairing runs within each source page, so two pages reporting the same move can
-    both match it.
+    both match it. Paired one to one per object across all pages, one claim changes: SpaceNews's
+    23 June 2024 departure of LUCH (OLYMP) 2 (CC-040) loses the list event to SatTrackCam's claim of
+    the same departure (CC-019), so the independent result is 8 of 9. That is two claims about one
+    move collapsing; each object with independent claims has them from a single page.
 - **Reasons for a miss:**
   - *listed with another type*: an event of another type is within 45 days.
   - *listed outside the window*: an accepted type is within 90 days but not within 45.
@@ -804,56 +811,59 @@ original publisher as the publisher. "No dated claim found" is therefore a state
 search (about 4 searches per object, without the pages that refused), not about what public sources
 hold.
 
-**Coverage.** Sources are scarce. After both rounds 36 of the 50 objects have no dated claim from
-any source.
+**Coverage.** Sources are scarce. After both rounds 38 of the 50 objects have no dated claim found
+from any source. The tables show the final claims, after the review corrections listed under
+"Choices and doubts" below; those corrections apply to claims from both rounds.
 
-| | Top 30, round 1 | Top 30, round 2 | Drawn 20, round 1 | Drawn 20, round 2 |
-|---|---|---|---|---|
-| Objects with a dated claim from an independent source | 6 | 7 | 4 | 4 |
-| Objects with a dated claim from a `tle_derived` source only | 3 | 3 | 0 | 0 |
-| Objects with no dated claim found | 21 | 20 | 16 | 16 |
-| List events in 2021-2025 on these objects | 212 | 212 | 52 | 52 |
-| ...matched by an independent claim | 11 | 12 | 4 | 4 |
-| ...matched by a `tle_derived` claim | 12 | 17 | 0 | 0 |
+| | Top 30 | Drawn 20 |
+|---|---|---|
+| Objects with a dated claim from an independent source | 4 | 3 |
+| Objects with a dated claim from a `tle_derived` source only | 5 | 0 |
+| Objects with no dated claim found | 21 | 17 |
+| List events in 2021-2025 on these objects | 212 | 52 |
+| ...matched by an independent claim | 6 | 3 |
+| ...matched by a `tle_derived` claim | 20 | 0 |
 
 Of the 101 relocation starts the list gives the top 30 in 2021-2025, an independent source confirms
-5 and a `tle_derived` source confirms 7 (5 after round 1).
+3 and a `tle_derived` source confirms 9.
 
 Round 2 added six claims: XM-4's disposal (operator) and five TJS-3 moves (`tle_derived`). All six
 match the list.
 
-**Agreement.** The 49 claims are 14 relocation starts, 19 relocation ends, 5 graveyard moves,
-1 free burn, 1 `stayed` and 9 `behaviour`. The 39 dated claims split as follows (round 1 had 43
-claims, 33 of them dated):
+**Agreement.** The 45 claims are 14 relocation starts, 16 relocation ends, 3 graveyard moves,
+1 keeping stop, 1 free burn, 1 `stayed` and 9 `behaviour`. The 35 dated claims split as follows:
 
-| Claims | Round | Dated claims | Matched | Objects | Median date error (days) | Worst (days) |
-|---|---|---|---|---|---|---|
-| Independent, all | 1 | 15 | 15 | 10 | 2 | 22 |
-| | 2 | 16 | 16 | 11 | 2 | 22 |
-| Top 30 | 1 | 11 | 11 | 6 | 1 | 22 |
-| | 2 | 12 | 12 | 7 | 1.5 | 22 |
-| Drawn | 1, 2 | 4 | 4 | 4 | 3.5 | 9 |
-| Not in an earlier check set | 1 | 9 | 9 | 7 | 1 | 9 |
-| | 2 | 10 | 10 | 8 | 1.5 | 9 |
-| Already in an earlier check set | 1, 2 | 6 | 6 | 3 | 6 | 22 |
-| Operator | 1 | 6 | 6 | 5 | 3.5 | 9 |
-| | 2 | 7 | 7 | 6 | 2 | 9 |
-| Press | 1, 2 | 9 | 9 | 5 | 1 | 22 |
-| Regulator, observer | 1, 2 | 0 | | | | |
-| `tle_derived` (apart) | 1 | 18 | 12 | 4 | 1 | 10 |
-| | 2 | 23 | 17 | 4 | 1 | 15 |
+| Claims | Dated claims | Matched | Objects | Median date error (days) | Worst (days) |
+|---|---|---|---|---|---|
+| Independent, all | 9 | 9 | 7 | 1 | 5 |
+| Top 30 | 6 | 6 | 4 | 0.5 | 2 |
+| Drawn | 3 | 3 | 3 | 2 | 5 |
+| Objects with no earlier cited source | 7 | 7 | 5 | 0 | 2 |
+| Objects with an earlier cited source | 2 | 2 | 2 | 3 | 5 |
+| Operator | 5 | 5 | 4 | 2 | 5 |
+| Press | 4 | 4 | 3 | 0 | 1 |
+| Regulator, observer | 0 | | | | |
+| `tle_derived` (apart) | 26 | 20 | 6 | 2 | 22 |
 
-"Earlier check set" means `geo_events.csv`, `irregular_objects.csv` or `steady_objects.csv`.
-All 23 `tle_derived` claims are on top-30 objects. 22 of them are on 3 objects already in a check
-set (17 matched), and 1 is on TJS-10 (not listed). The independent claims cover:
+Before review the independent set was 16 of 16 on 11 objects. Review removed two operator claims
+whose pages do not date the move and moved five dated claims to `tle_derived`.
 
-- LUCH (OLYMP): its 2021 arrival, its 2025 move and arrival, and its October 2025 graveyard move.
+"Earlier cited source" means the object is in `geo_events.csv`, `irregular_objects.csv` or
+`steady_objects.csv`. The hand audits had already looked at three of the five objects with no
+earlier cited source: XM-4, FENGYUN 4B and METEOSAT 12 were in the blind audit of the rank charts
+(`findings/routine/audit_sample.csv`), and METEOSAT 12's two matched events, 2024-01-24 and
+2024-01-30, were judged real in the hand audit of the list (`findings/state_audit_fresh/audit.csv`).
+USA 113 and MTG-S1 were in neither.
+
+All 26 `tle_derived` claims are on top-30 objects. 24 of them are on 4 objects with an earlier
+cited source (19 matched); the other 2 are TJS-10's arrival (not listed) and HOT BIRD 13C's June
+2023 departure (matched, 9 days). The independent claims cover:
+
 - METEOSAT 12 (MTG-I1): its January 2024 move from 3.4° W to 0.35° W.
-- GOES 17: its February 2023 arrival at 104.7° W.
 - FENGYUN 4B: its February 2024 move from 133° E to 105° E.
-- HOT BIRD 13C: its June 2023 departure from 13° E.
 - LUCH (OLYMP) 2: its 23 June 2024 departure.
-- Graveyard moves of TDRS 9, ASTRA 2D and USA 113 (DSCS III B7).
+- ASTRA 2D: the last command on 19 January 2023, recorded as a keeping stop.
+- USA 113 (DSCS III B7): its graveyard move in the fourth quarter of 2022.
 - MTG-S1: its July 2025 arrival at 3.4° W after launch.
 - XM-4: its October 2023 disposal ("in October 2023 we completed the de-orbiting and
   decommissioning of the satellite", Sirius XM Holdings Form 10-K for 2024). Added in round 2; the
@@ -864,8 +874,10 @@ arrival near 59° E, its 5 July 2022 departure, and its stops at 88° E on 13 Se
 137.5° E on 8 February 2023, from the Orbital Focus satellite diary, which tabulates element sets.
 The three day-dated ones match to the day.
 
-The worst error, 22 days, is LUCH (OLYMP)'s arrival. The source gives only the month, September
-2025; the list gives 2025-08-24.
+The worst independent error, 5 days, is ASTRA 2D: the last command was sent on 19 January 2023 and
+the list's graveyard move, a departure the rule accepts for a keeping stop, is 2023-01-14. The worst
+`tle_derived` error, 22 days, is LUCH (OLYMP)'s arrival: RussianSpaceWeb gives only the month,
+September 2025, and the list gives 2025-08-24.
 
 **`stayed`.** METEOSAT 12 (MTG-I1) "was controlled in a +/- 0.5 deg longitude box at 3.4 deg West"
 during commissioning in 2023 (EUMETSAT flight dynamics, ISSFD 2024). The list has no event for it in
@@ -874,9 +886,9 @@ during commissioning in 2023 (EUMETSAT flight dynamics, ISSFD 2024). The list ha
 **Behaviour (top 30, not scored).** 6 objects have a behaviour quote: SJ-17 (rank 1), LUCH (OLYMP)
 (2), SJ-20 (3), TJS-3 (4), LUCH (OLYMP) 2 (6) and TJS-10 (9). Every one of the 9 quotes describes
 frequent moves, drifting with stops, or manoeuvres near other satellites. None describes holding a
-slot. All but the LUCH (OLYMP) quote come from `tle_derived` sources (the Secure World Foundation's
-2026 Chinese RPO fact sheet, the CSIS report *New Rhythms in GEO*, SatTrackCam Leiden). The other
-24 of the top 30 have no behaviour quote.
+slot. All come from `tle_derived` sources (the Secure World Foundation's 2026 Chinese RPO fact
+sheet, the CSIS report *New Rhythms in GEO*, SatTrackCam Leiden, RussianSpaceWeb). The other 24 of
+the top 30 have no behaviour quote.
 
 **Every disagreement.** All six come from `tle_derived` sources and were found in round 1; round 2
 added none, and no independent claim disagrees.
@@ -888,8 +900,8 @@ added none, and no independent claim disagrees.
 | CC-010 | TJS-10 | "By November 9, it had circularized its orbit and settled into GEO at 173.3 degrees east longitude" (2023; Secure World Foundation) | no event within 90 days; the first TJS-10 row is a relocation start on 2024-05-15 from 173.3° E |
 | CC-003 | SJ-17 | "it dropped its altitude by 76.2 km to move below the GEO belt on Nov. 1, 2024" (Secure World Foundation), recorded as a free burn | a relocation start on 2024-11-02, 1 day later; the type differs |
 
-The two LUCH (OLYMP) 2 moves are steps of 0.6° and 0.4° that the list holds inside one stay
-([#101](../../../issues/101)). TJS-10's November 2023 arrival is the end of its climb from the
+The two LUCH (OLYMP) 2 moves are steps of 0.6° and 0.4° that the list holds, each inside a listed
+stay ([#101](../../../issues/101)). TJS-10's November 2023 arrival is the end of its climb from the
 transfer orbit, which the list does not give ([#102](../../../issues/102)). The SJ-17 row is a typing
 difference with no issue: the claim was typed from the quote before the list was opened, and the
 list has the same move as a departure.
@@ -899,22 +911,33 @@ list has the same move as a departure.
 - The Secure World Foundation fact sheet is classed `tle_derived` because its endnotes cite ISR
   University issue 110, which `groundtruth/` already uses. The CSIS report is built on Space-Track
   data.
-- Some dates come from a retirement statement rather than the burn:
-  - TDRS 9 rests on NASA's 5 January 2023 page saying it "is retiring TDRS-9 after raising it". The
-    raise is not dated, so the claim is January 2023.
-  - ASTRA 2D rests on Boeing's statement that the last command was sent on 19 January 2023. The
-    list's graveyard move is 2023-01-14.
+- RussianSpaceWeb is classed `tle_derived`: it names no operator, agency or filing for LUCH (OLYMP)'s
+  2021-2025 positions, its figures are what element sets give ("drifting eastward at a rate of 0.5
+  degrees per day", "its orbital plane naturally tilted to 1.14 degrees"), and it credits the
+  satellite's earlier positions to NORAD radar and to an analyst who works from public element sets.
+- RXTV info is classed `tle_derived`: HOT BIRD 13C's date and position rest on "was last tracked at
+  10°E", with no tracker named.
+- ASTRA 2D rests on Boeing's statement that the satellite "retired" and that the last command was
+  sent on 19 January 2023. It says nothing of an orbit raise, so the claim is a keeping stop, not a
+  graveyard move.
 - USA 113 is matched to DSCS III B7 by name. The source says its "retirement began in October" and
   reports it retired by 15 December 2022, so the claim is the fourth quarter of 2022.
 - Initial arrivals after launch (MTG-S1, and TJS-10 above) are recorded as relocation ends.
-- GOES 17's NOAA notice gives only its new standby location in February 2023, so only the arrival is
-  recorded.
 - Rejected:
   - Wikipedia statements whose only citation is a tracker page that no longer shows the old value:
     ASTRA 2A's 2022 move and May 2025 drift; ASTRA 2D's November 2021 move. Round 2 found no
     other source for ASTRA 2A.
   - Wikipedia's WGS-3 longitude table, which has no citation.
   - KeepTrack notices dated 2026, outside the period.
+- Recorded at first and removed in review, because the text does not date the event:
+  - GOES 17: NOAA's notice issued 8 February 2023 speaks of testing "from GOES-17's new Standby
+    location at 104.7 deg W"; its issue date is not the arrival date, and the 4 January notice gives
+    only the planned start of the drift, 10 January.
+  - TDRS 9: NASA's page of 5 January 2023 says it "is retiring TDRS-9 after raising it" and does not
+    date the raise.
+  - Two stops from the Secure World Foundation fact sheet (`tle_derived`): SJ-17 "appears to be
+    stable at 178 degrees West longitude", with no date, and TJS-3's stop at 148.23° E, which came
+    "subsequently" after it reached 148.7° E in January 2025.
 - Read in round 2 but not recorded, because none of them states when a move or disposal happened:
   - Entry into service at a slot: EUTELSAT 10B (24 July 2023), EUTE 36D (23 September 2024),
     SIRIUS XM-9 (January 2025), and SBIRS GEO 6's operational acceptance.
@@ -943,12 +966,14 @@ list has the same move as a departure.
 Known limits:
 
 - Search effort is still modest: 179 searches for 50 objects over two rounds, a median of 4 for the
-  40 objects searched again, against a ceiling of about 8. 36 of 50 without a claim is a lower bound
-  on what public sources hold.
+  40 objects searched again. The 12 objects with a dated claim are a lower bound on what public
+  sources hold; the 38 without one are objects this search found nothing for.
 - No regulator or observer claims were found. Most independent claims are retirements and
   well-announced moves of civil satellites. The small moves where the list is weakest are reported
   mainly by `tle_derived` sources.
-- Claims were recorded by one reader; the quote check is by script, not by a second reader.
+- Claims were recorded by one reader. In review a second reader read every quoted passage on the
+  saved copies. All were there; the rows whose text did not support the claim as recorded were
+  removed, reclassed or retyped as described above and in `groundtruth/README.md`.
 
 ## ISS leads
 

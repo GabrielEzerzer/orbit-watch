@@ -94,6 +94,9 @@ def sources_dir() -> Path:
 
 class _Text(HTMLParser):
     SKIP = {"script", "style", "noscript", "svg", "template"}
+    BLOCK = {"br", "p", "div", "li", "ul", "ol", "dt", "dd", "tr", "td", "th", "table", "thead", "tbody", "caption",
+             "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "hr", "section", "article", "header", "footer",
+             "nav", "aside", "main", "figure", "figcaption", "title"}
 
     def __init__(self):
         super().__init__(convert_charrefs=True)
@@ -103,13 +106,13 @@ class _Text(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag in self.SKIP:
             self.depth += 1
-        elif tag in ("br", "p", "div", "li", "tr", "td", "th", "h1", "h2", "h3", "h4", "h5", "h6"):
+        elif tag in self.BLOCK:
             self.parts.append(" ")
 
     def handle_endtag(self, tag):
         if tag in self.SKIP and self.depth:
             self.depth -= 1
-        else:
+        elif tag in self.BLOCK:
             self.parts.append(" ")
 
     def handle_data(self, data):
@@ -249,7 +252,7 @@ def _match_group(cs: list[dict], evs: list[dict]) -> list[dict]:
     return [out.get(i) or _unmatched(c, evs) for i, c in enumerate(cs)]
 
 
-def score_claims(claims: list[dict], events: list[dict]) -> list[dict]:
+def score_claims(claims: list[dict], events: list[dict], by_page: bool = True) -> list[dict]:
     by_norad: dict[int, list[dict]] = defaultdict(list)
     for e in events:
         by_norad[e["norad_id"]].append(e)
@@ -261,7 +264,7 @@ def score_claims(claims: list[dict], events: list[dict]) -> list[dict]:
             if hi < PERIOD[0] or lo > PERIOD[1]:
                 results[c["claim_id"]] = _result(c, "outside_period")
             else:
-                groups[(c["norad_id"], c["source_url"])].append(c)
+                groups[(c["norad_id"], c["source_url"] if by_page else "")].append(c)
         elif c["claim_type"] == "stayed":
             lo, hi = period(c)
             inside = [e for e in evs if lo <= e["date"] <= hi]
@@ -362,6 +365,28 @@ def summarise(results: list[dict], events: list[dict], sample: list[dict]) -> di
     }
 
 
+def stricter_readings(claims: list[dict], events: list[dict]) -> dict:
+    base = {r["claim"]["claim_id"]: (r["status"], r.get("error")) for r in score_claims(claims, events)}
+    loose = lambda c: c["claim_type"] in ACCEPTS and c["date_precision"] not in ("day", "month")
+
+    def midpoint(c):
+        if not loose(c):
+            return c
+        lo, hi = period(c)
+        return c | {"date": (lo + (hi - lo) / 2).isoformat(), "date_end": "", "date_precision": "day"}
+
+    def block(results):
+        out = {"independent": _block([r for r in results if r["claim"]["source_kind"] in INDEPENDENT]),
+               "tle_derived": _block([r for r in results if r["claim"]["source_kind"] == TLE_DERIVED])}
+        out["changed"] = [r["claim"]["claim_id"] for r in results
+                          if (r["status"], r.get("error")) != base[r["claim"]["claim_id"]]]
+        return out
+    return {"pair_per_object": block(score_claims(claims, events, by_page=False)),
+            "quarter_midpoint": block(score_claims([midpoint(c) for c in claims], events)),
+            "quarter_dropped": block(score_claims([c for c in claims if not loose(c)], events)) |
+            {"dropped": [c["claim_id"] for c in claims if loose(c)]}}
+
+
 def result_rows(results: list[dict]) -> list[dict]:
     rows = []
     for r in results:
@@ -382,9 +407,9 @@ def result_rows(results: list[dict]) -> list[dict]:
 
 
 def write_score(out: Path = OUT) -> dict:
-    events, sample = read_events(), _rows(SAMPLE)
-    results = score_claims(_rows(CLAIMS), events)
-    summary = summarise(results, events, sample)
+    events, sample, claims = read_events(), _rows(SAMPLE), _rows(CLAIMS)
+    results = score_claims(claims, events)
+    summary = summarise(results, events, sample) | {"stricter": stricter_readings(claims, events)}
     out.mkdir(parents=True, exist_ok=True)
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
                                       newline="\n")
