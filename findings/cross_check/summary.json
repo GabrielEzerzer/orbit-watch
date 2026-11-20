@@ -1,0 +1,392 @@
+{
+  "commit": "61818b72db4c2296e84cef566bf3fbd90710ded2",
+  "dirty": false,
+  "window_days": 45,
+  "near_days": 90,
+  "period": [
+    "2021-01-01",
+    "2025-12-31"
+  ],
+  "claims": 45,
+  "claims_by_type": {
+    "relocation_start": 14,
+    "behaviour": 9,
+    "free_burn": 1,
+    "relocation_end": 16,
+    "graveyard": 3,
+    "stayed": 1,
+    "keeping_stop": 1
+  },
+  "search": {
+    "searches": 179,
+    "rounds": [
+      {
+        "objects": 50,
+        "searches": 72,
+        "median_per_object": 1.0,
+        "max_per_object": 3
+      },
+      {
+        "objects": 40,
+        "searches": 107,
+        "median_per_object": 3.0,
+        "max_per_object": 5
+      }
+    ]
+  },
+  "coverage": {
+    "top30": {
+      "objects": 30,
+      "with_independent_dated_claim": 4,
+      "with_tle_derived_dated_claim_only": 5,
+      "without_dated_claim": 21,
+      "listed_events": 212,
+      "events_matched_independent": 6,
+      "events_matched_tle_derived": 20
+    },
+    "drawn": {
+      "objects": 20,
+      "with_independent_dated_claim": 3,
+      "with_tle_derived_dated_claim_only": 0,
+      "without_dated_claim": 17,
+      "listed_events": 52,
+      "events_matched_independent": 3,
+      "events_matched_tle_derived": 0
+    }
+  },
+  "independent": {
+    "all": {
+      "claims": 9,
+      "matched": 9,
+      "objects": 7,
+      "median_abs_error_days": 1,
+      "worst_abs_error_days": 5,
+      "unmatched": {}
+    },
+    "by_group": {
+      "drawn": {
+        "claims": 3,
+        "matched": 3,
+        "objects": 3,
+        "median_abs_error_days": 2,
+        "worst_abs_error_days": 5,
+        "unmatched": {}
+      },
+      "top30": {
+        "claims": 6,
+        "matched": 6,
+        "objects": 4,
+        "median_abs_error_days": 0.5,
+        "worst_abs_error_days": 2,
+        "unmatched": {}
+      }
+    },
+    "by_already_cited": {
+      "0": {
+        "claims": 7,
+        "matched": 7,
+        "objects": 5,
+        "median_abs_error_days": 0,
+        "worst_abs_error_days": 2,
+        "unmatched": {}
+      },
+      "1": {
+        "claims": 2,
+        "matched": 2,
+        "objects": 2,
+        "median_abs_error_days": 3.0,
+        "worst_abs_error_days": 5,
+        "unmatched": {}
+      }
+    },
+    "by_source_kind": {
+      "operator": {
+        "claims": 5,
+        "matched": 5,
+        "objects": 4,
+        "median_abs_error_days": 2,
+        "worst_abs_error_days": 5,
+        "unmatched": {}
+      },
+      "press": {
+        "claims": 4,
+        "matched": 4,
+        "objects": 3,
+        "median_abs_error_days": 0.0,
+        "worst_abs_error_days": 1,
+        "unmatched": {}
+      }
+    }
+  },
+  "tle_derived": {
+    "all": {
+      "claims": 26,
+      "matched": 20,
+      "objects": 6,
+      "median_abs_error_days": 2.0,
+      "worst_abs_error_days": 22,
+      "unmatched": {
+        "listed_with_another_type": 1,
+        "not_listed": 1,
+        "listed_outside_window": 4
+      }
+    },
+    "by_group": {
+      "top30": {
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "not_listed": 1,
+          "listed_outside_window": 4
+        }
+      }
+    },
+    "by_already_cited": {
+      "0": {
+        "claims": 2,
+        "matched": 1,
+        "objects": 2,
+        "median_abs_error_days": 9,
+        "worst_abs_error_days": 9,
+        "unmatched": {
+          "not_listed": 1
+        }
+      },
+      "1": {
+        "claims": 24,
+        "matched": 19,
+        "objects": 4,
+        "median_abs_error_days": 1,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "listed_outside_window": 4
+        }
+      }
+    }
+  },
+  "top30_relocation_starts": {
+    "listed": 101,
+    "confirmed_independent": 3,
+    "confirmed_tle_derived": 9
+  },
+  "behaviour": {
+    "claims": 9,
+    "objects": 6,
+    "objects_by_says": {
+      "moves_often": 6
+    }
+  },
+  "stayed": [
+    {
+      "claim_id": "CC-030",
+      "norad_id": "54743",
+      "name": "METEOSAT 12 (MTG I1)",
+      "claim_type": "stayed",
+      "date": "2023",
+      "date_end": "2023",
+      "date_precision": "year",
+      "source_kind": "operator",
+      "publisher": "EUMETSAT flight dynamics (ISSFD 2024)",
+      "source_url": "https://issfd.org/ISSFD_2024/ISSFD2024_7-4.pdf",
+      "quote": "During the Commissioning Phase in 2023, MTG-I1 was controlled in a +/- 0.5 deg longitude box at 3.4 deg West.",
+      "status": "stayed_no_event_listed",
+      "events_in_period": []
+    }
+  ],
+  "disagreements": [
+    {
+      "claim_id": "CC-003",
+      "norad_id": "41838",
+      "name": "SJ-17",
+      "claim_type": "free_burn",
+      "date": "2024-11-01",
+      "date_end": "",
+      "date_precision": "day",
+      "source_kind": "tle_derived",
+      "publisher": "Secure World Foundation",
+      "source_url": "https://www.swfound.org/publications-and-reports/chinese-military-and-intelligence-rendezvous-and-proximity-operations-fact-sheet",
+      "quote": "it dropped its altitude by 76.2 km to move below the GEO belt on Nov. 1, 2024",
+      "status": "listed_with_another_type",
+      "nearest": {
+        "event_type": "relocation_start",
+        "date": "2024-11-02",
+        "offset_days": 1
+      }
+    },
+    {
+      "claim_id": "CC-010",
+      "norad_id": "58204",
+      "name": "TJS-10",
+      "claim_type": "relocation_end",
+      "date": "2023-11-09",
+      "date_end": "",
+      "date_precision": "day",
+      "source_kind": "tle_derived",
+      "publisher": "Secure World Foundation",
+      "source_url": "https://www.swfound.org/publications-and-reports/chinese-military-and-intelligence-rendezvous-and-proximity-operations-fact-sheet",
+      "quote": "By November 9, it had circularized its orbit and settled into GEO at 173.3 degrees east longitude.",
+      "status": "not_listed"
+    },
+    {
+      "claim_id": "CC-015",
+      "norad_id": "55841",
+      "name": "LUCH (OLYMP) 2",
+      "claim_type": "relocation_start",
+      "date": "2023-12-04",
+      "date_end": "",
+      "date_precision": "day",
+      "source_kind": "tle_derived",
+      "publisher": "SatTrackCam Leiden",
+      "source_url": "https://sattrackcam.blogspot.com/2024/06/luch-olymp-2-is-on-move-again.html",
+      "quote": "04-10-2023 04-12-2023 3.2 E EUTELSAT 3B",
+      "status": "listed_outside_window",
+      "nearest": {
+        "event_type": "relocation_start",
+        "date": "2023-09-25",
+        "offset_days": -70
+      }
+    },
+    {
+      "claim_id": "CC-016",
+      "norad_id": "55841",
+      "name": "LUCH (OLYMP) 2",
+      "claim_type": "relocation_end",
+      "date": "2023-12-05",
+      "date_end": "",
+      "date_precision": "day",
+      "source_kind": "tle_derived",
+      "publisher": "SatTrackCam Leiden",
+      "source_url": "https://sattrackcam.blogspot.com/2024/06/luch-olymp-2-is-on-move-again.html",
+      "quote": "05-12-2023 26-03-2024 2.6 E EUTELSAT KONNECT VHTS",
+      "status": "listed_outside_window",
+      "nearest": {
+        "event_type": "relocation_end",
+        "date": "2023-10-07",
+        "offset_days": -59
+      }
+    },
+    {
+      "claim_id": "CC-022",
+      "norad_id": "55841",
+      "name": "LUCH (OLYMP) 2",
+      "claim_type": "relocation_start",
+      "date": "2024-09-16",
+      "date_end": "",
+      "date_precision": "day",
+      "source_kind": "tle_derived",
+      "publisher": "SatTrackCam Leiden",
+      "source_url": "https://sattrackcam.blogspot.com/2024/09/the-russian-sigint-satellite-luch-olymp.html",
+      "quote": "it has now made a small hop to the other side of the THOR + INTELSAT grouplet, to 0.92 W ... The move started on 16 September 2024 near 22 UTC and was completed on September 18.",
+      "status": "listed_outside_window",
+      "nearest": {
+        "event_type": "relocation_start",
+        "date": "2024-06-22",
+        "offset_days": -86
+      }
+    },
+    {
+      "claim_id": "CC-023",
+      "norad_id": "55841",
+      "name": "LUCH (OLYMP) 2",
+      "claim_type": "relocation_end",
+      "date": "2024-09-18",
+      "date_end": "",
+      "date_precision": "day",
+      "source_kind": "tle_derived",
+      "publisher": "SatTrackCam Leiden",
+      "source_url": "https://sattrackcam.blogspot.com/2024/09/the-russian-sigint-satellite-luch-olymp.html",
+      "quote": "it has now made a small hop to the other side of the THOR + INTELSAT grouplet, to 0.92 W ... The move started on 16 September 2024 near 22 UTC and was completed on September 18.",
+      "status": "listed_outside_window",
+      "nearest": {
+        "event_type": "relocation_end",
+        "date": "2024-07-01",
+        "offset_days": -79
+      }
+    }
+  ],
+  "stricter": {
+    "pair_per_object": {
+      "independent": {
+        "claims": 9,
+        "matched": 8,
+        "objects": 7,
+        "median_abs_error_days": 0.5,
+        "worst_abs_error_days": 5,
+        "unmatched": {
+          "event_matched_to_another_claim": 1
+        }
+      },
+      "tle_derived": {
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "not_listed": 1,
+          "listed_outside_window": 4
+        }
+      },
+      "changed": [
+        "CC-040"
+      ]
+    },
+    "quarter_midpoint": {
+      "independent": {
+        "claims": 9,
+        "matched": 9,
+        "objects": 7,
+        "median_abs_error_days": 1,
+        "worst_abs_error_days": 15,
+        "unmatched": {}
+      },
+      "tle_derived": {
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "not_listed": 1,
+          "listed_outside_window": 4
+        }
+      },
+      "changed": [
+        "CC-043"
+      ]
+    },
+    "quarter_dropped": {
+      "independent": {
+        "claims": 8,
+        "matched": 8,
+        "objects": 6,
+        "median_abs_error_days": 1.0,
+        "worst_abs_error_days": 5,
+        "unmatched": {}
+      },
+      "tle_derived": {
+        "claims": 26,
+        "matched": 20,
+        "objects": 6,
+        "median_abs_error_days": 2.0,
+        "worst_abs_error_days": 22,
+        "unmatched": {
+          "listed_with_another_type": 1,
+          "not_listed": 1,
+          "listed_outside_window": 4
+        }
+      },
+      "changed": [],
+      "dropped": [
+        "CC-043"
+      ]
+    }
+  }
+}

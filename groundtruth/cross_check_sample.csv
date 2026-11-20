@@ -1,0 +1,51 @@
+norad_id,name,group,rank,already_cited,sources_found,searches,searches_2,tried
+41838,SJ-17,top30,1,1,2,2,2,
+40258,LUCH (OLYMP),top30,2,1,1,1,,
+44910,SJ-20,top30,3,0,1,3,3,press and think-tank analyses of Chinese GEO movers; Chinese-language state media on arrival and station; Defense One on GSSAP encounters
+43874,TJS-3,top30,4,1,3,1,3,
+36108,WGS F3 (USA 211),top30,5,0,0,3,1,Space Force fact sheets and releases on WGS relocation; trade press
+55841,LUCH (OLYMP) 2,top30,6,1,3,1,,
+41729,JCSAT 16,top30,7,0,0,2,4,"operator releases; trade press on the 124E, 162E and 144E slots; fleet listings"
+28885,SYRACUSE 3A,top30,8,0,0,3,1,DGA and CNES releases; trade press on Syracuse 3 retirement
+58204,TJS-10,top30,9,0,1,0,3,
+44067,CHINASAT 6C,top30,10,0,0,2,2,China Satcom releases and Chinese-language press; fleet listings
+37677,CHINASAT 10,top30,11,0,0,2,2,China Satcom releases and Chinese-language press on ChinaSat 10R replacing it
+27380,INTELSAT 904,top30,12,0,0,1,3,FCC grants and filings (authorisations only); Intelsat releases; trade press
+55912,GAOFEN 13 02,top30,13,0,0,2,2,WMO OSCAR; Chinese-language state media; trade press
+44481,AEHF 5 (USA 292),top30,14,0,0,1,2,Space Force releases and fact sheets on AEHF positions; trade press
+21639,TDRS 5,top30,15,0,0,2,3,NASA releases and NTRS papers on TDRS storage and retirement
+38741,HYLAS 2,top30,16,0,0,2,2,Avanti releases; UN registry change-of-position note (undated move)
+27875,USA 170,top30,17,0,0,2,2,Space Force releases on DSCS retirements; trade press
+27168,USA 164,top30,18,0,0,2,2,Space Force releases on Milstar; trade press
+33459,EUTE HOT BIRD 13C (HB 9),top30,19,0,1,1,,
+43226,GOES 17,top30,20,0,0,1,,NOAA OSPO satellite notices
+41937,SBIRS GEO 4 (USA 273),top30,21,0,0,1,3,Space Force releases and fact sheets; trade press
+35491,EWS-G3 (GOES 14),top30,22,0,0,2,4,NOAA and Space Force releases on the transfer; NESDIS status pages
+48808,FENGYUN 4B,top30,23,0,1,1,,
+26388,TDRS 8,top30,24,0,0,1,5,NASA releases and NTRS end-of-mission planning papers (no dates)
+54743,METEOSAT 12 (MTG I1),top30,25,0,1,1,,
+38254,AEHF 2 (USA 235),top30,26,0,0,1,2,Space Force releases and fact sheets on AEHF positions; trade press
+29520,XM-4,top30,27,0,1,3,1,
+37237,HYLAS 1,top30,28,0,0,1,2,Avanti releases; UN registry change-of-position notes (undated moves)
+54259,EUTELSAT 10B,top30,29,0,0,1,3,Eutelsat releases and universal registration documents (entry into service only)
+53355,SBIRS GEO 6 (USA 336),top30,30,0,0,1,3,Space Force releases (acceptance and transfer only); trade press
+59346,EUTE 36D,drawn,,0,0,2,4,Eutelsat releases and universal registration documents (entry into service only)
+26580,AMC-6 (GE-6),drawn,72,0,0,1,3,FCC grants (authorisations only); SES releases; trade press
+33463,FENGYUN 2E,drawn,197,0,0,1,2,"NSMC and CMA announcements; WMO OSCAR (moves in 2015 and retirement in 2019, outside the period)"
+25462,ASTRA 2A,drawn,88,1,0,1,3,SES releases; Wikipedia dates rest on tracker pages only and were not used
+62259,SIRIUS XM-9,drawn,,0,0,2,2,SiriusXM releases and annual report (entry into service only)
+27632,NIMIQ 2,drawn,104,0,0,1,3,Telesat annual reports (undated note); trade press
+27389,TDRS 9,drawn,,0,0,1,,NASA releases; NASA technical reports on the TDRS fleet; Wikipedia's TDRS list
+35942,AMAZONAS 2,drawn,209,0,0,1,3,Hispasat releases and fleet pages; FCC filings; trade press
+55131,SJ-23,drawn,,1,0,2,2,"press and think-tank analyses of Chinese GEO movers (motion in a month, no start or stop); Chinese-language press"
+33051,CHINASAT 9,drawn,184,0,0,1,3,China Satcom releases and Chinese-language press on ChinaSat 9C replacing it
+54742,GALAXY 36,drawn,517,0,0,1,3,Intelsat releases; FCC filings on the 89W slot; trade press
+32258,WGS F1 (USA 195),drawn,68,0,0,1,2,Space Force fact sheets and releases on WGS relocation; trade press
+32708,AMC-14,drawn,178,0,0,1,3,SES releases and press on the 2008 loss; DoD ownership reports
+64723,MTG-S1,drawn,,0,1,1,,
+28628,INMARSAT 4-F1,drawn,41,0,0,1,4,Inmarsat releases; ICAO paper and UN registry note (undated move)
+24812,GALAXY 25 (TELSTAR 5),drawn,,0,0,1,3,"FCC filings (licence surrender letter, no move date); Intelsat releases; trade press"
+57214,SYRACUSE 4B,drawn,,0,0,1,4,"DGA, CNES and Airbus releases; trade press"
+23628,USA 113,drawn,,0,1,2,,
+26638,ASTRA 2D,drawn,,1,1,1,,
+36411,EWS-G2 (GOES 15),drawn,81,0,0,2,3,NOAA and Space Force releases on the transfer (planned arrival only); CIMSS pages

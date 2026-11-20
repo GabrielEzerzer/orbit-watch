@@ -382,6 +382,28 @@ Writes:
 - planted: OUT/planted_<split>.json and OUT/planted_<split>.csv
 - audit: OUT/audit_sample.csv, OUT/audit_key.csv and one PNG per sampled object (default $ORBIT_WATCH_DATA/routine/audit_charts)
 
+### Independent cross-check
+
+sample: fixes the objects to research before any search, the top 30 of the routine rank and 20 drawn with a fixed seed from the other objects on the state-change list; fetch: saves a copy of each source page; verify: checks every quote in the claims file word for word against its saved copy; score: matches the dated claims to the state-change list with the cited-event rule and reports coverage, agreement and every disagreement, with analyses built on public element sets kept apart.
+
+```
+python -m harness.evals.cross_check sample|fetch|verify|score [URLS]
+```
+
+Reads:
+
+- findings/routine/rank.csv and unrated.csv, and findings/state_changes/events.csv
+- groundtruth/geo_events.csv, irregular_objects.csv and steady_objects.csv, to mark objects already cited
+- groundtruth/cross_check_sample.csv and groundtruth/cross_check.csv
+- for verify: the saved page copies and index.csv in $ORBIT_WATCH_DATA/sources/cross_check
+
+Writes:
+
+- sample: groundtruth/cross_check_sample.csv
+- fetch: one page copy per URL and a row in index.csv in $ORBIT_WATCH_DATA/sources/cross_check
+- verify: each quote not found on its page, on stdout
+- score: findings/cross_check/summary.json and claims.csv
+
 ## Tools
 
 ### Compare GEO modes with ESA's classification
