@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import html
 import json
@@ -46,7 +47,8 @@ CITED = tuple(GROUNDTRUTH / n for n in ("geo_events.csv", "irregular_objects.csv
 SEED = "orbit-watch cross-check 2026-11-20"
 TOP_N = 30
 DRAWN_N = 20
-SAMPLE_FIELDS = ["norad_id", "name", "group", "rank", "already_cited", "sources_found", "searches"]
+SAMPLE_FIELDS = ["norad_id", "name", "group", "rank", "already_cited", "sources_found", "searches", "searches_2",
+                 "tried"]
 
 
 def _rows(path: Path) -> list[dict]:
@@ -60,7 +62,7 @@ def draw_sample(rank: list[dict], unrated: list[dict], event_norads: set[int], c
     pool = sorted(event_norads - set(top))
     drawn = random.Random(SEED).sample(pool, DRAWN_N)
     return [{"norad_id": n, "name": names[n], "group": group, "rank": ranks.get(n, ""),
-             "already_cited": int(n in cited), "sources_found": "", "searches": ""}
+             "already_cited": int(n in cited)} | dict.fromkeys(SAMPLE_FIELDS[5:], "")
             for group, ns in (("top30", top), ("drawn", drawn)) for n in ns]
 
 
@@ -78,7 +80,7 @@ def write_sample(path: Path = SAMPLE) -> list[dict]:
         kept = {int(r["norad_id"]): r for r in _rows(path)}
         for r in rows:
             old = kept.get(r["norad_id"], {})
-            r["sources_found"], r["searches"] = old.get("sources_found", ""), old.get("searches", "")
+            r.update({k: old.get(k, "") for k in SAMPLE_FIELDS[5:]})
     with open(path, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=SAMPLE_FIELDS, lineterminator="\n")
         w.writeheader()
@@ -151,6 +153,8 @@ def fetch(url: str, folder: Path) -> Path:
     with urllib.request.urlopen(req, timeout=60) as resp:
         raw = resp.read()
         kind = resp.headers.get_content_type()
+        if resp.headers.get("Content-Encoding") == "gzip":
+            raw = gzip.decompress(raw)
     ext = ".pdf" if kind == "application/pdf" or raw[:5] == b"%PDF-" else ".html"
     name = hashlib.sha256(url.encode("utf-8")).hexdigest()[:16] + ext
     (folder / name).write_bytes(raw)
