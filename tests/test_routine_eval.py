@@ -1,3 +1,6 @@
+from collections import Counter
+from math import comb
+
 import numpy as np
 import pytest
 
@@ -10,8 +13,8 @@ from orbit_watch.modes import track
 
 def _rank(values):
     order = sorted(values, key=lambda n: -values[n])
-    return [{"rank": i, "norad_id": str(n), "name": "", "bits_per_year": str(values[n])}
-            for i, n in enumerate(order, 1)]
+    return [{"rank": i, "norad_id": str(n), "name": "", "bits_per_year": str(values[n]),
+             "departures": str(int(values[n] > 0))} for i, n in enumerate(order, 1)]
 
 
 def test_cited_lists_count_rateable_irregular_objects_in_the_top_5_percent_and_steady_ones_in_the_lower_half(mock_dir):
@@ -27,6 +30,26 @@ def test_cited_lists_count_rateable_irregular_objects_in_the_top_5_percent_and_s
     own = out["irregular"]["evidence_object"]
     assert (own["listed"], own["rateable"], own["in_top_5_percent"]) == (3, 2, 1)
     assert (out["steady"]["rateable"], out["steady"]["in_lower_half"]) == (3, 2)
+    steady = out["steady"]
+    assert (steady["no_scored_departure"], steady["rated"], steady["rated_no_scored_departure"]) == (2, 106, 62)
+    chance = (comb(62, 2) * 44 + comb(62, 3)) / comb(106, 3)
+    assert steady["chance_of_at_least_as_many_in_a_random_draw"] == pytest.approx(chance, rel=1e-3)
+
+
+def test_check_3_scores_cited_relocation_starts_and_reports_end_of_life_ones_apart():
+    def row(kind, status, found="", flagged=False, model="rate"):
+        return {"split": "dev", "event_type": kind, "status": status, "found_type": found,
+                "scored": found == "relocation_start", "model": model if found == "relocation_start" else "",
+                "flagged": flagged}
+    rows = [row("relocation_start", "caught", "relocation_start", True), row("relocation_start", "missed"),
+            row("relocation_start", "caught", "graveyard"), row("graveyard", "caught", "graveyard"),
+            row("keeping_stop", "caught", "relocation_start"), row("keeping_stop", "missed")]
+    cited = Counter({("dev", True): 4, ("dev", False): 3})
+    out = ev.cited_summary(rows, cited, ("dev",))["dev"]
+    assert (out["cited_relocation_starts"], out["held_a_year_before"], out["caught"], out["flagged"]) == (4, 3, 2, 1)
+    assert (out["caught_unscored"], out["caught_typed_end_of_life"]) == (1, 1)
+    assert out["flagged_by_model"] == {"stays": [0, 0], "rate": [1, 1]}
+    assert out["end_of_life"] == {"cited": 3, "held_a_year_before": 3, "caught": 2, "typed_end_of_life": 1}
 
 
 def test_cited_lists_wait_for_the_files(tmp_path):

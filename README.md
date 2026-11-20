@@ -27,13 +27,12 @@ objects held out for scoring are left out, so the list covers 1,799 objects.
 Each row has the date, the signal that dated it, the size of the change and the longitude before
 and after. The list is [`findings/state_changes/events.csv`](findings/state_changes/events.csv).
 
-It also ranks the 532 objects held at least two years by how far their departures break their own
+It also ranks the 532 objects held at least two years by how far their relocations break their own
 record of stays and moves, in bits per year: [`findings/routine/rank.csv`](findings/routine/rank.csv).
-Only 33 of the 285 scored departures have a stay record; the rest are scored by how often the
-object leaves, where a first departure scores about 7 to 10 bits. Below about rank 7 the order
-mostly reflects how many times an object left in 2021-2025 and how late, and end-of-life
-graveyard moves and keeping stops count as departures. A blind hand audit of the charts still
-judged 25 of the top 30 irregular.
+Graveyard moves and keeping stops are listed but not ranked. Only 33 of the 197 scored departures
+have a stay record, and only eight rated objects, the top 7 and HYLAS 1 (rank 28), get any bits
+from it; below rank 7 the order is set by how often and how late an object left. A blind hand audit
+of the charts judged 27 of the top 30 irregular.
 
 ## How it works
 
@@ -69,8 +68,8 @@ Every rule, threshold and source is in [orbit_watch/README.md](orbit_watch/READM
 | False events on satellites with published burn logs while on station | 0 in 6.46 object-years (QZS-3, QZS-6, Fengyun-2H) and 0 in 2.15 object-years on the held-out Fengyun-2F and Fengyun-4A |
 | 50 events drawn from a frozen copy of the list, judged by hand from the element sets | 47 real with the right type; of the 45 that could be dated, median error 0 days, 42 within 3 days; 6 rows changed in the final list, each toward the hand reading |
 | ISS burns in 2024-2025, held out from tuning the step detector | all 35 covered NASA and Roscosmos burns found; 35 of 42 detections match a listed burn |
-| Routine rank against outside judgement, with targets set before the run: the top 30 judged irregular by a blind hand audit of the charts (24); objects cited as irregular in the top 5% (75%); cited fixed-slot keepers in the lower half (90%) | audit: 25 of 30, pass; irregular: 4 of the 6 held long enough to rate, fail (12 of 18 are not rated); keepers: 31 of 31, pass, but none has a scored departure and the median is 0 |
-| Planted rhythm: 4 relocations on a fixed rhythm, then one on or off it; both right in 90% of trials as the target | 0.708 (dev) and 0.725 (test), fail; on rhythm under 2 bits in 31 of 38 and 33 of 44, off rhythm 5 bits or more in 20 of 34 and 25 of 36; 3 then 1, the test as first specified, gives 0.086 and 0.044 because the last departure has only 2 past stays |
+| Routine rank against outside judgement, with targets set before the run: the top 30 judged irregular by a blind hand audit of the charts (24); objects cited as irregular in the top 5% (75%); cited fixed-slot keepers in the lower half (90%) | audit: 27 of 30, pass; irregular: 4 of the 6 held long enough to rate, fail (12 of 18 are not rated); keepers: 31 of 31, pass, but the median is 0; none of the 31 has a scored departure, against 80.5% of rated objects (chance 0.00094) |
+| Planted rhythm: 4 relocations on a fixed rhythm, then one on or off it; both right in 90% of trials as the target | 0.811 (dev) and 0.804 (test) of trials whose last move was caught and scored, 0.73 and 0.74 of all 100, fail; on rhythm under 2 bits in 41 of 48 and 39 of 47, off rhythm 5 bits or more in 32 of 42 and 35 of 45; 3 then 1, the test as first specified, gives 0.057 and 0.053 because the last departure has only 2 past stays |
 
 Across the belt: **768 changes on 301 objects**: 244 relocation starts, 340 relocation ends, 83
 graveyard moves, 14 keeping stops, 57 ends of north-south keeping and 30 free burns.

@@ -6,15 +6,19 @@ from __future__ import annotations
 
 import math
 import warnings
+from math import comb
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 import numpy as np
 
-DEPARTURES = ("relocation_start", "graveyard", "keeping_stop")
+SCORED = ("relocation_start",)
+END_OF_LIFE = ("graveyard", "keeping_stop")
+DEPARTURES = SCORED + END_OF_LIFE
 ARRIVAL = "relocation_end"
 YEAR_DAYS = 365.25
 WINDOW_DAYS = 30.0
+STAY_WINDOW_SHARE = 0.2
 MIN_STAYS = 3
 SD_FLOOR = 0.15
 P_FLOOR = 1e-4
@@ -61,6 +65,10 @@ class Scored:
     def off_routine(self) -> bool:
         return self.scored and self.bits is not None and self.bits >= OFF_ROUTINE_BITS
 
+    @property
+    def end_of_life(self) -> bool:
+        return self.event_type in END_OF_LIFE
+
 
 @dataclass(frozen=True)
 class Overrun:
@@ -80,6 +88,9 @@ class Standing:
     departures: int
     off_routine: int
     overruns: int
+    stay_bits: float = 0.0
+    rate_bits: float = 0.0
+    end_of_life: int = 0
 
     @property
     def rated(self) -> bool:
@@ -88,6 +99,14 @@ class Standing:
     @property
     def bits_per_year(self) -> float:
         return self.bits / self.years if self.years > 0 else 0.0
+
+    @property
+    def stay_bits_per_year(self) -> float:
+        return self.stay_bits / self.years if self.years > 0 else 0.0
+
+    @property
+    def rate_bits_per_year(self) -> float:
+        return self.rate_bits / self.years if self.years > 0 else 0.0
 
     @property
     def departures_per_held_year(self) -> float:
@@ -140,12 +159,13 @@ def lognormal(stays: Sequence[float]) -> tuple[float, float]:
     return float(x.mean()), max(float(x.std(ddof=1)), SD_FLOOR)
 
 
-def stay_window_p(stays: Sequence[float], t: float) -> float:
+def stay_window_p(stays: Sequence[float], t: float, share: float = STAY_WINDOW_SHARE) -> float:
     mu, sd = lognormal(stays)
+    half = min(WINDOW_DAYS / 2, share * t)
 
     def cdf(v: float) -> float:
         return 0.0 if v <= 0 else 0.5 * (1.0 + math.erf((math.log(v) - mu) / (sd * math.sqrt(2.0))))
-    return cdf(t + WINDOW_DAYS / 2) - cdf(t - WINDOW_DAYS / 2)
+    return cdf(t + half) - cdf(t - half)
 
 
 def rate_window_p(past: int, years: float, prior: Prior) -> float:
@@ -160,8 +180,8 @@ def bits(p: float) -> float:
 
 
 def score_object(norad: int, events: Sequence[tuple[float, str]], holds: Sequence[tuple[float, float]],
-                 first_day: float, end_day: float, prior_at: Callable[[float], Prior | None]
-                 ) -> tuple[list[Scored], list[Overrun]]:
+                 first_day: float, end_day: float, prior_at: Callable[[float], Prior | None],
+                 share: float = STAY_WINDOW_SHARE) -> tuple[list[Scored], list[Overrun]]:
     rows: list[Scored] = []
     overruns: list[Overrun] = []
     stays: list[float] = []
@@ -188,10 +208,14 @@ def score_object(norad: int, events: Sequence[tuple[float, str]], holds: Sequenc
         close(day)
         stay = day - arrival if arrival is not None else None
         years = held_years(holds, day)
+        if kind in END_OF_LIFE:
+            rows.append(Scored(norad, kind, day, False, "", len(stays), past, round(years, 4), stay, None, None))
+            arrival, armed = None, None
+            continue
         prior = prior_at(day)
         scored = day >= start and prior is not None
         if stay is not None and len(stays) >= MIN_STAYS:
-            model, p = "stays", stay_window_p(stays, max(stay, 1.0))
+            model, p = "stays", stay_window_p(stays, max(stay, 1.0), share)
         elif prior is not None:
             model, p = "rate", rate_window_p(past, years, prior)
         else:
@@ -213,7 +237,10 @@ def standing(norad: int, rows: Sequence[Scored], overruns: Sequence[Overrun], ho
     first = min((s for s, e in holds if e > lo and s < end), default=None)
     years = max(0.0, end - max(first, lo)) / YEAR_DAYS if first is not None else 0.0
     return Standing(norad, held_years(holds, end, lo), years, float(sum(r.bits for r in inside)), len(inside),
-                    sum(r.off_routine for r in inside), sum(lo <= o.day < hi for o in overruns))
+                    sum(r.off_routine for r in inside), sum(lo <= o.day < hi for o in overruns),
+                    float(sum(r.bits for r in inside if r.model == "stays")),
+                    float(sum(r.bits for r in inside if r.model == "rate")),
+                    sum(r.end_of_life and lo <= r.day < hi for r in rows))
 
 
 def ranked(standings: Sequence[Standing]) -> list[Standing]:
@@ -271,6 +298,16 @@ def lower_half(values: dict[int, float], picks: Sequence[int]) -> tuple[int, int
     rateable = [n for n in picks if n in values]
     median = float(np.median(list(values.values())))
     return sum(values[n] <= median for n in rateable), len(rateable)
+
+
+def no_departure_share(departures: dict[int, int], picks: Sequence[int]) -> tuple[int, int, int, int, float | None]:
+    rateable = [n for n in picks if n in departures]
+    hit, n = sum(departures[x] == 0 for x in rateable), len(rateable)
+    total, none = len(departures), sum(v == 0 for v in departures.values())
+    if not n:
+        return hit, n, none, total, None
+    tail = sum(comb(none, i) * comb(total - none, n - i) for i in range(hit, min(none, n) + 1))
+    return hit, n, none, total, tail / comb(total, n)
 
 
 def overlap(first: Sequence[int], second: Sequence[int], top: int, wide: int) -> tuple[int, int]:

@@ -1,11 +1,12 @@
 {
-  "commit": "8bed9795ba9cea7a2c81a33bbdb54221e0b8616b",
+  "commit": "3e3d1f97e5e138657f5d80eaaae125d9b2b6f448",
   "dirty": false,
   "seed": 20261119,
   "splits": [
     "dev",
     "test"
   ],
+  "stay_window_share": 0.2,
   "trials_per_split_and_variant": 100,
   "hosts": {
     "dev": 138,
@@ -13,82 +14,82 @@
   },
   "dev 3+1": {
     "trials": 100,
-    "last_move_caught_and_scored": 81,
-    "all_rhythm_moves_caught": 67,
+    "last_move_caught_and_scored": 88,
+    "all_rhythm_moves_caught": 79,
     "on_rhythm": {
-      "n": 40,
-      "under_2_bits": 2,
-      "median_bits": 3.74
+      "n": 45,
+      "under_2_bits": 0,
+      "median_bits": 3.63
     },
     "off_rhythm": {
-      "n": 41,
+      "n": 43,
       "at_least_5_bits": 5,
-      "median_bits": 3.87
+      "median_bits": 3.89
     },
     "by_model": {
-      "stays": 12,
-      "rate": 69
+      "stays": 16,
+      "rate": 72
     },
-    "both_targets_share": 0.086
+    "both_targets_share": 0.057
   },
   "dev 4+1": {
     "trials": 100,
-    "last_move_caught_and_scored": 72,
-    "all_rhythm_moves_caught": 60,
-    "on_rhythm": {
-      "n": 38,
-      "under_2_bits": 31,
-      "median_bits": 0.45
-    },
-    "off_rhythm": {
-      "n": 34,
-      "at_least_5_bits": 20,
-      "median_bits": 5.93
-    },
-    "by_model": {
-      "stays": 61,
-      "rate": 11
-    },
-    "both_targets_share": 0.708
-  },
-  "test 3+1": {
-    "trials": 100,
     "last_move_caught_and_scored": 90,
-    "all_rhythm_moves_caught": 69,
+    "all_rhythm_moves_caught": 87,
     "on_rhythm": {
       "n": 48,
-      "under_2_bits": 3,
-      "median_bits": 3.44
+      "under_2_bits": 41,
+      "median_bits": 0.43
     },
     "off_rhythm": {
       "n": 42,
-      "at_least_5_bits": 1,
-      "median_bits": 3.59
+      "at_least_5_bits": 32,
+      "median_bits": 9.0
     },
     "by_model": {
-      "stays": 13,
-      "rate": 77
+      "stays": 83,
+      "rate": 7
     },
-    "both_targets_share": 0.044
+    "both_targets_share": 0.811
+  },
+  "test 3+1": {
+    "trials": 100,
+    "last_move_caught_and_scored": 95,
+    "all_rhythm_moves_caught": 84,
+    "on_rhythm": {
+      "n": 49,
+      "under_2_bits": 4,
+      "median_bits": 3.33
+    },
+    "off_rhythm": {
+      "n": 46,
+      "at_least_5_bits": 1,
+      "median_bits": 3.56
+    },
+    "by_model": {
+      "stays": 14,
+      "rate": 81
+    },
+    "both_targets_share": 0.053
   },
   "test 4+1": {
     "trials": 100,
-    "last_move_caught_and_scored": 80,
-    "all_rhythm_moves_caught": 63,
+    "last_move_caught_and_scored": 92,
+    "all_rhythm_moves_caught": 85,
     "on_rhythm": {
-      "n": 44,
-      "under_2_bits": 33,
-      "median_bits": 0.62
+      "n": 47,
+      "under_2_bits": 39,
+      "median_bits": 0.53
     },
     "off_rhythm": {
-      "n": 36,
-      "at_least_5_bits": 25,
-      "median_bits": 7.62
+      "n": 45,
+      "at_least_5_bits": 35,
+      "median_bits": 11.46
     },
     "by_model": {
-      "stays": 67,
-      "rate": 13
+      "stays": 83,
+      "rate": 9
     },
-    "both_targets_share": 0.725
+    "both_targets_share": 0.804
   }
 }
