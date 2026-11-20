@@ -1,5 +1,5 @@
 {
-  "commit": "da30e56039d8a3fd7950006b6f80d3f01adefd95",
+  "commit": "bbd6b8914008bd2bf634bfa73b7c548c2a1dbc38",
   "dirty": false,
   "events_file": "findings/state_changes/events.csv",
   "splits": [
@@ -346,7 +346,35 @@
     }
   },
   "hand_audit": {
-    "status": "no audit verdicts yet"
+    "top": {
+      "objects": 30,
+      "class": {
+        "none": 0,
+        "end_of_life": 0,
+        "rhythm": 1,
+        "irregular": 27,
+        "unclear": 2
+      },
+      "departures_real": {
+        "no": 2,
+        "yes": 28
+      },
+      "target_irregular": 24
+    },
+    "middle": {
+      "objects": 20,
+      "class": {
+        "none": 19,
+        "end_of_life": 1,
+        "rhythm": 0,
+        "irregular": 0,
+        "unclear": 0
+      },
+      "departures_real": {
+        "n/a": 19,
+        "yes": 1
+      }
+    }
   },
   "cited_lists": {
     "irregular": {
