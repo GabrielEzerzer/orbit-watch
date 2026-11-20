@@ -1,5 +1,5 @@
 {
-  "commit": "b2b1fdd4c07cfa229b701192ab39857a48441173",
+  "commit": "63a328f4c41229bee990d84daa1131674361f182",
   "dirty": false,
   "window_days": 45,
   "near_days": 90,
@@ -15,6 +15,23 @@
     "relocation_end": 19,
     "graveyard": 5,
     "stayed": 1
+  },
+  "search": {
+    "searches": 179,
+    "rounds": [
+      {
+        "objects": 50,
+        "searches": 72,
+        "median_per_object": 1.0,
+        "max_per_object": 3
+      },
+      {
+        "objects": 40,
+        "searches": 107,
+        "median_per_object": 3.0,
+        "max_per_object": 5
+      }
+    ]
   },
   "coverage": {
     "top30": {
@@ -191,7 +208,7 @@
       "date_precision": "day",
       "source_kind": "tle_derived",
       "publisher": "Secure World Foundation",
-      "source_url": "https://www.dropbox.com/scl/fi/gtg920s9z3dfq990ajdei/Fact-Sheet-2026_Chinese-Military-and-Intelligence-RPO.pdf?rlkey=ls27h04r2bd6q57b614mizxnh&raw=1",
+      "source_url": "https://www.swfound.org/publications-and-reports/chinese-military-and-intelligence-rendezvous-and-proximity-operations-fact-sheet",
       "quote": "it dropped its altitude by 76.2 km to move below the GEO belt on Nov. 1, 2024",
       "status": "listed_with_another_type",
       "nearest": {
@@ -210,7 +227,7 @@
       "date_precision": "day",
       "source_kind": "tle_derived",
       "publisher": "Secure World Foundation",
-      "source_url": "https://www.dropbox.com/scl/fi/gtg920s9z3dfq990ajdei/Fact-Sheet-2026_Chinese-Military-and-Intelligence-RPO.pdf?rlkey=ls27h04r2bd6q57b614mizxnh&raw=1",
+      "source_url": "https://www.swfound.org/publications-and-reports/chinese-military-and-intelligence-rendezvous-and-proximity-operations-fact-sheet",
       "quote": "By November 9, it had circularized its orbit and settled into GEO at 173.3 degrees east longitude.",
       "status": "not_listed"
     },

@@ -211,6 +211,27 @@ holds and changes marked, no ranks or scores) gave each a class (`audit_verdicts
 
 The [evidence page](evidence/README.md) shows each top-30 object with its class and the judge's note.
 
+### Independent cross-check
+
+The list was checked against public sources that were not used to build it
+([findings/README.md](../findings/README.md#independent-cross-check); numbers from
+`findings/cross_check/summary.json`).
+
+- **Sample:** the top 30 of the rank and 20 objects drawn at random from the rest of the list.
+- **Search:** 179 web searches in 2 rounds:
+  round 1, 72 for 50 objects (median 1 per object);
+  round 2, 107 for 40 objects (median 3 per object).
+- **Coverage:** 36 of the 50 objects have no dated claim from any source found.
+- **Agreement:** 16 of the 16 dated claims from operators and the press match
+  the list, on 11 objects, with a median date error of 2 days and a worst of
+  22.
+- **Element-set analyses, counted apart:** 17 of their 23 dated claims match.
+- **Disagreements:** 6 claims, 6 from element-set analyses and
+  0 from operators or the press. Two small LUCH (OLYMP) 2 moves are held inside one
+  stay ([#101](../../../issues/101)), TJS-10's first arrival on station is not listed
+  ([#102](../../../issues/102)), and an SJ-17 burn the list has as a departure is a typing
+  difference with no issue.
+
 ## Known limits
 
 Each is an open issue labelled `debt`.
@@ -236,6 +257,10 @@ Each is an open issue labelled `debt`.
 - Check 9 is weak while the median rated object has 0 bits per year ([#90](../../../issues/90)).
 - The proximity flag's owner code is per country, so an arrival next to another operator of the same
   country is never flagged ([#89](../../../issues/89)).
+- Moves of 0.4-0.6 deg inside a hold are not listed, such as two LUCH (OLYMP) 2 repositionings
+  ([#101](../../../issues/101)).
+- TJS-10's (58204) first arrival on station, in November 2023, is not listed
+  ([#102](../../../issues/102)).
 
 All open limits: [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
 
