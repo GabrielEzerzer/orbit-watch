@@ -651,10 +651,10 @@ The list was checked against public sources that were not used to build it
 - **Sample:** the top $cc_top of the rank and $cc_drawn objects drawn at random from the rest of the list.
 - **Search:** $cc_searches web searches in $cc_rounds rounds:
   $cc_round_text.
-- **Coverage:** $cc_none of the $cc_objects objects have no dated claim from any source found.
+- **Coverage:** for $cc_none of the $cc_objects objects the search found no dated claim from any source.
 - **Agreement:** $cc_ind_matched of the $cc_ind_claims dated claims from operators and the press match
-  the list, on $cc_ind_objects objects, with a median date error of $cc_ind_median days and a worst of
-  $cc_ind_worst.
+  the list, on $cc_ind_objects objects, with median and worst date errors of $cc_ind_median and
+  $cc_ind_worst days.
 - **Element-set analyses, counted apart:** $cc_tle_matched of their $cc_tle_claims dated claims match.
 - **Disagreements:** $cc_disagree claims, $cc_disagree_tle from element-set analyses and
   $cc_disagree_ind from operators or the press. Two small LUCH (OLYMP) 2 moves are each held inside a
