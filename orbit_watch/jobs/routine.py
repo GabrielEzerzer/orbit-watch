@@ -23,12 +23,11 @@ from orbit_watch.elements import parse_tle
 from orbit_watch.events import HELD, UNREAD, as_row, burns, events_from_track, state_changes, with_inner_moves, \
     with_short_holds
 from orbit_watch.jobs.state_changes import commit
-from orbit_watch.modes import GRID_END, GRID_START, segments, track
+from orbit_watch.modes import GRID_END, GRID_START, N_DAYS, day_of, segments, track
 from orbit_watch.series import distinct_epochs
 from orbit_watch.sources import data_dir
 from orbit_watch.truth import load_splits, read_event_rows
 
-N_DAYS = (GRID_END - GRID_START).days
 AS_OF = (date(2022, 1, 1), date(2023, 1, 1), date(2024, 1, 1), date(2025, 1, 1))
 DEFAULT_EVENTS = Path("findings/state_changes/events.csv")
 DEFAULT_OUT = Path("findings/routine")
@@ -44,12 +43,6 @@ FLAG_FIELDS = ["norad_id", "name", "owner", "date", "other_norad_id", "other_nam
 UNRATED_FIELDS = ["norad_id", "name", "object_type", "held_years", "events", "steps_outside_holds_unchecked",
                   "proximity_flags"]
 PRIOR_FIELDS = ["date", "belt_rate_per_held_year", "alpha", "beta_held_years", "objects", "held_years", "departures"]
-
-
-def day_of(t: datetime | date) -> float:
-    if not isinstance(t, datetime):
-        t = datetime(t.year, t.month, t.day, tzinfo=GRID_START.tzinfo)
-    return (t - GRID_START).total_seconds() / 86400.0
 
 
 def iso(day: float) -> str:

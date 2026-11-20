@@ -2,6 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from orbit_watch.charts import label_rows, lon_range, recentre
 from orbit_watch.jobs import dataset as ds
@@ -48,6 +49,14 @@ def test_every_state_change_appears_once_and_every_departure_finds_its_score():
     assert len(objects) == len(rank) + len(unrated)
     assert [o["norad_id"] for o in objects if o["rated"] == 1] == [int(r["norad_id"]) for r in rank]
     assert sum(o["state_changes"] for o in objects) == len(source)
+
+
+def test_build_refuses_a_rated_object_typed_as_debris():
+    catalogue = ds.catalogue_from_objects(OUT / "objects.csv")
+    rated = int(read_event_rows(FINDINGS / "routine" / "rank.csv")[1][0]["norad_id"])
+    catalogue[rated] = {**catalogue[rated], "object_type": "DEBRIS"}
+    with pytest.raises(ValueError, match="rocket body and debris count"):
+        ds.build(FINDINGS, catalogue)
 
 
 def test_longitude_axis_covers_holds_and_listed_longitudes_but_not_the_transfer():

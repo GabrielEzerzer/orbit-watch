@@ -10,8 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from orbit_watch.clean import drop_snapback_blocks
-from orbit_watch.jobs.routine import N_DAYS, day_of
-from orbit_watch.modes import GRID_END, GRID_START, track
+from orbit_watch.modes import GRID_END, GRID_START, N_DAYS, day_of, track
 from orbit_watch.routine import END_OF_LIFE, SCORED
 
 PANELS = {"lon": "mean longitude (deg E)", "rate": "drift rate (deg/day)", "sma": "semi-major axis - 42164 (km)",
