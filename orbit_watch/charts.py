@@ -39,6 +39,10 @@ def kind_of(event_type: str) -> str:
     return "arrival" if event_type == "relocation_end" else "other"
 
 
+def wrap(lon) -> np.ndarray:
+    return (np.asarray(lon, dtype=float) + 180.0) % 360.0 - 180.0
+
+
 def lon_range(days: np.ndarray, lon: np.ndarray, events: Sequence[dict],
               holds: Sequence[tuple[float, float]]) -> tuple[float, float]:
     inside = np.zeros(len(days), dtype=bool)
@@ -49,9 +53,23 @@ def lon_range(days: np.ndarray, lon: np.ndarray, events: Sequence[dict],
         values = list(lon)
     lo, hi = float(np.min(values)), float(np.max(values))
     if hi - lo > WHOLE_BELT_DEG:
+        centre = float(np.degrees(np.angle(np.exp(1j * np.radians(values)).mean())))
+        shifted = centre + wrap(np.array(values) - centre)
+        lo, hi = float(np.min(shifted)), float(np.max(shifted))
+    if hi - lo > WHOLE_BELT_DEG:
         return -180.0, 180.0
     pad = max(LON_PAD_DEG, 0.08 * (hi - lo))
     return lo - pad, hi + pad
+
+
+def recentre(lon: np.ndarray, lo: float, hi: float) -> np.ndarray:
+    centre = (lo + hi) / 2
+    return centre + wrap(lon - centre)
+
+
+def tick_label(v: float, _pos=None) -> str:
+    w = float(wrap(v))
+    return f"{180.0 if w == -180.0 else w:g}"
 
 
 def label_rows(days: Sequence[float]) -> list[int]:
@@ -74,6 +92,7 @@ def chart(path: Path, title: str, records, events: Sequence[dict], holds: Sequen
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
     from matplotlib.patches import Patch
+    from matplotlib.ticker import FuncFormatter
 
     kept, _ = drop_snapback_blocks(records)
     tk = track(kept)
@@ -85,16 +104,19 @@ def chart(path: Path, title: str, records, events: Sequence[dict], holds: Sequen
     hidden = 0
     for ax, name in zip(axes, panels):
         y = series[name]
+        if name == "lon":
+            lo, hi = lon_range(tk.days, tk.lon, events, holds)
+            if lo < -180.0 or hi > 180.0:
+                y = recentre(y, lo, hi)
+                ax.yaxis.set_major_formatter(FuncFormatter(tick_label))
+            hidden = int(((y < lo) | (y > hi)).sum())
+            ax.set_ylim(lo, hi)
         for s, e in holds:
             ax.axvspan(s, e, color=HOLD, alpha=0.14, lw=0, zorder=0)
         for x, ev in zip(xs, events):
             kind = kind_of(ev["event_type"])
             ax.axvline(x, zorder=ZORDER[kind], **STYLES[kind][1])
         ax.plot(tk.days, y, ".", color=INK, ms=2.2, zorder=2.0)
-        if name == "lon":
-            lo, hi = lon_range(tk.days, tk.lon, events, holds)
-            hidden = int(((y < lo) | (y > hi)).sum())
-            ax.set_ylim(lo, hi)
         ax.set_ylabel(PANELS[name], fontsize=9, color=MUTED)
         ax.tick_params(labelsize=8, colors=MUTED)
         for side in ("top", "right"):

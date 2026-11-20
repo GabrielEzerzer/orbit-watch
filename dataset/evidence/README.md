@@ -2,7 +2,7 @@
 
 One section per object, in rank order: its standing from [`../objects.csv`](../objects.csv), its state changes from [`../events.csv`](../events.csv), the class a blind judge gave it from its chart (`findings/routine/audit_verdicts.csv`, joined to the rank through `audit_key.csv`) and a chart of its mean longitude. The judge saw an earlier four-panel chart with no ranks or scores. 27 of these 30 were judged irregular; the others are marked below.
 
-In each chart the green bands are the held spans the score uses and each vertical line is one state change, numbered as in the table under it. A number on a red badge is an off-routine departure (5 bits or more). The longitude axis covers the object's holds and listed longitudes; element sets outside it (launch and transfer orbits) are counted in the corner and not drawn.
+In each chart the green bands are the held spans the score uses and each vertical line is one state change, numbered as in the table under it. A number on a red badge is an off-routine departure (5 bits or more). The longitude axis covers the object's holds and listed longitudes, and runs on across 180 deg for an object whose longitudes cross it, with its labels wrapped back to -180 to 180. Element sets outside the axis, such as launch and transfer orbits or the drift after a graveyard climb, are counted at the top right and not drawn.
 
 For an `unclear` object a `departures_real` of `no` means the judge could not see the move on the four-panel chart, whose axes its launch points stretched, not that the move was disproved. The charts here zoom to the object's own longitudes.
 

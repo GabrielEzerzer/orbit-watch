@@ -29,7 +29,7 @@ by hand.
 | `relocation_start` | a held object left its slot and was held again later, was still moving at relocation speed when the data end, or moved at relocation speed until a graveyard climb |
 | `relocation_end` | a moving object started to hold a slot |
 | `graveyard` | a held object left and its semi-major axis rose at least 150 km, with no later hold; or an object never held climbed at least 150 km above its first 90 days and stayed there |
-| `keeping_stop` | a held object stopped east-west station keeping with no climb, no later hold and no move under way at the end of the data |
+| `keeping_stop` | a held object stopped east-west station keeping with no climb, no later hold and no move under way at the end of the data, or drifted slowly for more than 90 days before a climb |
 | `ns_keeping_stop` | a held object stopped correcting its inclination but kept its longitude |
 | `free_burn` | a step of at least 1 km in the semi-major axis by an object never held again |
 
@@ -58,7 +58,9 @@ listed and not scored. Of the 341 departures, 197 are scored (33 by the stay
 model, 164 by the rate model), 97 are end of life and 47 are early starts;
 131 are off-routine. There are 8 stay overruns, and 35 of the 340 arrivals,
 on 29 objects, carry a proximity flag. Objects held at least 2 years are ranked by bits
-per year; only 104 of the 532 rated objects have any bits. The full method is in
+per year; only 104 of the 532 rated objects have any bits. The 2-year bar is part of
+the method, so recently launched inspectors and rarely held objects are on the unrated list, not in
+the rank. The full method is in
 [orbit_watch/README.md](../orbit_watch/README.md#routine-score-and-irregularity-rank).
 
 ## Columns of `events.csv`
@@ -76,7 +78,7 @@ unless the column says otherwise.
 | `date` | the UTC day of the change. A departure is the first element set that leaves the hold's drift band or longitude box and stays out 5 days, or the last burn plus half the burn interval; an arrival the first set that stays inside the new slot's band; a change inside a gap of more than 2 days is placed in the gap from the first set after it |
 | `signal` | what dated the change: `rate_exit` or `rate_entry` (drift rate or longitude leaving or entering the hold), `burn_gap` (last east-west burn plus half the burn interval), `a_step` (a step in the semi-major axis), `ns_gap` (last inclination correction plus half the median interval between corrections), `mode_change` (no sustained exit or entry within 45 days, so the 30-day mode boundary is used) |
 | `size` | per type: `relocation_start` km, the median semi-major axis of the first moving run minus the hold's, negative when the object drifts east (0 when the next window is already held); `relocation_end` 0; `graveyard` and `keeping_stop` km, the highest semi-major axis after the hold minus the hold's median (0 for a keeping stop followed by a move or climb); `ns_keeping_stop` deg, the largest inclination after it; `free_burn` m, the step detector's step, which can have the opposite sign to the net change on a steady climb |
-| `lon_before`, `lon_after` | mean longitude before and after the change, deg east from -180 to 180 (west is negative): the centre of the hold's longitude range (of its 30 days next to the change when the range is wider than 0.5 deg), or the median of the 10 days next to the change when that side is not held. Empty when those 10 days hold no element set (5 rows) |
+| `lon_before`, `lon_after` | mean longitude before and after the change, deg east from -180 to 180 (west is negative): from or into a hold, the centre of the hold's longitude range (of its 30 days next to the change when the range is wider than 0.5 deg); on an arrival from a stretch that is not held, `lon_before` is the median of the 10 days before it; for a departure with no later hold, `lon_after` is the median of the last 10 days of the data. Empty when those 10 days hold no element set (5 rows) |
 | `mode_before`, `mode_after` | ESA mode class of the 30-day mode segments either side: `controlled_lon_inc` (held, inclination controlled), `controlled_lon` (held), `drifting`, `librating_75E`, `librating_105W`, `librating_both`, `out_of_region` |
 | `mode_change` | the date of the 30-day mode boundary the change came from |
 | `scored` | departures only: 1 if the relocation start is scored; 0 for end-of-life rows and for starts in an object's first 180 days |
@@ -172,11 +174,14 @@ counted here.
 
 ### The routine score and rank
 
-**Of the 9 checks, 4 pass, 4 fail and 1 passes only in part.**
-Every target was set before the first run. The rank agrees with a blind reading of its top 30 charts
-and keeps cited steady keepers out of its upper half, but it flags few cited relocations as
-off-routine, it is not stable between the two halves of the period, a rank on part of the data does
-not predict the five-year rank, and the planted rhythm test is below its target. Only 8 rated
+**Of the 10 rows below (check 6 has one row per run it is compared with), 4 pass,
+5 fail and 1 passes only in part.** Every target was set before the first run,
+with one exception: the stay window's share was chosen on check 4's dev trials, so check 4's test
+trials are its held-out result. The rank agrees with a blind reading of its top 30 charts and keeps
+cited steady keepers out of its upper half, but it flags few cited relocations as off-routine, only
+4 of the 6 cited irregular objects held long enough to rate are in its
+top 5%, it is not stable between the two halves of the period, a rank on part of the data does not
+predict the five-year rank, and the planted rhythm test is below its target. Only 8 rated
 objects get any bits from the stay model (ranks 1, 2, 3, 4, 5, 6, 7, 28); everywhere else the order is set by the
 rate model alone, which counts how often and how late an object left, not whether it left on its own
 schedule. Sources: `checks_all.json` and `planted_all.json` in `findings/routine/`.
@@ -188,10 +193,11 @@ schedule. Sources: `checks_all.json` and `planted_all.json` in `findings/routine
 | 3. Cited relocation starts on objects held a year before them, flagged off-routine when caught | 1 of 4 caught (8 cited, 4 on objects held a year before, 4 caught) | 90% of those caught | **fail** |
 | 4. Planted rhythm: 4 moves on a fixed rhythm, then one on or off it; both kinds scored right | dev 0.811 of 90 caught and scored, 0.73 of all 100; test 0.804 of 92 caught and scored, 0.74 of all 100 (3 moves then 1: dev 0.057, test 0.053) | 90% of trials | **fail** |
 | 5. Top 30 on 2021 to mid-2023 in the top 60 on the rest | 5 of 24; Spearman 0.068 | half | **fail** |
-| 6. Spearman of reruns on data cut at each year-end, against the full run cut at the same date / against the final run | 2022-01-01: 0.705 / 0.089, 2023-01-01: 0.918 / 0.342, 2024-01-01: 1.0 / 0.726, 2025-01-01: 0.976 / 0.841 | 0.9 | part, against the same-date run at 3 of 4 cuts; against the final run at 0 of 4 |
+| 6. Spearman of reruns on data cut at each year-end, against the full run cut at the same date | 2022-01-01: 0.705, 2023-01-01: 0.918, 2024-01-01: 1.0, 2025-01-01: 0.976 | 0.9 | part, pass at 2023-01-01, 2024-01-01, 2025-01-01; fail at 2022-01-01 |
+| 6. Spearman of reruns on data cut at each year-end, against the final run | 2022-01-01: 0.089, 2023-01-01: 0.342, 2024-01-01: 0.726, 2025-01-01: 0.841 | 0.9 | **fail** |
 | 7. Top 30 judged irregular in the blind hand audit | 27 of 30 | 24 of 30 | pass |
 | 8. Cited irregular objects in the top 5% | 4 of 6 rateable (18 listed) | 75% | **fail** |
-| 9. Cited steady keepers in the lower half | 31 of 31; none of the 31 has a scored departure, against 80.5% of rated objects (chance 0.000944) | 90% | pass, but weak: the median rated object has 0 bits per year |
+| 9. Cited steady keepers in the lower half | 31 of 31; none of the 31 has a scored departure, and 80.5% of rated objects (428 of 532) have none (chance 0.000944) | 90% | pass, but weak: the median rated object has 0 bits per year |
 
 **Blind audit (check 7).** The top 30 and 20 objects from the middle of the rank were shuffled, and a
 judge who saw only one chart per object (longitude, drift rate, semi-major axis and inclination with
@@ -230,8 +236,6 @@ Each is an open issue labelled `debt`.
 - Check 9 is weak while the median rated object has 0 bits per year ([#90](../../../issues/90)).
 - The proximity flag's owner code is per country, so an arrival next to another operator of the same
   country is never flagged ([#89](../../../issues/89)).
-- Only objects held 2 years are rated, so recently launched inspectors and rarely held objects are on
-  the unrated list, not in the rank.
 
 All open limits: [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
 

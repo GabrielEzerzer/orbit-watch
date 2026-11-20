@@ -82,6 +82,11 @@ def build(findings: Path, catalogue: dict[int, dict]) -> tuple[list[dict], list[
     for r in unrated:
         if catalogue[int(r["norad_id"])]["object_type"] != r["object_type"]:
             raise ValueError(f"{r['norad_id']}: catalogue type differs from unrated.csv")
+    dead = {n for n in population if catalogue[n]["object_type"] in ("ROCKET BODY", "DEBRIS")}
+    if len(dead) != load_json(routine / "checks_all.json")["dead_objects"]["objects"]:
+        raise ValueError("rocket body and debris count differs from checks_all.json")
+    if dead & {int(r["norad_id"]) for r in rank}:
+        raise ValueError("a rocket body or debris object is rated")
 
     score = {key(r): r for r in departures}
     flag = {(r["norad_id"], "relocation_end", r["date"]): r for r in flagged}
@@ -223,15 +228,13 @@ def routine_checks(c: dict, planted: dict, rank: list[dict]) -> tuple[list[list]
     cuts = c["causality"]
     same = {d: v["spearman_vs_full_run_cut_at_same_date"] for d, v in cuts.items()}
     final = {d: v["spearman_vs_full_run_final"] for d, v in cuts.items()}
-    passed = [d for d, v in same.items() if v >= TARGETS["as_of"]]
-    whole = len(passed) == len(same) and all(v >= TARGETS["as_of"] for v in final.values())
-    none = not passed and not any(v >= TARGETS["as_of"] for v in final.values())
-    add("6. Spearman of reruns on data cut at each year-end, against the full run cut at the same date / "
-        "against the final run",
-        ", ".join(f"{d}: {same[d]} / {final[d]}" for d in cuts), num(TARGETS["as_of"]),
-        "pass" if whole else "**fail**" if none else
-        f"part, against the same-date run at {len(passed)} of {len(same)} cuts; against the final run at "
-        f"{sum(v >= TARGETS['as_of'] for v in final.values())} of {len(final)}")
+    for label, side in (("the full run cut at the same date", same), ("the final run", final)):
+        passed = [d for d, v in side.items() if v >= TARGETS["as_of"]]
+        failed = [d for d in side if d not in passed]
+        add(f"6. Spearman of reruns on data cut at each year-end, against {label}",
+            ", ".join(f"{d}: {side[d]}" for d in side), num(TARGETS["as_of"]),
+            "pass" if not failed else "**fail**" if not passed else
+            f"part, pass at {', '.join(passed)}; fail at {', '.join(failed)}")
     a = c["hand_audit"]["top"]
     add("7. Top 30 judged irregular in the blind hand audit", f"{a['class']['irregular']} of {a['objects']}",
         f"{TARGETS['audit']} of {a['objects']}", verdict(a["class"]["irregular"] >= TARGETS["audit"]))
@@ -243,8 +246,9 @@ def routine_checks(c: dict, planted: dict, rank: list[dict]) -> tuple[list[list]
     mid = median(float(r["bits_per_year"]) for r in rank)
     ok = sd["in_lower_half"] >= TARGETS["steady"] * sd["rateable"]
     add("9. Cited steady keepers in the lower half",
-        f"{sd['in_lower_half']} of {sd['rateable']}; none of the {sd['listed']} has a scored departure, against "
-        f"{sd['rated_share_no_scored_departure']:.1%} of rated objects (chance {sd['chance_of_at_least_as_many_in_a_random_draw']})",
+        f"{sd['in_lower_half']} of {sd['rateable']}; none of the {sd['listed']} has a scored departure, and "
+        f"{sd['rated_share_no_scored_departure']:.1%} of rated objects ({sd['rated_no_scored_departure']} of "
+        f"{sd['rated']}) have none (chance {sd['chance_of_at_least_as_many_in_a_random_draw']})",
         f"{TARGETS['steady']:.0%}", verdict(ok) + (f", but weak: the median rated object has {num(mid)} bits per year"
                                                     if ok and mid == 0 else ""))
     return out, tally
@@ -322,7 +326,8 @@ def card(findings: Path, events: list[dict], objects: list[dict]) -> str:
         "fresh_max": fresh["real_max_abs_error_days"], "routine_audit_table": routine_audit,
         "checks_table": table(["check", "result", "target", "verdict"], check_rows),
         "checks_n": len(check_rows), "checks_pass": tally["pass"], "checks_fail": tally["fail"],
-        "checks_part": tally["part"],
+        "checks_part": tally["part"], "irregular_top": checks["cited_lists"]["irregular"]["in_top_5_percent"],
+        "irregular_rateable": checks["cited_lists"]["irregular"]["rateable"],
         "commit_events": sc["commit"][:7], "commit_routine": ro["commit"][:7],
         "commit_cache": ro["belt_cache_commit"][:7], "commit_checks": checks["commit"][:7],
         "commit_planted": planted["commit"][:7], "commit_eval": ev["commit"][:7],
@@ -358,8 +363,10 @@ def evidence(findings: Path, events: list[dict], objects: list[dict]) -> str:
              f"{irregular} of these {len(top)} were judged irregular; the others are marked below.", "",
              "In each chart the green bands are the held spans the score uses and each vertical line is one state "
              "change, numbered as in the table under it. A number on a red badge is an off-routine departure "
-             "(5 bits or more). The longitude axis covers the object's holds and listed longitudes; element sets "
-             "outside it (launch and transfer orbits) are counted in the corner and not drawn.", ""]
+             "(5 bits or more). The longitude axis covers the object's holds and listed longitudes, and runs on "
+             "across 180 deg for an object whose longitudes cross it, with its labels wrapped back to -180 to 180. "
+             "Element sets outside the axis, such as launch and transfer orbits or the drift after a graveyard "
+             "climb, are counted at the top right and not drawn.", ""]
     if any(notes[int(o["rank"])]["class"] == "unclear" for o in top):
         lines += ["For an `unclear` object a `departures_real` of `no` means the judge could not see the move on the "
                   "four-panel chart, whose axes its launch points stretched, not that the move was disproved. The "
@@ -434,7 +441,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--geo-dir", type=Path, help="for --charts: folder of <norad>.tle files; default $ORBIT_WATCH_DATA/geo")
     p.add_argument("--cache", type=Path, help="for --charts: belt cache; default $ORBIT_WATCH_DATA/routine/belt.pkl")
     a = p.parse_args(argv)
-    cat = catalogue_from_manifest(a.catalogue) if a.catalogue else catalogue_from_objects(a.out / "objects.csv")
+    if not a.catalogue and not (a.out / "objects.csv").exists():
+        p.error(f"{a.out / 'objects.csv'} does not exist; pass --catalogue with the GEO-region manifest.json")
+    cat =catalogue_from_manifest(a.catalogue) if a.catalogue else catalogue_from_objects(a.out / "objects.csv")
     events, objects = build(FINDINGS, cat)
     write(a.out / "events.csv", csv_text(EVENT_FIELDS, events))
     write(a.out / "objects.csv", csv_text(OBJECT_FIELDS, objects))
@@ -479,7 +488,7 @@ by hand.
 | `relocation_start` | a held object left its slot and was held again later, was still moving at relocation speed when the data end, or moved at relocation speed until a graveyard climb |
 | `relocation_end` | a moving object started to hold a slot |
 | `graveyard` | a held object left and its semi-major axis rose at least 150 km, with no later hold; or an object never held climbed at least 150 km above its first 90 days and stayed there |
-| `keeping_stop` | a held object stopped east-west station keeping with no climb, no later hold and no move under way at the end of the data |
+| `keeping_stop` | a held object stopped east-west station keeping with no climb, no later hold and no move under way at the end of the data, or drifted slowly for more than 90 days before a climb |
 | `ns_keeping_stop` | a held object stopped correcting its inclination but kept its longitude |
 | `free_burn` | a step of at least 1 km in the semi-major axis by an object never held again |
 
@@ -501,7 +510,9 @@ listed and not scored. Of the $departures departures, $scored are scored ($stays
 model, $rate_model by the rate model), $end_of_life are end of life and $commissioning are early starts;
 $off_routine are off-routine. There are $overruns stay overruns, and $flagged of the $arrivals arrivals,
 on $flagged_objects objects, carry a proximity flag. Objects held at least 2 years are ranked by bits
-per year; only $with_bits of the $rated rated objects have any bits. The full method is in
+per year; only $with_bits of the $rated rated objects have any bits. The 2-year bar is part of
+the method, so recently launched inspectors and rarely held objects are on the unrated list, not in
+the rank. The full method is in
 [orbit_watch/README.md](../orbit_watch/README.md#routine-score-and-irregularity-rank).
 
 ## Columns of `events.csv`
@@ -519,7 +530,7 @@ unless the column says otherwise.
 | `date` | the UTC day of the change. A departure is the first element set that leaves the hold's drift band or longitude box and stays out 5 days, or the last burn plus half the burn interval; an arrival the first set that stays inside the new slot's band; a change inside a gap of more than 2 days is placed in the gap from the first set after it |
 | `signal` | what dated the change: `rate_exit` or `rate_entry` (drift rate or longitude leaving or entering the hold), `burn_gap` (last east-west burn plus half the burn interval), `a_step` (a step in the semi-major axis), `ns_gap` (last inclination correction plus half the median interval between corrections), `mode_change` (no sustained exit or entry within 45 days, so the 30-day mode boundary is used) |
 | `size` | per type: `relocation_start` km, the median semi-major axis of the first moving run minus the hold's, negative when the object drifts east (0 when the next window is already held); `relocation_end` 0; `graveyard` and `keeping_stop` km, the highest semi-major axis after the hold minus the hold's median (0 for a keeping stop followed by a move or climb); `ns_keeping_stop` deg, the largest inclination after it; `free_burn` m, the step detector's step, which can have the opposite sign to the net change on a steady climb |
-| `lon_before`, `lon_after` | mean longitude before and after the change, deg east from -180 to 180 (west is negative): the centre of the hold's longitude range (of its 30 days next to the change when the range is wider than 0.5 deg), or the median of the 10 days next to the change when that side is not held. Empty when those 10 days hold no element set ($empty_lon rows) |
+| `lon_before`, `lon_after` | mean longitude before and after the change, deg east from -180 to 180 (west is negative): from or into a hold, the centre of the hold's longitude range (of its 30 days next to the change when the range is wider than 0.5 deg); on an arrival from a stretch that is not held, `lon_before` is the median of the 10 days before it; for a departure with no later hold, `lon_after` is the median of the last 10 days of the data. Empty when those 10 days hold no element set ($empty_lon rows) |
 | `mode_before`, `mode_after` | ESA mode class of the 30-day mode segments either side: `controlled_lon_inc` (held, inclination controlled), `controlled_lon` (held), `drifting`, `librating_75E`, `librating_105W`, `librating_both`, `out_of_region` |
 | `mode_change` | the date of the 30-day mode boundary the change came from |
 | `scored` | departures only: 1 if the relocation start is scored; 0 for end-of-life rows and for starts in an object's first 180 days |
@@ -593,11 +604,14 @@ $fresh_table
 
 ### The routine score and rank
 
-**Of the $checks_n checks, $checks_pass pass, $checks_fail fail and $checks_part passes only in part.**
-Every target was set before the first run. The rank agrees with a blind reading of its top 30 charts
-and keeps cited steady keepers out of its upper half, but it flags few cited relocations as
-off-routine, it is not stable between the two halves of the period, a rank on part of the data does
-not predict the five-year rank, and the planted rhythm test is below its target. Only $stay_objects rated
+**Of the $checks_n rows below (check 6 has one row per run it is compared with), $checks_pass pass,
+$checks_fail fail and $checks_part passes only in part.** Every target was set before the first run,
+with one exception: the stay window's share was chosen on check 4's dev trials, so check 4's test
+trials are its held-out result. The rank agrees with a blind reading of its top 30 charts and keeps
+cited steady keepers out of its upper half, but it flags few cited relocations as off-routine, only
+$irregular_top of the $irregular_rateable cited irregular objects held long enough to rate are in its
+top 5%, it is not stable between the two halves of the period, a rank on part of the data does not
+predict the five-year rank, and the planted rhythm test is below its target. Only $stay_objects rated
 objects get any bits from the stay model (ranks $stay_ranks); everywhere else the order is set by the
 rate model alone, which counts how often and how late an object left, not whether it left on its own
 schedule. Sources: `checks_all.json` and `planted_all.json` in `findings/routine/`.
@@ -638,8 +652,6 @@ Each is an open issue labelled `debt`.
 - Check 9 is weak while the median rated object has 0 bits per year ([#90](../../../issues/90)).
 - The proximity flag's owner code is per country, so an arrival next to another operator of the same
   country is never flagged ([#89](../../../issues/89)).
-- Only objects held 2 years are rated, so recently launched inspectors and rarely held objects are on
-  the unrated list, not in the rank.
 
 All open limits: [issues labelled `debt`](../../../issues?q=is%3Aissue+is%3Aopen+label%3Adebt).
 

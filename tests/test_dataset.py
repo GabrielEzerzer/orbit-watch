@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from orbit_watch.charts import label_rows, lon_range
+from orbit_watch.charts import label_rows, lon_range, recentre
 from orbit_watch.jobs import dataset as ds
 from orbit_watch.truth import read_event_rows
 
@@ -55,7 +55,11 @@ def test_longitude_axis_covers_holds_and_listed_longitudes_but_not_the_transfer(
     lon = np.array([100.0, 60.0, 20.0, 10.0, 10.1, 10.0, 9.9, 9.5, 9.4, 9.5])
     lo, hi = lon_range(days, lon, [{"lon_before": "10.0", "lon_after": "9.45"}], [(3.0, 6.0), (7.0, 10.0)])
     assert lo == 9.4 - 0.25 and hi == 10.1 + 0.25
-    assert lon_range(days, np.array([170.0] * 5 + [-170.0] * 5), [], [(0.0, 10.0)]) == (-180.0, 180.0)
+    lo, hi = lon_range(days, np.array([175.0] * 5 + [-178.0] * 5), [], [(0.0, 10.0)])
+    assert np.allclose([lo, hi], [175.0 - 0.56, 182.0 + 0.56])
+    assert np.allclose(recentre(np.array([175.0, -178.0, -10.0]), lo, hi), [175.0, 182.0, 350.0])
+    spread = np.array([-170.0, -60.0, 50.0, 160.0] * 2 + [0.0, 0.0])
+    assert lon_range(days, spread, [], [(0.0, 10.0)]) == (-180.0, 180.0)
 
 
 def test_close_event_labels_move_to_a_new_row():
