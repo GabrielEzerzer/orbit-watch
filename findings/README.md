@@ -750,7 +750,7 @@ first search:
   object's station-keeping state in 2021-2025 was recorded, whether or not the list has it.
 - **Sources:** new ones only; no URL already in `groundtruth/` is used. Each claim keeps a verbatim
   quote. A copy of every page is saved, and `python -m harness.evals.cross_check verify` finds every
-  quoted passage again on its saved copy. On the final commit all 43 quotes pass.
+  quoted passage again on its saved copy. On the final commit all 49 quotes pass.
 - **Source kind:** operator (including agency or manufacturer), regulator, observer, press, or
   `tle_derived`. A `tle_derived` source is an analysis of the same public element sets the list is
   built from. It is reported apart and never counted as independent.
@@ -771,40 +771,80 @@ first search:
 - **Not scored:** a `stayed` claim (the object held one slot over a named period) is checked for
   any list event in that period. For the top 30 only, `behaviour` quotes are counted.
 
-**Coverage.** Sources are scarce. 37 of the 50 objects have no dated claim from any source, after
-72 searches in all (median 1 per object, at most 3, against a ceiling of about 8). The per-object
-counts are in the sample file's `searches` and `sources_found` columns.
+**Search effort.** The search ran in two rounds under the same rules, sample and scoring. The
+per-object counts are in the sample file's `searches` (round 1), `searches_2` (round 2) and
+`sources_found` columns. For each object still without a source, `tried` names the kinds of pages
+searched.
 
-| | Top 30 | Drawn 20 |
+| | Round 1 | Round 2 |
 |---|---|---|
-| Objects with a dated claim from an independent source | 6 | 4 |
-| Objects with a dated claim from a `tle_derived` source only | 3 | 0 |
-| Objects with no dated claim found | 21 | 16 |
-| List events in 2021-2025 on these objects | 212 | 52 |
-| ...matched by an independent claim | 11 | 4 |
-| ...matched by a `tle_derived` claim | 12 | 0 |
+| Objects in the round | 50 | 40 |
+| Searches | 72 | 107 |
+| Median per object searched, that round | 1 | 3 |
+| Most for one object, that round | 3 | 5 |
+| Median per object over both rounds | | 4 (3 to 6) for the 40 |
+
+Round 2 covered the 37 objects with no dated claim after round 1 (21 of the top 30, including
+SJ-20, and 16 drawn), then the three top-30 objects whose only dated claims were `tle_derived`
+(SJ-17, TJS-3, TJS-10). The queries were chosen by kind of object:
+
+- Launched in the period: operator and agency releases on arrival, start of service, test location
+  and later moves.
+- Handed to another operator (EWS-G2, EWS-G3, the TDRS and WGS satellites): agency releases and fact
+  sheets.
+- Old commercial satellites: regulator filings for relocation, end-of-life or disposal authority,
+  operator fleet pages and annual reports, and trade press.
+- Military: official fact sheets and trade press.
+- Chinese satellites: Chinese-language state media as well as English press and analyses.
+
+A page that refused an automated fetch was not forced. Where the Wayback Machine held a public
+copy of the same page, that copy was read, with the archive URL as the source URL and the
+original publisher as the publisher. "No dated claim found" is therefore a statement about this
+search (about 4 searches per object, without the pages that refused), not about what public sources
+hold.
+
+**Coverage.** Sources are scarce. After both rounds 36 of the 50 objects have no dated claim from
+any source.
+
+| | Top 30, round 1 | Top 30, round 2 | Drawn 20, round 1 | Drawn 20, round 2 |
+|---|---|---|---|---|
+| Objects with a dated claim from an independent source | 6 | 7 | 4 | 4 |
+| Objects with a dated claim from a `tle_derived` source only | 3 | 3 | 0 | 0 |
+| Objects with no dated claim found | 21 | 20 | 16 | 16 |
+| List events in 2021-2025 on these objects | 212 | 212 | 52 | 52 |
+| ...matched by an independent claim | 11 | 12 | 4 | 4 |
+| ...matched by a `tle_derived` claim | 12 | 17 | 0 | 0 |
 
 Of the 101 relocation starts the list gives the top 30 in 2021-2025, an independent source confirms
-5 and a `tle_derived` source confirms 5.
+5 and a `tle_derived` source confirms 7 (5 after round 1).
 
-**Agreement.** The 43 claims are 12 relocation starts, 16 relocation ends, 4 graveyard moves,
-1 free burn, 1 `stayed` and 9 `behaviour`. The 33 dated claims split as follows:
+Round 2 added six claims: XM-4's disposal (operator) and five TJS-3 moves (`tle_derived`). All six
+match the list.
 
-| Claims | Dated claims | Matched | Objects | Median date error (days) | Worst (days) |
-|---|---|---|---|---|---|
-| Independent, all | 15 | 15 | 10 | 2 | 22 |
-| Top 30 | 11 | 11 | 6 | 1 | 22 |
-| Drawn | 4 | 4 | 4 | 3.5 | 9 |
-| Not in an earlier check set | 9 | 9 | 7 | 1 | 9 |
-| Already in an earlier check set | 6 | 6 | 3 | 6 | 22 |
-| Operator | 6 | 6 | 5 | 3.5 | 9 |
-| Press | 9 | 9 | 5 | 1 | 22 |
-| Regulator, observer | 0 | | | | |
-| `tle_derived` (apart) | 18 | 12 | 4 | 1 | 10 |
+**Agreement.** The 49 claims are 14 relocation starts, 19 relocation ends, 5 graveyard moves,
+1 free burn, 1 `stayed` and 9 `behaviour`. The 39 dated claims split as follows (round 1 had 43
+claims, 33 of them dated):
+
+| Claims | Round | Dated claims | Matched | Objects | Median date error (days) | Worst (days) |
+|---|---|---|---|---|---|---|
+| Independent, all | 1 | 15 | 15 | 10 | 2 | 22 |
+| | 2 | 16 | 16 | 11 | 2 | 22 |
+| Top 30 | 1 | 11 | 11 | 6 | 1 | 22 |
+| | 2 | 12 | 12 | 7 | 1.5 | 22 |
+| Drawn | 1, 2 | 4 | 4 | 4 | 3.5 | 9 |
+| Not in an earlier check set | 1 | 9 | 9 | 7 | 1 | 9 |
+| | 2 | 10 | 10 | 8 | 1.5 | 9 |
+| Already in an earlier check set | 1, 2 | 6 | 6 | 3 | 6 | 22 |
+| Operator | 1 | 6 | 6 | 5 | 3.5 | 9 |
+| | 2 | 7 | 7 | 6 | 2 | 9 |
+| Press | 1, 2 | 9 | 9 | 5 | 1 | 22 |
+| Regulator, observer | 1, 2 | 0 | | | | |
+| `tle_derived` (apart) | 1 | 18 | 12 | 4 | 1 | 10 |
+| | 2 | 23 | 17 | 4 | 1 | 15 |
 
 "Earlier check set" means `geo_events.csv`, `irregular_objects.csv` or `steady_objects.csv`.
-All 18 `tle_derived` claims are on top-30 objects. 17 of them are on 3 objects already in a check
-set (12 matched), and 1 is on TJS-10 (not listed). The independent claims cover:
+All 23 `tle_derived` claims are on top-30 objects. 22 of them are on 3 objects already in a check
+set (17 matched), and 1 is on TJS-10 (not listed). The independent claims cover:
 
 - LUCH (OLYMP): its 2021 arrival, its 2025 move and arrival, and its October 2025 graveyard move.
 - METEOSAT 12 (MTG-I1): its January 2024 move from 3.4° W to 0.35° W.
@@ -814,6 +854,14 @@ set (12 matched), and 1 is on TJS-10 (not listed). The independent claims cover:
 - LUCH (OLYMP) 2: its 23 June 2024 departure.
 - Graveyard moves of TDRS 9, ASTRA 2D and USA 113 (DSCS III B7).
 - MTG-S1: its July 2025 arrival at 3.4° W after launch.
+- XM-4: its October 2023 disposal ("in October 2023 we completed the de-orbiting and
+  decommissioning of the satellite", Sirius XM Holdings Form 10-K for 2024). Added in round 2; the
+  list's graveyard move is 2023-10-17.
+
+The five round-2 `tle_derived` claims are TJS-3's August 2021 departure from 88° E, its October 2021
+arrival near 59° E, its 5 July 2022 departure, and its stops at 88° E on 13 September 2022 and at
+137.5° E on 8 February 2023, from the Orbital Focus satellite diary, which tabulates element sets.
+The three day-dated ones match to the day.
 
 The worst error, 22 days, is LUCH (OLYMP)'s arrival. The source gives only the month, September
 2025; the list gives 2025-08-24.
@@ -829,7 +877,8 @@ slot. All but the LUCH (OLYMP) quote come from `tle_derived` sources (the Secure
 2026 Chinese RPO fact sheet, the CSIS report *New Rhythms in GEO*, SatTrackCam Leiden). The other
 24 of the top 30 have no behaviour quote.
 
-**Every disagreement.** All six come from `tle_derived` sources; no independent claim disagrees.
+**Every disagreement.** All six come from `tle_derived` sources and were found in round 1; round 2
+added none, and no independent claim disagrees.
 
 | Claim | Object | Source says | List |
 |---|---|---|---|
@@ -860,22 +909,40 @@ opened, and the list has the same move as a departure.
   recorded.
 - Rejected:
   - Wikipedia statements whose only citation is a tracker page that no longer shows the old value:
-    ASTRA 2A's 2022 move and May 2025 drift; ASTRA 2D's November 2021 move.
+    ASTRA 2A's 2022 move and May 2025 drift; ASTRA 2D's November 2021 move. Round 2 found no
+    other source for ASTRA 2A.
   - Wikipedia's WGS-3 longitude table, which has no citation.
   - KeepTrack notices dated 2026, outside the period.
-- Pages that could not be fetched, so they are not cited:
-  - spaceforce.mil, including the DSCS B7 retirement release, and NOAA NESDIS (403).
-  - South China Morning Post and Breaking Defense (403).
-  - UNOOSA registration PDFs (404).
-  - The NSMC and Ukrainian State Space Agency sites (certificate errors).
+- Read in round 2 but not recorded, because none of them states when a move or disposal happened:
+  - Entry into service at a slot: EUTELSAT 10B (24 July 2023), EUTE 36D (23 September 2024),
+    SIRIUS XM-9 (January 2025), and SBIRS GEO 6's operational acceptance.
+  - FCC grants and authorisations (for example a special temporary authority to drift INTELSAT 904
+    or AMC-6, or GALAXY 25's licence surrender). A grant says a move may happen, not that it did.
+  - UN registry change-of-position notes (HYLAS 1, HYLAS 2, INMARSAT 4-F1). They give the old and
+    new positions and the date of the note, not the date of the move.
+  - Planned dates, such as EWS-G2's expected November 2023 arrival.
+  - Undated statements, such as an ICAO paper's "I4F1 has been moved to a new location" and
+    Telesat's note that NIMIQ 2 gives short-term service to other operators.
+  - SJ-23's "over several weeks in February 2023 ... appeared to move westward" (CSIS, citing its
+    *Space Threat Assessment 2024*): it dates motion within a month but no start or stop.
+  - FENGYUN 2E's move to 86.5° E (2015) and retirement (January 2019), outside the period.
+- Pages that refused the fetch or failed:
+  - Round 1, not cited: spaceforce.mil, including the DSCS B7 retirement release, and NOAA NESDIS
+    (403); South China Morning Post and Breaking Defense (403); UNOOSA registration PDFs (404); the
+    NSMC and Ukrainian State Space Agency sites (certificate errors).
+  - Round 2: spaceforce.mil, Breaking Defense, telesat.com, icao.int and UNOOSA were read through
+    Wayback Machine copies, which gave no dated claim. Business Wire, sec.gov and fcc.report refused
+    (403) and were not forced; SiriusXM's own investor site served the same 10-K. A few Eutelsat
+    pages were gone (404 or a failed DNS lookup) with no archived copy.
 - Before its search was finished, the list rows of TDRS 5 were seen, and the names of EWS-G2,
   NIMIQ 2, INTELSAT 904 and SBIRS GEO 4 were seen in the repository's READMEs. No claim was found
-  for any of them.
+  for any of them in either round. No list row was opened before a search finished in round 2.
 
 Known limits:
 
-- Search effort was light: 72 searches for 50 objects. Coverage would likely rise with more, so
-  37 of 50 without a claim is a lower bound on what public sources hold.
+- Search effort is still modest: 179 searches for 50 objects over two rounds, a median of 4 for the
+  40 objects searched again, against a ceiling of about 8. 36 of 50 without a claim is a lower bound
+  on what public sources hold.
 - No regulator or observer claims were found. Most independent claims are retirements and
   well-announced moves of civil satellites. The small moves where the list is weakest are reported
   mainly by `tle_derived` sources.

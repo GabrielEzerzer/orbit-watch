@@ -1,5 +1,5 @@
 {
-  "commit": "b046e3979099bacc0f8677eedeec155b47584614",
+  "commit": "b2b1fdd4c07cfa229b701192ab39857a48441173",
   "dirty": false,
   "window_days": 45,
   "near_days": 90,
@@ -7,24 +7,24 @@
     "2021-01-01",
     "2025-12-31"
   ],
-  "claims": 43,
+  "claims": 49,
   "claims_by_type": {
-    "relocation_start": 12,
+    "relocation_start": 14,
     "behaviour": 9,
     "free_burn": 1,
-    "relocation_end": 16,
-    "graveyard": 4,
+    "relocation_end": 19,
+    "graveyard": 5,
     "stayed": 1
   },
   "coverage": {
     "top30": {
       "objects": 30,
-      "with_independent_dated_claim": 6,
+      "with_independent_dated_claim": 7,
       "with_tle_derived_dated_claim_only": 3,
-      "without_dated_claim": 21,
+      "without_dated_claim": 20,
       "listed_events": 212,
-      "events_matched_independent": 11,
-      "events_matched_tle_derived": 12
+      "events_matched_independent": 12,
+      "events_matched_tle_derived": 17
     },
     "drawn": {
       "objects": 20,
@@ -38,10 +38,10 @@
   },
   "independent": {
     "all": {
-      "claims": 15,
-      "matched": 15,
-      "objects": 10,
-      "median_abs_error_days": 2,
+      "claims": 16,
+      "matched": 16,
+      "objects": 11,
+      "median_abs_error_days": 2.0,
       "worst_abs_error_days": 22,
       "unmatched": {}
     },
@@ -55,20 +55,20 @@
         "unmatched": {}
       },
       "top30": {
-        "claims": 11,
-        "matched": 11,
-        "objects": 6,
-        "median_abs_error_days": 1,
+        "claims": 12,
+        "matched": 12,
+        "objects": 7,
+        "median_abs_error_days": 1.5,
         "worst_abs_error_days": 22,
         "unmatched": {}
       }
     },
     "by_already_cited": {
       "0": {
-        "claims": 9,
-        "matched": 9,
-        "objects": 7,
-        "median_abs_error_days": 1,
+        "claims": 10,
+        "matched": 10,
+        "objects": 8,
+        "median_abs_error_days": 1.5,
         "worst_abs_error_days": 9,
         "unmatched": {}
       },
@@ -83,10 +83,10 @@
     },
     "by_source_kind": {
       "operator": {
-        "claims": 6,
-        "matched": 6,
-        "objects": 5,
-        "median_abs_error_days": 3.5,
+        "claims": 7,
+        "matched": 7,
+        "objects": 6,
+        "median_abs_error_days": 2,
         "worst_abs_error_days": 9,
         "unmatched": {}
       },
@@ -102,11 +102,11 @@
   },
   "tle_derived": {
     "all": {
-      "claims": 18,
-      "matched": 12,
+      "claims": 23,
+      "matched": 17,
       "objects": 4,
-      "median_abs_error_days": 1.0,
-      "worst_abs_error_days": 10,
+      "median_abs_error_days": 1,
+      "worst_abs_error_days": 15,
       "unmatched": {
         "listed_with_another_type": 1,
         "not_listed": 1,
@@ -115,11 +115,11 @@
     },
     "by_group": {
       "top30": {
-        "claims": 18,
-        "matched": 12,
+        "claims": 23,
+        "matched": 17,
         "objects": 4,
-        "median_abs_error_days": 1.0,
-        "worst_abs_error_days": 10,
+        "median_abs_error_days": 1,
+        "worst_abs_error_days": 15,
         "unmatched": {
           "listed_with_another_type": 1,
           "not_listed": 1,
@@ -139,11 +139,11 @@
         }
       },
       "1": {
-        "claims": 17,
-        "matched": 12,
+        "claims": 22,
+        "matched": 17,
         "objects": 3,
-        "median_abs_error_days": 1.0,
-        "worst_abs_error_days": 10,
+        "median_abs_error_days": 1,
+        "worst_abs_error_days": 15,
         "unmatched": {
           "listed_with_another_type": 1,
           "listed_outside_window": 4
@@ -154,7 +154,7 @@
   "top30_relocation_starts": {
     "listed": 101,
     "confirmed_independent": 5,
-    "confirmed_tle_derived": 5
+    "confirmed_tle_derived": 7
   },
   "behaviour": {
     "claims": 9,

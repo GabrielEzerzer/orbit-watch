@@ -214,8 +214,9 @@ These two files are the input to the independent cross-check in `findings/README
 
 - `rank` is empty for objects that are not rated.
 - `already_cited` is 1 when the object is in `geo_events.csv`, `irregular_objects.csv` or `steady_objects.csv`.
-- `searches` is the number of web searches made for the object.
+- `searches` is the number of web searches made for the object in the first round, and `searches_2` the number in the second. The second round covered the objects with no dated claim and the top-30 objects whose dated claims were all `tle_derived`.
 - `sources_found` is the number of pages that gave at least one claim. A 0 means no source was found; it is not a disagreement.
+- `tried` names the kinds of pages searched, for objects still without a dated claim after the second round.
 
 `cross_check.csv` has one row per claim a source makes about a sampled object's station-keeping state in 2021-2025.
 
@@ -236,13 +237,14 @@ These two files are the input to the independent cross-check in `findings/README
 
 How it was compiled and checked:
 
-- **Searching:** each object was searched by name, alternative names and catalogue number, never by a date from the list. Its list rows were not opened until its search was finished. Every dated claim found was recorded, whether or not the list has it.
+- **Searching:** each object was searched by name, alternative names, operator and catalogue number, never by a date from the list. Its list rows were not opened until its search was finished. Every dated claim found was recorded, whether or not the list has it. A page that refused an automated fetch was not forced; a public Wayback Machine copy of the same page was used instead where one existed, with the archive URL as `source_url` and the original publisher as `publisher`.
+- **Not claims:** entry into service at a slot, a regulator's grant or authorisation, a UN registry change-of-position note, a planned date, and a statement that gives no date for the move itself.
 - **Excluded sources:**
   - A URL already in `groundtruth/`. A different page of the same publisher is allowed.
   - Content with no named publisher.
   - An encyclopedia, whose citation was followed to the original instead. Wikipedia statements whose citation could not be followed are not used.
 - **Saved copies:** every page used was fetched by `python -m harness.evals.cross_check fetch` and saved to `$ORBIT_WATCH_DATA/sources/cross_check/` with an `index.csv` (file, URL, fetch time, SHA-256). The copies are not in the repository.
-- **Quote check:** `python -m harness.evals.cross_check verify` finds every quoted passage on its saved copy and exits 1 if any is missing. HTML is read as visible text (scripts and styles dropped); a PDF is read from a `pdftotext -enc UTF-8` copy saved beside it. Whitespace, typographic quotes and dashes are normalised and case is ignored. A quote that could not be found again would have been dropped; all 43 pass.
+- **Quote check:** `python -m harness.evals.cross_check verify` finds every quoted passage on its saved copy and exits 1 if any is missing. HTML is read as visible text (scripts and styles dropped); a PDF is read from a `pdftotext -enc UTF-8` copy saved beside it. Whitespace, typographic quotes and dashes are normalised and case is ignored. A quote that could not be found again would have been dropped; all 49 pass.
 
 Sources:
 
@@ -251,6 +253,7 @@ Sources:
   - NOAA OSPO (GOES 17).
   - EUMETSAT, both its press page and its flight dynamics paper at ISSFD 2024 (MTG-I1, MTG-S1).
   - Boeing (ASTRA 2D).
+  - Sirius XM Holdings, its Form 10-K for 2024 on its investor site (XM-4).
 - Press:
   - RussianSpaceWeb (LUCH (OLYMP)).
   - Xinhua via gov.cn (FENGYUN 4B).
@@ -260,6 +263,7 @@ Sources:
 - `tle_derived`:
   - The Secure World Foundation's 2026 fact sheet *Chinese Military and Intelligence Rendezvous and Proximity Operations* (SJ-17, TJS-3, TJS-10). Its endnotes cite ISR University issue 110, which `geo_events.csv` and `irregular_objects.csv` use.
   - SatTrackCam Leiden (LUCH (OLYMP) 2).
+  - The Orbital Focus satellite diary for the TJS series (TJS-3), which tabulates element sets.
   - The CSIS report *New Rhythms in GEO* (behaviour only for SJ-17, SJ-20 and TJS-3), built on Space-Track data.
 
 ## Sources checked and not added
