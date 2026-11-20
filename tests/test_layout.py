@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-TOP_LEVEL_DIRS = {".github", "docs", "findings", "groundtruth", "harness", "mock", "orbit_watch", "setup", "tests", "tools"}
+TOP_LEVEL_DIRS = {".github", "dataset", "docs", "findings", "groundtruth", "harness", "mock", "orbit_watch", "setup", "tests", "tools"}
 TOP_LEVEL_FILES = {".gitignore", ".lint-baseline.json", "CLAUDE.md", "LICENSE", "README.md", "features.json", "hush.toml", "pyproject.toml"}
 
 

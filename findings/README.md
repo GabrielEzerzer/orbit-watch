@@ -714,8 +714,9 @@ a hold of two to four months. TJS-10 (rank 9) and GAOFEN 13 02 (rank 13) are `un
 launch points stretch the chart axes, so a move under about 3° cannot be seen. Their
 `departures_real` of `no` means "not visible on the chart", not "disproved". In the middle,
 TIANLIAN 1-03 (rank 268) is end of life: its November 2023 graveyard climb is listed and, as an
-end-of-life row, adds no bits. On many charts the `relocation_start` and `graveyard` lines render
-dark rather than red; the judge treated every line labelled as a departure as one. The charts are
+end-of-life row, adds no bits. On many of the charts the judge saw, the `relocation_start` and `graveyard` lines
+looked dark rather than red; the judge treated every line labelled as a departure as one. The chart
+was changed afterwards to draw wider lines styled by type, with a legend. The charts are
 written to `$ORBIT_WATCH_DATA/routine/audit_charts_v2/` and are not committed.
 
 Known limits:
