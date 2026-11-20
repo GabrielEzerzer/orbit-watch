@@ -21,7 +21,7 @@ def test_features_of_a_small_object_with_a_known_answer():
     lon = np.array([10.0, 10.5, 10.0, 9.0], dtype=np.float32)
     rate = np.array([0.01, -0.03, 0.02, -0.05], dtype=np.float32)
     sma = _R_GEO_KM + np.array([1.0, 3.0, -2.0, 10.0])
-    f = dict(zip(bh.FEATURES, bh.features(0.0, year, segs, burns, 1, days, lon, rate, sma, 2)))
+    f = dict(zip(bh.FEATURES, bh.features(0.0, year, segs, burns, 1, days, lon, rate, sma)))
     assert f["held_share"] == pytest.approx(250 / year)
     assert f["held_inc_share"] == pytest.approx(100 / year)
     assert f["drifting_share"] == pytest.approx(50 / year)
@@ -34,12 +34,11 @@ def test_features_of_a_small_object_with_a_known_answer():
     assert f["median_abs_drift_deg_per_day"] == pytest.approx(0.025)
     assert f["median_sma_offset_km"] == pytest.approx(2.5)
     assert f["sma_iqr_km"] == pytest.approx(4.5)
-    assert f["proximity_flags_per_year"] == pytest.approx(2)
 
 
 def test_an_object_never_held_has_hold_length_zero():
     f = bh.features(0.0, 365.25, [seg(0, 400, "drifting")], np.array([]), 0, np.array([0, 1]),
-                    np.array([0.0, 1.0]), np.array([1.0, 1.0]), np.array([_R_GEO_KM, _R_GEO_KM]), 0)
+                    np.array([0.0, 1.0]), np.array([1.0, 1.0]), np.array([_R_GEO_KM, _R_GEO_KM]))
     assert f[bh.FEATURES.index("median_hold_days")] == 0.0
     assert f[bh.FEATURES.index("held_share")] == 0.0
 

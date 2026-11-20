@@ -1,5 +1,5 @@
-# Behaviour of a GEO-region object over the days it is tracked, as 13 numbers from the existing pipeline (mode
-# segments, burns, state changes, daily longitude, drift and semi-major axis, proximity flags), and a score for how
+# Behaviour of a GEO-region object over the days it is tracked, as 12 numbers from the existing pipeline (mode
+# segments, burns, state changes, daily longitude, drift and semi-major axis), and a score for how
 # far each object sits from every group of similar objects: the distance to its 10th nearest neighbour.
 
 from __future__ import annotations
@@ -15,8 +15,7 @@ from orbit_watch.routine import YEAR_DAYS, outside
 
 FEATURES = ["held_share", "held_inc_share", "drifting_share", "librating_share", "burns_per_year",
             "burns_outside_holds_per_year", "relocation_starts_per_year", "median_hold_days",
-            "lon_travelled_deg_per_year", "median_abs_drift_deg_per_day", "median_sma_offset_km", "sma_iqr_km",
-            "proximity_flags_per_year"]
+            "lon_travelled_deg_per_year", "median_abs_drift_deg_per_day", "median_sma_offset_km", "sma_iqr_km"]
 LOGGED = tuple(range(4, len(FEATURES)))
 MIN_SETS = 100
 MIN_TRACKED_DAYS = 180.0
@@ -59,8 +58,7 @@ def travelled(days: np.ndarray, lon: np.ndarray, rate: np.ndarray) -> float:
 
 
 def features(first_day: float, last_day: float, segs: Sequence[Segment], burn_days: np.ndarray,
-             relocation_starts: int, days: np.ndarray, lon: np.ndarray, rate: np.ndarray, sma: np.ndarray,
-             flags: int) -> np.ndarray:
+             relocation_starts: int, days: np.ndarray, lon: np.ndarray, rate: np.ndarray, sma: np.ndarray) -> np.ndarray:
     tracked = last_day - first_day
     years = tracked / YEAR_DAYS
 
@@ -84,7 +82,6 @@ def features(first_day: float, last_day: float, segs: Sequence[Segment], burn_da
         float(np.median(np.abs(rate.astype(float)))),
         float(np.median(np.abs(sma - _R_GEO_KM))),
         float(q3 - q1),
-        flags / years,
     ])
 
 
