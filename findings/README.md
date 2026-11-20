@@ -554,9 +554,16 @@ timing.
 
 The stay window is now the smaller of ±15 days and ±0.2 times the stay, so it narrows only for
 stays under 75 days. The plan expected the bits of every stay-scored departure to rise. That was
-wrong: of the 32 departures scored by the stay model in both versions (same object and date in
-both `departures.csv` files), 8 rose, 21 were unchanged (stays of 83 days or more) and 3 fell
-slightly because their past stays changed with the event list. 31 objects with bits in the first
+wrong, and the window change moved essentially no belt departure. Only 2 of the 33 stay-scored
+departures have stays under 75 days, both TJS-3: the 45-day one on 2023-03-25 is new on this list,
+and the 60-day one on 2025-03-17 fell from 3.686 to 3.281 bits because its past stays went from 4
+to 5. Of the 32 departures scored by the stay model in both versions (same object and date in both
+`departures.csv` files), 8 rose, 21 were unchanged (stays of 83 days or more) and 3 fell slightly,
+and every rise and fall comes from past stays that changed with the event list. All 8 rises have
+stays of 84 to 541 days, where the window is still ±15 days: seven are HYLAS 1, whose past stays
+shifted with the event list (its 2022-03-04 stay went from 86 to 92 days), and the eighth is TJS-3
+on 2024-11-12 (541 days), whose past stays went from 3 to 4. The three falls are two HYLAS 1
+departures and the 60-day TJS-3 one. 31 objects with bits in the first
 version have none now. XM-3 (first version rank 15) is rank 58, and EUTE 113 WEST A (rank 24) is
 rank 161 with no bits; both were judged end of life in the first audit.
 
@@ -585,14 +592,16 @@ The top 20 of `rank.csv` (bits per year, in total and from each model):
 | 19 | EUTE HOT BIRD 13C (HB 9) | 33459 | 3.067 | 0.0 | 3.067 | 0.425 | 0 | 2 | 0 |
 | 20 | GOES 17 | 43226 | 3.066 | 0.0 | 3.066 | 0.421 | 0 | 2 | 0 |
 
-From rank 8 on, the list is objects held 2.1 to 5.0 years with one to three scored departures
-(HYLAS 1 has 12), near 3 bits per year: the top 5% cut is 2.798 bits per year and 27 objects reach
-it.
+Ranks 8 to 30 are objects held 2.124 to 4.847 years with one to three scored departures (HYLAS 1
+has 12), at 2.763 to 4.214 bits per year; below them bits per year fall to 0.832 at rank 104, the
+last object with bits. The top 5% cut is 2.798 bits per year and 27 objects reach it.
 
 ### Checks
 
 Each target below was set in the design before the first run, and the score was not tuned to any
-of them. The targets did not change for the second version.
+of them, with one exception: the stay window's share `f` was chosen on check 4's dev trials, so
+check 4's dev shares are not out of sample and its test trials are the held-out result. The
+targets did not change for the second version.
 
 | Check | Result | Target | Verdict |
 |---|---|---|---|
@@ -614,7 +623,8 @@ February 2023 (4.862 bits, rate model), SJ-17 in November 2024 (1.395 bits, stay
 (Olymp) 2 in February 2025 (4.97 bits, stay model), whose earlier stays make the timing
 unsurprising. Cited graveyard moves and keeping stops are reported apart: of the 17 cited (6 dev,
 11 test), 11 are on objects held a year before them, the list catches 10 and types all 10 as end
-of life. The one not caught is 27400's graveyard move in January 2023, which is not on the list.
+of life. The one not caught is 27400's graveyard move, cited for January 2023 (read as
+2023-01-15): the list has it on 2022-11-17, 59 days earlier, outside the 45-day matching window.
 
 **Cited lists (checks 8 and 9).** `groundtruth/irregular_objects.csv` and
 `groundtruth/steady_objects.csv`. The four irregular objects in the top 5% are SJ-17 (rank 1), Luch
@@ -652,6 +662,13 @@ departure typed or dated differently once later sets arrive.
 0.2. "On" counts last departures under 2 bits on rhythm; "off" counts 5 bits or more off it. The
 target is both right in 90% of trials. It is stated both ways: over trials whose last planted
 departure was caught and scored, as in the first version, and over all 100.
+
+`f` was chosen on the dev `4+1` trials alone, before this run, from the five values in the plan:
+0.653, 0.764, 0.764, 0.778 and 0.764 for `f` = 0.05, 0.1, 0.15, 0.2 and 0.25 (47, 55, 55, 56 and 55
+right of the 72 trials whose last move was caught and scored). Those shares were measured on the
+state-change list as it stood at 4d2fe9d (760 rows), before the mode and event changes, which is
+why the same `f` gives 0.811 on the final list. The sweep's outputs are not committed; it can be
+rerun with `python -m harness.evals.routine planted --split dev --share F`.
 
 | split | variant | caught and scored | on rhythm under 2 bits | off rhythm at least 5 bits | both targets, of caught and scored | both targets, of all 100 | scored by the stay model | verdict |
 |---|---|---|---|---|---|---|---|---|

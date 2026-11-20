@@ -427,7 +427,7 @@ before the departure:
   (standard deviation of the log stay) floored at 0.15. The window is the smaller of ±15 days and
   ±`f s`, so it stays narrow next to a short stay. `f` = 0.2 was chosen from 0.05, 0.1, 0.15,
   0.2 and 0.25 on the dev trials of the planted rhythm test alone, as the value with the most
-  trials right (ties to the larger `f`); the belt results played no part.
+  trials right; the belt results played no part.
 - Otherwise `p` is the chance of at least one departure in 30 days under the object's own
   departure rate shrunk to the belt's: a gamma prior on the rate with the belt's mean, updated by
   the object's past departures `k` over its held years `H` before the departure, so
@@ -476,9 +476,11 @@ departures on its own rhythm at under 0.6 bits each). Below rank 7 the order is 
 model alone, which counts how often and how late an object left, and held years start at the start
 of the data for objects already held then; both stay open in [#87](../../../issues/87). The plan
 for this version expected the bits of every stay-scored departure to rise with the narrower
-window; that was wrong, since the window narrows only for stays under 75 days. Of the 32
-departures scored by the stay model in both versions, 8 rose, 21 were unchanged and 3 fell slightly
-because their past stays changed with the event list.
+window. That was wrong: the window narrows only for stays under 75 days, and only 2 of the 33
+stay-scored departures are that short. Of the 32 departures scored by the stay model in both
+versions, 8 rose, 21 were unchanged and 3 fell slightly, every one because its past stays changed
+with the event list; all 8 rises have stays of 84 days or more, where the window is still ±15
+days.
 
 **Proximity flag.** An arrival is flagged when, over the 10 days from the arrival day, another
 object's mean longitude is within 0.1° of the arriving object's (circular means of one set per
@@ -498,7 +500,8 @@ the neighbour. The flag reads 10 days past the arrival. Flags are a separate col
 and a separate file, never part of the score.
 
 **Checks** (`harness/evals/routine.py`). Each target was set in the design before the first run,
-and the score was not tuned to any of them. Results and their breakdowns are in
+and the score was not tuned to any of them, with one exception: `f` was chosen on check 4's dev
+trials, so its test trials are the held-out result. Results and their breakdowns are in
 [findings/README.md](../findings/README.md#routine-score-and-irregularity-rank).
 
 1. Off-routine rows (off-routine departures and overruns) on rocket bodies and debris, per

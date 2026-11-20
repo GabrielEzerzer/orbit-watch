@@ -30,9 +30,9 @@ and after. The list is [`findings/state_changes/events.csv`](findings/state_chan
 It also ranks the 532 objects held at least two years by how far their relocations break their own
 record of stays and moves, in bits per year: [`findings/routine/rank.csv`](findings/routine/rank.csv).
 Graveyard moves and keeping stops are listed but not ranked. Only 33 of the 197 scored departures
-have a stay record, and only the top 7 objects and HYLAS 1 (rank 28) get any bits from it; below
-rank 7 the order is set by how often and how late an object left. A blind hand audit of the charts
-judged 27 of the top 30 irregular.
+have a stay record, and only eight rated objects, the top 7 and HYLAS 1 (rank 28), get any bits
+from it; below rank 7 the order is set by how often and how late an object left. A blind hand audit
+of the charts judged 27 of the top 30 irregular.
 
 ## How it works
 
